@@ -1,0 +1,13 @@
+{
+  "atom_id": "pricing_tiers_v1",
+  "category": "pricing",
+  "summary": "Three pricing tiers with one featured raised plan and an accessible monthly/annual switch; prices are [PRICE] placeholders swapped via data attributes, full keyboard + focus.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": ["consultation_flow"],
+  "tags": ["pricing", "tiers", "plans", "featured", "billing-toggle", "switch", "data-integrity", "keyboard"],
+  "tone": ["confident", "premium", "modern"],
+  "files": ["snippet.html", "snippet.css", "snippet.js"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

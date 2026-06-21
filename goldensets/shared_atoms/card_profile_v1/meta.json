@@ -1,0 +1,13 @@
+{
+  "atom_id": "card_profile_v1",
+  "category": "card",
+  "summary": "Team/profile card with an SVG monogram portrait frame (no fake photo), [NAME]/[ROLE] placeholders, and icon-only social links each carrying a visually-hidden text label.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": [],
+  "tags": ["card", "profile", "team", "avatar", "monogram", "social-links", "visually-hidden", "data-integrity", "accessibility"],
+  "tone": ["editorial", "premium", "human"],
+  "files": ["snippet.html", "snippet.css"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

@@ -1,0 +1,235 @@
+/* =========================================================================
+   hero_fullbleed_v1
+   Full-bleed hero. Layered, all-CSS/SVG background (grid pattern + radial glow
+   + sweeping arcs), a contrast scrim, an offset-left headline, dual CTA, and a
+   meta row. Cool near-black palette + Archivo display — deliberately distinct
+   from hero_split_asymmetric_v1's warm serif look.
+   Self-contained token subset mirrors foundation_design_tokens_v1.
+   ========================================================================= */
+
+:root {
+  --font-display: "Archivo", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+
+  /* Cool deep palette */
+  --color-bg-1:        #0b1220;
+  --color-bg-2:        #111a2e;
+  --color-text:        #eef2f8;
+  --color-text-muted:  #93a0b6;
+  --color-line:        #243049;
+  --color-primary:     #5b8cff;
+  --color-primary-hover:#6f9bff;
+  --color-primary-active:#477bf2;
+  --color-on-primary:  #06101f;
+  --color-focus-ring:  #5b8cff;
+
+  /* Background-art tokens consumed by inline SVG */
+  --grid-line: rgba(120, 150, 200, 0.10);
+  --glow-1:    #2b4fae;
+  --accent-1:  #5b8cff;
+  --accent-2:  #7de2d1;
+
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-8: 3rem;
+
+  --text-sm:      clamp(0.875rem, 0.84rem + 0.18vw, 0.9375rem);
+  --text-base:    clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --text-lead:    clamp(1.0625rem, 1rem + 0.4vw, 1.25rem);
+  --text-display: clamp(2.75rem, 1.7rem + 5.1vw, 5.5rem);
+
+  --radius-sm:   8px;
+  --radius-pill: 999px;
+
+  --shadow-2: 0 12px 32px rgba(0, 0, 0, 0.35);
+
+  --duration-fast: 150ms;
+  --duration-base: 220ms;
+  --ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  -webkit-font-smoothing: antialiased;
+}
+
+.hero-fb {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: clamp(560px, 86vh, 820px);
+  display: flex;
+  align-items: center;
+  background:
+    linear-gradient(155deg, var(--color-bg-2) 0%, var(--color-bg-1) 62%);
+}
+
+/* ---- Layered background ---- */
+.hero-fb__bg { position: absolute; inset: 0; z-index: -1; }
+.hero-fb__grid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.hero-fb__node {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hfb-pulse 6s ease-in-out infinite;
+}
+/* Scrim: darkens the left where the copy sits, for contrast on any viewport. */
+.hero-fb__scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(7, 12, 24, 0.82) 0%, rgba(7, 12, 24, 0.45) 46%, rgba(7, 12, 24, 0) 78%);
+}
+
+.hero-fb__inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding: clamp(3rem, 8vw, 6rem) clamp(1.25rem, 5vw, 4rem);
+}
+
+.hero-fb__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.hero-fb__title {
+  margin: var(--space-5) 0 0;
+  max-width: 16ch;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--text-display);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.hero-fb__lead {
+  margin: var(--space-5) 0 0;
+  max-width: 48ch;
+  font-size: var(--text-lead);
+  line-height: 1.55;
+  color: var(--color-text-muted);
+  text-wrap: pretty;
+}
+
+.hero-fb__actions {
+  margin-top: var(--space-8);
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 52px;
+  padding: 0 var(--space-6);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--text-base);
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  border-radius: var(--radius-pill);
+  transition: background var(--duration-base) var(--ease-emphasis),
+              border-color var(--duration-base) var(--ease-emphasis),
+              transform var(--duration-fast) var(--ease-emphasis);
+}
+.btn--primary {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: var(--shadow-2);
+}
+.btn--primary:hover  { background: var(--color-primary-hover); transform: translateY(-2px); }
+.btn--primary:active { background: var(--color-primary-active); transform: translateY(0); }
+.btn--ghost {
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-line);
+}
+.btn--ghost:hover  { border-color: var(--color-primary); transform: translateY(-2px); }
+.btn--ghost:active { transform: translateY(0); }
+.btn--ghost svg { transition: transform var(--duration-base) var(--ease-emphasis); }
+.btn--ghost:hover svg { transform: translateX(3px); }
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-bg-1), 0 0 0 5px var(--color-focus-ring);
+}
+
+.hero-fb__meta {
+  margin: var(--space-8) 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-line);
+}
+.hero-fb__meta div { display: grid; gap: 2px; }
+.hero-fb__meta dt {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.hero-fb__meta dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+}
+
+@keyframes hfb-pulse {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.6); }
+}
+
+/* Responsive */
+@media (max-width: 540px) {
+  .hero-fb__actions { flex-direction: column; align-items: stretch; }
+  .btn { width: 100%; }
+  .hero-fb__meta { gap: var(--space-5); }
+}
+
+/* Keep the scrim strong enough on very small widths for AA contrast. */
+@media (max-width: 400px) {
+  .hero-fb__scrim {
+    background: linear-gradient(180deg, rgba(7, 12, 24, 0.55) 0%, rgba(7, 12, 24, 0.85) 100%);
+  }
+}
+
+/* MANDATORY reduced-motion fallback */
+@media (prefers-reduced-motion: reduce) {
+  .hero-fb__node { animation: none; opacity: 0.7; }
+  .btn { transition: none; }
+  .btn--primary:hover, .btn--ghost:hover { transform: none; }
+  .btn--ghost:hover svg { transform: none; }
+}

@@ -1,0 +1,101 @@
+<!--
+  bento_grid_v1
+  Pair with snippet.css. Fonts: Space Grotesk (display) + Inter (body).
+  A bento feature grid: varied cell sizes, ONE prominent feature cell
+  (.bento-cell--feature spanning 2x2), reflowing to a single column on mobile.
+  Each cell carries a small bespoke inline-SVG glyph (no emoji).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<section class="bento" aria-labelledby="bento-title">
+  <div class="bento__inner">
+    <header class="bento__head">
+      <span class="bento__kicker">What you get</span>
+      <h2 class="bento__title" id="bento-title">A capability board, sized by weight.</h2>
+    </header>
+
+    <div class="bento__grid" role="list">
+      <!-- Prominent feature cell: spans 2 cols x 2 rows -->
+      <article class="bento-cell bento-cell--feature" role="listitem">
+        <div class="bento-cell__glyph" aria-hidden="true">
+          <svg viewBox="0 0 48 48" width="44" height="44">
+            <path d="M10 30 L20 18 L28 26 L38 12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="38" cy="12" r="4" fill="currentColor"/>
+            <path d="M10 38 H38" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.4"/>
+          </svg>
+        </div>
+        <h3 class="bento-cell__title">[FEATURE_HEADLINE]</h3>
+        <p class="bento-cell__body">
+          The one capability that matters most, given room to breathe. Replace
+          this with the single claim you most want a visitor to remember.
+        </p>
+        <a class="bento-cell__cta" href="#feature-detail">
+          Explore
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </article>
+
+      <!-- Wide cell: spans 2 cols x 1 row -->
+      <article class="bento-cell bento-cell--wide" role="listitem">
+        <div class="bento-cell__glyph" aria-hidden="true">
+          <svg viewBox="0 0 48 48" width="32" height="32">
+            <rect x="9" y="14" width="30" height="8" rx="4" fill="none" stroke="currentColor" stroke-width="3"/>
+            <rect x="9" y="28" width="20" height="8" rx="4" fill="currentColor"/>
+          </svg>
+        </div>
+        <h3 class="bento-cell__title">[FEATURE_TWO]</h3>
+        <p class="bento-cell__body">A supporting capability that benefits from a wider, shorter cell.</p>
+      </article>
+
+      <!-- Standard cell -->
+      <article class="bento-cell" role="listitem">
+        <div class="bento-cell__glyph" aria-hidden="true">
+          <svg viewBox="0 0 48 48" width="32" height="32">
+            <circle cx="24" cy="24" r="13" fill="none" stroke="currentColor" stroke-width="3"/>
+            <path d="M24 16 V24 L30 28" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3 class="bento-cell__title">[FEATURE_THREE]</h3>
+        <p class="bento-cell__body">A focused single-cell point.</p>
+      </article>
+
+      <!-- Standard cell -->
+      <article class="bento-cell" role="listitem">
+        <div class="bento-cell__glyph" aria-hidden="true">
+          <svg viewBox="0 0 48 48" width="32" height="32">
+            <path d="M24 9 L37 16 V32 L24 39 L11 32 V16 Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M24 9 V39 M11 16 L37 32 M37 16 L11 32" stroke="currentColor" stroke-width="1.5" opacity="0.35"/>
+          </svg>
+        </div>
+        <h3 class="bento-cell__title">[FEATURE_FOUR]</h3>
+        <p class="bento-cell__body">A focused single-cell point.</p>
+      </article>
+
+      <!-- Tall accent cell: spans 1 col x 2 rows -->
+      <article class="bento-cell bento-cell--tall bento-cell--accent" role="listitem">
+        <div class="bento-cell__glyph" aria-hidden="true">
+          <svg viewBox="0 0 48 48" width="34" height="34">
+            <path d="M26 6 L12 28 H23 L21 42 L36 19 H25 Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3 class="bento-cell__title">[FEATURE_FIVE]</h3>
+        <p class="bento-cell__body">A vertical accent cell — good for a metric, a quote, or a standout claim.</p>
+        <p class="bento-cell__stat"><span class="bento-cell__stat-num">[STAT_VALUE]</span><span class="bento-cell__stat-label">[STAT_LABEL]</span></p>
+      </article>
+
+      <!-- Wide cell -->
+      <article class="bento-cell bento-cell--wide" role="listitem">
+        <div class="bento-cell__glyph" aria-hidden="true">
+          <svg viewBox="0 0 48 48" width="32" height="32">
+            <rect x="8" y="10" width="32" height="24" rx="4" fill="none" stroke="currentColor" stroke-width="3"/>
+            <path d="M8 18 H40 M16 26 H24" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3 class="bento-cell__title">[FEATURE_SIX]</h3>
+        <p class="bento-cell__body">A final wide capability that closes the board.</p>
+      </article>
+    </div>
+  </div>
+</section>

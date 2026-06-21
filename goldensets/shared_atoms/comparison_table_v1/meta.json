@@ -1,0 +1,13 @@
+{
+  "atom_id": "comparison_table_v1",
+  "category": "table",
+  "summary": "Responsive feature comparison table with sticky header row and pinned feature column; scrolls cleanly on mobile, one highlighted plan, check/dash marks as inline SVG.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": ["coverage_signal"],
+  "tags": ["table", "comparison", "plans", "sticky-header", "pinned-column", "inline-svg", "responsive"],
+  "tone": ["editorial", "clear", "premium"],
+  "files": ["snippet.html", "snippet.css"],
+  "loads_fonts": true,
+  "has_motion": false,
+  "a11y_complete": true
+}

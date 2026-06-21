@@ -1,0 +1,13 @@
+{
+  "atom_id": "faq_accordion_v1",
+  "category": "faq",
+  "summary": "Accessible disclosure accordion: heading-wrapped button triggers (aria-expanded/aria-controls), region panels, smooth grid-rows height transition that collapses instantly under reduced-motion, arrow-key roving.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": [],
+  "tags": ["faq", "accordion", "disclosure", "expand-collapse", "aria-expanded", "keyboard", "progressive-enhancement", "accessibility"],
+  "tone": ["editorial", "calm", "premium"],
+  "files": ["snippet.html", "snippet.css", "snippet.js"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

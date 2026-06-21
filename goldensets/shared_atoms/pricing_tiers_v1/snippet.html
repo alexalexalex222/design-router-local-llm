@@ -1,0 +1,104 @@
+<!--
+  pricing_tiers_v1
+  Pair with snippet.css and snippet.js. Fonts: Manrope (display) + Inter (body).
+  Three pricing tiers, one featured. Accessible monthly/annual billing toggle
+  (a real switch button: role/aria-pressed semantics, keyboard operable). Prices
+  are [PRICE] placeholders — never invent pricing. Full keyboard + visible focus.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<section class="pricing" aria-labelledby="pricing-title">
+  <div class="pricing__inner">
+    <header class="pricing__head">
+      <span class="pricing__kicker">Plans</span>
+      <h2 class="pricing__title" id="pricing-title">Pick the plan that fits the work.</h2>
+
+      <!-- Billing toggle: a labelled switch. Clicking / Space / Enter flips it.
+           aria-pressed reflects "annual selected". Visible labels both sides. -->
+      <div class="billing">
+        <span class="billing__opt is-active" id="bill-monthly" data-bill="monthly">Monthly</span>
+        <button
+          type="button"
+          class="billing__switch"
+          role="switch"
+          aria-checked="false"
+          aria-labelledby="bill-monthly bill-annual"
+          data-billing-toggle>
+          <span class="billing__track" aria-hidden="true"><span class="billing__thumb"></span></span>
+        </button>
+        <span class="billing__opt" id="bill-annual" data-bill="annual">
+          Annual <span class="billing__save">Save [SAVE_PERCENT]</span>
+        </span>
+      </div>
+    </header>
+
+    <div class="pricing__grid">
+      <!-- Tier 1 -->
+      <article class="tier" aria-labelledby="tier-1-name">
+        <header class="tier__head">
+          <h3 class="tier__name" id="tier-1-name">[TIER_ONE_NAME]</h3>
+          <p class="tier__tagline">For [TIER_ONE_AUDIENCE].</p>
+        </header>
+        <p class="tier__price">
+          <span class="tier__currency">$</span>
+          <span class="tier__amount" data-price-monthly="[PRICE]" data-price-annual="[PRICE]">[PRICE]</span>
+          <span class="tier__period" data-period>/ mo</span>
+        </p>
+        <p class="tier__billed" data-billed-note>Billed monthly</p>
+        <a class="tier__cta" href="#choose-tier-1">Choose [TIER_ONE_NAME]</a>
+        <ul class="tier__features">
+          <li>[TIER_ONE_FEATURE_A]</li>
+          <li>[TIER_ONE_FEATURE_B]</li>
+          <li>[TIER_ONE_FEATURE_C]</li>
+        </ul>
+      </article>
+
+      <!-- Tier 2 — FEATURED -->
+      <article class="tier tier--featured" aria-labelledby="tier-2-name">
+        <span class="tier__badge">Most chosen</span>
+        <header class="tier__head">
+          <h3 class="tier__name" id="tier-2-name">[TIER_TWO_NAME]</h3>
+          <p class="tier__tagline">For [TIER_TWO_AUDIENCE].</p>
+        </header>
+        <p class="tier__price">
+          <span class="tier__currency">$</span>
+          <span class="tier__amount" data-price-monthly="[PRICE]" data-price-annual="[PRICE]">[PRICE]</span>
+          <span class="tier__period" data-period>/ mo</span>
+        </p>
+        <p class="tier__billed" data-billed-note>Billed monthly</p>
+        <a class="tier__cta tier__cta--primary" href="#choose-tier-2">Choose [TIER_TWO_NAME]</a>
+        <ul class="tier__features">
+          <li>Everything in [TIER_ONE_NAME], plus:</li>
+          <li>[TIER_TWO_FEATURE_A]</li>
+          <li>[TIER_TWO_FEATURE_B]</li>
+          <li>[TIER_TWO_FEATURE_C]</li>
+        </ul>
+      </article>
+
+      <!-- Tier 3 -->
+      <article class="tier" aria-labelledby="tier-3-name">
+        <header class="tier__head">
+          <h3 class="tier__name" id="tier-3-name">[TIER_THREE_NAME]</h3>
+          <p class="tier__tagline">For [TIER_THREE_AUDIENCE].</p>
+        </header>
+        <p class="tier__price">
+          <span class="tier__currency">$</span>
+          <span class="tier__amount" data-price-monthly="[PRICE]" data-price-annual="[PRICE]">[PRICE]</span>
+          <span class="tier__period" data-period>/ mo</span>
+        </p>
+        <p class="tier__billed" data-billed-note>Billed monthly</p>
+        <a class="tier__cta" href="#choose-tier-3">Choose [TIER_THREE_NAME]</a>
+        <ul class="tier__features">
+          <li>Everything in [TIER_TWO_NAME], plus:</li>
+          <li>[TIER_THREE_FEATURE_A]</li>
+          <li>[TIER_THREE_FEATURE_B]</li>
+          <li>[TIER_THREE_FEATURE_C]</li>
+        </ul>
+      </article>
+    </div>
+
+    <p class="pricing__foot">[PRICING_FOOTNOTE — taxes, terms, what a "seat" means, etc.]</p>
+  </div>
+</section>

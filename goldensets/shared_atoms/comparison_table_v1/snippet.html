@@ -1,0 +1,122 @@
+<!--
+  comparison_table_v1
+  Pair with snippet.css. Fonts: Newsreader (display) + Inter (body).
+  A responsive feature comparison table with a STICKY header row. On wide
+  screens it's a normal table; on mobile it scrolls horizontally inside a
+  labelled, keyboard-scrollable region with the feature column pinned left.
+  Check / dash marks are inline SVG (no emoji). One plan column is highlighted.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<section class="cmp" aria-labelledby="cmp-title">
+  <div class="cmp__inner">
+    <header class="cmp__head">
+      <span class="cmp__kicker">Compare plans</span>
+      <h2 class="cmp__title" id="cmp-title">What is included, line by line.</h2>
+    </header>
+
+    <!-- Scrollable region: focusable so keyboard users can scroll on mobile. -->
+    <div class="cmp__scroll" tabindex="0" role="region" aria-labelledby="cmp-title">
+      <table class="cmp__table">
+        <caption class="cmp__caption">Feature comparison across [PRODUCT_NAME] plans.</caption>
+        <colgroup>
+          <col class="cmp__col-feature">
+          <col>
+          <col class="cmp__col-featured">
+          <col>
+        </colgroup>
+        <thead>
+          <tr>
+            <th scope="col" class="cmp__th cmp__th--feature">Feature</th>
+            <th scope="col" class="cmp__th">[TIER_ONE_NAME]</th>
+            <th scope="col" class="cmp__th cmp__th--featured">
+              <span class="cmp__th-badge">Most chosen</span>
+              [TIER_TWO_NAME]
+            </th>
+            <th scope="col" class="cmp__th">[TIER_THREE_NAME]</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row" class="cmp__rowhead">[FEATURE_ROW_1]</th>
+            <td class="cmp__cell"><span class="cmp__val cmp__val--text">[VALUE]</span></td>
+            <td class="cmp__cell cmp__cell--featured"><span class="cmp__val cmp__val--text">[VALUE]</span></td>
+            <td class="cmp__cell"><span class="cmp__val cmp__val--text">[VALUE]</span></td>
+          </tr>
+          <tr>
+            <th scope="row" class="cmp__rowhead">[FEATURE_ROW_2]</th>
+            <td class="cmp__cell">
+              <svg class="cmp__mark cmp__mark--yes" viewBox="0 0 24 24" width="22" height="22" role="img" aria-label="Included">
+                <title>Included</title>
+                <path d="M5 12.5 l4.5 4.5 L19 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </td>
+            <td class="cmp__cell cmp__cell--featured">
+              <svg class="cmp__mark cmp__mark--yes" viewBox="0 0 24 24" width="22" height="22" role="img" aria-label="Included">
+                <title>Included</title>
+                <path d="M5 12.5 l4.5 4.5 L19 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </td>
+            <td class="cmp__cell">
+              <svg class="cmp__mark cmp__mark--yes" viewBox="0 0 24 24" width="22" height="22" role="img" aria-label="Included">
+                <title>Included</title>
+                <path d="M5 12.5 l4.5 4.5 L19 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row" class="cmp__rowhead">[FEATURE_ROW_3]</th>
+            <td class="cmp__cell">
+              <svg class="cmp__mark cmp__mark--no" viewBox="0 0 24 24" width="22" height="22" role="img" aria-label="Not included">
+                <title>Not included</title>
+                <path d="M6 12 H18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
+            </td>
+            <td class="cmp__cell cmp__cell--featured">
+              <svg class="cmp__mark cmp__mark--yes" viewBox="0 0 24 24" width="22" height="22" role="img" aria-label="Included">
+                <title>Included</title>
+                <path d="M5 12.5 l4.5 4.5 L19 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </td>
+            <td class="cmp__cell">
+              <svg class="cmp__mark cmp__mark--yes" viewBox="0 0 24 24" width="22" height="22" role="img" aria-label="Included">
+                <title>Included</title>
+                <path d="M5 12.5 l4.5 4.5 L19 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row" class="cmp__rowhead">[FEATURE_ROW_4]</th>
+            <td class="cmp__cell"><span class="cmp__val cmp__val--text">[VALUE]</span></td>
+            <td class="cmp__cell cmp__cell--featured"><span class="cmp__val cmp__val--text">[VALUE]</span></td>
+            <td class="cmp__cell"><span class="cmp__val cmp__val--text">[VALUE]</span></td>
+          </tr>
+          <tr>
+            <th scope="row" class="cmp__rowhead">[FEATURE_ROW_5]</th>
+            <td class="cmp__cell">
+              <svg class="cmp__mark cmp__mark--no" viewBox="0 0 24 24" width="22" height="22" role="img" aria-label="Not included">
+                <title>Not included</title>
+                <path d="M6 12 H18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
+            </td>
+            <td class="cmp__cell cmp__cell--featured">
+              <svg class="cmp__mark cmp__mark--no" viewBox="0 0 24 24" width="22" height="22" role="img" aria-label="Not included">
+                <title>Not included</title>
+                <path d="M6 12 H18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
+            </td>
+            <td class="cmp__cell">
+              <svg class="cmp__mark cmp__mark--yes" viewBox="0 0 24 24" width="22" height="22" role="img" aria-label="Included">
+                <title>Included</title>
+                <path d="M5 12.5 l4.5 4.5 L19 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cmp__hint" aria-hidden="true">Scroll sideways to see all plans →</p>
+  </div>
+</section>

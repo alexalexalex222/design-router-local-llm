@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "design-router-mcp"
+version = "0.2.1"
+description = "Clean public local-LLM design packet router for frontend UI generation."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+  { name = "FoldOps", email = "opensource@foldops.dev" },
+]
+keywords = ["mcp", "design-router", "packet", "frontend", "local-llm", "ui"]
+dependencies = [
+  "pydantic>=2.8,<3",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+urls = { Homepage = "https://github.com/alexalexalex222/design-router-local-llm", Documentation = "https://github.com/alexalexalex222/design-router-local-llm#readme", Repository = "https://github.com/alexalexalex222/design-router-local-llm", Issues = "https://github.com/alexalexalex222/design-router-local-llm/issues" }
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3,<9",
+  "ruff>=0.8.0",
+]
+mcp = [
+  "mcp>=1.1.0",
+]
+
+[project.scripts]
+design-router-packet = "design_router_mcp.cli:main"
+design-router-mcp = "design_router_mcp.mcp_server:main"
+design-router-mcp-stdio = "design_router_mcp.mcp_server:main"
+design-router-local-llm = "design_router_mcp.local_llm_mcp_server:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+design_router_mcp = ["defaults/*.json", "goldensets/**/*"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]

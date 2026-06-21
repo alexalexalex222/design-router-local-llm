@@ -1,0 +1,74 @@
+<!-- tabs_panel_v1 — WAI-ARIA tabs. role=tablist/tab/tabpanel, roving tabindex,
+     Left/Right/Home/End arrow-key support, aria-selected. Fonts (Manrope +
+     Inter) are the REQUIRED load. Pair with snippet.css and snippet.js.
+     Without JS, all panels are visible stacked (progressive enhancement). -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=Inter:wght@400;500&display=swap"
+  rel="stylesheet"
+/>
+
+<section class="tabs-block" aria-labelledby="tabs-title">
+  <div class="tabs-block__shell">
+    <header class="tabs-block__head">
+      <span class="tabs-block__kicker">How we work</span>
+      <h2 id="tabs-title" class="tabs-block__title">Three ways to engage</h2>
+    </header>
+
+    <div class="tabs" id="engage-tabs">
+      <!-- tablist: arrow keys move selection; roving tabindex means only the
+           active tab is in the Tab order. -->
+      <div class="tabs__list" role="tablist" aria-label="Engagement options">
+        <button class="tabs__tab" role="tab" id="tab-discovery"
+                aria-selected="true" aria-controls="panel-discovery" tabindex="0">
+          <span class="tabs__tab-label">Discovery</span>
+        </button>
+        <button class="tabs__tab" role="tab" id="tab-build"
+                aria-selected="false" aria-controls="panel-build" tabindex="-1">
+          <span class="tabs__tab-label">Build</span>
+        </button>
+        <button class="tabs__tab" role="tab" id="tab-support"
+                aria-selected="false" aria-controls="panel-support" tabindex="-1">
+          <span class="tabs__tab-label">Support</span>
+        </button>
+        <span class="tabs__indicator" aria-hidden="true"></span>
+      </div>
+
+      <div class="tabs__panels">
+        <div class="tabs__panel" role="tabpanel" id="panel-discovery"
+             aria-labelledby="tab-discovery" tabindex="0">
+          <h3 class="tabs__panel-title">Get the scope right first</h3>
+          <p>A short, structured kickoff to map goals, constraints, and the work that actually matters before anything is built.</p>
+          <ul class="tabs__list-items">
+            <li>Goals + success measures defined together</li>
+            <li>Clear written summary you can act on</li>
+            <li>Honest read on timeline and fit</li>
+          </ul>
+        </div>
+
+        <div class="tabs__panel" role="tabpanel" id="panel-build"
+             aria-labelledby="tab-build" tabindex="0" hidden>
+          <h3 class="tabs__panel-title">Steady, checkpoint-based delivery</h3>
+          <p>Work moves in reviewable checkpoints so direction stays correctable and nothing drifts for weeks unseen.</p>
+          <ul class="tabs__list-items">
+            <li>Reviewable progress at each checkpoint</li>
+            <li>Scope adjustable between checkpoints</li>
+            <li>One point of contact throughout</li>
+          </ul>
+        </div>
+
+        <div class="tabs__panel" role="tabpanel" id="panel-support"
+             aria-labelledby="tab-support" tabindex="0" hidden>
+          <h3 class="tabs__panel-title">Help after launch</h3>
+          <p>Ongoing maintenance and small improvements on a predictable cadence, so the work keeps earning its keep.</p>
+          <ul class="tabs__list-items">
+            <li>Predictable monthly cadence</li>
+            <li>Priority queue for fixes</li>
+            <li>Quarterly review of what's next</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

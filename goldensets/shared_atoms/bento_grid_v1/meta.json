@@ -1,0 +1,13 @@
+{
+  "atom_id": "bento_grid_v1",
+  "category": "feature",
+  "summary": "Bento feature grid with varied cell spans and one prominent 2x2 feature cell (inverted ink panel); dense packing on desktop, single column on mobile.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": ["service_lane_set"],
+  "tags": ["feature", "bento", "grid", "varied-cells", "feature-cell", "inline-svg", "responsive"],
+  "tone": ["modern", "premium", "warm"],
+  "files": ["snippet.html", "snippet.css"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

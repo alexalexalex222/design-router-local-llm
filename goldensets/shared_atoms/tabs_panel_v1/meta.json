@@ -1,0 +1,13 @@
+{
+  "atom_id": "tabs_panel_v1",
+  "category": "tabs",
+  "summary": "WAI-ARIA tabs: role=tablist/tab/tabpanel, roving tabindex, ArrowLeft/Right/Home/End keyboard support, aria-selected, sliding active indicator; panels visible without JS.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": [],
+  "tags": ["tabs", "tablist", "tabpanel", "roving-tabindex", "keyboard", "aria-selected", "wai-aria", "accessibility"],
+  "tone": ["modern", "premium", "structured"],
+  "files": ["snippet.html", "snippet.css", "snippet.js"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

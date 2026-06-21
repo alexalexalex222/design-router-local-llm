@@ -1,0 +1,60 @@
+<!-- nav_mobile_drawer_v1 — accessible slide-in mobile nav.
+     Fonts: Sora (display) + Inter (body). Pair with snippet.css + snippet.js.
+     Demo bar shown so the trigger has a realistic context. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
+  rel="stylesheet"
+/>
+
+<header class="demo-bar">
+  <span class="demo-bar__brand">[BUSINESS_NAME]</span>
+  <button
+    class="drawer-trigger"
+    type="button"
+    aria-expanded="false"
+    aria-controls="mobile-drawer"
+    aria-label="Open navigation menu"
+  >
+    <span class="drawer-trigger__bars" aria-hidden="true"></span>
+    <span class="drawer-trigger__text">Menu</span>
+  </button>
+</header>
+
+<!-- Drawer + scrim. The dialog is hidden from AT until opened by snippet.js. -->
+<div class="drawer-root" data-open="false">
+  <div class="drawer-scrim" data-drawer-close hidden></div>
+
+  <aside
+    class="drawer"
+    id="mobile-drawer"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Site navigation"
+    hidden
+  >
+    <div class="drawer__head">
+      <span class="drawer__title">Menu</span>
+      <button class="drawer-close" type="button" data-drawer-close aria-label="Close navigation menu">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+          <path d="M6 6 L18 18 M18 6 L6 18" fill="none" stroke="currentColor"
+                stroke-width="2.2" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+
+    <nav class="drawer__nav" aria-label="Primary">
+      <a class="drawer__link" href="#services"><span>Services</span></a>
+      <a class="drawer__link" href="#work"><span>Our Work</span></a>
+      <a class="drawer__link" href="#about"><span>About</span></a>
+      <a class="drawer__link" href="#reviews"><span>Reviews</span></a>
+      <a class="drawer__link" href="#contact"><span>Contact</span></a>
+    </nav>
+
+    <div class="drawer__foot">
+      <a class="drawer__cta" href="#book">Book a visit</a>
+      <a class="drawer__phone" href="tel:[PHONE_E164]">Call [PHONE]</a>
+    </div>
+  </aside>
+</div>

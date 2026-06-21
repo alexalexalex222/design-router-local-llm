@@ -1,0 +1,215 @@
+/* =========================================================================
+   logo_credential_rail_v1
+   Auto-scrolling trust/credential rail. The track is duplicated, so a single
+   -50% translate loops seamlessly. It PAUSES on hover (:hover), on keyboard
+   focus (:focus-within), via an explicit toggle (.is-paused from snippet.js),
+   and is fully DISABLED under prefers-reduced-motion. Palette: cool slate +
+   indigo emblem ink. Display: Outfit.
+   ========================================================================= */
+.rail {
+  --neutral-0:   #ffffff;
+  --neutral-50:  #f7f8fa;
+  --neutral-100: #eef1f5;
+  --neutral-200: #e1e5ec;
+  --neutral-300: #c5ccd8;
+  --neutral-500: #6f7787;
+  --neutral-700: #3b4250;
+  --neutral-900: #151922;
+
+  --indigo-400: #7c83ff;
+  --indigo-500: #5961e8;
+  --indigo-600: #474fce;
+
+  /* Semantic roles */
+  --color-bg:           var(--neutral-50);
+  --color-surface:      var(--neutral-0);
+  --color-border:       var(--neutral-200);
+  --color-text:         var(--neutral-900);
+  --color-text-muted:   var(--neutral-500);
+  --color-text-subtle:  var(--neutral-700);
+  --color-emblem:       var(--indigo-600);
+  --color-primary:      var(--indigo-600);
+  --color-focus-ring:   var(--indigo-600);
+
+  /* Typography */
+  --font-display: "Outfit", "Segoe UI", system-ui, sans-serif;
+  --font-body:    "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --text-xs:   clamp(0.75rem, 0.72rem + 0.15vw, 0.8125rem);
+  --text-sm:   clamp(0.875rem, 0.84rem + 0.18vw, 0.9375rem);
+  --text-base: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
+  --text-lg:   clamp(1.15rem, 1.04rem + 0.45vw, 1.4rem);
+  --leading-tight: 1.15;
+  --tracking-tight: -0.015em;
+  --tracking-caps: 0.14em;
+  --weight-regular: 400; --weight-medium: 500; --weight-semibold: 600; --weight-bold: 700;
+
+  /* Spacing / layout / motion */
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+  --space-5: 1.5rem; --space-6: 2rem; --space-7: 2.5rem; --space-8: 3rem;
+  --container-max: 1180px;
+  --container-pad: clamp(1.25rem, 5vw, 4rem);
+
+  --radius-sm: 8px; --radius-md: 14px; --radius-pill: 999px;
+  --shadow-1: 0 1px 2px rgba(21,25,34,0.06), 0 1px 1px rgba(21,25,34,0.04);
+  --duration-fast: 150ms; --duration-base: 200ms;
+  --marquee-duration: 38s;          /* slow, tasteful drift */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ring: 0 0 0 3px var(--color-surface), 0 0 0 5px var(--color-focus-ring);
+
+  box-sizing: border-box;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  padding-block: clamp(var(--space-7), 6vw, var(--space-8));
+  -webkit-font-smoothing: antialiased;
+}
+.rail *, .rail *::before, .rail *::after { box-sizing: border-box; }
+
+.rail__inner {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+}
+
+.rail__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+.rail__title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  margin: 0;
+}
+
+/* ---- Pause/Play toggle (≥44px target) ---- */
+.rail__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text-subtle);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: background var(--duration-base) var(--ease-standard),
+              border-color var(--duration-base) var(--ease-standard),
+              color var(--duration-base) var(--ease-standard);
+}
+.rail__toggle:hover { border-color: var(--color-border); background: var(--neutral-100); color: var(--color-text); }
+.rail__toggle:focus-visible { outline: none; box-shadow: var(--ring); }
+.rail__toggle-icon { fill: currentColor; flex: 0 0 auto; }
+.rail__toggle-icon--play { display: none; }
+/* When paused, show the Play glyph instead of Pause. */
+.rail__toggle[aria-pressed="true"] .rail__toggle-icon--pause { display: none; }
+.rail__toggle[aria-pressed="true"] .rail__toggle-icon--play  { display: inline-block; }
+
+/* ---- Viewport: clips the track + fades both edges with a mask ---- */
+.rail__viewport {
+  position: relative;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+/* ---- Track: flex row, two copies side by side, animates left by 50% ---- */
+.rail__track {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-2) 0;
+  display: flex;
+  flex-wrap: nowrap;
+  width: max-content;
+  gap: var(--space-3);
+  animation: rail-marquee var(--marquee-duration) linear infinite;
+  will-change: transform;
+}
+
+@keyframes rail-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }   /* exactly one set width */
+}
+
+/* PAUSE on hover, on keyboard focus within the rail, and via the JS toggle. */
+.rail__viewport:hover .rail__track,
+.rail__viewport:focus-within .rail__track,
+.rail__viewport.is-paused .rail__track {
+  animation-play-state: paused;
+}
+
+/* ---- Credential chip ---- */
+.cred {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 0 0 auto;
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-1);
+  white-space: nowrap;
+}
+.cred__emblem {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px; height: 44px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-emblem) 9%, var(--color-surface));
+  color: var(--color-emblem);
+  flex: 0 0 auto;
+}
+.cred__text { display: flex; flex-direction: column; line-height: 1.2; }
+.cred__text strong {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+}
+.cred__text span {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* ---- Responsive: comfortable at 360/375px (chips simply scroll past) ---- */
+@media (max-width: 480px) {
+  .rail__head { flex-wrap: wrap; }
+  .cred { padding-inline: var(--space-4); }
+  .cred__emblem { width: 40px; height: 40px; }
+}
+
+/* ---- MANDATORY reduced-motion fallback ----
+   Disable the marquee entirely; render a static, wrapping rail so every
+   credential is visible without motion. The JS toggle then no-ops gracefully. */
+@media (prefers-reduced-motion: reduce) {
+  .rail__track {
+    animation: none;
+    flex-wrap: wrap;
+    width: auto;
+    justify-content: center;
+    gap: var(--space-3);
+  }
+  .rail__viewport {
+    -webkit-mask-image: none;
+            mask-image: none;
+  }
+  /* Hide the seamless-loop duplicate set so credentials aren't shown twice. */
+  .rail__track .cred[aria-hidden="true"] { display: none; }
+  .rail__toggle { display: none; }   /* nothing to pause when there's no motion */
+  .rail__toggle, .cred, .rail__toggle:hover { transition: none; }
+}

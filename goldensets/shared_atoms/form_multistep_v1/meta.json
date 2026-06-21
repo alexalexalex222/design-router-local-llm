@@ -1,0 +1,13 @@
+{
+  "atom_id": "form_multistep_v1",
+  "category": "form",
+  "summary": "Multi-step intake wizard: accessible ordered-list progress indicator with aria-current, Back/Next, per-step validation, final review step, and success panel.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": ["form_intake", "consultation_flow"],
+  "tags": ["form", "multistep", "wizard", "progress", "validation", "review", "aria-current", "stepper", "accessibility"],
+  "tone": ["premium", "guided", "modern"],
+  "files": ["snippet.html", "snippet.css", "snippet.js"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

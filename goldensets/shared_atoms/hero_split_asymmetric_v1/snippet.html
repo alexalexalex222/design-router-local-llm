@@ -1,0 +1,77 @@
+<!-- hero_split_asymmetric_v1 — asymmetric editorial hero.
+     Oversized display headline + subhead + ONE CTA on the left; a bespoke
+     inline-SVG artifact on the right (not a stock/image box).
+     Fonts: Fraunces (display) + Inter (body). Pair with snippet.css. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Inter:wght@400;500;600&display=swap"
+  rel="stylesheet"
+/>
+
+<section class="hero-split" aria-labelledby="hero-split-title">
+  <div class="hero-split__inner">
+    <div class="hero-split__copy">
+      <span class="hero-split__eyebrow">[CATEGORY_LABEL]</span>
+      <h1 class="hero-split__title" id="hero-split-title">
+        Careful work,<br /><em>measured</em> twice.
+      </h1>
+      <p class="hero-split__lead">
+        [VALUE_PROP_SENTENCE] — one clear promise about the work this business does,
+        written for the person who has to decide whether to call.
+      </p>
+      <div class="hero-split__actions">
+        <a class="hero-split__cta" href="#book">
+          <span>Book a visit</span>
+          <svg class="hero-split__cta-arrow" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+            <path d="M4 12 H19 M13 6 L19 12 L13 18" fill="none" stroke="currentColor"
+                  stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+        <span class="hero-split__assurance">[ASSURANCE_LINE] · [SERVICE_AREA]</span>
+      </div>
+    </div>
+
+    <!-- Bespoke artifact: layered concentric "blueprint compass" mark, hand-built. -->
+    <div class="hero-split__art" aria-hidden="true">
+      <svg class="artifact" viewBox="0 0 420 420" role="img" focusable="false">
+        <title>Decorative concentric compass mark</title>
+        <defs>
+          <linearGradient id="hsa-ring" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="var(--art-stroke)" />
+            <stop offset="1" stop-color="var(--art-accent)" />
+          </linearGradient>
+          <radialGradient id="hsa-core" cx="0.5" cy="0.42" r="0.65">
+            <stop offset="0" stop-color="var(--art-core-1)" />
+            <stop offset="1" stop-color="var(--art-core-2)" />
+          </radialGradient>
+        </defs>
+
+        <circle class="art-spin art-spin--slow" cx="210" cy="210" r="190"
+                fill="none" stroke="var(--art-faint)" stroke-width="1.5"
+                stroke-dasharray="2 12" />
+        <circle cx="210" cy="210" r="150" fill="none"
+                stroke="url(#hsa-ring)" stroke-width="2" />
+        <circle cx="210" cy="210" r="108" fill="url(#hsa-core)" />
+
+        <!-- tick marks around the inner ring -->
+        <g class="art-spin art-spin--rev" stroke="var(--art-stroke)" stroke-width="2" stroke-linecap="round">
+          <line x1="210" y1="36"  x2="210" y2="58" />
+          <line x1="384" y1="210" x2="362" y2="210" />
+          <line x1="210" y1="384" x2="210" y2="362" />
+          <line x1="36"  y1="210" x2="58"  y2="210" />
+        </g>
+
+        <!-- compass needle -->
+        <g class="art-needle">
+          <path d="M210 118 L232 210 L210 198 L188 210 Z" fill="var(--art-accent)" />
+          <path d="M210 302 L188 210 L210 222 L232 210 Z" fill="var(--art-stroke)" opacity="0.55" />
+          <circle cx="210" cy="210" r="9" fill="var(--art-core-2)" stroke="var(--art-accent)" stroke-width="2" />
+        </g>
+
+        <!-- floating measure node -->
+        <circle class="art-orbit" cx="360" cy="118" r="10" fill="var(--art-accent)" />
+      </svg>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,13 @@
+{
+  "atom_id": "nav_sticky_header_v1",
+  "category": "nav",
+  "summary": "Sticky site header: brand, primary nav links, one CTA. Reserves its own height, scroll-margin anchors, desktop layout + mobile toggle, full keyboard + focus-visible.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": ["header_sticky"],
+  "tags": ["nav", "header", "sticky", "navbar", "cta", "responsive", "skip-link", "anchors"],
+  "tone": ["modern", "confident", "clean"],
+  "files": ["snippet.html", "snippet.css", "snippet.js"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

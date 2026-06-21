@@ -1,0 +1,13 @@
+{
+  "atom_id": "gallery_filter_v1",
+  "category": "gallery",
+  "summary": "Responsive gallery grid with category filter chips as accessible aria-pressed toggle buttons, bespoke inline-SVG tile art (no raster), a polite result-count live region, and a graceful empty state.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": [],
+  "tags": ["gallery", "grid", "filter", "chips", "aria-pressed", "toggle", "empty-state", "portfolio", "svg-art", "accessibility"],
+  "tone": ["modern", "confident", "editorial"],
+  "files": ["snippet.html", "snippet.css", "snippet.js"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

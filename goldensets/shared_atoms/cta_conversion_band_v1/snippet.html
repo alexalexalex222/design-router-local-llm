@@ -1,0 +1,48 @@
+<!-- cta_conversion_band_v1 — asymmetric conversion band.
+     Strong value headline + supporting line on the left; primary + secondary
+     action on the right, on a token-driven panel with one tasteful sheen.
+     Fonts: Sora (display) + Inter (body). Pair with snippet.css. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&display=swap"
+  rel="stylesheet"
+/>
+
+<section class="cta-band" aria-labelledby="cta-band-title">
+  <div class="cta-band__panel">
+    <!-- Bespoke corner texture (decorative, no raster). -->
+    <svg class="cta-band__texture" viewBox="0 0 240 240" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="cta-arc" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="var(--cta-accent-1)" />
+          <stop offset="1" stop-color="var(--cta-accent-2)" />
+        </linearGradient>
+      </defs>
+      <circle cx="200" cy="40" r="150" fill="none" stroke="url(#cta-arc)" stroke-width="1.5" opacity="0.5" />
+      <circle cx="200" cy="40" r="100" fill="none" stroke="url(#cta-arc)" stroke-width="1.5" opacity="0.35" />
+      <circle cx="200" cy="40" r="54"  fill="none" stroke="url(#cta-arc)" stroke-width="1.5" opacity="0.25" />
+    </svg>
+
+    <div class="cta-band__copy">
+      <span class="cta-band__eyebrow">[CONTEXT_LABEL]</span>
+      <h2 class="cta-band__title" id="cta-band-title">
+        Get a real quote, not a guess, by [TIMEFRAME].
+      </h2>
+      <p class="cta-band__sub">
+        [SUPPORTING_LINE] — one concrete reason to act now, sized for a glance.
+      </p>
+    </div>
+
+    <div class="cta-band__actions">
+      <a class="cta-btn cta-btn--primary" href="#book">
+        <span>Book a visit</span>
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+          <path d="M4 12 H19 M13 6 L19 12 L13 18" fill="none" stroke="currentColor"
+                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </a>
+      <a class="cta-btn cta-btn--secondary" href="tel:[PHONE_E164]">Call [PHONE]</a>
+    </div>
+  </div>
+</section>

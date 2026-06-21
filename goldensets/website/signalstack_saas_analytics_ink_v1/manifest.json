@@ -1,0 +1,63 @@
+{
+  "pack_id": "signalstack_saas_analytics_ink_v1",
+  "role": "anchor",
+  "family": "website.saas_dashboard",
+  "source_paths": [
+    "source_snapshot/index.html",
+    "source_snapshot/styles.css"
+  ],
+  "origin_example_ids": [
+    "signalstack-analytics"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "website"
+  ],
+  "tones": [
+    "professional",
+    "neutral",
+    "restrained",
+    "precise",
+    "technical",
+    "premium",
+    "data-dense"
+  ],
+  "surfaces": [
+    "homepage",
+    "hero",
+    "landing",
+    "section",
+    "dashboard"
+  ],
+  "motif_tags": [
+    "command_surface",
+    "dashboard_panel",
+    "glass_panel",
+    "tabs_panel",
+    "hero_shell",
+    "trust_rail",
+    "proof_cards",
+    "headline_hierarchy",
+    "split_hero"
+  ],
+  "supports_tasks": [
+    "saas_dashboard_landing",
+    "b2b_analytics_homepage",
+    "operations_dashboard_marketing_page",
+    "admin_console_landing",
+    "developer_tool_landing_page",
+    "observability_product_page"
+  ],
+  "anti_patterns": [
+    "consumer beauty editorial framing",
+    "local-service phone-pill hero",
+    "fight-gym dark theatrics",
+    "fake customer logo wall",
+    "invented KPI counters or uptime stats",
+    "raster product screenshots"
+  ],
+  "screenshot_paths": [],
+  "token_budget_hint": 5400,
+  "confidence_score": 5
+}

@@ -1,0 +1,13 @@
+{
+  "atom_id": "process_timeline_v1",
+  "category": "process",
+  "summary": "Numbered start-to-finish process timeline; horizontal nodes joined by a connective line on desktop, vertical left-rail timeline on mobile.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": ["process_steps"],
+  "tags": ["process", "timeline", "steps", "numbered", "how-it-works", "connective-line", "inline-svg"],
+  "tone": ["clear", "premium", "trustworthy"],
+  "files": ["snippet.html", "snippet.css"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

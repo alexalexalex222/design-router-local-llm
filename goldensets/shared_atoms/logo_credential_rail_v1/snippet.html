@@ -1,0 +1,90 @@
+<!--
+  logo_credential_rail_v1
+  Pair with snippet.css and snippet.js. Fonts: Outfit (display) + Inter (body).
+
+  A trust / credential / award rail. Credentials are inline-SVG emblems with
+  placeholder labels [AWARD_NAME] / [CERTIFICATION] — never fabricate real award
+  names. The rail auto-scrolls (marquee) and:
+    - PAUSES on pointer hover (CSS :hover),
+    - PAUSES on keyboard focus within the rail (CSS :focus-within),
+    - is fully DISABLED under prefers-reduced-motion (CSS),
+    - has an explicit, accessible Pause/Play button (snippet.js enhancement).
+
+  The track is duplicated (the second copy is aria-hidden) so the loop is
+  seamless. With JS off, the CSS marquee + hover/focus pause still work.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<section class="rail" aria-labelledby="rail-title">
+  <div class="rail__inner">
+    <div class="rail__head">
+      <h2 class="rail__title" id="rail-title">Recognized &amp; certified</h2>
+      <button type="button" class="rail__toggle" data-marquee-toggle aria-pressed="false">
+        <svg class="rail__toggle-icon rail__toggle-icon--pause" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg>
+        <svg class="rail__toggle-icon rail__toggle-icon--play" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M7 5 L19 12 L7 19 Z"/></svg>
+        <span class="rail__toggle-label" data-toggle-label>Pause</span>
+      </button>
+    </div>
+
+    <!-- The viewport masks the moving track; edges fade via CSS mask. -->
+    <div class="rail__viewport" data-marquee>
+      <ul class="rail__track" role="list">
+        <!-- Set A (real, announced) -->
+        <li class="cred">
+          <span class="cred__emblem" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="30" height="30"><path d="M24 4 l5 5 7 -1 1 7 5 5 -3 6 3 6 -5 5 -1 7 -7 -1 -5 5 -5 -5 -7 1 -1 -7 -5 -5 3 -6 -3 -6 5 -5 1 -7 7 1 Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M18 24 l4 4 8 -9" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="cred__text"><strong>[AWARD_NAME]</strong><span>[AWARD_YEAR]</span></span>
+        </li>
+        <li class="cred">
+          <span class="cred__emblem" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="30" height="30"><circle cx="24" cy="19" r="11" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19 27 L15 43 l9 -5 9 5 -4 -16" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M20 19 l3 3 6 -7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          </span>
+          <span class="cred__text"><strong>[CERTIFICATION]</strong><span>[ISSUING_BODY]</span></span>
+        </li>
+        <li class="cred">
+          <span class="cred__emblem" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="30" height="30"><path d="M8 38 V20 l16 -10 16 10 v18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 38 H40 M18 38 V26 h12 v12" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          </span>
+          <span class="cred__text"><strong>[ACCREDITATION]</strong><span>[ACCREDITED_SINCE]</span></span>
+        </li>
+        <li class="cred">
+          <span class="cred__emblem" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="30" height="30"><path d="M24 5 l5 11 12 1 -9 8 3 12 -11 -6 -11 6 3 -12 -9 -8 12 -1 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="cred__text"><strong>[RATING_TITLE]</strong><span>[RATING_SOURCE]</span></span>
+        </li>
+        <li class="cred">
+          <span class="cred__emblem" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="30" height="30"><rect x="9" y="11" width="30" height="22" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 18 H39 M16 40 h16 M20 33 v7 M28 33 v7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+          <span class="cred__text"><strong>[MEMBERSHIP]</strong><span>[MEMBER_ID]</span></span>
+        </li>
+
+        <!-- Set B: visual duplicate for a seamless loop, hidden from AT. -->
+        <li class="cred" aria-hidden="true">
+          <span class="cred__emblem"><svg viewBox="0 0 48 48" width="30" height="30"><path d="M24 4 l5 5 7 -1 1 7 5 5 -3 6 3 6 -5 5 -1 7 -7 -1 -5 5 -5 -5 -7 1 -1 -7 -5 -5 3 -6 -3 -6 5 -5 1 -7 7 1 Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M18 24 l4 4 8 -9" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="cred__text"><strong>[AWARD_NAME]</strong><span>[AWARD_YEAR]</span></span>
+        </li>
+        <li class="cred" aria-hidden="true">
+          <span class="cred__emblem"><svg viewBox="0 0 48 48" width="30" height="30"><circle cx="24" cy="19" r="11" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19 27 L15 43 l9 -5 9 5 -4 -16" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M20 19 l3 3 6 -7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></span>
+          <span class="cred__text"><strong>[CERTIFICATION]</strong><span>[ISSUING_BODY]</span></span>
+        </li>
+        <li class="cred" aria-hidden="true">
+          <span class="cred__emblem"><svg viewBox="0 0 48 48" width="30" height="30"><path d="M8 38 V20 l16 -10 16 10 v18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 38 H40 M18 38 V26 h12 v12" fill="none" stroke="currentColor" stroke-width="2"/></svg></span>
+          <span class="cred__text"><strong>[ACCREDITATION]</strong><span>[ACCREDITED_SINCE]</span></span>
+        </li>
+        <li class="cred" aria-hidden="true">
+          <span class="cred__emblem"><svg viewBox="0 0 48 48" width="30" height="30"><path d="M24 5 l5 11 12 1 -9 8 3 12 -11 -6 -11 6 3 -12 -9 -8 12 -1 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span>
+          <span class="cred__text"><strong>[RATING_TITLE]</strong><span>[RATING_SOURCE]</span></span>
+        </li>
+        <li class="cred" aria-hidden="true">
+          <span class="cred__emblem"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="9" y="11" width="30" height="22" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 18 H39 M16 40 h16 M20 33 v7 M28 33 v7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <span class="cred__text"><strong>[MEMBERSHIP]</strong><span>[MEMBER_ID]</span></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,13 @@
+{
+  "atom_id": "hero_split_asymmetric_v1",
+  "category": "hero",
+  "summary": "Asymmetric editorial hero: oversized clamp display headline + subhead + one CTA on the left, bespoke inline-SVG compass artifact on the right.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": ["phone_priority_layout"],
+  "tags": ["hero", "asymmetric", "editorial", "above-the-fold", "cta", "inline-svg", "serif"],
+  "tone": ["editorial", "premium", "confident", "warm"],
+  "files": ["snippet.html", "snippet.css"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

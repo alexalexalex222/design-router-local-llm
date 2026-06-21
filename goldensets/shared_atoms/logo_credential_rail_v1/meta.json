@@ -1,0 +1,13 @@
+{
+  "atom_id": "logo_credential_rail_v1",
+  "category": "proof",
+  "summary": "Trust/credential/award rail with inline-SVG emblems and [AWARD_NAME]/[CERTIFICATION] placeholders; tasteful marquee that pauses on hover and keyboard focus and is disabled under reduced-motion.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": ["trust_rail"],
+  "tags": ["proof", "trust", "credentials", "awards", "certifications", "marquee", "auto-scroll", "data-integrity", "inline-svg"],
+  "tone": ["premium", "trustworthy", "modern"],
+  "files": ["snippet.html", "snippet.css", "snippet.js"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

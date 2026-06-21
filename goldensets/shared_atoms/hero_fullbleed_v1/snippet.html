@@ -1,0 +1,64 @@
+<!-- hero_fullbleed_v1 — full-bleed hero with layered CSS/SVG background.
+     Distinct font + palette from hero_split_asymmetric_v1 (cool/dark, geometric).
+     Background is grid + gradient + SVG texture — NO raster. Scrim for contrast.
+     Fonts: Clash-like via Archivo (display) + Inter (body). Pair with snippet.css. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600&display=swap"
+  rel="stylesheet"
+/>
+
+<section class="hero-fb" aria-labelledby="hero-fb-title">
+  <!-- Layered background: gradient base + SVG grid/texture. Decorative. -->
+  <div class="hero-fb__bg" aria-hidden="true">
+    <svg class="hero-fb__grid" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" focusable="false">
+      <defs>
+        <pattern id="hfb-grid" width="48" height="48" patternUnits="userSpaceOnUse">
+          <path d="M48 0 H0 V48" fill="none" stroke="var(--grid-line)" stroke-width="1" />
+        </pattern>
+        <radialGradient id="hfb-glow" cx="0.7" cy="0.2" r="0.8">
+          <stop offset="0" stop-color="var(--glow-1)" stop-opacity="0.55" />
+          <stop offset="1" stop-color="var(--glow-1)" stop-opacity="0" />
+        </radialGradient>
+        <linearGradient id="hfb-arc" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="var(--accent-1)" />
+          <stop offset="1" stop-color="var(--accent-2)" />
+        </linearGradient>
+      </defs>
+      <rect width="1200" height="700" fill="url(#hfb-grid)" />
+      <rect width="1200" height="700" fill="url(#hfb-glow)" />
+      <!-- sweeping arcs as bespoke texture -->
+      <circle cx="980" cy="120" r="320" fill="none" stroke="url(#hfb-arc)" stroke-width="1.5" opacity="0.5" />
+      <circle cx="980" cy="120" r="220" fill="none" stroke="url(#hfb-arc)" stroke-width="1.5" opacity="0.35" />
+      <circle class="hero-fb__node" cx="760" cy="300" r="6" fill="var(--accent-1)" />
+    </svg>
+    <div class="hero-fb__scrim"></div>
+  </div>
+
+  <div class="hero-fb__inner">
+    <span class="hero-fb__eyebrow">[CATEGORY_LABEL]</span>
+    <h1 class="hero-fb__title" id="hero-fb-title">
+      Built to hold up<br />when the work gets real.
+    </h1>
+    <p class="hero-fb__lead">
+      [VALUE_PROP_SENTENCE] — a single, concrete promise about outcomes, kept short
+      enough to read at a glance on a phone.
+    </p>
+    <div class="hero-fb__actions">
+      <a class="btn btn--primary" href="#book">Book a visit</a>
+      <a class="btn btn--ghost" href="#work">
+        <span>See recent work</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+          <path d="M5 12 H17 M12 7 L17 12 L12 17" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </a>
+    </div>
+    <dl class="hero-fb__meta">
+      <div><dt>Serving</dt><dd>[SERVICE_AREA]</dd></div>
+      <div><dt>Since</dt><dd>[YEARS_IN_BUSINESS]</dd></div>
+      <div><dt>Response</dt><dd>[RESPONSE_TIME]</dd></div>
+    </dl>
+  </div>
+</section>

@@ -1,0 +1,99 @@
+<!-- interaction_microkit_v1 — a curated MICRO-INTERACTION kit: button
+     press/hover/focus, link underline-draw, input focus ring, and a
+     scroll-reveal-with-stagger. Complements motion_system_v1 /
+     interaction_system_v1 (those cover scroll-aware header + generic card lift +
+     magnetic buttons); this focuses on small feedback + reveal choreography.
+
+     ALL motion is enhancement: every element is fully visible/usable without
+     JS, and everything sits behind prefers-reduced-motion. Fonts (Manrope +
+     Inter) are the REQUIRED load. Pair with snippet.css and snippet.js. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500&display=swap"
+  rel="stylesheet"
+/>
+
+<section class="kit" aria-labelledby="kit-title">
+  <div class="kit__shell">
+    <header class="kit__head reveal" data-reveal>
+      <span class="kit__kicker">Micro-interactions</span>
+      <h2 id="kit-title" class="kit__title">Small motions, done with intent</h2>
+      <p class="kit__lead">Each demo below is the kind of 150–250ms feedback that makes an interface feel considered. Reveals are an enhancement only.</p>
+    </header>
+
+    <!-- Reveal group: children stagger in. data-reveal-group lets the JS apply
+         an incremental delay per child. -->
+    <div class="kit__grid" data-reveal-group>
+
+      <!-- 1. BUTTON: press / hover / focus -->
+      <article class="demo reveal" data-reveal>
+        <h3 class="demo__title">Button feedback</h3>
+        <p class="demo__note">Hover lifts, press settles, focus shows a ring.</p>
+        <div class="demo__stage">
+          <button class="mk-btn" type="button">
+            <span class="mk-btn__label">Get started</span>
+          </button>
+          <button class="mk-btn mk-btn--ghost" type="button">Secondary</button>
+        </div>
+      </article>
+
+      <!-- 2. LINK: underline-draw -->
+      <article class="demo reveal" data-reveal>
+        <h3 class="demo__title">Underline draw</h3>
+        <p class="demo__note">Underline grows from the left on hover and focus.</p>
+        <div class="demo__stage demo__stage--text">
+          <p>Read our <a class="mk-link" href="#approach">approach to scoping</a> or
+             jump to <a class="mk-link" href="#pricing">how pricing works</a>.</p>
+        </div>
+      </article>
+
+      <!-- 3. INPUT: focus ring + label lift -->
+      <article class="demo reveal" data-reveal>
+        <h3 class="demo__title">Input focus</h3>
+        <p class="demo__note">Border, ring, and a calm background shift on focus.</p>
+        <div class="demo__stage">
+          <div class="mk-field">
+            <label class="mk-field__label" for="mk-email">Work email</label>
+            <input class="mk-field__input" id="mk-email" type="email"
+                   inputmode="email" placeholder="you@company.com" />
+          </div>
+        </div>
+      </article>
+
+      <!-- 4. ICON BUTTON: subtle scale + ring -->
+      <article class="demo reveal" data-reveal>
+        <h3 class="demo__title">Icon press</h3>
+        <p class="demo__note">A labelled icon button with a tactile press.</p>
+        <div class="demo__stage">
+          <button class="mk-icon-btn" type="button">
+            <span class="visually-hidden">Save to list</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M12 4v16M4 12h16" fill="none" stroke="currentColor"
+                    stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="mk-icon-btn mk-icon-btn--solid" type="button">
+            <span class="visually-hidden">Confirm</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="m5 12.5 4.5 4.5L19 7" fill="none" stroke="currentColor"
+                    stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </article>
+    </div>
+
+    <!-- Stagger showcase: a row that reveals one chip at a time. -->
+    <div class="kit__chiprow reveal" data-reveal>
+      <h3 class="demo__title demo__title--center">Staggered reveal</h3>
+      <ul class="kit__chips" data-reveal-group data-reveal-stagger="70" role="list">
+        <li class="kit-chip reveal" data-reveal>Discovery</li>
+        <li class="kit-chip reveal" data-reveal>Design</li>
+        <li class="kit-chip reveal" data-reveal>Build</li>
+        <li class="kit-chip reveal" data-reveal>Launch</li>
+        <li class="kit-chip reveal" data-reveal>Support</li>
+      </ul>
+    </div>
+  </div>
+</section>

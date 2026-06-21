@@ -1,0 +1,123 @@
+<!-- form_intake_states_v1 — contact/intake form demonstrating the FULL state
+     vocabulary: idle, focus, filled, inline validation error (aria-describedby
+     + aria-invalid), success panel, and submit loading state.
+     Fonts (Sora display + Inter body) are the REQUIRED load — copy into <head>.
+     Pair with snippet.css and snippet.js. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
+  rel="stylesheet"
+/>
+
+<section class="intake" aria-labelledby="intake-title">
+  <div class="intake__shell">
+    <header class="intake__head">
+      <span class="intake__kicker">Start a conversation</span>
+      <h2 id="intake-title" class="intake__title">Tell us about the project</h2>
+      <p class="intake__lead">
+        Share a few details and the team replies within [RESPONSE_WINDOW].
+        Fields marked <span class="req-key" aria-hidden="true">*</span> are required.
+      </p>
+    </header>
+
+    <!-- novalidate: we own validation so we can demo the full error state.
+         JS is enhancement only; without it the form posts normally. -->
+    <form class="intake__form" id="intake-form" novalidate
+          aria-describedby="form-status">
+      <!-- Polite live region announces async status changes -->
+      <p id="form-status" class="form-status" role="status" aria-live="polite"></p>
+
+      <div class="field">
+        <label class="field__label" for="f-name">
+          Full name <span class="field__req" aria-hidden="true">*</span>
+        </label>
+        <input
+          class="field__input" id="f-name" name="name" type="text"
+          autocomplete="name" required
+          aria-required="true"
+          placeholder="e.g. Jordan Avery"
+        />
+        <p class="field__help" id="f-name-help">First and last is plenty.</p>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-email">
+          Email <span class="field__req" aria-hidden="true">*</span>
+        </label>
+        <input
+          class="field__input" id="f-email" name="email" type="email"
+          autocomplete="email" required inputmode="email"
+          aria-required="true"
+          placeholder="you@company.com"
+        />
+        <p class="field__help" id="f-email-help">We only use this to reply.</p>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-budget">
+          Estimated budget <span class="field__optional">(optional)</span>
+        </label>
+        <div class="field__select-wrap">
+          <select class="field__input field__input--select" id="f-budget" name="budget"
+                  aria-describedby="f-budget-help">
+            <option value="">Select a range</option>
+            <option value="s">Under [LOW_RANGE]</option>
+            <option value="m">[LOW_RANGE] – [MID_RANGE]</option>
+            <option value="l">[MID_RANGE]+</option>
+            <option value="x">Not sure yet</option>
+          </select>
+          <svg class="field__chevron" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M3.5 6 8 10.5 12.5 6" fill="none" stroke="currentColor"
+                  stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <p class="field__help" id="f-budget-help">Helps us scope the first reply.</p>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-message">
+          Project details <span class="field__req" aria-hidden="true">*</span>
+        </label>
+        <textarea
+          class="field__input field__input--area" id="f-message" name="message"
+          rows="4" required aria-required="true"
+          placeholder="What are you trying to build, and by when?"
+        ></textarea>
+        <p class="field__help" id="f-message-help">A sentence or two is fine.</p>
+      </div>
+
+      <div class="field field--check">
+        <input class="field__check" id="f-consent" name="consent" type="checkbox" />
+        <label class="field__check-label" for="f-consent">
+          Add me to occasional product updates. No spam, unsubscribe anytime.
+        </label>
+      </div>
+
+      <div class="intake__actions">
+        <button class="btn btn--primary" type="submit" id="intake-submit">
+          <span class="btn__label">Send request</span>
+          <span class="btn__spinner" aria-hidden="true"></span>
+        </button>
+        <p class="intake__reassure">Typically [RESPONSE_WINDOW] to first reply.</p>
+      </div>
+    </form>
+
+    <!-- SUCCESS PANEL: revealed by JS after a simulated submit. Pre-rendered
+         in the DOM (hidden) so structure is inspectable. -->
+    <div class="intake__success" id="intake-success" hidden role="status" aria-live="polite">
+      <span class="success__badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path d="m5 12.5 4.5 4.5L19 7" fill="none" stroke="currentColor"
+                stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+      <h3 class="success__title">Request received</h3>
+      <p class="success__body">
+        Thanks, <span class="success__name" id="success-name">[NAME]</span> —
+        the team will reach out within [RESPONSE_WINDOW].
+      </p>
+      <button class="btn btn--ghost" type="button" id="intake-reset">Send another</button>
+    </div>
+  </div>
+</section>

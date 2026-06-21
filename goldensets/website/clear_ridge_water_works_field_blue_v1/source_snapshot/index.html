@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clear Ridge Water Works | Well Pump, Filtration &amp; Rural Water Service</title>
+  <meta name="description" content="Field diagnostics and service for well pumps, water filtration, and rural water systems. Tell us what your water is doing and request a quote.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="topbar" id="top">
+    <nav class="nav" aria-label="Primary">
+      <a class="brand" href="#top" aria-label="Clear Ridge Water Works, home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" width="40" height="40" focusable="false">
+            <title>Clear Ridge Water Works mark</title>
+            <circle cx="20" cy="20" r="18.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M9 24c3.4-3.4 6.6-3.4 10 0s6.6 3.4 10 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M9 18c3.4-3.4 6.6-3.4 10 0s6.6 3.4 10 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".55"/>
+            <path d="M20 6l3.4 6.4h-6.8z" fill="currentColor"/>
+          </svg>
+        </span>
+        <span class="brand-word">Clear Ridge<span class="brand-sub">Water Works</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="#diagnose">Diagnose</a>
+        <a href="#system">Your System</a>
+        <a href="#service">Service</a>
+        <a href="#plans">Plans</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <a class="nav-cta" href="#quote">Request a Quote</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- 1 + 2. HERO with diagnostic panel + issue selector (diagnostic_issue_selector_v1) -->
+    <section class="hero" id="diagnose" aria-labelledby="hero-title">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Well pump &middot; Filtration &middot; Rural water systems</p>
+          <h1 id="hero-title">What&rsquo;s happening with your water?</h1>
+          <p class="lede">Pick what you&rsquo;re seeing at the tap. We&rsquo;ll show the likely systems involved and the field checks that come first &mdash; before anyone schedules a truck.</p>
+          <p class="hero-note">Field diagnosis is a read, not a verdict. The on-site test confirms the cause.</p>
+        </div>
+
+        <!-- Atom: diagnostic_issue_selector_v1 -->
+        <div class="diagnostic" aria-labelledby="diagnostic-title">
+          <div class="diagnostic-head">
+            <h2 id="diagnostic-title">Water diagnostic</h2>
+            <p class="diagnostic-sub">Select a symptom to read the likely cause.</p>
+          </div>
+          <div class="issue-tabs" role="tablist" aria-label="Water symptoms" aria-orientation="vertical">
+            <button class="issue-tab is-active" role="tab" id="tab-no-water" aria-selected="true" aria-controls="panel-no-water" type="button">
+              <span class="issue-dot" aria-hidden="true"></span>No water at all
+            </button>
+            <button class="issue-tab" role="tab" id="tab-low-pressure" aria-selected="false" aria-controls="panel-low-pressure" tabindex="-1" type="button">
+              <span class="issue-dot" aria-hidden="true"></span>Low water pressure
+            </button>
+            <button class="issue-tab" role="tab" id="tab-cloudy" aria-selected="false" aria-controls="panel-cloudy" tabindex="-1" type="button">
+              <span class="issue-dot" aria-hidden="true"></span>Cloudy or gritty water
+            </button>
+            <button class="issue-tab" role="tab" id="tab-cycling" aria-selected="false" aria-controls="panel-cycling" tabindex="-1" type="button">
+              <span class="issue-dot" aria-hidden="true"></span>Pump cycling on/off
+            </button>
+            <button class="issue-tab" role="tab" id="tab-filtration" aria-selected="false" aria-controls="panel-filtration" tabindex="-1" type="button">
+              <span class="issue-dot" aria-hidden="true"></span>New filtration setup
+            </button>
+          </div>
+
+          <div class="issue-readout">
+            <div class="issue-panel is-active" role="tabpanel" id="panel-no-water" aria-labelledby="tab-no-water" tabindex="0">
+              <p class="readout-tag">Likely systems</p>
+              <p class="readout-systems">Pressure switch &middot; Pump &middot; Power supply &middot; Pressure tank</p>
+              <p class="readout-body">No flow usually points to lost power, a tripped pressure switch, or a pump that isn&rsquo;t drawing. First field checks: breaker and switch state, voltage at the controls, and tank pressure.</p>
+              <p class="readout-urgency"><span class="urgency-pill urgency-now">Often urgent</span> A full loss of water usually goes on the urgent track &mdash; ask about current availability.</p>
+            </div>
+            <div class="issue-panel" role="tabpanel" id="panel-low-pressure" aria-labelledby="tab-low-pressure" tabindex="0" hidden>
+              <p class="readout-tag">Likely systems</p>
+              <p class="readout-systems">Pressure tank &middot; Clogged filter &middot; Pressure switch &middot; Pump wear</p>
+              <p class="readout-body">Weak pressure across the house often traces to a waterlogged pressure tank, a loaded sediment filter, or a switch set too low. First field checks: tank air charge, filter condition, and switch cut-in pressure.</p>
+              <p class="readout-urgency"><span class="urgency-pill urgency-plan">Usually planned</span> Pressure issues are typically scheduled unless water has stopped.</p>
+            </div>
+            <div class="issue-panel" role="tabpanel" id="panel-cloudy" aria-labelledby="tab-cloudy" tabindex="0" hidden>
+              <p class="readout-tag">Likely systems</p>
+              <p class="readout-systems">Sediment filter &middot; Well draw-down &middot; Aeration &middot; Treatment media</p>
+              <p class="readout-body">Cloudy, milky, or gritty water can be trapped air, fine sediment, or media that needs service. First field checks: a clear-glass settle test, filter housing inspection, and a look at the draw-down behavior.</p>
+              <p class="readout-urgency"><span class="urgency-pill urgency-plan">Usually planned</span> We&rsquo;ll talk through whether to pause use until it&rsquo;s checked.</p>
+            </div>
+            <div class="issue-panel" role="tabpanel" id="panel-cycling" aria-labelledby="tab-cycling" tabindex="0" hidden>
+              <p class="readout-tag">Likely systems</p>
+              <p class="readout-systems">Pressure tank bladder &middot; Pressure switch &middot; Check valve &middot; Leak</p>
+              <p class="readout-body">A pump that clicks on and off rapidly (short-cycling) usually means a failed tank bladder, a faulty switch, or a leak holding pressure down. First field checks: tank pre-charge, drawdown timing, and switch contacts.</p>
+              <p class="readout-urgency"><span class="urgency-pill urgency-now">Address soon</span> Short-cycling wears a pump quickly &mdash; worth a prompt look.</p>
+            </div>
+            <div class="issue-panel" role="tabpanel" id="panel-filtration" aria-labelledby="tab-filtration" tabindex="0" hidden>
+              <p class="readout-tag">What we&rsquo;d look at</p>
+              <p class="readout-systems">Water profile &middot; Flow rate &middot; Space &middot; Treatment goals</p>
+              <p class="readout-body">A new filtration setup starts with what&rsquo;s actually in the water and how much you use. First steps: review any water test you have, measure flow and pressure, and map the treatment to your goals.</p>
+              <p class="readout-urgency"><span class="urgency-pill urgency-plan">Planned project</span> Filtration is designed around your system, not a one-size kit.</p>
+            </div>
+          </div>
+
+          <a class="button button-primary diagnostic-cta" href="#quote">
+            Use this symptom in a quote
+            <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="hero-flow" aria-hidden="true">
+        <svg viewBox="0 0 1440 80" preserveAspectRatio="none" width="100%" height="80" focusable="false">
+          <path class="flow-line" d="M0 50 C180 18 320 18 500 50 S820 82 1000 50 1320 18 1440 50" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path class="flow-line flow-line-2" d="M0 60 C200 34 360 34 540 60 S860 86 1040 60 1340 34 1440 60" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+      </div>
+    </section>
+
+    <!-- 3. SYSTEM DIAGRAM (equipment_diagram_svg_v1) -->
+    <section class="system" id="system" aria-labelledby="system-title">
+      <div class="section-head">
+        <p class="section-index">01</p>
+        <div>
+          <h2 id="system-title">A rural water system, end to end</h2>
+          <p class="section-lede">From the aquifer to your tap, water moves through a handful of parts. Knowing where the trouble sits is half the fix.</p>
+        </div>
+      </div>
+
+      <div class="system-layout">
+        <!-- Atom: equipment_diagram_svg_v1 -->
+        <figure class="system-diagram">
+          <svg viewBox="0 0 720 460" role="img" aria-labelledby="sys-title sys-desc">
+            <title id="sys-title">Well and water-system diagram</title>
+            <desc id="sys-desc">A cutaway showing the ground line, well casing, submersible pump, pressure tank, filtration stack, and the line to the house, with labelled parts.</desc>
+            <defs>
+              <linearGradient id="aquifer" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="var(--cyan-300)"/>
+                <stop offset="1" stop-color="var(--field-700)"/>
+              </linearGradient>
+            </defs>
+            <!-- sky / above ground -->
+            <rect x="0" y="0" width="720" height="150" fill="var(--limestone-100)"/>
+            <!-- ground -->
+            <rect x="0" y="150" width="720" height="310" fill="var(--clay-050)"/>
+            <line x1="0" y1="150" x2="720" y2="150" stroke="var(--clay-400)" stroke-width="2"/>
+            <text class="diagram-ground" x="14" y="168">Ground line</text>
+            <!-- aquifer -->
+            <path d="M0 360 C140 340 230 380 380 360 S620 340 720 366 L720 460 L0 460 Z" fill="url(#aquifer)" opacity=".5"/>
+            <g class="diagram-wave" stroke="var(--field-600)" stroke-width="1.4" fill="none" opacity=".7">
+              <path d="M40 392 c30-14 60-14 90 0s60 14 90 0"/>
+              <path d="M260 400 c30-14 60-14 90 0s60 14 90 0"/>
+              <path d="M480 392 c30-14 60-14 90 0s60 14 90 0"/>
+            </g>
+            <text class="diagram-aquifer" x="14" y="436">Aquifer</text>
+
+            <!-- well casing -->
+            <rect x="150" y="150" width="46" height="270" fill="var(--graphite-050)" stroke="var(--graphite-600)" stroke-width="2"/>
+            <rect x="150" y="120" width="46" height="34" fill="var(--graphite-600)"/>
+            <!-- drop pipe -->
+            <line x1="173" y1="150" x2="173" y2="372" stroke="var(--graphite-500)" stroke-width="3"/>
+            <!-- submersible pump -->
+            <rect x="160" y="372" width="26" height="44" rx="4" fill="var(--field-600)" stroke="var(--field-800)" stroke-width="2"/>
+            <circle cx="173" cy="394" r="6" fill="var(--cyan-300)"/>
+
+            <!-- line to surface kit -->
+            <path d="M173 150 H360 V250" fill="none" stroke="var(--field-600)" stroke-width="3"/>
+
+            <!-- pressure tank -->
+            <rect x="330" y="250" width="60" height="120" rx="14" fill="var(--limestone-100)" stroke="var(--graphite-600)" stroke-width="2"/>
+            <line x1="330" y1="300" x2="390" y2="300" stroke="var(--graphite-400)" stroke-width="1.5" stroke-dasharray="4 4"/>
+            <circle cx="360" cy="244" r="7" fill="none" stroke="var(--graphite-600)" stroke-width="2"/>
+
+            <!-- pipe to filtration -->
+            <path d="M390 300 H470" fill="none" stroke="var(--field-600)" stroke-width="3"/>
+
+            <!-- filtration stack -->
+            <rect x="470" y="240" width="40" height="130" rx="8" fill="var(--cyan-100)" stroke="var(--field-700)" stroke-width="2"/>
+            <rect x="524" y="240" width="40" height="130" rx="8" fill="var(--cyan-100)" stroke="var(--field-700)" stroke-width="2"/>
+            <g stroke="var(--field-700)" stroke-width="1.2" opacity=".6">
+              <line x1="478" y1="262" x2="502" y2="262"/><line x1="478" y1="284" x2="502" y2="284"/><line x1="478" y1="306" x2="502" y2="306"/><line x1="478" y1="328" x2="502" y2="328"/>
+              <line x1="532" y1="262" x2="556" y2="262"/><line x1="532" y1="284" x2="556" y2="284"/><line x1="532" y1="306" x2="556" y2="306"/><line x1="532" y1="328" x2="556" y2="328"/>
+            </g>
+            <path d="M510 300 H524" fill="none" stroke="var(--field-600)" stroke-width="3"/>
+
+            <!-- line to house -->
+            <path d="M564 300 H640 V150" fill="none" stroke="var(--field-600)" stroke-width="3"/>
+            <!-- house -->
+            <path d="M612 110 L640 86 L668 110 V150 H612 Z" fill="var(--limestone-100)" stroke="var(--graphite-600)" stroke-width="2"/>
+            <rect x="630" y="124" width="20" height="26" fill="var(--field-600)"/>
+
+            <!-- callouts -->
+            <g class="diagram-label">
+              <text x="173" y="112" text-anchor="middle">Wellhead</text>
+              <text x="173" y="440" text-anchor="middle">Pump</text>
+              <text x="360" y="392" text-anchor="middle">Pressure tank</text>
+              <text x="517" y="392" text-anchor="middle">Filtration</text>
+              <text x="640" y="76" text-anchor="middle">Home</text>
+            </g>
+          </svg>
+          <figcaption>A typical layout. Yours may differ &mdash; we map the real one on site.</figcaption>
+        </figure>
+
+        <ol class="system-legend">
+          <li>
+            <span class="legend-num" aria-hidden="true">1</span>
+            <div><strong>Wellhead &amp; casing</strong><p>The capped top of the well. Where power, wiring, and the sanitary seal live.</p></div>
+          </li>
+          <li>
+            <span class="legend-num" aria-hidden="true">2</span>
+            <div><strong>Submersible pump</strong><p>Sits down in the water column and pushes flow up the drop pipe toward the house.</p></div>
+          </li>
+          <li>
+            <span class="legend-num" aria-hidden="true">3</span>
+            <div><strong>Pressure tank &amp; switch</strong><p>Holds pressurized water so the pump isn&rsquo;t running every time you open a tap.</p></div>
+          </li>
+          <li>
+            <span class="legend-num" aria-hidden="true">4</span>
+            <div><strong>Filtration / treatment</strong><p>Sediment, media, or specialty stages matched to what&rsquo;s actually in your water.</p></div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 4. EMERGENCY vs PLANNED (emergency_vs_planned_panel_v1) -->
+    <section class="split" id="service" aria-labelledby="split-title">
+      <div class="section-head">
+        <p class="section-index">02</p>
+        <div>
+          <h2 id="split-title">Two ways we show up</h2>
+          <p class="section-lede">Some water problems can&rsquo;t wait. Others are better planned, tested, and quoted properly. Here&rsquo;s how each track works.</p>
+        </div>
+      </div>
+
+      <!-- Atom: emergency_vs_planned_panel_v1 -->
+      <div class="split-grid">
+        <article class="split-card split-emergency">
+          <div class="split-card-top">
+            <span class="split-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" width="32" height="32" focusable="false"><path d="M16 4l13 24H3z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><line x1="16" y1="14" x2="16" y2="21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="16" cy="25" r="1.4" fill="currentColor"/></svg>
+            </span>
+            <p class="split-kicker">Urgent track</p>
+            <h3>Emergency service</h3>
+          </div>
+          <p class="split-body">No water, a visible leak, or a pump that won&rsquo;t run &mdash; situations where waiting makes it worse.</p>
+          <ul class="split-list">
+            <li>Total loss of water to the home</li>
+            <li>Pump not running or repeatedly tripping</li>
+            <li>Active leak at the tank or supply line</li>
+            <li>Pressure switch failure</li>
+          </ul>
+          <p class="split-foot">Call and describe what&rsquo;s happening. Ask about current availability &mdash; we&rsquo;ll be straight about timing.</p>
+        </article>
+
+        <article class="split-card split-planned">
+          <div class="split-card-top">
+            <span class="split-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" width="32" height="32" focusable="false"><rect x="5" y="7" width="22" height="20" rx="2" fill="none" stroke="currentColor" stroke-width="2.2"/><line x1="5" y1="13" x2="27" y2="13" stroke="currentColor" stroke-width="2.2"/><line x1="11" y1="4" x2="11" y2="9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><line x1="21" y1="4" x2="21" y2="9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M11 19l3 3 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <p class="split-kicker">Scheduled track</p>
+            <h3>Planned service</h3>
+          </div>
+          <p class="split-body">Pressure that&rsquo;s slipping, water quality questions, new filtration, or routine maintenance you want done right.</p>
+          <ul class="split-list">
+            <li>Pressure or flow that&rsquo;s gradually dropping</li>
+            <li>Cloudy, gritty, or off-tasting water</li>
+            <li>New or upgraded filtration design</li>
+            <li>Seasonal checkups and tank service</li>
+          </ul>
+          <p class="split-foot">Start with a quote request below. We&rsquo;ll confirm scope and timing before any work is scheduled.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- 5. QUOTE REQUEST FLOW (field_service_quote_flow_v1) -->
+    <section class="quote" id="quote" aria-labelledby="quote-title">
+      <div class="quote-inner">
+        <div class="quote-copy">
+          <p class="section-index light">03</p>
+          <h2 id="quote-title">Request a service quote</h2>
+          <p class="section-lede light">Tell us what your water is doing and how to reach you. No obligation &mdash; we&rsquo;ll follow up to confirm details and availability.</p>
+          <ul class="quote-points">
+            <li>
+              <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false"><path d="M4 10l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              We read the symptom first, then confirm on site.
+            </li>
+            <li>
+              <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false"><path d="M4 10l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              You hear the likely scope before scheduling.
+            </li>
+            <li>
+              <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false"><path d="M4 10l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Your notes carry straight into the field visit.
+            </li>
+          </ul>
+        </div>
+
+        <!-- Atom: field_service_quote_flow_v1 -->
+        <form class="quote-form" id="quote-form" aria-labelledby="quote-form-title" novalidate>
+          <h3 id="quote-form-title" class="visually-hidden">Quote request form</h3>
+
+          <div class="form-status" id="form-status" role="status" aria-live="polite"></div>
+
+          <div class="field">
+            <label for="q-name">Name <span class="req" aria-hidden="true">*</span></label>
+            <input id="q-name" name="name" type="text" autocomplete="name" required aria-required="true" aria-describedby="err-name">
+            <p class="field-error" id="err-name" data-error-for="q-name"></p>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="q-phone">Phone <span class="req" aria-hidden="true">*</span></label>
+              <input id="q-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required aria-required="true" aria-describedby="hint-phone err-phone">
+              <p class="field-hint" id="hint-phone">Best number for the field tech to reach you.</p>
+              <p class="field-error" id="err-phone" data-error-for="q-phone"></p>
+            </div>
+            <div class="field">
+              <label for="q-email">Email</label>
+              <input id="q-email" name="email" type="email" autocomplete="email" aria-describedby="err-email">
+              <p class="field-error" id="err-email" data-error-for="q-email"></p>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="q-issue">What&rsquo;s the issue? <span class="req" aria-hidden="true">*</span></label>
+            <div class="select-wrap">
+              <select id="q-issue" name="issue" required aria-required="true" aria-describedby="err-issue">
+                <option value="">Select a symptom&hellip;</option>
+                <option value="no-water">No water at all</option>
+                <option value="low-pressure">Low water pressure</option>
+                <option value="cloudy">Cloudy or gritty water</option>
+                <option value="cycling">Pump cycling on/off</option>
+                <option value="filtration">New filtration setup</option>
+                <option value="other">Something else</option>
+              </select>
+              <svg class="select-chevron" viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false"><path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <p class="field-error" id="err-issue" data-error-for="q-issue"></p>
+          </div>
+
+          <fieldset class="field field-fieldset">
+            <legend>How soon?</legend>
+            <div class="radio-row">
+              <label class="radio">
+                <input type="radio" name="urgency" value="emergency">
+                <span class="radio-mark" aria-hidden="true"></span>Emergency &mdash; no water now
+              </label>
+              <label class="radio">
+                <input type="radio" name="urgency" value="soon">
+                <span class="radio-mark" aria-hidden="true"></span>Soon &mdash; getting worse
+              </label>
+              <label class="radio">
+                <input type="radio" name="urgency" value="planned" checked>
+                <span class="radio-mark" aria-hidden="true"></span>Planned &mdash; no rush
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="field">
+            <label for="q-notes">Field notes <span class="optional">(optional)</span></label>
+            <textarea id="q-notes" name="notes" rows="3" aria-describedby="hint-notes"></textarea>
+            <p class="field-hint" id="hint-notes">Anything you&rsquo;ve noticed: sounds, smells, when it started, recent work.</p>
+          </div>
+
+          <button type="submit" class="button button-primary form-submit">
+            Send quote request
+            <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <p class="form-disclaimer">No payment is taken here. This sends a request only &mdash; we follow up to confirm.</p>
+
+          <div class="form-success" id="form-success" hidden>
+            <span class="success-icon" aria-hidden="true">
+              <svg viewBox="0 0 48 48" width="44" height="44" focusable="false"><circle cx="24" cy="24" r="21" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M15 24l6 6 12-13" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <h3>Request received</h3>
+            <p>Thanks &mdash; your details are in. We&rsquo;ll reach out to confirm the visit and talk through next steps. Ask about current availability when we connect.</p>
+            <button type="button" class="button button-ghost" id="form-reset">Send another request</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- 6. SERVICE-AREA MAP SHELL (service_area_map_shell_v1) -->
+    <section class="area" id="area" aria-labelledby="area-title">
+      <div class="section-head">
+        <p class="section-index">04</p>
+        <div>
+          <h2 id="area-title">Where we work</h2>
+          <p class="section-lede">We serve rural and ridge-country properties on well and private water systems. The exact service-area towns are confirmed when you reach out.</p>
+        </div>
+      </div>
+
+      <!-- Atom: service_area_map_shell_v1 -->
+      <div class="area-layout">
+        <figure class="area-map" aria-labelledby="area-map-cap">
+          <svg viewBox="0 0 600 420" role="img" aria-labelledby="map-title map-desc">
+            <title id="map-title">Service-region concept map</title>
+            <desc id="map-desc">An abstract contour map of ridge and valley country with a highlighted service region and a placeholder for confirmed towns. No specific locations are named.</desc>
+            <rect x="0" y="0" width="600" height="420" fill="var(--field-900)"/>
+            <!-- contour lines -->
+            <g fill="none" stroke="var(--field-700)" stroke-width="1.4" opacity=".7">
+              <path d="M-20 120 C120 60 240 60 360 110 S540 170 640 120"/>
+              <path d="M-20 160 C120 100 240 100 360 150 S540 210 640 160"/>
+              <path d="M-20 210 C140 150 260 150 380 196 S560 250 640 206"/>
+              <path d="M-20 270 C140 214 280 214 400 256 S560 300 640 262"/>
+              <path d="M-20 330 C160 280 300 280 420 318 S580 356 640 324"/>
+            </g>
+            <!-- highlighted region -->
+            <path d="M150 150 C250 110 360 120 430 180 C480 224 470 296 400 326 C320 360 220 350 168 296 C124 252 110 188 150 150Z"
+                  fill="var(--cyan-300)" opacity=".14" stroke="var(--cyan-300)" stroke-width="2" stroke-dasharray="6 7"/>
+            <!-- ridge marks -->
+            <g stroke="var(--cyan-200)" stroke-width="1.6" opacity=".5">
+              <path d="M210 250 l14-22 14 22"/>
+              <path d="M260 232 l14-22 14 22"/>
+              <path d="M320 252 l14-22 14 22"/>
+            </g>
+            <!-- center marker (region, not a town) -->
+            <circle cx="300" cy="240" r="9" fill="none" stroke="var(--cyan-200)" stroke-width="2"/>
+            <circle cx="300" cy="240" r="3" fill="var(--cyan-200)"/>
+            <text class="map-label" x="300" y="392" text-anchor="middle">Ridge &amp; valley service region</text>
+          </svg>
+          <figcaption id="area-map-cap">Region concept only. No towns are listed until we confirm coverage with you.</figcaption>
+        </figure>
+
+        <div class="area-aside">
+          <div class="area-card">
+            <h3>Confirm coverage</h3>
+            <p>Tell us your road or general area and we&rsquo;ll confirm whether you&rsquo;re inside the service region before scheduling.</p>
+            <p class="area-placeholder">[SERVICE_AREA_TOWNS &mdash; add actual towns after confirmation.]</p>
+          </div>
+          <ul class="area-facts">
+            <li><span aria-hidden="true">&middot;</span>Built for private wells and rural systems</li>
+            <li><span aria-hidden="true">&middot;</span>Ridge, valley, and off-main-line properties</li>
+            <li><span aria-hidden="true">&middot;</span>Coverage confirmed per property, not promised by map</li>
+          </ul>
+          <a class="button button-outline" href="#quote">Check my area in a quote</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. MAINTENANCE PLAN COMPARISON (maintenance_plan_comparison_v1) -->
+    <section class="plans" id="plans" aria-labelledby="plans-title">
+      <div class="section-head">
+        <p class="section-index">05</p>
+        <div>
+          <h2 id="plans-title">Maintenance plans</h2>
+          <p class="section-lede">Keep a rural water system ahead of trouble. Plans are a framework &mdash; final scope and any pricing are set after we see your setup.</p>
+        </div>
+      </div>
+
+      <!-- Atom: maintenance_plan_comparison_v1 (asymmetric: featured plan is larger) -->
+      <div class="plans-grid">
+        <article class="plan-card">
+          <p class="plan-name">Seasonal Check</p>
+          <p class="plan-frame">Once or twice a year</p>
+          <p class="plan-desc">A baseline read on a working system &mdash; catch drift before it becomes a callout.</p>
+          <ul class="plan-list">
+            <li>Pressure &amp; tank charge check</li>
+            <li>Filter condition review</li>
+            <li>Visual wellhead inspection</li>
+            <li>Written field notes</li>
+          </ul>
+          <a class="button button-outline plan-cta" href="#quote">Ask about this plan</a>
+        </article>
+
+        <article class="plan-card plan-featured">
+          <p class="plan-flag">Most common for full systems</p>
+          <p class="plan-name">System Care</p>
+          <p class="plan-frame">Scheduled visits through the year</p>
+          <p class="plan-desc">For homes that rely fully on a well and filtration. Regular service plus priority when something does come up.</p>
+          <div class="plan-list-split">
+            <ul class="plan-list">
+              <li>Everything in Seasonal Check</li>
+              <li>Filter / media service included</li>
+              <li>Pressure switch &amp; tank tuning</li>
+            </ul>
+            <ul class="plan-list">
+              <li>Draw-down &amp; pump health read</li>
+              <li>Priority scheduling for issues</li>
+              <li>Maintained service record</li>
+            </ul>
+          </div>
+          <a class="button button-primary plan-cta" href="#quote">Ask about System Care</a>
+        </article>
+
+        <article class="plan-card plan-addon">
+          <p class="plan-name">Filtration Watch</p>
+          <p class="plan-frame">Add-on to either plan</p>
+          <p class="plan-desc">For treated water. Keeps media, stages, and flow in spec so quality holds.</p>
+          <ul class="plan-list">
+            <li>Media / cartridge schedule</li>
+            <li>Flow &amp; pressure-drop check</li>
+            <li>Re-test prompts as needed</li>
+          </ul>
+          <a class="button button-ghost plan-cta" href="#quote">Add to a plan</a>
+        </article>
+      </div>
+      <p class="plans-note">Plans describe scope, not fixed pricing. We quote the real numbers after seeing the system. Ask about current availability.</p>
+    </section>
+
+    <!-- 8. PROOF-SAFE SERVICE RECORD (proof_safe_service_record_v1) -->
+    <section class="record" id="record" aria-labelledby="record-title">
+      <div class="section-head">
+        <p class="section-index">06</p>
+        <div>
+          <h2 id="record-title">Service record</h2>
+          <p class="section-lede">Verified service records can be added here after approval. Until then, here&rsquo;s the format a record entry follows &mdash; no example jobs are invented.</p>
+        </div>
+      </div>
+
+      <!-- Atom: proof_safe_service_record_v1 -->
+      <div class="record-grid">
+        <article class="record-card is-placeholder">
+          <div class="record-card-head">
+            <span class="record-type">[SERVICE_TYPE]</span>
+            <span class="record-date">[DATE]</span>
+          </div>
+          <p class="record-summary">[SHORT_SUMMARY &mdash; what was found and what was done, in plain language.]</p>
+          <dl class="record-meta">
+            <div><dt>System</dt><dd>[SYSTEM_AREA]</dd></div>
+            <div><dt>Outcome</dt><dd>[OUTCOME]</dd></div>
+          </dl>
+          <p class="record-flag">Placeholder entry</p>
+        </article>
+        <article class="record-card is-placeholder">
+          <div class="record-card-head">
+            <span class="record-type">[SERVICE_TYPE]</span>
+            <span class="record-date">[DATE]</span>
+          </div>
+          <p class="record-summary">[SHORT_SUMMARY &mdash; replace with a real, approved job entry only.]</p>
+          <dl class="record-meta">
+            <div><dt>System</dt><dd>[SYSTEM_AREA]</dd></div>
+            <div><dt>Outcome</dt><dd>[OUTCOME]</dd></div>
+          </dl>
+          <p class="record-flag">Placeholder entry</p>
+        </article>
+        <aside class="record-note">
+          <h3>How records get added</h3>
+          <p>Real entries are added only from approved, completed work &mdash; with the homeowner&rsquo;s okay. No reviews, ratings, or job counts are shown here unless they&rsquo;re verified.</p>
+          <p class="record-note-tag">No invented jobs, names, or numbers.</p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 9. FAQ -->
+    <section class="faq" id="faq" aria-labelledby="faq-title">
+      <div class="section-head">
+        <p class="section-index">07</p>
+        <div>
+          <h2 id="faq-title">Common questions</h2>
+          <p class="section-lede">Straight answers about how rural water service works with us.</p>
+        </div>
+      </div>
+
+      <div class="faq-list">
+        <details class="faq-item" name="faq">
+          <summary>
+            Do I need a water test before you come out?
+            <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18" focusable="false"><line x1="10" y1="4" x2="10" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="4" y1="10" x2="16" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          </summary>
+          <div class="faq-answer"><p>Not for most service calls. If you already have a recent water test, it helps &mdash; especially for filtration. If not, we&rsquo;ll talk about whether testing makes sense for your situation.</p></div>
+        </details>
+        <details class="faq-item" name="faq">
+          <summary>
+            Can you tell what&rsquo;s wrong over the phone?
+            <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18" focusable="false"><line x1="10" y1="4" x2="10" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="4" y1="10" x2="16" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          </summary>
+          <div class="faq-answer"><p>We can narrow it down. The diagnostic above mirrors how we think through symptoms. But the on-site test is what confirms the cause &mdash; we don&rsquo;t guess at a fix sight-unseen.</p></div>
+        </details>
+        <details class="faq-item" name="faq">
+          <summary>
+            What counts as an emergency?
+            <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18" focusable="false"><line x1="10" y1="4" x2="10" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="4" y1="10" x2="16" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          </summary>
+          <div class="faq-answer"><p>No water to the home, an active leak, or a pump that won&rsquo;t run. Those go on the urgent track. Pressure and quality issues are usually planned. Either way, ask about current availability when you reach out.</p></div>
+        </details>
+        <details class="faq-item" name="faq">
+          <summary>
+            Do you work on systems you didn&rsquo;t install?
+            <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18" focusable="false"><line x1="10" y1="4" x2="10" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="4" y1="10" x2="16" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          </summary>
+          <div class="faq-answer"><p>Yes. Most rural systems are a mix of parts added over time. We map what&rsquo;s actually there on the first visit and work from that.</p></div>
+        </details>
+        <details class="faq-item" name="faq">
+          <summary>
+            How do I know I&rsquo;m in your service area?
+            <span class="faq-icon" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18" focusable="false"><line x1="10" y1="4" x2="10" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="4" y1="10" x2="16" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          </summary>
+          <div class="faq-answer"><p>Send your general area or road in a quote request and we&rsquo;ll confirm coverage before scheduling. We don&rsquo;t publish a town list we can&rsquo;t stand behind.</p></div>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <!-- 10. FOOTER -->
+  <footer class="site-footer" aria-labelledby="footer-title">
+    <h2 id="footer-title" class="visually-hidden">Site footer</h2>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a class="brand brand-footer" href="#top" aria-label="Clear Ridge Water Works, home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 40 40" width="36" height="36" focusable="false"><circle cx="20" cy="20" r="18.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9 24c3.4-3.4 6.6-3.4 10 0s6.6 3.4 10 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9 18c3.4-3.4 6.6-3.4 10 0s6.6 3.4 10 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".55"/><path d="M20 6l3.4 6.4h-6.8z" fill="currentColor"/></svg>
+          </span>
+          <span class="brand-word">Clear Ridge<span class="brand-sub">Water Works</span></span>
+        </a>
+        <p class="footer-tag">Well pump, filtration, and rural water-system service. We read the symptom, confirm on site, and quote the real scope.</p>
+      </div>
+      <nav class="footer-col" aria-label="Sections">
+        <h3>Explore</h3>
+        <a href="#diagnose">Diagnose</a>
+        <a href="#system">Your system</a>
+        <a href="#service">Service tracks</a>
+        <a href="#plans">Plans</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <div class="footer-col">
+        <h3>Get in touch</h3>
+        <p class="footer-contact">[PHONE_NUMBER]</p>
+        <p class="footer-contact">[EMAIL_ADDRESS]</p>
+        <p class="footer-fine">Add verified contact details before publishing.</p>
+        <a class="button button-outline footer-cta" href="#quote">Request a quote</a>
+      </div>
+    </div>
+    <div class="footer-base">
+      <p>&copy; <span id="year">2026</span> Clear Ridge Water Works. Fictional business for design reference.</p>
+      <p class="footer-proof">No license numbers, response times, reviews, or service towns are shown until verified.</p>
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
