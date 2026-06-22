@@ -1,0 +1,307 @@
+{
+  "pack_id": "localhost_fullsite_pattern_bank_20260622_v1",
+  "role": "support_bank",
+  "family": "website.pattern_library",
+  "source_paths": [
+    "examples/orbital-launch-manifest.md",
+    "examples/markets-terminal-capabilities.md",
+    "examples/developer-docs-quickstart.md",
+    "examples/luxury-maison-editorial.md",
+    "examples/reference-product-spec.md",
+    "examples/instrument-studio-interactive.md"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "website"
+  ],
+  "tones": [
+    "blue",
+    "cinematic",
+    "dark",
+    "data-dense",
+    "developer",
+    "editorial",
+    "experimental",
+    "green-accent",
+    "high-contrast",
+    "interactive",
+    "luxury",
+    "minimal",
+    "precise",
+    "premium",
+    "professional",
+    "quiet",
+    "restrained",
+    "serif",
+    "studio",
+    "technical",
+    "warm",
+    "warm-metal"
+  ],
+  "surfaces": [
+    "homepage",
+    "hero",
+    "landing",
+    "section",
+    "docs",
+    "product",
+    "interactive",
+    "full_site"
+  ],
+  "motif_tags": [
+    "callout_box",
+    "code_block",
+    "command_surface",
+    "cream_contrast_band",
+    "dark_texture",
+    "dashboard_panel",
+    "data_terminal",
+    "docs_shell",
+    "editorial_serif",
+    "footer_full",
+    "form_intake",
+    "headline_hierarchy",
+    "hero_shell",
+    "instrument_control",
+    "interactive_stage",
+    "luxury_maison",
+    "market_table",
+    "material_showcase",
+    "microcopy",
+    "minimal_centerpiece",
+    "mission_sequence",
+    "motion_surface",
+    "newsletter_form",
+    "numbered_principles",
+    "pricing_panel",
+    "process_timeline",
+    "product_hero",
+    "proof_cards",
+    "ritual_pacing",
+    "sidebar_nav",
+    "sound_studio",
+    "specification_table",
+    "stats_strip",
+    "sticky_nav",
+    "tabs_panel",
+    "technical_manifest",
+    "ticker_strip",
+    "toc_rail",
+    "vector_product_diagram"
+  ],
+  "supports_tasks": [
+    "aerospace_landing_page",
+    "analytics_dashboard_landing",
+    "api_docs_shell",
+    "atelier_editorial_homepage",
+    "audio_product_website",
+    "audio_visual_demo",
+    "boutique_hospitality_landing",
+    "browser_instrument_app",
+    "creative_studio_interface",
+    "data_dense_saas_homepage",
+    "database_docs_site",
+    "deep_tech_product_page",
+    "developer_docs_page",
+    "engineering_product_homepage",
+    "fintech_terminal_landing",
+    "fragrance_maison_site",
+    "hardware_landing_page",
+    "industrial_design_product_page",
+    "interactive_tool_landing",
+    "luxury_brand_page",
+    "market_data_product_page",
+    "measured_specs_product_page",
+    "minimal_web_app_hero",
+    "mission_process_landing",
+    "observability_console_landing",
+    "premium_product_detail",
+    "premium_retail_story_page",
+    "quickstart_documentation",
+    "quiet_luxury_website",
+    "reservation_checkout_landing",
+    "sdk_cli_docs",
+    "single_screen_experience",
+    "technical_documentation_page",
+    "technical_manifest_site",
+    "trading_platform_homepage",
+    "waitlist_or_manifest_form"
+  ],
+  "anti_patterns": [
+    "copying donor brand identity",
+    "copying exact headlines or product names",
+    "inventing metrics, prices, measurements, certifications, live data, or testimonials",
+    "embedding localhost screenshot paths in generated output",
+    "treating captured pages as templates instead of pattern donors"
+  ],
+  "screenshot_paths": [
+    "screenshots/contact_sheet_index.txt"
+  ],
+  "token_budget_hint": 18000,
+  "confidence_score": 5,
+  "example_ids": [
+    "orbital-launch-manifest",
+    "markets-terminal-capabilities",
+    "developer-docs-quickstart",
+    "luxury-maison-editorial",
+    "reference-product-spec",
+    "instrument-studio-interactive"
+  ],
+  "source_dirs": {
+    "orbital-launch-manifest": "examples/orbital-launch-manifest/source",
+    "markets-terminal-capabilities": "examples/markets-terminal-capabilities/source",
+    "developer-docs-quickstart": "examples/developer-docs-quickstart/source",
+    "luxury-maison-editorial": "examples/luxury-maison-editorial/source",
+    "reference-product-spec": "examples/reference-product-spec/source",
+    "instrument-studio-interactive": "examples/instrument-studio-interactive/source"
+  },
+  "preview_paths": {
+    "orbital-launch-manifest": "screenshots/orbital-launch-manifest_desktop-1512x812.png",
+    "markets-terminal-capabilities": "screenshots/markets-terminal-capabilities_desktop-1512x812.png",
+    "developer-docs-quickstart": "screenshots/developer-docs-quickstart_desktop-1512x812.png",
+    "luxury-maison-editorial": "screenshots/luxury-maison-editorial_desktop-1512x812.png",
+    "reference-product-spec": "screenshots/reference-product-spec_desktop-1512x812.png",
+    "instrument-studio-interactive": "screenshots/instrument-studio-interactive_desktop-1512x812.png"
+  },
+  "example_strengths": {
+    "orbital-launch-manifest": [
+      "cinematic_hero",
+      "technical_specs",
+      "process_sequence",
+      "form_intake",
+      "dark_contrast"
+    ],
+    "markets-terminal-capabilities": [
+      "product_console_hero",
+      "ticker_strip",
+      "data_tables",
+      "dense_cards",
+      "blue_dark_contrast"
+    ],
+    "developer-docs-quickstart": [
+      "docs_layout",
+      "code_blocks",
+      "toc_navigation",
+      "mobile_docs_tabs",
+      "technical_callouts"
+    ],
+    "luxury-maison-editorial": [
+      "serif_hierarchy",
+      "editorial_pacing",
+      "numbered_principles",
+      "luxury_footer",
+      "newsletter_form"
+    ],
+    "reference-product-spec": [
+      "product_hero",
+      "material_cards",
+      "measurement_table",
+      "pricing_panel",
+      "premium_black_palette"
+    ],
+    "instrument-studio-interactive": [
+      "single_screen_stage",
+      "central_control",
+      "minimal_microcopy",
+      "interactive_focus",
+      "dark_studio_palette"
+    ]
+  },
+  "motif_overlaps": {
+    "orbital-launch-manifest": [
+      "hero_shell",
+      "dark_texture",
+      "technical_manifest",
+      "process_timeline",
+      "specification_table",
+      "mission_sequence",
+      "form_intake",
+      "vector_product_diagram",
+      "headline_hierarchy"
+    ],
+    "markets-terminal-capabilities": [
+      "command_surface",
+      "dashboard_panel",
+      "data_terminal",
+      "ticker_strip",
+      "market_table",
+      "proof_cards",
+      "stats_strip",
+      "tabs_panel",
+      "hero_shell"
+    ],
+    "developer-docs-quickstart": [
+      "docs_shell",
+      "sticky_nav",
+      "sidebar_nav",
+      "toc_rail",
+      "code_block",
+      "callout_box",
+      "footer_full",
+      "headline_hierarchy"
+    ],
+    "luxury-maison-editorial": [
+      "editorial_serif",
+      "luxury_maison",
+      "ritual_pacing",
+      "numbered_principles",
+      "cream_contrast_band",
+      "newsletter_form",
+      "footer_full",
+      "headline_hierarchy"
+    ],
+    "reference-product-spec": [
+      "product_hero",
+      "dark_texture",
+      "technical_manifest",
+      "material_showcase",
+      "specification_table",
+      "proof_cards",
+      "pricing_panel",
+      "process_timeline",
+      "headline_hierarchy"
+    ],
+    "instrument-studio-interactive": [
+      "interactive_stage",
+      "minimal_centerpiece",
+      "instrument_control",
+      "motion_surface",
+      "sound_studio",
+      "hero_shell",
+      "microcopy"
+    ]
+  },
+  "example_ux_roles": {
+    "orbital-launch-manifest": [
+      "process_steps",
+      "form_intake",
+      "proof_rail"
+    ],
+    "markets-terminal-capabilities": [
+      "stats_strip",
+      "proof_rail",
+      "trust_rail"
+    ],
+    "developer-docs-quickstart": [
+      "process_steps",
+      "footer_full",
+      "header_sticky"
+    ],
+    "luxury-maison-editorial": [
+      "trust_rail",
+      "form_intake",
+      "footer_full"
+    ],
+    "reference-product-spec": [
+      "proof_rail",
+      "stats_strip",
+      "process_steps",
+      "trust_rail"
+    ],
+    "instrument-studio-interactive": [
+      "service_lane_set",
+      "process_steps"
+    ]
+  }
+}

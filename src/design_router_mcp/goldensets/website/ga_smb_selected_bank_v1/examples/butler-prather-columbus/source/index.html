@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Butler Prather LLP | Consequential Cases in Georgia</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            basalt: '#0A0A0B',
+            parchment: '#EAE6DF',
+            parchmentdark: '#D8D3C9',
+            bronze: '#AF825C',
+            bronzedark: '#8E623E',
+            gridline: 'rgba(234, 230, 223, 0.05)',
+            gridlineDark: 'rgba(10, 10, 11, 0.08)'
+          },
+          fontFamily: {
+            serif: ['"Playfair Display"', 'serif'],
+            sans: ['"Inter"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    body {
+      background-color: #0A0A0B;
+      color: #EAE6DF;
+    }
+    
+    .bg-grid {
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, var(--tw-colors-gridline) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--tw-colors-gridline) 1px, transparent 1px);
+    }
+    
+    .bg-grid-dark {
+      background-size: 20px 20px;
+      background-image: 
+        linear-gradient(to right, var(--tw-colors-gridlineDark) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--tw-colors-gridlineDark) 1px, transparent 1px);
+    }
+
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    .animate-spin-slow {
+      animation: spin-slow 24s linear infinite;
+    }
+
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 0.1; }
+      50% { opacity: 0.3; }
+    }
+    
+    .animate-pulse-subtle {
+      animation: pulse-subtle 4s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="antialiased overflow-x-hidden selection:bg-bronze selection:text-basalt flex flex-col min-h-screen relative">
+
+  <!-- Abstract Global Noise & Gradients -->
+  <svg class="pointer-events-none fixed inset-0 z-0 opacity-[0.15] w-full h-full mix-blend-overlay" xmlns="http://www.w3.org/2000/svg">
+    <filter id="noise">
+      <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" stitchTiles="stitch"/>
+    </filter>
+    <rect width="100%" height="100%" filter="url(#noise)"/>
+  </svg>
+  <div class="fixed inset-0 pointer-events-none bg-grid z-0"></div>
+  <div class="fixed top-[-20%] right-[-10%] w-[800px] h-[800px] rounded-full bg-bronze/10 blur-[150px] pointer-events-none z-0"></div>
+  <div class="fixed bottom-[-10%] left-[-10%] w-[600px] h-[600px] rounded-full bg-basalt blur-[100px] pointer-events-none z-0"></div>
+
+  <!-- Navigation -->
+  <nav class="relative z-50 border-b border-gridline bg-basalt/90 backdrop-blur-md sticky top-0">
+    <div class="max-w-[90rem] mx-auto px-6 lg:px-12 flex items-center justify-between h-24">
+      
+      <!-- Brand -->
+      <a href="/" class="flex flex-col">
+        <span class="font-serif text-xl md:text-2xl tracking-widest text-parchment uppercase font-medium leading-none">Butler <span class="text-bronze italic">Prather</span></span>
+        <span class="font-sans text-[9px] tracking-[0.4em] uppercase text-parchment/50 mt-1.5 ml-1">Attorneys at Law</span>
+      </a>
+
+      <!-- Desktop Links -->
+      <div class="hidden lg:flex items-center space-x-12">
+        <a href="#firm" class="text-[11px] uppercase tracking-[0.15em] text-parchment/60 hover:text-bronze transition-colors font-medium">The Firm</a>
+        <a href="#practices" class="text-[11px] uppercase tracking-[0.15em] text-parchment/60 hover:text-bronze transition-colors font-medium">Practice Areas</a>
+        <a href="#results" class="text-[11px] uppercase tracking-[0.15em] text-parchment/60 hover:text-bronze transition-colors font-medium">Results</a>
+        <a href="tel:4043211700" class="flex items-center text-[11px] uppercase tracking-[0.15em] text-parchment hover:text-bronze transition-colors font-bold group">
+          <span class="w-6 h-[1px] bg-bronze mr-3 group-hover:w-8 transition-all duration-300"></span>
+          (404) 321-1700
+        </a>
+      </div>
+
+      <!-- Mobile Toggle -->
+      <button class="lg:hidden text-parchment/80 hover:text-parchment p-2">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="square" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h10M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <main class="relative flex-grow flex items-center pt-12 pb-24 lg:py-0 min-h-[calc(100vh-6rem)]">
+    <div class="max-w-[90rem] mx-auto w-full px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8 relative z-10">
+      
+      <!-- Left Content -->
+      <div class="lg:col-span-7 flex flex-col justify-center order-2 lg:order-1 relative">
+        
+        <!-- Eyebrow -->
+        <div class="flex items-center space-x-4 mb-8">
+          <div class="w-10 h-[1px] bg-bronze"></div>
+          <span class="font-sans uppercase tracking-[0.25em] text-[10px] sm:text-xs font-semibold text-parchment/60">Complex Litigation & Personal Injury</span>
+        </div>
+
+        <!-- Headline -->
+        <h1 class="font-serif text-[2.75rem] sm:text-6xl md:text-7xl lg:text-[5.5rem] xl:text-[6.5rem] text-parchment leading-[1.02] tracking-tight mb-8 drop-shadow-xl">
+          Built for<br>
+          <span class="italic text-bronze pr-2">Consequential</span><br>
+          Cases in Georgia.
+        </h1>
+
+        <!-- Subheadline -->
+        <p class="font-sans text-base sm:text-lg lg:text-xl text-parchment/70 max-w-xl mb-12 leading-relaxed font-light">
+          When the stakes are highest, experience is absolute. We represent individuals in catastrophic injury, commercial vehicle collisions, and complex whistleblower matters.
+        </p>
+
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
+          <a href="#contact" class="group relative inline-flex items-center justify-center bg-bronze text-basalt overflow-hidden px-10 py-5 w-full sm:w-auto transition-transform duration-300 hover:scale-[1.02] shadow-[0_0_30px_rgba(175,130,92,0.15)]">
+            <span class="absolute inset-0 w-full h-full bg-parchment opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+            <span class="relative uppercase tracking-[0.2em] text-[11px] font-bold transition-colors duration-300 group-hover:text-basalt">Discuss Your Case</span>
+          </a>
+          <a href="#practices" class="group inline-flex items-center justify-center bg-transparent text-parchment px-10 py-5 w-full sm:w-auto border border-parchment/20 hover:border-bronze hover:bg-bronze/5 transition-all duration-300">
+            <span class="uppercase tracking-[0.2em] text-[11px] font-bold text-parchment/80 group-hover:text-bronze transition-colors duration-300">Explore Practice Areas</span>
+          </a>
+        </div>
+        
+        <!-- Location Tag -->
+        <div class="mt-16 flex items-center opacity-40 font-sans text-[10px] uppercase tracking-[0.2em]">
+          <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          Based in Columbus, GA • Serving Nationwide
+        </div>
+
+      </div>
+
+      <!-- Right Visual Composition (Abstract Legal Architecture) -->
+      <div class="lg:col-span-5 flex justify-center lg:justify-end items-center order-1 lg:order-2">
+        
+        <div class="relative w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[480px] aspect-[3/4] lg:aspect-[4/5] lg:mr-4">
+          
+          <!-- Deep Background Frame -->
+          <div class="absolute top-[5%] right-[-5%] lg:right-[-10%] w-[85%] h-[90%] border border-gridline bg-basalt shadow-2xl z-0 overflow-hidden">
+            <div class="absolute inset-0 bg-grid-dark opacity-30"></div>
+            <!-- Decorative measuring line -->
+            <div class="absolute right-4 top-0 bottom-0 w-[1px] bg-gridline"></div>
+            <div class="absolute right-3 top-[10%] w-2 h-[1px] bg-gridline"></div>
+            <div class="absolute right-3 top-[50%] w-2 h-[1px] bg-gridline"></div>
+            <div class="absolute right-3 top-[90%] w-2 h-[1px] bg-gridline"></div>
+          </div>
+
+          <!-- Bronze Structural Lines -->
+          <div class="absolute top-[12%] left-[2%] w-[80%] h-[76%] border border-bronze/20 z-0">
+            <div class="absolute top-[-8px] left-[-8px] w-4 h-[1px] bg-bronze"></div>
+            <div class="absolute top-[-8px] left-[-8px] w-[1px] h-4 bg-bronze"></div>
+            <div class="absolute bottom-[-8px] right-[-8px] w-4 h-[1px] bg-bronze"></div>
+            <div class="absolute bottom-[-8px] right-[-8px] w-[1px] h-4 bg-bronze"></div>
+          </div>
+
+          <!-- Primary Casefile / Parchment Plane -->
+          <div class="absolute z-10 w-[88%] h-[82%] bg-parchment shadow-[0_30px_60px_rgba(0,0,0,0.8)] p-6 sm:p-8 lg:p-10 flex flex-col justify-between overflow-hidden top-[9%] left-[5%]">
+            
+            <!-- Structural grid on parchment -->
+            <div class="absolute top-0 right-[20%] w-[1px] h-full bg-basalt/10"></div>
+            <div class="absolute top-[28%] left-0 w-full h-[1px] bg-basalt/10"></div>
+            <div class="absolute bottom-[22%] left-0 w-full h-[1px] bg-basalt/10"></div>
+            <div class="absolute inset-0 bg-gradient-to-br from-parchment via-parchment to-parchmentdark z-[-1]"></div>
+
+            <!-- Top Dossier Data -->
+            <div class="relative z-20 flex justify-between items-start">
+              <div class="font-sans text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-basalt/50 font-bold space-y-2">
+                <p class="flex items-center"><span class="w-3 h-[1px] bg-bronzedark mr-2"></span> REF — BP.LLP.GA</p>
+                <p class="flex items-center"><span class="w-3 h-[1px] bg-bronzedark mr-2"></span> STAT — <span class="text-bronzedark ml-1">ACTIVE</span></p>
+                <p class="flex items-center"><span class="w-3 h-[1px] bg-bronzedark mr-2"></span> DIV — LITIGATION</p>
+              </div>
+              
+              <!-- Abstract Seal -->
+              <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-bronzedark/20 flex items-center justify-center relative bg-parchment/30 backdrop-blur-sm mix-blend-multiply">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-bronzedark/30 flex items-center justify-center">
+                  <div class="w-1.5 h-1.5 bg-bronzedark rounded-full"></div>
+                </div>
+                <!-- Circular Typography SVG -->
+                <svg class="absolute inset-0 w-full h-full animate-spin-slow" viewBox="0 0 100 100">
+                  <path id="sealPath" d="M 50, 50 m -35, 0 a 35,35 0 1,1 70,0 a 35,35 0 1,1 -70,0" fill="transparent" />
+                  <text class="text-[8px] sm:text-[8.5px] uppercase tracking-[0.15em] fill-bronzedark font-sans font-bold">
+                    <textPath href="#sealPath" startOffset="0">BUTLER PRATHER LLP • EST. GEORGIA • </textPath>
+                  </text>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Middle Typographic Art -->
+            <div class="relative z-20 mt-auto mb-10">
+              <div class="w-12 h-[2px] bg-bronzedark mb-6"></div>
+              <h3 class="font-serif text-4xl sm:text-5xl lg:text-[3.25rem] text-basalt leading-[1.05] tracking-tight">
+                <span class="italic text-bronzedark">Strategic</span><br>
+                Legal<br>Force.
+              </h3>
+            </div>
+            
+            <!-- Bottom Grid Data -->
+            <div class="relative z-20 pt-5 border-t border-basalt/10 grid grid-cols-2 gap-4">
+              <div>
+                <p class="font-sans text-[7px] sm:text-[8px] uppercase tracking-[0.2em] text-basalt/40 mb-1.5">Primary Focus</p>
+                <p class="font-sans text-[10px] sm:text-xs text-basalt/90 font-bold uppercase tracking-widest leading-tight">
+                  Commercial<br>Vehicles
+                </p>
+              </div>
+              <div>
+                <p class="font-sans text-[7px] sm:text-[8px] uppercase tracking-[0.2em] text-basalt/40 mb-1.5">Capabilities</p>
+                <p class="font-sans text-[10px] sm:text-xs text-basalt/90 font-bold uppercase tracking-widest leading-tight">
+                  Class Action<br>Whistleblower
+                </p>
+              </div>
+            </div>
+
+            <!-- Abstract decorative corner -->
+            <div class="absolute bottom-0 right-0 w-8 h-8 border-t border-l border-basalt/10 bg-basalt/5"></div>
+          </div>
+          
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Firm Philosophy Section -->
+  <section id="firm" class="relative z-10 py-32 bg-parchment text-basalt overflow-hidden border-t border-parchmentdark">
+    <div class="absolute inset-0 bg-grid-dark opacity-20 pointer-events-none"></div>
+    <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-parchmentdark/40 to-transparent pointer-events-none"></div>
+    
+    <div class="max-w-[90rem] mx-auto px-6 lg:px-12 relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-center">
+        
+        <div class="lg:col-span-7">
+          <div class="flex items-center space-x-4 mb-8">
+            <div class="w-8 h-[1px] bg-bronzedark"></div>
+            <span class="font-sans uppercase tracking-[0.25em] text-[10px] font-bold text-basalt/50">Firm Philosophy</span>
+          </div>
+          
+          <h2 class="font-serif text-4xl sm:text-5xl lg:text-7xl leading-[1.05] tracking-tight mb-10">
+            We do not mitigate.<br>We <span class="italic text-bronzedark">litigate</span>.
+          </h2>
+          
+          <div class="space-y-6 max-w-2xl">
+            <p class="font-sans text-lg lg:text-xl text-basalt/80 leading-relaxed font-light">
+              Butler Prather LLP operates on a singular premise: maximum pressure yields maximum truth. We accept a severely limited docket of plaintiff cases, ensuring overwhelming resources and absolute focus are brought to bear on every matter we try.
+            </p>
+            <p class="font-sans text-base text-basalt/60 leading-relaxed font-light">
+              We are not a volume practice. We are a trial firm built for the most consequential disputes in the state of Georgia and across the nation. When opposing counsel sees our name on the docket, they know a settlement will not be reached through exhaustion, but only through adequate compensation for undeniable liability.
+            </p>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 flex justify-center lg:justify-end">
+          <div class="border border-bronzedark/20 p-12 lg:p-16 relative bg-parchment shadow-2xl max-w-md w-full">
+            <div class="absolute top-0 right-0 w-12 h-12 border-t-2 border-r-2 border-bronzedark"></div>
+            <div class="absolute bottom-0 left-0 w-12 h-12 border-b-2 border-l-2 border-bronzedark"></div>
+            
+            <div class="text-center relative z-10">
+              <div class="font-serif text-7xl lg:text-[6rem] text-basalt leading-none mb-4">$1B<span class="text-bronzedark">+</span></div>
+              <div class="w-12 h-[1px] bg-bronzedark/50 mx-auto mb-4"></div>
+              <div class="font-sans uppercase tracking-[0.25em] text-[10px] text-basalt/60 font-bold leading-relaxed">
+                Recovered for Plaintiffs<br>
+                Across State & Federal Courts
+              </div>
+            </div>
+            
+            <div class="absolute inset-0 bg-grid-dark opacity-10 pointer-events-none mix-blend-multiply"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Practice Areas Grid -->
+  <section id="practices" class="relative z-10 pt-32 pb-16 bg-basalt">
+    <div class="max-w-[90rem] mx-auto px-6 lg:px-12">
+      <div class="flex items-center justify-between mb-16">
+        <div class="flex items-center space-x-4">
+          <div class="w-10 h-[1px] bg-bronze"></div>
+          <h2 class="font-sans uppercase tracking-[0.25em] text-[10px] sm:text-xs font-semibold text-parchment/60">Divisions of Practice</h2>
+        </div>
+        <div class="hidden md:block w-1/3 h-[1px] bg-gridline"></div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-gridline border border-gridline">
+        
+        <!-- Practice Area 1 -->
+        <div class="group bg-basalt p-10 lg:p-12 hover:bg-[#0f0f11] transition-colors duration-500 flex flex-col justify-between min-h-[360px] relative overflow-hidden">
+          <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-bronze/0 via-bronze/0 to-bronze/0 group-hover:via-bronze/50 transition-all duration-700"></div>
+          <div>
+            <div class="text-bronze font-serif text-3xl mb-8 opacity-60 group-hover:opacity-100 transition-opacity">01</div>
+            <h3 class="font-serif text-2xl lg:text-3xl text-parchment mb-4">Commercial<br>Vehicle Collisions</h3>
+            <p class="font-sans text-sm text-parchment/60 font-light leading-relaxed">Catastrophic outcomes demanding absolute technical reconstruction and unyielding trial posture against corporate logistics entities.</p>
+          </div>
+          <div class="mt-12 flex items-center text-[10px] uppercase tracking-[0.2em] text-bronze opacity-50 group-hover:opacity-100 transition-all transform group-hover:translate-x-2 duration-500">
+            View Capabilities <span class="ml-2">→</span>
+          </div>
+        </div>
+
+        <!-- Practice Area 2 -->
+        <div class="group bg-basalt p-10 lg:p-12 hover:bg-[#0f0f11] transition-colors duration-500 flex flex-col justify-between min-h-[360px] relative overflow-hidden">
+          <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-bronze/0 via-bronze/0 to-bronze/0 group-hover:via-bronze/50 transition-all duration-700"></div>
+          <div>
+            <div class="text-bronze font-serif text-3xl mb-8 opacity-60 group-hover:opacity-100 transition-opacity">02</div>
+            <h3 class="font-serif text-2xl lg:text-3xl text-parchment mb-4">Catastrophic<br>Personal Injury</h3>
+            <p class="font-sans text-sm text-parchment/60 font-light leading-relaxed">Representing individuals whose lives have been permanently altered by severe negligence, defective products, or premises liability.</p>
+          </div>
+          <div class="mt-12 flex items-center text-[10px] uppercase tracking-[0.2em] text-bronze opacity-50 group-hover:opacity-100 transition-all transform group-hover:translate-x-2 duration-500">
+            View Capabilities <span class="ml-2">→</span>
+          </div>
+        </div>
+
+        <!-- Practice Area 3 -->
+        <div class="group bg-basalt p-10 lg:p-12 hover:bg-[#0f0f11] transition-colors duration-500 flex flex-col justify-between min-h-[360px] relative overflow-hidden">
+          <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-bronze/0 via-bronze/0 to-bronze/0 group-hover:via-bronze/50 transition-all duration-700"></div>
+          <div>
+            <div class="text-bronze font-serif text-3xl mb-8 opacity-60 group-hover:opacity-100 transition-opacity">03</div>
+            <h3 class="font-serif text-2xl lg:text-3xl text-parchment mb-4">Class Action &<br>Whistleblower</h3>
+            <p class="font-sans text-sm text-parchment/60 font-light leading-relaxed">Holding powerful institutions accountable for systemic fraud, consumer rights violations, and financial misconduct.</p>
+          </div>
+          <div class="mt-12 flex items-center text-[10px] uppercase tracking-[0.2em] text-bronze opacity-50 group-hover:opacity-100 transition-all transform group-hover:translate-x-2 duration-500">
+            View Capabilities <span class="ml-2">→</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Significant Precedents / Results -->
+  <section id="results" class="relative z-10 py-24 lg:py-32 bg-basalt">
+    <div class="max-w-[90rem] mx-auto px-6 lg:px-12">
+      <div class="flex items-center space-x-4 mb-16">
+        <div class="w-10 h-[1px] bg-bronze"></div>
+        <h2 class="font-sans uppercase tracking-[0.25em] text-[10px] sm:text-xs font-semibold text-parchment/60">Significant Precedents</h2>
+      </div>
+      
+      <div class="border-t border-gridline">
+        
+        <!-- Result Row 1 -->
+        <div class="group border-b border-gridline py-10 lg:py-12 flex flex-col lg:flex-row lg:items-center justify-between hover:bg-gridline/30 transition-colors px-4 -mx-4 lg:px-8 lg:-mx-8 cursor-pointer relative overflow-hidden">
+          <div class="absolute left-0 top-0 bottom-0 w-1 bg-bronze transform scale-y-0 group-hover:scale-y-100 transition-transform origin-top duration-300"></div>
+          <div class="w-full lg:w-1/4 mb-4 lg:mb-0">
+            <div class="font-serif text-4xl sm:text-5xl text-parchment">$150M</div>
+          </div>
+          <div class="w-full lg:w-1/2 font-sans pr-8 mb-6 lg:mb-0">
+            <div class="text-[10px] uppercase tracking-[0.2em] text-bronze font-bold mb-2">Automotive Defect</div>
+            <p class="text-sm text-parchment/70 font-light leading-relaxed">Record-setting product liability verdict against a major international automotive manufacturer regarding a fatal design defect.</p>
+          </div>
+          <div class="w-full lg:w-1/4 lg:text-right">
+            <span class="inline-flex items-center text-[10px] uppercase tracking-[0.2em] text-parchment/40 group-hover:text-bronze transition-colors">
+              Read Brief <svg class="w-3 h-3 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- Result Row 2 -->
+        <div class="group border-b border-gridline py-10 lg:py-12 flex flex-col lg:flex-row lg:items-center justify-between hover:bg-gridline/30 transition-colors px-4 -mx-4 lg:px-8 lg:-mx-8 cursor-pointer relative overflow-hidden">
+          <div class="absolute left-0 top-0 bottom-0 w-1 bg-bronze transform scale-y-0 group-hover:scale-y-100 transition-transform origin-top duration-300"></div>
+          <div class="w-full lg:w-1/4 mb-4 lg:mb-0">
+            <div class="font-serif text-4xl sm:text-5xl text-parchment">$280M</div>
+          </div>
+          <div class="w-full lg:w-1/2 font-sans pr-8 mb-6 lg:mb-0">
+            <div class="text-[10px] uppercase tracking-[0.2em] text-bronze font-bold mb-2">Commercial Trucking</div>
+            <p class="text-sm text-parchment/70 font-light leading-relaxed">Landmark jury verdict for the wrongful death of a family resulting from systemic negligence by a national logistics carrier.</p>
+          </div>
+          <div class="w-full lg:w-1/4 lg:text-right">
+            <span class="inline-flex items-center text-[10px] uppercase tracking-[0.2em] text-parchment/40 group-hover:text-bronze transition-colors">
+              Read Brief <svg class="w-3 h-3 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- Result Row 3 -->
+        <div class="group border-b border-gridline py-10 lg:py-12 flex flex-col lg:flex-row lg:items-center justify-between hover:bg-gridline/30 transition-colors px-4 -mx-4 lg:px-8 lg:-mx-8 cursor-pointer relative overflow-hidden">
+          <div class="absolute left-0 top-0 bottom-0 w-1 bg-bronze transform scale-y-0 group-hover:scale-y-100 transition-transform origin-top duration-300"></div>
+          <div class="w-full lg:w-1/4 mb-4 lg:mb-0">
+            <div class="font-serif text-4xl sm:text-5xl text-parchment">$142M</div>
+          </div>
+          <div class="w-full lg:w-1/2 font-sans pr-8 mb-6 lg:mb-0">
+            <div class="text-[10px] uppercase tracking-[0.2em] text-bronze font-bold mb-2">Class Action Fraud</div>
+            <p class="text-sm text-parchment/70 font-light leading-relaxed">Complex class certification and settlement achieving near total restitution for thousands of defrauded consumers in Georgia.</p>
+          </div>
+          <div class="w-full lg:w-1/4 lg:text-right">
+            <span class="inline-flex items-center text-[10px] uppercase tracking-[0.2em] text-parchment/40 group-hover:text-bronze transition-colors">
+              Read Brief <svg class="w-3 h-3 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </span>
+          </div>
+        </div>
+
+      </div>
+      
+      <div class="mt-12 text-center lg:text-left">
+        <p class="font-sans text-[9px] uppercase tracking-[0.1em] text-parchment/30">Past results do not guarantee future outcomes. Figures represent total verdicts or settlements.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section id="contact" class="relative z-10 py-32 bg-basalt border-t border-gridline overflow-hidden">
+    <div class="absolute inset-0 bg-grid opacity-50 pointer-events-none"></div>
+    <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+      <div class="w-16 h-[1px] bg-bronze mx-auto mb-10"></div>
+      <h2 class="font-serif text-4xl sm:text-5xl lg:text-6xl text-parchment mb-8">Initiate Evaluation.</h2>
+      <p class="font-sans text-lg text-parchment/60 mb-12 font-light max-w-2xl mx-auto">
+        Due to the nature of our practice, we accept a highly constrained volume of cases. Contact our office to request a formal evaluation of your matter.
+      </p>
+      
+      <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+        <a href="tel:4043211700" class="group relative inline-flex items-center justify-center bg-parchment text-basalt overflow-hidden px-12 py-5 w-full sm:w-auto transition-transform duration-300 hover:scale-[1.02]">
+          <span class="absolute inset-0 w-full h-full bg-bronze opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+          <span class="relative uppercase tracking-[0.2em] text-[11px] font-bold transition-colors duration-300">Call (404) 321-1700</span>
+        </a>
+        <a href="#" class="group inline-flex items-center justify-center bg-transparent text-parchment px-12 py-5 w-full sm:w-auto border border-parchment/20 hover:border-bronze transition-all duration-300">
+          <span class="uppercase tracking-[0.2em] text-[11px] font-bold text-parchment/80 group-hover:text-bronze transition-colors duration-300">Submit Secure Inquiry</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="relative z-10 bg-basalt border-t border-gridline pt-20 pb-10">
+    <div class="max-w-[90rem] mx-auto px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
+      
+      <div class="lg:col-span-1">
+        <span class="font-serif text-xl tracking-widest text-parchment uppercase font-medium leading-none mb-4 block">Butler <span class="text-bronze italic">Prather</span></span>
+        <p class="font-sans text-[11px] text-parchment/50 font-light leading-relaxed max-w-xs mt-6">
+          A trial firm dedicated to consequential litigation, catastrophic injury, and complex whistleblower actions. Built for plaintiffs.
+        </p>
+      </div>
+
+      <div>
+        <h4 class="font-sans uppercase tracking-[0.2em] text-[9px] text-parchment/40 font-bold mb-6">Columbus Office</h4>
+        <address class="font-sans text-xs text-parchment/70 font-light not-italic leading-loose">
+          233 12th Street<br>
+          Suite 800<br>
+          Columbus, GA 31901<br>
+          <a href="tel:7063221990" class="text-bronze hover:text-parchment transition-colors mt-2 inline-block">(706) 322-1990</a>
+        </address>
+      </div>
+
+      <div>
+        <h4 class="font-sans uppercase tracking-[0.2em] text-[9px] text-parchment/40 font-bold mb-6">Atlanta Office</h4>
+        <address class="font-sans text-xs text-parchment/70 font-light not-italic leading-loose">
+          1040 Crown Pointe Pkwy<br>
+          Suite 400<br>
+          Atlanta, GA 30338<br>
+          <a href="tel:4043211700" class="text-bronze hover:text-parchment transition-colors mt-2 inline-block">(404) 321-1700</a>
+        </address>
+      </div>
+
+      <div>
+        <h4 class="font-sans uppercase tracking-[0.2em] text-[9px] text-parchment/40 font-bold mb-6">Navigation</h4>
+        <ul class="space-y-3 font-sans text-xs font-light">
+          <li><a href="#firm" class="text-parchment/70 hover:text-bronze transition-colors">The Firm</a></li>
+          <li><a href="#practices" class="text-parchment/70 hover:text-bronze transition-colors">Practice Areas</a></li>
+          <li><a href="#results" class="text-parchment/70 hover:text-bronze transition-colors">Verdicts & Settlements</a></li>
+          <li><a href="#" class="text-parchment/70 hover:text-bronze transition-colors">Attorney Roster</a></li>
+          <li><a href="#contact" class="text-parchment/70 hover:text-bronze transition-colors">Contact Us</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="max-w-[90rem] mx-auto px-6 lg:px-12 pt-8 border-t border-gridline flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+      <div class="font-sans text-[9px] text-parchment/30 uppercase tracking-widest">
+        &copy; 2026 Butler Prather LLP. All rights reserved.
+      </div>
+      <div class="flex space-x-6 font-sans text-[9px] text-parchment/30 uppercase tracking-widest">
+        <a href="#" class="hover:text-parchment/60 transition-colors">Disclaimer</a>
+        <a href="#" class="hover:text-parchment/60 transition-colors">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

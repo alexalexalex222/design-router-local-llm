@@ -1,0 +1,4 @@
+- Never dump all 22 full-page donors into a single packet.
+- Never preserve another business identity or service wording.
+- Translate the pattern logic into the target business and screenshot constraint.
+- Never let the routed donor slate sprawl beyond the packet's explicit donor budget.

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7 Seas Medical Spa - Augusta, GA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        ivory: '#F9F8F4',
+                        navy: '#0F172A',
+                        seaglass: '#8FB8B6',
+                        champagne: '#D3B888',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-ivory antialiased text-navy selection:bg-seaglass selection:text-navy">
+
+<!-- Header -->
+<header class="absolute top-0 w-full z-50 px-8 py-10 lg:px-16 flex justify-between items-center mix-blend-difference text-ivory">
+    <div class="flex flex-col">
+        <span class="font-serif text-3xl tracking-widest uppercase leading-none">VII Seas</span>
+        <span class="font-sans text-[0.55rem] tracking-[0.3em] uppercase font-medium opacity-80 mt-2">Concierge Medspa</span>
+    </div>
+    
+    <nav class="hidden md:flex space-x-12">
+        <a href="#" class="text-xs uppercase tracking-widest font-medium hover:text-champagne transition-colors">Treatments</a>
+        <a href="#" class="text-xs uppercase tracking-widest font-medium hover:text-champagne transition-colors">The Experience</a>
+        <a href="#" class="text-xs uppercase tracking-widest font-medium hover:text-champagne transition-colors">Pricing</a>
+    </nav>
+    
+    <div class="hidden md:block">
+        <a href="#" class="border-b border-ivory pb-1 text-xs uppercase tracking-widest font-medium hover:text-champagne hover:border-champagne transition-all">Member Login</a>
+    </div>
+
+    <button class="md:hidden opacity-90 hover:opacity-100">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+    </button>
+</header>
+
+<!-- Hero Section -->
+<main class="relative w-full min-h-screen flex flex-col lg:flex-row overflow-hidden">
+    
+    <!-- Left Content -->
+    <div class="w-full lg:w-5/12 min-h-[60vh] lg:min-h-screen flex flex-col justify-center px-8 lg:px-16 xl:px-24 pt-40 lg:pt-0 relative z-20">
+        
+        <div class="flex items-center space-x-4 mb-8">
+            <div class="h-px w-12 bg-champagne"></div>
+            <span class="text-[0.65rem] uppercase tracking-[0.25em] font-semibold text-navy/60">Augusta, Georgia</span>
+        </div>
+        
+        <h1 class="font-serif text-5xl md:text-6xl xl:text-7xl leading-[1.1] text-navy mb-8">
+            <span class="block italic text-seaglass mb-2 font-light">Elevated</span>
+            Aesthetics,<br>
+            Arriving at<br>
+            Your Door.
+        </h1>
+        
+        <p class="font-sans font-light text-navy/75 text-lg xl:text-xl leading-relaxed max-w-md mb-12">
+            Augusta's exclusive mobile medical spa. Bespoke injectables, advanced skincare, and wellness therapies delivered in the absolute privacy of your home or office.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6 mb-16">
+            <a href="#" class="group relative bg-navy text-ivory text-xs uppercase tracking-widest font-medium py-5 px-10 flex items-center justify-center overflow-hidden">
+                <span class="relative z-10 transition-colors duration-500 group-hover:text-navy">Reserve Consultation</span>
+                <div class="absolute inset-0 w-0 bg-champagne transition-all duration-500 ease-out group-hover:w-full"></div>
+            </a>
+            
+            <a href="#" class="flex items-center justify-center text-xs uppercase tracking-widest font-medium text-navy py-5 px-8 hover:text-champagne transition-colors">
+                View Treatment Menu
+            </a>
+        </div>
+        
+        <!-- Integrated Assurance -->
+        <div class="flex flex-col space-y-4">
+            <div class="flex items-center space-x-3 text-navy/60">
+                <svg class="w-4 h-4 text-champagne" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="text-xs uppercase tracking-widest font-medium">Board-Certified Providers</span>
+            </div>
+            <div class="flex items-center space-x-3 text-navy/60">
+                <svg class="w-4 h-4 text-champagne" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                </svg>
+                <span class="text-xs uppercase tracking-widest font-medium">Absolute Privacy Guaranteed</span>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- Right Image Section -->
+    <div class="w-full lg:w-7/12 relative min-h-[50vh] lg:min-h-screen p-4 lg:p-8 xl:p-12 flex items-center justify-center">
+        <!-- The Image Wrapper -->
+        <div class="relative w-full h-[500px] lg:h-[calc(100vh-6rem)] bg-navy overflow-hidden group">
+            
+            <!-- Fine Offset Border -->
+            <div class="absolute inset-4 lg:inset-6 border border-champagne/40 z-20 pointer-events-none transition-transform duration-700 group-hover:scale-[0.98]"></div>
+            
+            <img 
+                src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=2070&auto=format&fit=crop" 
+                alt="Luxury Medspa Treatment" 
+                class="absolute inset-0 w-full h-full object-cover object-center opacity-90 transition-transform duration-[2s] group-hover:scale-105"
+            >
+            
+            <!-- Subtle Gradient Overlays -->
+            <div class="absolute inset-0 bg-gradient-to-t from-navy/40 via-transparent to-transparent z-10 mix-blend-multiply"></div>
+            <div class="absolute inset-0 bg-navy/10 z-10"></div>
+            
+        </div>
+    </div>
+</main>
+
+<style id="below-fold-patch">
+    /* Subtle hover scaling for service cards */
+    .service-card-hover:hover img {
+        transform: scale(1.05);
+    }
+</style>
+
+<!-- Philosophy / Intro Section -->
+<section class="w-full bg-ivory py-24 lg:py-32 px-8 lg:px-16 xl:px-24 border-t border-champagne/20">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-16">
+        <div class="w-full md:w-1/2 relative">
+            <div class="aspect-[4/5] overflow-hidden bg-navy">
+                <img src="https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?q=80&w=1000&auto=format&fit=crop" alt="Spa Philosophy" class="w-full h-full object-cover opacity-90 transition-transform duration-1000 hover:scale-105">
+            </div>
+            <div class="absolute -bottom-8 -right-8 w-48 h-48 bg-navy p-8 hidden lg:flex items-center justify-center border border-champagne/30">
+                <p class="font-serif text-ivory text-xl text-center italic">"The art of subtle refinement."</p>
+            </div>
+        </div>
+        <div class="w-full md:w-1/2 flex flex-col">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="h-px w-12 bg-champagne"></div>
+                <span class="text-[0.65rem] uppercase tracking-[0.25em] font-semibold text-navy/60">Our Philosophy</span>
+            </div>
+            <h2 class="font-serif text-4xl lg:text-5xl leading-tight text-navy mb-8">
+                Beauty, <span class="italic text-seaglass">Redefined</span><br>On Your Terms.
+            </h2>
+            <p class="font-sans font-light text-navy/80 text-lg leading-relaxed mb-6">
+                We believe aesthetic enhancement should be an intimate, unhurried experience. VII Seas removes the clinical environment, bringing elite, board-certified cosmetic care directly to your sanctuary.
+            </p>
+            <p class="font-sans font-light text-navy/80 text-lg leading-relaxed mb-10">
+                Discretion is our hallmark; natural, undetectable results are our signature. Whether in your home, hotel, or private office, we provide a sterile, luxurious medspa experience tailored entirely to your schedule.
+            </p>
+            <a href="#" class="inline-flex items-center space-x-3 text-xs uppercase tracking-widest font-medium text-navy hover:text-champagne transition-colors w-max group">
+                <span>Meet Our Providers</span>
+                <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
+                </svg>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Services Grid Section -->
+<section class="w-full bg-navy py-24 lg:py-32 px-8 lg:px-16 xl:px-24 text-ivory">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-16 lg:mb-24 gap-8">
+            <div>
+                <div class="flex items-center space-x-4 mb-6">
+                    <div class="h-px w-12 bg-champagne"></div>
+                    <span class="text-[0.65rem] uppercase tracking-[0.25em] font-semibold text-ivory/60">Curated Offerings</span>
+                </div>
+                <h2 class="font-serif text-4xl lg:text-5xl leading-tight mb-4">
+                    Signature <span class="italic text-seaglass">Treatments</span>
+                </h2>
+            </div>
+            <a href="#" class="border-b border-champagne pb-1 text-xs uppercase tracking-widest font-medium hover:text-white transition-colors">
+                View Full Menu
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Service 1 -->
+            <div class="group cursor-pointer service-card-hover">
+                <div class="aspect-[3/4] overflow-hidden bg-black relative mb-6">
+                    <div class="absolute inset-0 bg-navy/20 z-10 group-hover:bg-transparent transition-colors duration-500"></div>
+                    <img src="https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?q=80&w=800&auto=format&fit=crop" alt="Neurotoxins" class="w-full h-full object-cover opacity-80 transition-transform duration-700">
+                </div>
+                <h3 class="font-serif text-2xl mb-3 group-hover:text-champagne transition-colors">Neuromodulators</h3>
+                <p class="font-sans font-light text-ivory/70 text-sm leading-relaxed mb-4">
+                    Precise, conservative application of Botox® and Dysport® to smooth dynamic lines while preserving natural facial expression.
+                </p>
+                <span class="text-[0.65rem] uppercase tracking-[0.2em] font-medium text-champagne">From $14/Unit</span>
+            </div>
+
+            <!-- Service 2 -->
+            <div class="group cursor-pointer service-card-hover mt-0 lg:mt-16">
+                <div class="aspect-[3/4] overflow-hidden bg-black relative mb-6">
+                    <div class="absolute inset-0 bg-navy/20 z-10 group-hover:bg-transparent transition-colors duration-500"></div>
+                    <img src="https://images.unsplash.com/photo-1515377905703-c4788e51af15?q=80&w=800&auto=format&fit=crop" alt="Dermal Fillers" class="w-full h-full object-cover opacity-80 transition-transform duration-700">
+                </div>
+                <h3 class="font-serif text-2xl mb-3 group-hover:text-champagne transition-colors">Dermal Architecture</h3>
+                <p class="font-sans font-light text-ivory/70 text-sm leading-relaxed mb-4">
+                    Strategic volume restoration using premium hyaluronic acid fillers to contour cheeks, refine jawlines, and plump lips.
+                </p>
+                <span class="text-[0.65rem] uppercase tracking-[0.2em] font-medium text-champagne">Consultation Required</span>
+            </div>
+
+            <!-- Service 3 -->
+            <div class="group cursor-pointer service-card-hover mt-0 md:mt-16 lg:mt-0">
+                <div class="aspect-[3/4] overflow-hidden bg-black relative mb-6">
+                    <div class="absolute inset-0 bg-navy/20 z-10 group-hover:bg-transparent transition-colors duration-500"></div>
+                    <img src="https://images.unsplash.com/photo-1532453288672-3a27e9be9efd?q=80&w=800&auto=format&fit=crop" alt="IV Therapy" class="w-full h-full object-cover opacity-80 transition-transform duration-700">
+                </div>
+                <h3 class="font-serif text-2xl mb-3 group-hover:text-champagne transition-colors">Intravenous Wellness</h3>
+                <p class="font-sans font-light text-ivory/70 text-sm leading-relaxed mb-4">
+                    Bespoke IV nutrient therapy designed to optimize cellular hydration, boost immunity, and enhance systemic radiance from within.
+                </p>
+                <span class="text-[0.65rem] uppercase tracking-[0.2em] font-medium text-champagne">From $250/Session</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- The Process Section -->
+<section class="w-full bg-ivory py-24 lg:py-32 px-8 lg:px-16 xl:px-24">
+    <div class="max-w-5xl mx-auto text-center mb-16 lg:mb-24">
+        <div class="flex items-center justify-center space-x-4 mb-6">
+            <div class="h-px w-8 bg-champagne"></div>
+            <span class="text-[0.65rem] uppercase tracking-[0.25em] font-semibold text-navy/60">The Experience</span>
+            <div class="h-px w-8 bg-champagne"></div>
+        </div>
+        <h2 class="font-serif text-4xl lg:text-5xl leading-tight text-navy mb-6">
+            Effortless <span class="italic text-seaglass">Elegance</span>
+        </h2>
+        <p class="font-sans font-light text-navy/70 text-lg max-w-2xl mx-auto">
+            Our protocol is designed for total convenience without compromising the clinical excellence of a traditional high-end medical facility.
+        </p>
+    </div>
+
+    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16 relative">
+        <!-- Connecting Line (Desktop) -->
+        <div class="hidden md:block absolute top-12 left-[15%] right-[15%] h-px bg-champagne/30 z-0"></div>
+
+        <!-- Step 1 -->
+        <div class="relative z-10 flex flex-col items-center text-center bg-ivory px-4">
+            <div class="w-24 h-24 rounded-full bg-navy text-ivory flex items-center justify-center font-serif text-3xl italic mb-8 border-4 border-ivory shadow-xl">
+                01
+            </div>
+            <h3 class="font-serif text-xl text-navy mb-4">The Consultation</h3>
+            <p class="font-sans font-light text-navy/70 text-sm leading-relaxed">
+                A thorough virtual or in-person aesthetic assessment to discuss your goals, review your anatomy, and build a bespoke treatment plan.
+            </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="relative z-10 flex flex-col items-center text-center bg-ivory px-4">
+            <div class="w-24 h-24 rounded-full bg-navy text-ivory flex items-center justify-center font-serif text-3xl italic mb-8 border-4 border-ivory shadow-xl">
+                02
+            </div>
+            <h3 class="font-serif text-xl text-navy mb-4">The Arrival</h3>
+            <p class="font-sans font-light text-navy/70 text-sm leading-relaxed">
+                Your dedicated provider arrives at your location with all medical supplies, establishing a sterile, discreet clinical environment in minutes.
+            </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="relative z-10 flex flex-col items-center text-center bg-ivory px-4">
+            <div class="w-24 h-24 rounded-full bg-navy text-ivory flex items-center justify-center font-serif text-3xl italic mb-8 border-4 border-ivory shadow-xl">
+                03
+            </div>
+            <h3 class="font-serif text-xl text-navy mb-4">The Refinement</h3>
+            <p class="font-sans font-light text-navy/70 text-sm leading-relaxed">
+                Expert administration of your chosen treatments. No waiting rooms, no clinical lighting—just pristine results in absolute comfort.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Final CTA & Footer -->
+<section class="w-full bg-navy text-ivory relative overflow-hidden">
+    <!-- Background Texture/Image -->
+    <div class="absolute inset-0 opacity-10 mix-blend-overlay">
+        <img src="https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?q=80&w=2000&auto=format&fit=crop" alt="Texture Background" class="w-full h-full object-cover">
+    </div>
+    
+    <div class="relative z-10 py-32 px-8 lg:px-16 text-center">
+        <h2 class="font-serif text-5xl lg:text-6xl mb-8">Ready to <span class="italic text-seaglass">Transform?</span></h2>
+        <p class="font-sans font-light text-ivory/80 text-lg max-w-xl mx-auto mb-12">
+            Secure your private appointment in Augusta, Evans, or Martinez. Availability is strictly limited to ensure uncompromising care.
+        </p>
+        <a href="#" class="inline-block bg-champagne text-navy text-xs uppercase tracking-widest font-medium py-5 px-12 hover:bg-ivory transition-colors">
+            Request an Appointment
+        </a>
+    </div>
+
+    <!-- Footer -->
+    <footer class="relative z-10 border-t border-ivory/10 pt-16 pb-8 px-8 lg:px-16 xl:px-24">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+            
+            <!-- Brand -->
+            <div class="col-span-1 md:col-span-2 lg:col-span-1">
+                <span class="font-serif text-2xl tracking-widest uppercase leading-none block mb-2">VII Seas</span>
+                <span class="font-sans text-[0.55rem] tracking-[0.3em] uppercase font-medium opacity-60 block mb-6">Concierge Medspa</span>
+                <p class="font-sans font-light text-ivory/50 text-xs leading-relaxed max-w-xs">
+                    Augusta's premier mobile medical aesthetic practice. Redefining luxury through convenience, privacy, and unparalleled clinical expertise.
+                </p>
+            </div>
+
+            <!-- Links -->
+            <div>
+                <h4 class="font-serif text-lg italic text-seaglass mb-6">Treatments</h4>
+                <ul class="space-y-3 font-sans font-light text-sm text-ivory/70">
+                    <li><a href="#" class="hover:text-champagne transition-colors">Neuromodulators</a></li>
+                    <li><a href="#" class="hover:text-champagne transition-colors">Dermal Fillers</a></li>
+                    <li><a href="#" class="hover:text-champagne transition-colors">IV Hydration</a></li>
+                    <li><a href="#" class="hover:text-champagne transition-colors">Chemical Peels</a></li>
+                    <li><a href="#" class="hover:text-champagne transition-colors">Microneedling</a></li>
+                </ul>
+            </div>
+
+            <!-- Service Area -->
+            <div>
+                <h4 class="font-serif text-lg italic text-seaglass mb-6">Service Area</h4>
+                <ul class="space-y-3 font-sans font-light text-sm text-ivory/70">
+                    <li>Augusta, GA</li>
+                    <li>Evans, GA</li>
+                    <li>Martinez, GA</li>
+                    <li>North Augusta, SC</li>
+                    <li><span class="text-[0.65rem] italic text-champagne uppercase tracking-wider">Travel fees apply outside 20mi</span></li>
+                </ul>
+            </div>
+
+            <!-- Contact -->
+            <div>
+                <h4 class="font-serif text-lg italic text-seaglass mb-6">Connect</h4>
+                <ul class="space-y-3 font-sans font-light text-sm text-ivory/70">
+                    <li><a href="tel:+17065550123" class="hover:text-champagne transition-colors">(706) 555-0123</a></li>
+                    <li><a href="mailto:hello@7seasmedspa.com" class="hover:text-champagne transition-colors">hello@7seasmedspa.com</a></li>
+                    <li class="pt-4 flex space-x-4">
+                        <a href="#" class="text-ivory/50 hover:text-champagne transition-colors">
+                            <span class="sr-only">Instagram</span>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clip-rule="evenodd" /></svg>
+                        </a>
+                        <a href="#" class="text-ivory/50 hover:text-champagne transition-colors">
+                            <span class="sr-only">Facebook</span>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd" /></svg>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row justify-between items-center border-t border-ivory/10 pt-8">
+            <p class="font-sans text-[0.65rem] text-ivory/40 tracking-wider uppercase mb-4 md:mb-0">
+                &copy; 2026 VII Seas Medspa. All rights reserved.
+            </p>
+            <div class="flex space-x-6">
+                <a href="#" class="font-sans text-[0.65rem] text-ivory/40 tracking-wider uppercase hover:text-ivory transition-colors">Privacy Policy</a>
+                <a href="#" class="font-sans text-[0.65rem] text-ivory/40 tracking-wider uppercase hover:text-ivory transition-colors">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+</section>
+
+</body>
+</html>

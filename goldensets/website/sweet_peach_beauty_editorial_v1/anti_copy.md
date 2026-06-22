@@ -1,0 +1,4 @@
+- Do not reuse Sweet Peach wording, sugaring claims, Atlanta-specific history, or the exact `The Art of Natural Hair Removal.` headline cadence.
+- Do not copy the exact peach-on-cream palette values, circular badge object, or logo mark one-to-one.
+- Do not preserve waxing-specific trust claims, organic paste language, or service labels if the target business is med spa or treatment-led beauty.
+- Borrow the calm editorial beauty grammar, booking clarity, and first-frame restraint only.

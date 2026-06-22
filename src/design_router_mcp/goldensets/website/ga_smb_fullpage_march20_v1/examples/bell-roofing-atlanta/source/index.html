@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bell Roofing | Atlanta's Roofing Atelier</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --graphite: #131416;
+  --graphite-light: #1d1f23;
+  --copper: #729186;
+  --copper-light: #9fbcaf;
+  --ember: #e24a35;
+  --ember-dark: #b53828;
+  --limestone: #ecebe8;
+  --limestone-dark: #9e9d99;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--graphite);
+  font-family: 'Inter', sans-serif;
+  color: var(--limestone);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.hero-wrapper {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Background Atmosphere */
+.bg-grid {
+  position: absolute;
+  inset: 0;
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(236, 235, 232, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(236, 235, 232, 0.02) 1px, transparent 1px);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.storm-gradient {
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 60%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(114, 145, 134, 0.12) 0%, transparent 70%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ember-glow {
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  width: 40%;
+  height: 50%;
+  background: radial-gradient(circle, rgba(226, 74, 53, 0.04) 0%, transparent 70%);
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Architectural Lines */
+.architectural-lines {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.line-v {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255,255,255,0.04);
+}
+.line-v-1 { left: 4rem; }
+.line-v-2 { left: 50%; }
+.line-v-3 { right: 4rem; }
+
+.line-h {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255,255,255,0.04);
+}
+.line-h-1 { top: 6rem; }
+.line-h-2 { bottom: 4rem; }
+
+/* Crosshairs */
+.crosshair {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  z-index: 20;
+}
+.crosshair::before, .crosshair::after {
+  content: '';
+  position: absolute;
+  background: var(--copper);
+}
+.crosshair::before { top: 50%; left: 0; right: 0; height: 1px; transform: translateY(-50%); }
+.crosshair::after { left: 50%; top: 0; bottom: 0; width: 1px; transform: translateX(-50%); }
+.ch-1 { top: 6rem; left: 4rem; transform: translate(-50%, -50%); }
+.ch-2 { top: 6rem; right: 4rem; transform: translate(50%, -50%); }
+
+/* Navigation */
+.atelier-nav {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 4rem;
+  height: 6rem;
+}
+
+.logo {
+  font-family: 'Space Grotesk', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: flex;
+  flex-direction: column;
+}
+.logo-main { display: flex; align-items: baseline; }
+.logo-bell { font-weight: 700; color: var(--limestone); font-size: 1.5rem; }
+.logo-roofing { font-weight: 300; color: var(--copper-light); font-size: 1.5rem; margin-left: 0.25rem; }
+.logo-sub { font-size: 0.6rem; color: var(--limestone-dark); letter-spacing: 0.25em; margin-top: 0.15rem; }
+
+.nav-links {
+  display: flex;
+  gap: 3rem;
+}
+.nav-links a {
+  color: var(--limestone-dark);
+  text-decoration: none;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+.nav-links a:hover {
+  color: var(--limestone);
+}
+
+.nav-cta a {
+  display: inline-block;
+  background: rgba(226, 74, 53, 0.05);
+  color: var(--ember);
+  text-decoration: none;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  border: 1px solid var(--ember);
+  padding: 0.75rem 1.5rem;
+  transition: all 0.3s;
+}
+.nav-cta a:hover {
+  background: var(--ember);
+  color: white;
+}
+
+/* Main Content Area */
+.hero-content {
+  position: relative;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  flex: 1;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Left Column - Copy & CTA */
+.content-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 4rem 4rem 4rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  align-self: flex-start;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(159, 188, 175, 0.2);
+  color: var(--copper-light);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  margin-bottom: 2rem;
+  background: rgba(114, 145, 134, 0.05);
+}
+.badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--ember);
+  border-radius: 50%;
+}
+
+.headline {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(3rem, 4.5vw, 5rem);
+  font-weight: 500;
+  line-height: 1.05;
+  margin-bottom: 1.5rem;
+  color: var(--limestone);
+  letter-spacing: -0.02em;
+}
+
+.text-copper {
+  color: var(--copper-light);
+  font-weight: 300;
+  display: inline-block;
+}
+
+.subhead {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: var(--limestone-dark);
+  max-width: 85%;
+  margin-bottom: 3.5rem;
+}
+
+.cta-group {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 4rem;
+}
+
+.btn-primary {
+  background-color: var(--ember);
+  color: white;
+  padding: 1rem 2rem;
+  text-decoration: none;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--ember);
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.3s ease;
+}
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.6s ease;
+}
+.btn-primary:hover {
+  background-color: var(--ember-dark);
+  border-color: var(--ember-dark);
+}
+.btn-primary:hover::after {
+  left: 100%;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--limestone);
+  padding: 1rem 2rem;
+  text-decoration: none;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 500;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  border: 1px solid rgba(236, 235, 232, 0.2);
+  transition: all 0.3s ease;
+}
+.btn-secondary:hover {
+  border-color: var(--limestone);
+  background-color: rgba(236, 235, 232, 0.05);
+}
+
+/* Specs Module */
+.spec-module {
+  display: flex;
+  gap: 3rem;
+  border-top: 1px solid rgba(236, 235, 232, 0.1);
+  padding-top: 2.5rem;
+}
+
+.spec-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.spec-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: -1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 40px;
+  background: rgba(236, 235, 232, 0.1);
+}
+
+.spec-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 2.25rem;
+  font-weight: 300;
+  color: var(--limestone);
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+}
+.spec-value small {
+  font-size: 0.875rem;
+  color: var(--copper);
+  margin-left: 0.25rem;
+  font-weight: 500;
+}
+.spec-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--limestone-dark);
+  margin-top: 0.5rem;
+}
+
+/* Right Column - Architectural Sketchbook */
+.content-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 4rem 2rem 0;
+  position: relative;
+}
+
+.sketchbook-panel {
+  width: 100%;
+  max-width: 640px;
+  background: var(--graphite-light);
+  border: 1px solid rgba(159, 188, 175, 0.15);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+  position: relative;
+  z-index: 5;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(159, 188, 175, 0.15);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+}
+
+.panel-id { color: var(--copper); font-weight: 500; }
+.panel-title { color: var(--limestone-dark); }
+
+.blueprint-canvas {
+  width: 100%;
+  padding: 3rem 1.5rem;
+  background: var(--graphite);
+  box-shadow: inset 0 0 40px rgba(0,0,0,0.4);
+  position: relative;
+}
+
+.truss-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.panel-footer {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid rgba(159, 188, 175, 0.15);
+  background: rgba(0,0,0,0.2);
+}
+
+.detail-col {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.detail-col:not(:last-child) {
+  border-right: 1px solid rgba(159, 188, 175, 0.15);
+}
+
+.detail-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  color: var(--copper-light);
+  opacity: 0.7;
+}
+
+.detail-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.85rem;
+  color: var(--limestone);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .headline { font-size: 3.5rem; }
+  .content-left { padding-right: 2rem; }
+  .spec-module { gap: 2rem; }
+}
+
+@media (max-width: 1024px) {
+  .hero-content {
+    grid-template-columns: 1fr;
+    padding: 0;
+  }
+  .content-left {
+    padding: 2rem 3rem 0 3rem;
+  }
+  .content-right {
+    padding: 4rem 3rem;
+  }
+  .architectural-lines, .crosshair {
+    display: none;
+  }
+  .subhead {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .atelier-nav {
+    flex-direction: column;
+    padding: 1.5rem;
+    height: auto;
+    gap: 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+  .content-left {
+    padding: 3rem 1.5rem 0 1.5rem;
+  }
+  .content-right {
+    padding: 3rem 1.5rem;
+  }
+  .headline {
+    font-size: 2.75rem;
+  }
+  .cta-group {
+    flex-direction: column;
+  }
+  .btn-primary {
+    justify-content: center;
+  }
+  .btn-secondary {
+    text-align: center;
+  }
+  .spec-module {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .spec-item:not(:last-child)::after {
+    display: none;
+  }
+  .panel-footer {
+    grid-template-columns: 1fr;
+  }
+  .detail-col:not(:last-child) {
+    border-right: none;
+    border-bottom: 1px solid rgba(159, 188, 175, 0.15);
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="hero-wrapper">
+  <!-- Architectural Background Elements -->
+  <div class="bg-grid"></div>
+  <div class="storm-gradient"></div>
+  <div class="ember-glow"></div>
+  
+  <div class="architectural-lines">
+    <div class="line-v line-v-1"></div>
+    <div class="line-v line-v-2"></div>
+    <div class="line-v line-v-3"></div>
+    <div class="line-h line-h-1"></div>
+    <div class="line-h line-h-2"></div>
+  </div>
+
+  <div class="crosshair ch-1"></div>
+  <div class="crosshair ch-2"></div>
+
+  <!-- Header -->
+  <nav class="atelier-nav">
+    <div class="logo">
+      <div class="logo-main"><span class="logo-bell">BELL</span><span class="logo-roofing">ROOFING</span></div>
+      <div class="logo-sub">ATLANTA, GA</div>
+    </div>
+    <div class="nav-links">
+      <a href="#">SYSTEMS</a>
+      <a href="#">WARRANTIES</a>
+      <a href="#">PORTFOLIO</a>
+      <a href="#">ABOUT</a>
+    </div>
+    <div class="nav-cta">
+      <a href="#">EMERGENCY REPAIR</a>
+    </div>
+  </nav>
+
+  <!-- Hero Main Area -->
+  <main class="hero-content">
+    
+    <!-- Left Copy -->
+    <div class="content-left">
+      <div class="badge">EST. 1998 &mdash; ATLANTA'S ROOFING ATELIER</div>
+      
+      <h1 class="headline">THE ATLANTA STANDARD<br>FOR <span class="text-copper">STRUCTURAL INTEGRITY.</span></h1>
+      
+      <p class="subhead">We don't do siding. We don't do gutters. We engineer, repair, and replace roof systems built to outlast extreme Georgia weather. Backed by lifetime craftsmanship warranties.</p>
+      
+      <div class="cta-group">
+        <a href="#" class="btn-primary">SCHEDULE INSPECTION <span class="arrow">↗</span></a>
+        <a href="#" class="btn-secondary">EXPLORE SYSTEMS</a>
+      </div>
+      
+      <div class="spec-module">
+        <div class="spec-item">
+          <span class="spec-value">130<small>MPH</small></span>
+          <span class="spec-label">WIND RESISTANCE RATING</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-value">50<small>YR</small></span>
+          <span class="spec-label">SYSTEM WARRANTY</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-value">CLASS 4</span>
+          <span class="spec-label">IMPACT PROTECTION</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Visual Module -->
+    <div class="content-right">
+      <div class="sketchbook-panel">
+        
+        <div class="panel-header">
+          <span class="panel-id">DOC. REF: BR-042</span>
+          <span class="panel-title">ARCHITECTURAL ROOF SPECIFICATION</span>
+        </div>
+        
+        <div class="blueprint-canvas">
+          <svg viewBox="0 0 600 380" class="truss-svg" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="small-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(107, 142, 133, 0.06)" stroke-width="1"/>
+              </pattern>
+              <pattern id="large-grid" width="100" height="100" patternUnits="userSpaceOnUse">
+                <path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(107, 142, 133, 0.12)" stroke-width="1"/>
+              </pattern>
+            </defs>
+            
+            <!-- Grid Background -->
+            <rect width="100%" height="100%" fill="url(#small-grid)" />
+            <rect width="100%" height="100%" fill="url(#large-grid)" />
+            
+            <!-- Foundation/Top Plate -->
+            <rect x="50" y="280" width="500" height="10" fill="rgba(236, 235, 232, 0.03)" stroke="var(--limestone-dark)" stroke-width="1"/>
+            
+            <!-- Main Truss Outline -->
+            <path d="M 50 280 L 300 120 L 550 280 Z" fill="rgba(236, 235, 232, 0.02)" stroke="var(--limestone)" stroke-width="2"/>
+            
+            <!-- Overhangs -->
+            <path d="M 50 280 L 25 296" fill="none" stroke="var(--limestone)" stroke-width="2"/>
+            <path d="M 550 280 L 575 296" fill="none" stroke="var(--limestone)" stroke-width="2"/>
+            
+            <!-- Roof Decking Line (Dashed) -->
+            <path d="M 15 296 L 300 110 L 585 296" fill="none" stroke="var(--copper-light)" stroke-width="1.5" stroke-dasharray="6 4"/>
+            
+            <!-- Internal Webbing -->
+            <path d="M 300 120 L 300 280" fill="none" stroke="var(--limestone-dark)" stroke-width="1.5"/>
+            <path d="M 175 200 L 300 280" fill="none" stroke="var(--limestone-dark)" stroke-width="1.5"/>
+            <path d="M 425 200 L 300 280" fill="none" stroke="var(--limestone-dark)" stroke-width="1.5"/>
+            <path d="M 175 200 L 175 280" fill="none" stroke="var(--limestone-dark)" stroke-width="1"/>
+            <path d="M 425 200 L 425 280" fill="none" stroke="var(--limestone-dark)" stroke-width="1"/>
+            
+            <!-- Dimensions -->
+            <!-- Width Span -->
+            <path d="M 50 325 L 550 325" fill="none" stroke="var(--copper)" stroke-width="1"/>
+            <path d="M 50 315 L 50 335" fill="none" stroke="var(--copper)" stroke-width="1"/>
+            <path d="M 550 315 L 550 335" fill="none" stroke="var(--copper)" stroke-width="1"/>
+            <text x="300" y="320" fill="var(--copper)" font-family="Space Grotesk" font-size="12" text-anchor="middle" font-weight="500">SPAN: 40' - 0"</text>
+
+            <!-- Height Rise -->
+            <path d="M 20 120 L 20 280" fill="none" stroke="var(--copper)" stroke-width="1"/>
+            <path d="M 10 120 L 30 120" fill="none" stroke="var(--copper)" stroke-width="1"/>
+            <path d="M 10 280 L 30 280" fill="none" stroke="var(--copper)" stroke-width="1"/>
+            <text x="15" y="200" fill="var(--copper)" font-family="Space Grotesk" font-size="12" text-anchor="middle" transform="rotate(-90 15,200)" font-weight="500">RISE: 10' - 8"</text>
+            
+            <!-- Pitch Calculation Triangle -->
+            <path d="M 175 200 L 175 230 L 128.125 230" fill="none" stroke="var(--ember)" stroke-width="1.5"/>
+            <text x="183" y="220" fill="var(--ember)" font-family="Space Grotesk" font-size="10" font-weight="600">8</text>
+            <text x="150" y="243" fill="var(--ember)" font-family="Space Grotesk" font-size="10" font-weight="600">12</text>
+            
+            <!-- Callout Nodes & Labels -->
+            <!-- Ridge Vent -->
+            <circle cx="300" cy="120" r="4" fill="var(--graphite)" stroke="var(--ember)" stroke-width="1.5"/>
+            <path d="M 300 116 L 300 70 L 340 70" fill="none" stroke="var(--ember)" stroke-width="1"/>
+            <text x="348" y="74" fill="var(--ember)" font-family="Space Grotesk" font-size="10" font-weight="600" letter-spacing="0.05em">RIDGE VENT EXHAUST</text>
+            
+            <!-- Decking/Shingles -->
+            <circle cx="425" cy="200" r="4" fill="var(--graphite)" stroke="var(--copper-light)" stroke-width="1.5"/>
+            <path d="M 428 197 L 460 160 L 530 160" fill="none" stroke="var(--copper-light)" stroke-width="1"/>
+            <text x="536" y="163" fill="var(--copper-light)" font-family="Space Grotesk" font-size="10" letter-spacing="0.05em">GAF TIMBERLINE HDZ</text>
+
+            <!-- Underlayment -->
+            <circle cx="175" cy="200" r="4" fill="var(--graphite)" stroke="var(--copper-light)" stroke-width="1.5"/>
+            <path d="M 172 197 L 140 160 L 70 160" fill="none" stroke="var(--copper-light)" stroke-width="1"/>
+            <text x="64" y="163" fill="var(--copper-light)" font-family="Space Grotesk" font-size="10" text-anchor="end" letter-spacing="0.05em">SYNTHETIC UNDERLAYMENT</text>
+            
+            <!-- Drip Edge -->
+            <circle cx="575" cy="296" r="4" fill="var(--graphite)" stroke="var(--copper-light)" stroke-width="1.5"/>
+            <path d="M 579 296 L 590 296" fill="none" stroke="var(--copper-light)" stroke-width="1"/>
+            <text x="590" y="291" fill="var(--copper-light)" font-family="Space Grotesk" font-size="9" text-anchor="end" letter-spacing="0.05em">DRIP EDGE + ICE SHIELD</text>
+
+          </svg>
+        </div>
+        
+        <div class="panel-footer">
+          <div class="detail-col">
+            <span class="detail-label">MATERIAL</span>
+            <span class="detail-value">ARCHITECTURAL SHINGLE</span>
+          </div>
+          <div class="detail-col">
+            <span class="detail-label">SYSTEM</span>
+            <span class="detail-value">WEATHER STOPPER&trade;</span>
+          </div>
+          <div class="detail-col">
+            <span class="detail-label">WARRANTY</span>
+            <span class="detail-value">LIFETIME TRANSFERABLE</span>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+    
+  
+
+<style id="below-fold-patch">
+  .section-padding { padding: 8rem 4rem; }
+  .bg-graphite { background-color: var(--graphite); }
+  .bg-graphite-light { background-color: var(--graphite-light); }
+  .bg-graphite-dark { background-color: #0a0b0c; }
+  
+  .container { max-width: 1400px; margin: 0 auto; width: 100%; }
+
+  .grid-2 { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 6rem; align-items: center; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5rem; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.5rem; }
+
+  .font-space { font-family: 'Space Grotesk', sans-serif; }
+  .font-inter { font-family: 'Inter', sans-serif; }
+  .text-limestone { color: var(--limestone); }
+  .text-limestone-dark { color: var(--limestone-dark); }
+  .text-copper { color: var(--copper); }
+  .text-copper-light { color: var(--copper-light); }
+  .text-ember { color: var(--ember); }
+
+  .section-title { font-size: clamp(2.5rem, 4vw, 3.5rem); font-weight: 500; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 1.5rem; }
+  .section-p { font-size: 1.125rem; line-height: 1.7; color: var(--limestone-dark); }
+
+  /* Proof Strip */
+  .proof-strip { border-top: 1px solid rgba(159, 188, 175, 0.15); border-bottom: 1px solid rgba(159, 188, 175, 0.15); display: flex; justify-content: space-between; padding: 4rem 0; margin-top: 6rem; }
+  .proof-item { flex: 1; text-align: center; border-right: 1px solid rgba(159, 188, 175, 0.15); }
+  .proof-item:last-child { border-right: none; }
+  .proof-val { font-size: 3.5rem; font-weight: 300; color: var(--limestone); line-height: 1; margin-bottom: 0.75rem; }
+  .proof-label { font-size: 0.75rem; color: var(--copper-light); letter-spacing: 0.2em; font-weight: 500; }
+
+  /* System Cards */
+  .system-card { background: var(--graphite-light); border: 1px solid rgba(159, 188, 175, 0.15); padding: 3.5rem 2.5rem; display: flex; flex-direction: column; transition: all 0.4s ease; }
+  .system-card:hover { border-color: var(--copper-light); box-shadow: 0 20px 40px rgba(0,0,0,0.4); transform: translateY(-4px); }
+  .system-number { font-size: 0.85rem; color: var(--copper); letter-spacing: 0.15em; margin-bottom: 3rem; font-weight: 600; }
+  .system-card-title { font-size: 1.5rem; color: var(--limestone); margin-bottom: 1.25rem; font-weight: 500; letter-spacing: -0.01em; }
+  .system-card-desc { font-size: 1rem; line-height: 1.6; color: var(--limestone-dark); flex-grow: 1; margin-bottom: 3rem; }
+  .system-link { font-size: 0.75rem; color: var(--ember); text-decoration: none; letter-spacing: 0.15em; font-weight: 600; display: inline-flex; align-items: center; transition: color 0.3s; }
+  .system-link:hover { color: var(--ember-dark); }
+
+  /* Process Steps */
+  .process-step { border-top: 1px solid rgba(159, 188, 175, 0.15); padding-top: 2.5rem; }
+  .process-num { font-size: 2.5rem; color: var(--copper-light); font-weight: 300; line-height: 1; margin-bottom: 1.5rem; }
+  .process-title { font-size: 1.25rem; color: var(--limestone); margin-bottom: 1rem; font-weight: 500; letter-spacing: 0.05em; }
+  .process-desc { font-size: 0.95rem; line-height: 1.6; color: var(--limestone-dark); }
+
+  /* Testimonial */
+  .testimonial-wrap { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .testimonial-quote { font-size: clamp(1.75rem, 3vw, 2.75rem); line-height: 1.3; font-weight: 300; color: var(--limestone); margin-bottom: 3rem; }
+  .testimonial-author { font-size: 0.85rem; color: var(--copper-light); letter-spacing: 0.2em; font-weight: 500; }
+
+  /* CTA Section */
+  .cta-section { border-top: 1px solid rgba(159, 188, 175, 0.15); }
+  .cta-content { max-width: 700px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; text-align: center; }
+
+  /* Footer */
+  .site-footer { background: var(--graphite-light); padding: 6rem 4rem 2rem 4rem; border-top: 1px solid rgba(159, 188, 175, 0.15); }
+  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: 4rem; margin-bottom: 6rem; }
+  .footer-col-title { font-size: 0.75rem; color: var(--limestone); letter-spacing: 0.2em; font-weight: 600; margin-bottom: 1.5rem; text-transform: uppercase; }
+  .footer-links { list-style: none; }
+  .footer-links li { margin-bottom: 1rem; }
+  .footer-links a { color: var(--limestone-dark); text-decoration: none; font-size: 0.9rem; transition: color 0.3s; }
+  .footer-links a:hover { color: var(--copper-light); }
+  .footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 2rem; border-top: 1px solid rgba(159, 188, 175, 0.15); font-size: 0.8rem; color: var(--limestone-dark); }
+
+  @media (max-width: 1024px) {
+    .section-padding { padding: 5rem 2rem; }
+    .grid-2 { grid-template-columns: 1fr; gap: 3rem; }
+    .grid-3 { grid-template-columns: 1fr; }
+    .grid-4 { grid-template-columns: 1fr 1fr; gap: 3rem; }
+    .proof-strip { flex-direction: column; gap: 3rem; padding: 3rem 0; border-left: none; border-right: none; margin-top: 4rem; }
+    .proof-item { border-right: none; border-bottom: 1px solid rgba(159, 188, 175, 0.15); padding-bottom: 3rem; }
+    .proof-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .site-footer { padding: 4rem 2rem 2rem 2rem; }
+  }
+  @media (max-width: 768px) {
+    .grid-4 { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr; gap: 3rem; }
+    .footer-bottom { flex-direction: column; gap: 1rem; text-align: center; }
+    .cta-group { flex-direction: column; width: 100%; }
+    .cta-group .btn-primary, .cta-group .btn-secondary { width: 100%; justify-content: center; }
+  }
+</style>
+
+<section class="section-padding bg-graphite">
+  <div class="container">
+    <div class="grid-2">
+      <div>
+        <div class="badge">THE BELL DIFFERENCE</div>
+        <h2 class="section-title font-space">WE ENGINEER ROOF SYSTEMS.<br><span class="text-copper">WE DO NOT NAIL SHINGLES.</span></h2>
+      </div>
+      <div style="display: flex; flex-direction: column; justify-content: center;">
+        <p class="section-p font-inter" style="margin-bottom: 1.5rem;">A roof is not a commodity—it is the primary structural defense of your home. In Atlanta's volatile climate, standard contractor practices fail prematurely.</p>
+        <p class="section-p font-inter">We treat every installation as an architectural project, utilizing precise material science, engineered ventilation, and uncompromising craftsmanship to deliver a barrier that endures.</p>
+      </div>
+    </div>
+    
+    <div class="proof-strip">
+      <div class="proof-item">
+        <div class="proof-val font-space">13,000+</div>
+        <div class="proof-label font-space">INSTALLATIONS COMPLETED</div>
+      </div>
+      <div class="proof-item">
+        <div class="proof-val font-space">1998</div>
+        <div class="proof-label font-space">YEAR ESTABLISHED</div>
+      </div>
+      <div class="proof-item">
+        <div class="proof-val font-space">50 YR</div>
+        <div class="proof-label font-space">SYSTEM WARRANTIES</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-padding bg-graphite-dark">
+  <div class="container">
+    <div class="badge">SPECIFICATION PROFILES</div>
+    <h2 class="section-title font-space" style="margin-bottom: 4rem;">ARCHITECTURAL <span class="text-copper">SOLUTIONS</span></h2>
+    
+    <div class="grid-3">
+      <div class="system-card">
+        <div class="system-number font-space">01 // ASPHALT</div>
+        <h3 class="system-card-title font-space">ARCHITECTURAL SHINGLE</h3>
+        <p class="system-card-desc font-inter">Weather Stopper&trade; systems using high-dimensional, heavy-weight fiberglass asphalt. Designed for maximum wind deflection and striking visual depth across residential structures.</p>
+        <a href="#" class="system-link font-space">VIEW SPECIFICATIONS <span style="margin-left:8px;">&#8594;</span></a>
+      </div>
+      
+      <div class="system-card">
+        <div class="system-number font-space">02 // STEEL</div>
+        <h3 class="system-card-title font-space">STANDING SEAM METAL</h3>
+        <p class="system-card-desc font-inter">Engineered 24-gauge Galvalume steel systems with concealed fasteners. Permanent, impenetrable, and architecturally distinct. Built to outlast the structure itself.</p>
+        <a href="#" class="system-link font-space">VIEW SPECIFICATIONS <span style="margin-left:8px;">&#8594;</span></a>
+      </div>
+      
+      <div class="system-card">
+        <div class="system-number font-space">03 // MEMBRANE</div>
+        <h3 class="system-card-title font-space">LOW-SLOPE COMMERCIAL</h3>
+        <p class="system-card-desc font-inter">Commercial-grade single-ply TPO &amp; EPDM membranes utilizing heat-welded seams. Absolute waterproofing engineered for zero-pitch architectural features and flat roofs.</p>
+        <a href="#" class="system-link font-space">VIEW SPECIFICATIONS <span style="margin-left:8px;">&#8594;</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-padding bg-graphite">
+  <div class="container">
+    <div class="badge">DEPLOYMENT PROTOCOL</div>
+    <h2 class="section-title font-space" style="margin-bottom: 5rem;">THE INSTALLATION <span class="text-copper">STANDARD</span></h2>
+    
+    <div class="grid-4">
+      <div class="process-step">
+        <div class="process-num font-space">01.</div>
+        <h4 class="process-title font-space">DIAGNOSTIC</h4>
+        <p class="process-desc font-inter">Thorough structural and material analysis of the existing roof, identifying underlying rot and ventilation failures rather than just providing a visual quote.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-num font-space">02.</div>
+        <h4 class="process-title font-space">PREPARATION</h4>
+        <p class="process-desc font-inter">Complete removal to the decking substrate. Remediation of compromised structural elements to ensure a flawless foundation for the new system.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-num font-space">03.</div>
+        <h4 class="process-title font-space">INTEGRATION</h4>
+        <p class="process-desc font-inter">Multi-layer installation including perimeter ice shields, synthetic underlayment, drip edges, and mathematically calculated exhaust ventilation.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-num font-space">04.</div>
+        <h4 class="process-title font-space">ASSURANCE</h4>
+        <p class="process-desc font-inter">Rigorous 40-point post-installation inspection by a senior supervisor. The property is swept with industrial magnets and left surgically clean.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-padding bg-graphite-light">
+  <div class="container">
+    <div class="testimonial-wrap">
+      <div class="badge" style="align-self: center; margin-bottom: 3rem;">CLIENT OUTCOME</div>
+      <h3 class="testimonial-quote font-space">"After severe storm damage, three contractors offered me basic patches. Bell Roofing provided a comprehensive structural report and an engineered replacement system. They operate on a completely different level of professionalism."</h3>
+      <div class="testimonial-author font-space">&mdash; M. HARRISON, BUCKHEAD, GA</div>
+    </div>
+  </div>
+</section>
+
+<section class="section-padding bg-graphite cta-section">
+  <div class="container">
+    <div class="cta-content">
+      <div class="badge" style="align-self: center; margin-bottom: 2rem;">INITIATE PROJECT</div>
+      <h2 class="section-title font-space">SECURE YOUR HOME'S <span class="text-copper">INTEGRITY.</span></h2>
+      <p class="section-p font-inter" style="margin-bottom: 3rem;">Contact us to schedule a comprehensive structural diagnostic and receive a detailed architectural specification for your property.</p>
+      <div class="cta-group" style="margin-bottom: 0; justify-content: center;">
+        <a href="#" class="btn-primary">REQUEST DIAGNOSTIC <span class="arrow">&#8599;</span></a>
+        <a href="#" class="btn-secondary">CALL (404) 555-0198</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="logo" style="margin-bottom: 1.5rem;">
+          <div class="logo-main"><span class="logo-bell">BELL</span><span class="logo-roofing">ROOFING</span></div>
+          <div class="logo-sub">ATLANTA, GA</div>
+        </div>
+        <p class="font-inter text-limestone-dark" style="font-size: 0.9rem; line-height: 1.6; max-width: 300px;">
+          Engineered roof systems built to outlast extreme Georgia weather. Backed by lifetime craftsmanship warranties.
+        </p>
+      </div>
+      <div>
+        <h5 class="footer-col-title font-space">EXPLORE</h5>
+        <ul class="footer-links font-inter">
+          <li><a href="#">System Specifications</a></li>
+          <li><a href="#">Warranty Details</a></li>
+          <li><a href="#">Architectural Portfolio</a></li>
+          <li><a href="#">About The Atelier</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5 class="footer-col-title font-space">LEGAL</h5>
+        <ul class="footer-links font-inter">
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Licensing &amp; Insurance</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5 class="footer-col-title font-space">CONTACT</h5>
+        <ul class="footer-links font-inter">
+          <li><a href="#">P: (404) 555-0198</a></li>
+          <li><a href="#">E: build@bellroofing.com</a></li>
+          <li style="margin-top: 1rem;"><a href="#">1200 Architect Way<br>Atlanta, GA 30309</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom font-inter">
+      <span>&copy; 2026 Bell Roofing. All Rights Reserved.</span>
+      <span>GA STATE LICENSE #RB-48201</span>
+    </div>
+  </div>
+</footer>
+
+</main>
+</div>
+
+</body>
+</html>

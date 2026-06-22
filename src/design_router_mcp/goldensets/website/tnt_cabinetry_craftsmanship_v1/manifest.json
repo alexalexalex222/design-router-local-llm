@@ -1,0 +1,44 @@
+{
+  "pack_id": "tnt_cabinetry_craftsmanship_v1",
+  "role": "anchor",
+  "family": "website.local_service",
+  "source_paths": [
+    "source_snapshot/index.html",
+    "source_snapshot/styles.css",
+    "source_snapshot/tnt_cabinets_bg.png"
+  ],
+  "origin_example_ids": [
+    "19-tnt-cabinets-columbus"
+  ],
+  "stack": ["html_css", "vanilla", "website"],
+  "tones": ["premium", "warm", "residential", "craftsmanship", "restrained", "dark"],
+  "surfaces": ["homepage", "hero", "landing", "section"],
+  "motif_tags": [
+    "hero_shell",
+    "sticky_nav",
+    "cta_treatment",
+    "headline_hierarchy",
+    "trust_rail",
+    "phone_pill",
+    "material_showcase"
+  ],
+  "supports_tasks": [
+    "hero_redesign",
+    "homepage_polish",
+    "cabinetry_studio_website",
+    "architectural_millwork_landing",
+    "warm_craftsmanship_service_layout"
+  ],
+  "anti_patterns": [
+    "template feel",
+    "hard industrial framing",
+    "generic luxury mush",
+    "dashboard-like ops panels"
+  ],
+  "screenshot_paths": [
+    "screenshots/tnt_cabinetry-desktop-1512x812.png",
+    "screenshots/tnt_cabinetry-mobile-390x844.png"
+  ],
+  "token_budget_hint": 4300,
+  "confidence_score": 5
+}

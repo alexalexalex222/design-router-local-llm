@@ -1,0 +1,61 @@
+{
+  "pack_id": "sterling_rowe_legal_business_v1",
+  "role": "anchor",
+  "family": "website.professional_services",
+  "source_paths": [
+    "source_snapshot/index.html",
+    "source_snapshot/styles.css"
+  ],
+  "origin_example_ids": [
+    "sterling-rowe-legal"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "website"
+  ],
+  "tones": [
+    "professional",
+    "premium",
+    "restrained",
+    "editorial",
+    "traditional",
+    "authoritative",
+    "warm-neutral"
+  ],
+  "surfaces": [
+    "homepage",
+    "hero",
+    "landing",
+    "section"
+  ],
+  "motif_tags": [
+    "hero_shell",
+    "sticky_nav",
+    "trust_rail",
+    "cta_treatment",
+    "proof_cards",
+    "process_timeline",
+    "headline_hierarchy",
+    "light_precision",
+    "split_hero"
+  ],
+  "supports_tasks": [
+    "law_firm_homepage",
+    "business_counsel_landing",
+    "legal_practice_website",
+    "attorney_firm_homepage",
+    "professional_services_intake_page",
+    "corporate_legal_advisory_landing"
+  ],
+  "anti_patterns": [
+    "personal injury billboard hero",
+    "ambulance-chaser CTA stack",
+    "fake celebrity verdict badges",
+    "SaaS dashboard layout",
+    "consumer beauty editorial framing"
+  ],
+  "screenshot_paths": [],
+  "token_budget_hint": 5400,
+  "confidence_score": 5
+}

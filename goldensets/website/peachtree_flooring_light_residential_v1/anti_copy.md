@@ -1,0 +1,5 @@
+- Do not reuse Peachtree Flooring wording, brand initials, or the `FOUNDATION OF ELEGANCE.` headline pattern.
+- Do not copy the exact cream and walnut palette values one-to-one.
+- Do not preserve the exact editorial serif cadence or the same material-gallery layout if the target business needs a different proof surface.
+- Do not reuse flooring-specific imagery, hardwood language, or the `Est. 1986` legacy story unless the target business actually owns that history.
+- Borrow the warm restraint, split-hero discipline, and phone-first residential clarity only.

@@ -1,0 +1,3 @@
+- Do not turn the page into a lawn-care flyer, nursery catalog, or patio-showroom template.
+- Do not reuse interior-living-room media or home-remodel hero grammar.
+- Do not stack process copy, proof cards, and stats rails into one oversized section.

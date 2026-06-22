@@ -1,0 +1,66 @@
+{
+  "pack_id": "orbital_launch_manifest_dark_editorial_v1",
+  "role": "anchor",
+  "family": "website.technical_product",
+  "source_paths": [
+    "source_snapshot/index.html",
+    "source_snapshot/styles.css",
+    "source_snapshot/extracted_patterns.md"
+  ],
+  "origin_example_ids": [
+    "orbital-launch-manifest"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "website"
+  ],
+  "tones": [
+    "dark",
+    "technical",
+    "cinematic",
+    "precise",
+    "premium",
+    "editorial",
+    "high-contrast"
+  ],
+  "surfaces": [
+    "homepage",
+    "hero",
+    "landing",
+    "section",
+    "full_site"
+  ],
+  "motif_tags": [
+    "hero_shell",
+    "dark_texture",
+    "technical_manifest",
+    "process_timeline",
+    "specification_table",
+    "mission_sequence",
+    "form_intake",
+    "vector_product_diagram",
+    "headline_hierarchy"
+  ],
+  "supports_tasks": [
+    "aerospace_landing_page",
+    "deep_tech_product_page",
+    "technical_manifest_site",
+    "engineering_product_homepage",
+    "mission_process_landing",
+    "waitlist_or_manifest_form"
+  ],
+  "anti_patterns": [
+    "generic startup gradient hero",
+    "unearned launch metrics",
+    "NASA/SpaceX identity imitation",
+    "copying exact vehicle/spec names",
+    "stock rocket photography"
+  ],
+  "screenshot_paths": [
+    "screenshots/desktop-1512x812.png",
+    "screenshots/mobile-390x844.png"
+  ],
+  "token_budget_hint": 6200,
+  "confidence_score": 5
+}

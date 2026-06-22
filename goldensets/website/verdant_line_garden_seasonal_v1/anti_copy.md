@@ -1,0 +1,6 @@
+- Do not turn the page into a generic lawn-care template or a turf-care flyer.
+- Do not use industrial-contractor grammar (chevrons, hard-hat photography, dark fleet imagery, "we tackle any job").
+- Do not pretend to be a landscape design-build firm; this is ongoing seasonal garden care, not capital hardscape work.
+- Do not invent celebrity gardeners, awards, or fabricated case studies; lean on real horticultural cadence instead.
+- Do not collapse seasonal calendar, services, and process into one oversized homepage section.
+- Do not use dark dashboard glass panels, neon gradient hero washes, or SaaS-style stat strips.

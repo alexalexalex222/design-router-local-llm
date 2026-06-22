@@ -1,0 +1,3 @@
+Build with the discipline of a senior business counsel firm: traditional, restrained, and clear about how engagement actually works.
+
+The page should look like a professional services practice that takes business law seriously — corporate transactions, regulated industry counsel, dispute resolution — without resorting to billboard verdict claims, dramatic photography, or generic "personal injury" grammar. Favor a paper-warm background, oxblood/blue/sage/brass accent system, Iowan Old Style serif headlines paired with Inter copy, and an SFMono micro-label voice. Below-fold sections should separate practice areas, risk triage, engagement process, firm approach, and a calm intake CTA.

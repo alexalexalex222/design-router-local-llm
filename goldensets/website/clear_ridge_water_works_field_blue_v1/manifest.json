@@ -70,7 +70,15 @@
     "emoji used as icons",
     "unfinished placeholder sections"
   ],
-  "screenshot_paths": [],
+  "screenshot_paths": [
+    "screenshots/desktop-1512.png",
+    "screenshots/desktop-1440.png",
+    "screenshots/desktop-1280.png",
+    "screenshots/tablet-1024.png",
+    "screenshots/tablet-768.png",
+    "screenshots/mobile-390.png",
+    "screenshots/mobile-360.png"
+  ],
   "token_budget_hint": 6200,
   "confidence_score": 5,
   "reusable_atoms": [
@@ -102,5 +110,5 @@
     "technical-but-friendly"
   ],
   "proof_policy": "no invented claims; proof placeholders only unless operator provides verified evidence",
-  "qa_status": "static-pass; public snapshot omits screenshot artifacts"
+  "qa_status": "static-pass; visual-pass"
 }

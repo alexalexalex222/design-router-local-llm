@@ -1,0 +1,1711 @@
+{
+  "id": "root_5181",
+  "url": "http://localhost:5181/",
+  "finalUrl": "http://localhost:5181/",
+  "httpStatus": 200,
+  "title": "TACET Umbra — The Reference",
+  "renderedHtml": {
+    "file": "rendered.html",
+    "bytes": 57889,
+    "sha256": "a6ad3b2a31a98da37fde4dd8689dca9b1f17daaea8f64f637ad116c9e081106b"
+  },
+  "screenshots": [
+    {
+      "viewport": {
+        "name": "desktop-1512x812",
+        "width": 1512,
+        "height": 812
+      },
+      "path": "desktop-1512x812.png",
+      "metrics": {
+        "scrollWidth": 1512,
+        "clientWidth": 1512,
+        "bodyScrollWidth": 1512,
+        "horizontalOverflow": false,
+        "textLength": 4261
+      }
+    },
+    {
+      "viewport": {
+        "name": "mobile-390x844",
+        "width": 390,
+        "height": 844
+      },
+      "path": "mobile-390x844.png",
+      "metrics": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "bodyScrollWidth": 390,
+        "horizontalOverflow": false,
+        "textLength": 4209
+      }
+    }
+  ],
+  "resources": [
+    {
+      "url": "http://localhost:5181/",
+      "status": 200,
+      "resourceType": "document",
+      "contentType": "text/html",
+      "bytes": 22680,
+      "sha256": "5be65e0283f83d79ec8b603970b3031e26d64dc3e0af4550e22136a406d6a61f",
+      "file": "resources/01-root.html"
+    },
+    {
+      "url": "http://localhost:5181/@vite/client",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 182826,
+      "sha256": "c0cac68b3de544c5ce3d040f1ee834183a492e3e3dd8bb8d68e0be311df7e328",
+      "file": "resources/02-_vite_client.js"
+    },
+    {
+      "url": "http://localhost:5181/src/main.ts?t=1782149039436",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2351,
+      "sha256": "65e65230b589b2157b0a483b6668c6784e0848dba71f7a6daaf2e8d17e3e5650",
+      "file": "resources/03-src_main.ts.js"
+    },
+    {
+      "url": "http://localhost:5181/@fs/Users/alexburkhart/.nvm/versions/node/v22.14.0/lib/node_modules/vite/dist/client/env.mjs",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3861,
+      "sha256": "004862df937de3eaacc341fe72d9b0b72454278a7accf493998a6b35a7c61217",
+      "file": "resources/04-_fs_Users_alexburkhart_.nvm_versions_node_v22.14.0_lib_node_modules_vite_dist_client_env.mjs.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/tokens.css?t=1782148947291",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 5222,
+      "sha256": "c780936c034210cbfaddac38cebff48b30cefe333f82ba68e004281cb740d0c1",
+      "file": "resources/05-src_styles_tokens.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/hero.css?t=1782146710692",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 5005,
+      "sha256": "41e0dfce86b04b7641ff1caaa20e70df43d71cddf98655947f6245753c8838f2",
+      "file": "resources/06-src_styles_hero.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/base.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4287,
+      "sha256": "80aecff8c6d9eeacd7ab8b4d4bbdbd2f95d76de429e8457ce9e36c10d76750d6",
+      "file": "resources/07-src_styles_base.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/layout.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2861,
+      "sha256": "e9d88d03fa8e7ead766052f8ae06dd95f1fbdaaff762bed5c9379bfa339c6053",
+      "file": "resources/08-src_styles_layout.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/reveal.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1667,
+      "sha256": "1982f290a45d8a4321de52cbb49b81259525563ec3435237321b9a4d83bf7360",
+      "file": "resources/09-src_styles_reveal.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/modules/motion.ts?t=1782145850864",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4185,
+      "sha256": "1f8b998ed77370f6fdf34c3db69bc39beca677a8895eeff8f5fb20d59b044965",
+      "file": "resources/10-src_modules_motion.ts.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/components.css?t=1782149039436",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9650,
+      "sha256": "6e99ca4a2d75482e84e7fc392ca85fb11ed0b597dfca07ee798b72cb621c4599",
+      "file": "resources/11-src_styles_components.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/modules/hero3d.ts?t=1782146307085",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 24833,
+      "sha256": "0deb932b9a583102311d225e44bdfcafc083bedbe19534e9d79bfacb718e0a2e",
+      "file": "resources/12-src_modules_hero3d.ts.js"
+    },
+    {
+      "url": "http://localhost:5181/src/modules/interactions.ts?t=1782145850864",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 15163,
+      "sha256": "944654a49cbba0001304893d54059bfa3620871c71c08be15b6295c2ef6bcf39",
+      "file": "resources/13-src_modules_interactions.ts.js"
+    },
+    {
+      "url": "http://localhost:5181/src/modules/waveform.ts?t=1782146873130",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 11384,
+      "sha256": "21d4e64d40004e965bed98ebac6d526e937e58fad81768747a2166d82b727a75",
+      "file": "resources/14-src_modules_waveform.ts.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/sections.css?t=1782146703923",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 10237,
+      "sha256": "8694ad808ae5113d992660e5431c0431e744c53067f91bf2f99ad7819a52d29f",
+      "file": "resources/15-src_styles_sections.css.js"
+    },
+    {
+      "url": "http://localhost:5181/node_modules/.vite/deps/three.js?v=a302067b",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 62874,
+      "sha256": "06858bf38042d6f21705f000eaedacb8cbe46b8d10b2040a7bb9dc5680223b62",
+      "file": "resources/16-node_modules_.vite_deps_three.js.js"
+    },
+    {
+      "url": "http://localhost:5181/node_modules/.vite/deps/three_examples_jsm_environments_RoomEnvironment__js.js?v=5e4b7448",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3582,
+      "sha256": "291a389741065703f0ef9400af81809f2edba8b2960e9c7975be758c1e2e5d29",
+      "file": "resources/17-node_modules_.vite_deps_three_examples_jsm_environments_RoomEnvironment__js.js.js"
+    },
+    {
+      "url": "http://localhost:5181/src/modules/headphoneModel.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 20917,
+      "sha256": "6fe1e6b0296e147d88e6bd2ae16247c7eb396ffbc05c97b591456eed1b3499d2",
+      "file": "resources/18-src_modules_headphoneModel.ts.js"
+    },
+    {
+      "url": "http://localhost:5181/node_modules/.vite/deps/chunk-QYOHZWXJ.js?v=d875e66d",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1220474,
+      "sha256": "292355f1c05a2c89b5c20d0d3e2d922722aa53a81c76d43c6da7546917c7e11e",
+      "file": "resources/19-node_modules_.vite_deps_chunk-QYOHZWXJ.js.js"
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..560;1,9..144,300..460&family=Space+Grotesk:wght@400;500;600;700&display=swap",
+      "status": 200,
+      "resourceType": "stylesheet",
+      "contentType": "text/css; charset=utf-8",
+      "bytes": 7975,
+      "sha256": "27f217f15981bc45e3c2dba9e253b6609870c951ede31f0d14a4a3bca41caf35",
+      "file": "resources/20-css2.css"
+    },
+    {
+      "url": "http://localhost:5181/",
+      "status": 200,
+      "resourceType": "document",
+      "contentType": "text/html",
+      "bytes": 22680,
+      "sha256": "5be65e0283f83d79ec8b603970b3031e26d64dc3e0af4550e22136a406d6a61f",
+      "file": "resources/21-root.html"
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..560;1,9..144,300..460&family=Space+Grotesk:wght@400;500;600;700&display=swap",
+      "status": 200,
+      "resourceType": "stylesheet",
+      "contentType": "text/css; charset=utf-8",
+      "bytes": 7975,
+      "sha256": "27f217f15981bc45e3c2dba9e253b6609870c951ede31f0d14a4a3bca41caf35",
+      "file": "resources/22-css2.css"
+    },
+    {
+      "url": "http://localhost:5181/@fs/Users/alexburkhart/.nvm/versions/node/v22.14.0/lib/node_modules/vite/dist/client/env.mjs",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3861,
+      "sha256": "004862df937de3eaacc341fe72d9b0b72454278a7accf493998a6b35a7c61217",
+      "file": "resources/23-_fs_Users_alexburkhart_.nvm_versions_node_v22.14.0_lib_node_modules_vite_dist_client_env.mjs.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/tokens.css?t=1782148947291",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 5222,
+      "sha256": "c780936c034210cbfaddac38cebff48b30cefe333f82ba68e004281cb740d0c1",
+      "file": "resources/24-src_styles_tokens.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/base.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4287,
+      "sha256": "80aecff8c6d9eeacd7ab8b4d4bbdbd2f95d76de429e8457ce9e36c10d76750d6",
+      "file": "resources/25-src_styles_base.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/layout.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2861,
+      "sha256": "e9d88d03fa8e7ead766052f8ae06dd95f1fbdaaff762bed5c9379bfa339c6053",
+      "file": "resources/26-src_styles_layout.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/components.css?t=1782149039436",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9650,
+      "sha256": "6e99ca4a2d75482e84e7fc392ca85fb11ed0b597dfca07ee798b72cb621c4599",
+      "file": "resources/27-src_styles_components.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/sections.css?t=1782146703923",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 10237,
+      "sha256": "8694ad808ae5113d992660e5431c0431e744c53067f91bf2f99ad7819a52d29f",
+      "file": "resources/28-src_styles_sections.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/hero.css?t=1782146710692",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 5005,
+      "sha256": "41e0dfce86b04b7641ff1caaa20e70df43d71cddf98655947f6245753c8838f2",
+      "file": "resources/29-src_styles_hero.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/reveal.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1667,
+      "sha256": "1982f290a45d8a4321de52cbb49b81259525563ec3435237321b9a4d83bf7360",
+      "file": "resources/30-src_styles_reveal.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/modules/motion.ts?t=1782145850864",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4185,
+      "sha256": "1f8b998ed77370f6fdf34c3db69bc39beca677a8895eeff8f5fb20d59b044965",
+      "file": "resources/31-src_modules_motion.ts.js"
+    },
+    {
+      "url": "http://localhost:5181/src/modules/hero3d.ts?t=1782146307085",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 24833,
+      "sha256": "0deb932b9a583102311d225e44bdfcafc083bedbe19534e9d79bfacb718e0a2e",
+      "file": "resources/32-src_modules_hero3d.ts.js"
+    },
+    {
+      "url": "http://localhost:5181/node_modules/.vite/deps/three.js?v=a302067b",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 62874,
+      "sha256": "06858bf38042d6f21705f000eaedacb8cbe46b8d10b2040a7bb9dc5680223b62",
+      "file": "resources/33-node_modules_.vite_deps_three.js.js"
+    },
+    {
+      "url": "http://localhost:5181/node_modules/.vite/deps/three_examples_jsm_environments_RoomEnvironment__js.js?v=5e4b7448",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3582,
+      "sha256": "291a389741065703f0ef9400af81809f2edba8b2960e9c7975be758c1e2e5d29",
+      "file": "resources/34-node_modules_.vite_deps_three_examples_jsm_environments_RoomEnvironment__js.js.js"
+    },
+    {
+      "url": "http://localhost:5181/node_modules/.vite/deps/chunk-QYOHZWXJ.js?v=d875e66d",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1220474,
+      "sha256": "292355f1c05a2c89b5c20d0d3e2d922722aa53a81c76d43c6da7546917c7e11e",
+      "file": "resources/35-node_modules_.vite_deps_chunk-QYOHZWXJ.js.js"
+    },
+    {
+      "url": "http://localhost:5181/src/modules/interactions.ts?t=1782145850864",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 15163,
+      "sha256": "944654a49cbba0001304893d54059bfa3620871c71c08be15b6295c2ef6bcf39",
+      "file": "resources/36-src_modules_interactions.ts.js"
+    },
+    {
+      "url": "http://localhost:5181/src/modules/waveform.ts?t=1782146873130",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 11384,
+      "sha256": "21d4e64d40004e965bed98ebac6d526e937e58fad81768747a2166d82b727a75",
+      "file": "resources/37-src_modules_waveform.ts.js"
+    },
+    {
+      "url": "http://localhost:5181/src/modules/headphoneModel.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 20917,
+      "sha256": "6fe1e6b0296e147d88e6bd2ae16247c7eb396ffbc05c97b591456eed1b3499d2",
+      "file": "resources/38-src_modules_headphoneModel.ts.js"
+    },
+    {
+      "url": "http://localhost:5181/",
+      "status": 200,
+      "resourceType": "document",
+      "contentType": "text/html",
+      "bytes": 22680,
+      "sha256": "5be65e0283f83d79ec8b603970b3031e26d64dc3e0af4550e22136a406d6a61f",
+      "file": "resources/39-root.html"
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..560;1,9..144,300..460&family=Space+Grotesk:wght@400;500;600;700&display=swap",
+      "status": 200,
+      "resourceType": "stylesheet",
+      "contentType": "text/css; charset=utf-8",
+      "bytes": 7975,
+      "sha256": "27f217f15981bc45e3c2dba9e253b6609870c951ede31f0d14a4a3bca41caf35",
+      "file": "resources/40-css2.css"
+    },
+    {
+      "url": "http://localhost:5181/@fs/Users/alexburkhart/.nvm/versions/node/v22.14.0/lib/node_modules/vite/dist/client/env.mjs",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3861,
+      "sha256": "004862df937de3eaacc341fe72d9b0b72454278a7accf493998a6b35a7c61217",
+      "file": "resources/41-_fs_Users_alexburkhart_.nvm_versions_node_v22.14.0_lib_node_modules_vite_dist_client_env.mjs.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/tokens.css?t=1782148947291",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 5222,
+      "sha256": "c780936c034210cbfaddac38cebff48b30cefe333f82ba68e004281cb740d0c1",
+      "file": "resources/42-src_styles_tokens.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/base.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4287,
+      "sha256": "80aecff8c6d9eeacd7ab8b4d4bbdbd2f95d76de429e8457ce9e36c10d76750d6",
+      "file": "resources/43-src_styles_base.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/layout.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2861,
+      "sha256": "e9d88d03fa8e7ead766052f8ae06dd95f1fbdaaff762bed5c9379bfa339c6053",
+      "file": "resources/44-src_styles_layout.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/components.css?t=1782149039436",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9650,
+      "sha256": "6e99ca4a2d75482e84e7fc392ca85fb11ed0b597dfca07ee798b72cb621c4599",
+      "file": "resources/45-src_styles_components.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/sections.css?t=1782146703923",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 10237,
+      "sha256": "8694ad808ae5113d992660e5431c0431e744c53067f91bf2f99ad7819a52d29f",
+      "file": "resources/46-src_styles_sections.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/hero.css?t=1782146710692",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 5005,
+      "sha256": "41e0dfce86b04b7641ff1caaa20e70df43d71cddf98655947f6245753c8838f2",
+      "file": "resources/47-src_styles_hero.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/styles/reveal.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1667,
+      "sha256": "1982f290a45d8a4321de52cbb49b81259525563ec3435237321b9a4d83bf7360",
+      "file": "resources/48-src_styles_reveal.css.js"
+    },
+    {
+      "url": "http://localhost:5181/src/modules/motion.ts?t=1782145850864",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4185,
+      "sha256": "1f8b998ed77370f6fdf34c3db69bc39beca677a8895eeff8f5fb20d59b044965",
+      "file": "resources/49-src_modules_motion.ts.js"
+    },
+    {
+      "url": "http://localhost:5181/src/modules/interactions.ts?t=1782145850864",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 15163,
+      "sha256": "944654a49cbba0001304893d54059bfa3620871c71c08be15b6295c2ef6bcf39",
+      "file": "resources/50-src_modules_interactions.ts.js"
+    },
+    {
+      "url": "http://localhost:5181/src/modules/hero3d.ts?t=1782146307085",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 24833,
+      "sha256": "0deb932b9a583102311d225e44bdfcafc083bedbe19534e9d79bfacb718e0a2e",
+      "file": "resources/51-src_modules_hero3d.ts.js"
+    },
+    {
+      "url": "http://localhost:5181/src/modules/waveform.ts?t=1782146873130",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 11384,
+      "sha256": "21d4e64d40004e965bed98ebac6d526e937e58fad81768747a2166d82b727a75",
+      "file": "resources/52-src_modules_waveform.ts.js"
+    },
+    {
+      "url": "http://localhost:5181/node_modules/.vite/deps/three.js?v=a302067b",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 62874,
+      "sha256": "06858bf38042d6f21705f000eaedacb8cbe46b8d10b2040a7bb9dc5680223b62",
+      "file": "resources/53-node_modules_.vite_deps_three.js.js"
+    },
+    {
+      "url": "http://localhost:5181/node_modules/.vite/deps/three_examples_jsm_environments_RoomEnvironment__js.js?v=5e4b7448",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3582,
+      "sha256": "291a389741065703f0ef9400af81809f2edba8b2960e9c7975be758c1e2e5d29",
+      "file": "resources/54-node_modules_.vite_deps_three_examples_jsm_environments_RoomEnvironment__js.js.js"
+    },
+    {
+      "url": "http://localhost:5181/node_modules/.vite/deps/chunk-QYOHZWXJ.js?v=d875e66d",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1220474,
+      "sha256": "292355f1c05a2c89b5c20d0d3e2d922722aa53a81c76d43c6da7546917c7e11e",
+      "file": "resources/55-node_modules_.vite_deps_chunk-QYOHZWXJ.js.js"
+    },
+    {
+      "url": "http://localhost:5181/src/modules/headphoneModel.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 20917,
+      "sha256": "6fe1e6b0296e147d88e6bd2ae16247c7eb396ffbc05c97b591456eed1b3499d2",
+      "file": "resources/56-src_modules_headphoneModel.ts.js"
+    }
+  ],
+  "extraction": {
+    "title": "TACET Umbra — The Reference",
+    "lang": "en",
+    "bodyTextLength": 4261,
+    "headings": [
+      {
+        "tag": "h1",
+        "text": "Umbra",
+        "box": {
+          "x": 164,
+          "y": 242,
+          "width": 640,
+          "height": 118
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgba(0, 0, 0, 0)",
+          "fontFamily": "Fraunces, \"Hoefler Text\", \"Iowan Old Style\", Georgia, serif",
+          "fontSize": "128.8px",
+          "fontWeight": "360",
+          "lineHeight": "118.496px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Most headphones have a sound. This one is built not to.",
+        "box": {
+          "x": 352,
+          "y": 1044,
+          "width": 808,
+          "height": 247
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(246, 244, 239)",
+          "fontFamily": "Fraunces, \"Hoefler Text\", \"Iowan Old Style\", Georgia, serif",
+          "fontSize": "73.6608px",
+          "fontWeight": "360",
+          "lineHeight": "82.5001px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Nothing here is decorative.",
+        "box": {
+          "x": 164,
+          "y": 2084,
+          "width": 928,
+          "height": 82
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(246, 244, 239)",
+          "fontFamily": "Fraunces, \"Hoefler Text\", \"Iowan Old Style\", Georgia, serif",
+          "fontSize": "73.6608px",
+          "fontWeight": "380",
+          "lineHeight": "82.5001px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "The weight you stop noticing.",
+        "box": {
+          "x": 205,
+          "y": 2594,
+          "width": 398,
+          "height": 95
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(246, 244, 239)",
+          "fontFamily": "Fraunces, \"Hoefler Text\", \"Iowan Old Style\", Georgia, serif",
+          "fontSize": "42.4288px",
+          "fontWeight": "380",
+          "lineHeight": "47.5203px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Machined, not moulded.",
+        "box": {
+          "x": 381,
+          "y": 3211,
+          "width": 398,
+          "height": 95
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(246, 244, 239)",
+          "fontFamily": "Fraunces, \"Hoefler Text\", \"Iowan Old Style\", Georgia, serif",
+          "fontSize": "42.4288px",
+          "fontWeight": "380",
+          "lineHeight": "47.5203px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "The part that does everything, seen by no one.",
+        "box": {
+          "x": 205,
+          "y": 3805,
+          "width": 398,
+          "height": 143
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(246, 244, 239)",
+          "fontFamily": "Fraunces, \"Hoefler Text\", \"Iowan Old Style\", Georgia, serif",
+          "fontSize": "42.4288px",
+          "fontWeight": "380",
+          "lineHeight": "47.5203px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Where it meets you.",
+        "box": {
+          "x": 381,
+          "y": 4469,
+          "width": 398,
+          "height": 48
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(246, 244, 239)",
+          "fontFamily": "Fraunces, \"Hoefler Text\", \"Iowan Old Style\", Georgia, serif",
+          "fontSize": "42.4288px",
+          "fontWeight": "380",
+          "lineHeight": "47.5203px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "The quietest thing we build is the silence.",
+        "box": {
+          "x": 164,
+          "y": 5275,
+          "width": 455,
+          "height": 188
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(246, 244, 239)",
+          "fontFamily": "Fraunces, \"Hoefler Text\", \"Iowan Old Style\", Georgia, serif",
+          "fontSize": "55.9192px",
+          "fontWeight": "380",
+          "lineHeight": "62.6295px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "We publish the figure and the method. At ship, not before.",
+        "box": {
+          "x": 164,
+          "y": 6199,
+          "width": 928,
+          "height": 165
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(246, 244, 239)",
+          "fontFamily": "Fraunces, \"Hoefler Text\", \"Iowan Old Style\", Georgia, serif",
+          "fontSize": "73.6608px",
+          "fontWeight": "380",
+          "lineHeight": "82.5001px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "The case is the last thing we engineered.",
+        "box": {
+          "x": 164,
+          "y": 7847,
+          "width": 928,
+          "height": 165
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(246, 244, 239)",
+          "fontFamily": "Fraunces, \"Hoefler Text\", \"Iowan Old Style\", Georgia, serif",
+          "fontSize": "73.6608px",
+          "fontWeight": "380",
+          "lineHeight": "82.5001px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Umbra",
+        "box": {
+          "x": 205,
+          "y": 8261,
+          "width": 99,
+          "height": 36
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(246, 244, 239)",
+          "fontFamily": "Fraunces, \"Hoefler Text\", \"Iowan Old Style\", Georgia, serif",
+          "fontSize": "32px",
+          "fontWeight": "380",
+          "lineHeight": "35.84px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Machined case",
+        "box": {
+          "x": 205,
+          "y": 8529,
+          "width": 297,
+          "height": 36
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(246, 244, 239)",
+          "fontFamily": "Fraunces, \"Hoefler Text\", \"Iowan Old Style\", Georgia, serif",
+          "fontSize": "32px",
+          "fontWeight": "380",
+          "lineHeight": "35.84px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Reference cable",
+        "box": {
+          "x": 608,
+          "y": 8529,
+          "width": 297,
+          "height": 36
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(246, 244, 239)",
+          "fontFamily": "Fraunces, \"Hoefler Text\", \"Iowan Old Style\", Georgia, serif",
+          "fontSize": "32px",
+          "fontWeight": "380",
+          "lineHeight": "35.84px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Certificate of measurement",
+        "box": {
+          "x": 1010,
+          "y": 8529,
+          "width": 297,
+          "height": 72
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(246, 244, 239)",
+          "fontFamily": "Fraunces, \"Hoefler Text\", \"Iowan Old Style\", Georgia, serif",
+          "fontSize": "32px",
+          "fontWeight": "380",
+          "lineHeight": "35.84px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "You already know whether this is for you.",
+        "box": {
+          "x": 221,
+          "y": 9169,
+          "width": 570,
+          "height": 125
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(246, 244, 239)",
+          "fontFamily": "Fraunces, \"Hoefler Text\", \"Iowan Old Style\", Georgia, serif",
+          "fontSize": "55.9192px",
+          "fontWeight": "380",
+          "lineHeight": "62.6295px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      }
+    ],
+    "navLinks": [
+      {
+        "text": "TACET Umbra",
+        "href": "#top"
+      },
+      {
+        "text": "The object",
+        "href": "#object"
+      },
+      {
+        "text": "The sound",
+        "href": "#sound"
+      },
+      {
+        "text": "Measured",
+        "href": "#measured"
+      },
+      {
+        "text": "Reserve",
+        "href": "#reserve"
+      },
+      {
+        "text": "The object",
+        "href": "#object"
+      },
+      {
+        "text": "The sound",
+        "href": "#sound"
+      },
+      {
+        "text": "Measured",
+        "href": "#measured"
+      },
+      {
+        "text": "Reserve",
+        "href": "#reserve"
+      }
+    ],
+    "forms": [
+      {
+        "id": "",
+        "className": "buy__panel",
+        "labels": [
+          "EMAIL FOR YOUR RESERVATION"
+        ],
+        "fields": [
+          {
+            "tag": "input",
+            "type": "email",
+            "name": "email",
+            "placeholder": "you@studio.com",
+            "text": ""
+          },
+          {
+            "tag": "button",
+            "type": "submit",
+            "name": "",
+            "placeholder": "",
+            "text": "Reserve your place"
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "index": 0,
+        "tag": "header",
+        "id": "nav",
+        "className": "nav",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [],
+        "buttons": [
+          "TACET Umbra",
+          "The object",
+          "The sound",
+          "Measured",
+          "Reserve"
+        ],
+        "text": "TACET Umbra The object The sound Measured Reserve",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 1512,
+          "height": 89
+        },
+        "styles": {
+          "display": "block",
+          "position": "fixed",
+          "background": "color(srgb 0.0196078 0.0196078 0.0235294 / 0.58)",
+          "color": "rgb(206, 202, 191)",
+          "fontFamily": "\"Space Grotesk\", system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "19.04px",
+          "fontWeight": "400",
+          "lineHeight": "30.8448px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 1,
+        "tag": "nav",
+        "id": "",
+        "className": "nav__links",
+        "role": "",
+        "ariaLabel": "Sections",
+        "headings": [],
+        "buttons": [
+          "The object",
+          "The sound",
+          "Measured"
+        ],
+        "text": "The object The sound Measured",
+        "box": {
+          "x": 882,
+          "y": 27,
+          "width": 291,
+          "height": 34
+        },
+        "styles": {
+          "display": "flex",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(206, 202, 191)",
+          "fontFamily": "\"Space Grotesk\", system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "19.04px",
+          "fontWeight": "400",
+          "lineHeight": "30.8448px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 2,
+        "tag": "main",
+        "id": "main",
+        "className": "",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h1",
+            "text": "Umbra"
+          },
+          {
+            "tag": "h2",
+            "text": "Most headphones have a sound. This one is built not to."
+          },
+          {
+            "tag": "h2",
+            "text": "Nothing here is decorative."
+          },
+          {
+            "tag": "h3",
+            "text": "The weight you stop noticing."
+          },
+          {
+            "tag": "h3",
+            "text": "Machined, not moulded."
+          },
+          {
+            "tag": "h3",
+            "text": "The part that does everything, seen by no one."
+          }
+        ],
+        "buttons": [
+          "Reserve a pair",
+          "See how it's made",
+          "OPEN THE CASE",
+          "Reserve your place"
+        ],
+        "text": "NO. 01 TACET · REFERENCE SERIES Umbra Engineered to disappear. A reference transducer built to add nothing and hide nothing — so the only thing left between you and the recording is air. Reserve a pair See how it's made HAND-ASSEMBLED · INDIVIDUALLY MEASURED · NUMBERED OPEN THE CASE NO. 02 THE IDEA Most headphones have a sound. This one is built not to. Every decision inside Umbra — the alloy, the damping, the geometry of the chamber — exists to remove a fingerprint, not to leave one. There is no house sound to fall in love with. There is only what was recorded. What remains is uncomfortably honest: the room a record was cut in, the breath before the first note, the decay you were never meant to notice. Umbra does not flatter the music. It refuses to lie about it. NO. 03 THE OBJECT Nothing here is decorative. Every part you can see is doing acoustic work. Turn it in the light and read it — four decisions you can feel before you ever press play. 01 — SUSPENSION The weight you stop notic",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 1512,
+          "height": 9824
+        },
+        "styles": {
+          "display": "block",
+          "position": "relative",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(206, 202, 191)",
+          "fontFamily": "\"Space Grotesk\", system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "19.04px",
+          "fontWeight": "400",
+          "lineHeight": "30.8448px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 3,
+        "tag": "section",
+        "id": "top",
+        "className": "hero",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h1",
+            "text": "Umbra"
+          }
+        ],
+        "buttons": [
+          "Reserve a pair",
+          "See how it's made",
+          "OPEN THE CASE"
+        ],
+        "text": "NO. 01 TACET · REFERENCE SERIES Umbra Engineered to disappear. A reference transducer built to add nothing and hide nothing — so the only thing left between you and the recording is air. Reserve a pair See how it's made HAND-ASSEMBLED · INDIVIDUALLY MEASURED · NUMBERED OPEN THE CASE",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 1512,
+          "height": 812
+        },
+        "styles": {
+          "display": "grid",
+          "position": "relative",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(206, 202, 191)",
+          "fontFamily": "\"Space Grotesk\", system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "19.04px",
+          "fontWeight": "400",
+          "lineHeight": "30.8448px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 4,
+        "tag": "section",
+        "id": "thesis",
+        "className": "section manifesto",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h2",
+            "text": "Most headphones have a sound. This one is built not to."
+          }
+        ],
+        "buttons": [],
+        "text": "NO. 02 THE IDEA Most headphones have a sound. This one is built not to. Every decision inside Umbra — the alloy, the damping, the geometry of the chamber — exists to remove a fingerprint, not to leave one. There is no house sound to fall in love with. There is only what was recorded. What remains is uncomfortably honest: the room a record was cut in, the breath before the first note, the decay you were never meant to notice. Umbra does not flatter the music. It refuses to lie about it.",
+        "box": {
+          "x": 0,
+          "y": 812,
+          "width": 1512,
+          "height": 1039
+        },
+        "styles": {
+          "display": "block",
+          "position": "relative",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(206, 202, 191)",
+          "fontFamily": "\"Space Grotesk\", system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "19.04px",
+          "fontWeight": "400",
+          "lineHeight": "30.8448px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 5,
+        "tag": "section",
+        "id": "object",
+        "className": "section craft",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h2",
+            "text": "Nothing here is decorative."
+          },
+          {
+            "tag": "h3",
+            "text": "The weight you stop noticing."
+          },
+          {
+            "tag": "h3",
+            "text": "Machined, not moulded."
+          },
+          {
+            "tag": "h3",
+            "text": "The part that does everything, seen by no one."
+          },
+          {
+            "tag": "h3",
+            "text": "Where it meets you."
+          }
+        ],
+        "buttons": [],
+        "text": "NO. 03 THE OBJECT Nothing here is decorative. Every part you can see is doing acoustic work. Turn it in the light and read it — four decisions you can feel before you ever press play. 01 — SUSPENSION The weight you stop noticing. A floating band spreads the load across the crown of your head instead of clamping at two points. After a minute, the headphone is gone — only the second hour tells you it was ever there. 02 — CHAMBER Machined, not moulded. Each cup is cut from a single billet of aluminium, then damped from the inside so it rings at nothing. A plastic shell resonates and colours the sound. Metal, shaped right, simply gets out of the way. 03 — TRANSDUCER The part that does everything, seen by no one. A single full-range diaphragm, tensioned to move as one piece, with no crossover to smear the timing. One surface, one voice — pistonic where lesser drivers break apart and blur. 04 — CONTACT Where it meets you. The pads seal without pressing, breathe without leaking, and pull off ",
+        "box": {
+          "x": 0,
+          "y": 1851,
+          "width": 1512,
+          "height": 3192
+        },
+        "styles": {
+          "display": "block",
+          "position": "relative",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(206, 202, 191)",
+          "fontFamily": "\"Space Grotesk\", system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "19.04px",
+          "fontWeight": "400",
+          "lineHeight": "30.8448px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 6,
+        "tag": "header",
+        "id": "",
+        "className": "lockup craft__intro is-visible",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h2",
+            "text": "Nothing here is decorative."
+          }
+        ],
+        "buttons": [],
+        "text": "NO. 03 THE OBJECT Nothing here is decorative. Every part you can see is doing acoustic work. Turn it in the light and read it — four decisions you can feel before you ever press play.",
+        "box": {
+          "x": 164,
+          "y": 2027,
+          "width": 928,
+          "height": 280
+        },
+        "styles": {
+          "display": "block",
+          "position": "relative",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(206, 202, 191)",
+          "fontFamily": "\"Space Grotesk\", system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "19.04px",
+          "fontWeight": "400",
+          "lineHeight": "30.8448px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 7,
+        "tag": "section",
+        "id": "sound",
+        "className": "section sound",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h2",
+            "text": "The quietest thing we build is the silence."
+          }
+        ],
+        "buttons": [],
+        "text": "NO. 04 THE SOUND The quietest thing we build is the silence. Detail doesn't live in the loud parts. It lives in the floor beneath them — the reverb tail, the rosin on the bow, the air moving in the room. Lower that floor and the whole recording stands up. Umbra is voiced toward that floor: a black, even background that lets the smallest real thing become the loudest new thing you hear. ILLUSTRATIVE MOTION — NOT A MEASUREMENT.",
+        "box": {
+          "x": 0,
+          "y": 5043,
+          "width": 1512,
+          "height": 923
+        },
+        "styles": {
+          "display": "block",
+          "position": "relative",
+          "background": "rgb(5, 5, 6)",
+          "color": "rgb(206, 202, 191)",
+          "fontFamily": "\"Space Grotesk\", system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "19.04px",
+          "fontWeight": "400",
+          "lineHeight": "30.8448px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 8,
+        "tag": "section",
+        "id": "measured",
+        "className": "section specs",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h2",
+            "text": "We publish the figure and the method. At ship, not before."
+          }
+        ],
+        "buttons": [],
+        "text": "NO. 05 MEASURED, NOT MARKETED We publish the figure and the method. At ship, not before. Round numbers are marketing. Every value here is measured on the unit that becomes yours and printed on the certificate inside the case — with the method we used to get it. Until your unit is built and certified, these stay honest. TRANSDUCER Single full-range dynamic diaphragm ACOUSTIC DESIGN Open-back, machined aluminium chamber FREQUENCY RESPONSE Certified at ship IMPEDANCE Certified at ship SENSITIVITY Certified at ship TOTAL HARMONIC DISTORTION Certified at ship MASS, WITHOUT CABLE Certified at ship CABLE Detachable, dual-sided · field-replaceable EARPADS Replaceable by hand · no tools",
+        "box": {
+          "x": 0,
+          "y": 5966,
+          "width": 1512,
+          "height": 1648
+        },
+        "styles": {
+          "display": "block",
+          "position": "relative",
+          "background": "rgb(5, 5, 6)",
+          "color": "rgb(206, 202, 191)",
+          "fontFamily": "\"Space Grotesk\", system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "19.04px",
+          "fontWeight": "400",
+          "lineHeight": "30.8448px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 9,
+        "tag": "header",
+        "id": "",
+        "className": "lockup is-visible",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h2",
+            "text": "We publish the figure and the method. At ship, not before."
+          }
+        ],
+        "buttons": [],
+        "text": "NO. 05 MEASURED, NOT MARKETED We publish the figure and the method. At ship, not before. Round numbers are marketing. Every value here is measured on the unit that becomes yours and printed on the certificate inside the case — with the method we used to get it. Until your unit is built and certified, these stay honest.",
+        "box": {
+          "x": 164,
+          "y": 6142,
+          "width": 928,
+          "height": 440
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(206, 202, 191)",
+          "fontFamily": "\"Space Grotesk\", system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "19.04px",
+          "fontWeight": "400",
+          "lineHeight": "30.8448px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 10,
+        "tag": "section",
+        "id": "inbox",
+        "className": "section inbox",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h2",
+            "text": "The case is the last thing we engineered."
+          },
+          {
+            "tag": "h3",
+            "text": "Umbra"
+          },
+          {
+            "tag": "h3",
+            "text": "Machined case"
+          },
+          {
+            "tag": "h3",
+            "text": "Reference cable"
+          },
+          {
+            "tag": "h3",
+            "text": "Certificate of measurement"
+          }
+        ],
+        "buttons": [],
+        "text": "NO. 06 WHAT ARRIVES The case is the last thing we engineered. 01 Umbra The instrument, assembled and burned in by hand. 02 Machined case A sealed, cushioned home — built to outlast the headphone inside it. 03 Reference cable Detachable, dual-sided, and replaceable — the one part meant to wear. 04 Certificate of measurement Your unit's own curve, measured and signed. Not a sample. Yours.",
+        "box": {
+          "x": 0,
+          "y": 7614,
+          "width": 1512,
+          "height": 1274
+        },
+        "styles": {
+          "display": "block",
+          "position": "relative",
+          "background": "rgb(5, 5, 6)",
+          "color": "rgb(206, 202, 191)",
+          "fontFamily": "\"Space Grotesk\", system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "19.04px",
+          "fontWeight": "400",
+          "lineHeight": "30.8448px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 11,
+        "tag": "header",
+        "id": "",
+        "className": "lockup is-visible",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h2",
+            "text": "The case is the last thing we engineered."
+          }
+        ],
+        "buttons": [],
+        "text": "NO. 06 WHAT ARRIVES The case is the last thing we engineered.",
+        "box": {
+          "x": 164,
+          "y": 7790,
+          "width": 928,
+          "height": 222
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(206, 202, 191)",
+          "fontFamily": "\"Space Grotesk\", system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "19.04px",
+          "fontWeight": "400",
+          "lineHeight": "30.8448px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 12,
+        "tag": "section",
+        "id": "reserve",
+        "className": "section buy",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h2",
+            "text": "You already know whether this is for you."
+          }
+        ],
+        "buttons": [
+          "Reserve your place"
+        ],
+        "text": "NO. 07 RESERVE You already know whether this is for you. Umbra is built in small numbered batches and measured one unit at a time. Reserve a place in the next batch now; nothing is charged until your pair is built, certified, and ready to ship. Individually measured and numbered Audition at home — return it if it isn't the one Serviceable for the life of the product REFERENCE SERIES · NUMBERED $4,800 Estimated ship · next batch EMAIL FOR YOUR RESERVATION Reserve your place Fully refundable until your unit ships. No charge today.",
+        "box": {
+          "x": 0,
+          "y": 8888,
+          "width": 1512,
+          "height": 936
+        },
+        "styles": {
+          "display": "block",
+          "position": "relative",
+          "background": "rgb(5, 5, 6)",
+          "color": "rgb(206, 202, 191)",
+          "fontFamily": "\"Space Grotesk\", system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "19.04px",
+          "fontWeight": "400",
+          "lineHeight": "30.8448px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 13,
+        "tag": "footer",
+        "id": "",
+        "className": "footer",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [],
+        "buttons": [
+          "The object",
+          "The sound",
+          "Measured",
+          "Reserve",
+          "Privacy",
+          "Terms"
+        ],
+        "text": "TACET The silence between the notes. The object The sound Measured Reserve Built by a small workshop, one batch at a time. Privacy·Terms·© 2026 TACET Audio",
+        "box": {
+          "x": 0,
+          "y": 9824,
+          "width": 1512,
+          "height": 382
+        },
+        "styles": {
+          "display": "block",
+          "position": "relative",
+          "background": "rgb(8, 8, 10)",
+          "color": "rgb(206, 202, 191)",
+          "fontFamily": "\"Space Grotesk\", system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "19.04px",
+          "fontWeight": "400",
+          "lineHeight": "30.8448px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 14,
+        "tag": "nav",
+        "id": "",
+        "className": "footer__nav",
+        "role": "",
+        "ariaLabel": "Footer",
+        "headings": [],
+        "buttons": [
+          "The object",
+          "The sound",
+          "Measured",
+          "Reserve"
+        ],
+        "text": "The object The sound Measured Reserve",
+        "box": {
+          "x": 969,
+          "y": 9905,
+          "width": 379,
+          "height": 24
+        },
+        "styles": {
+          "display": "flex",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(206, 202, 191)",
+          "fontFamily": "\"Space Grotesk\", system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "19.04px",
+          "fontWeight": "400",
+          "lineHeight": "30.8448px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      }
+    ],
+    "cssVars": {
+      "--s-4": "1rem",
+      "--ink-700": "#121216",
+      "--s-5": "1.5rem",
+      "--r-md": "10px",
+      "--e-out": "cubic-bezier(0.22, 1, 0.36, 1)",
+      "--step-5": "clamp(2.49rem, 1.92rem + 2.84vw, 4.73rem)",
+      "--leading-snug": "1.12",
+      "--text-body": "#cecabf",
+      "--step-6": "clamp(2.99rem, 2.16rem + 4.14vw, 6.31rem)",
+      "--ink-1000": "#050506",
+      "--accent": "#c9a96a",
+      "--fog-500": "#6f6b61",
+      "--s-8": "4rem",
+      "--s-1": "0.25rem",
+      "--s-10": "8rem",
+      "--z-buybar": "45",
+      "--ink-500": "#202027",
+      "--success": "#9fc08a",
+      "--elev-2": "0 1px 0 0 color-mix(in srgb, #f6f4ef 6%, transparent) inset,\n            0 32px 64px -24px rgba(0, 0, 0, 0.92)",
+      "--s-6": "2rem",
+      "--text-muted": "#9d988c",
+      "--surface-page": "#050506",
+      "--step-3": "clamp(1.73rem, 1.48rem + 1.24vw, 2.66rem)",
+      "--fog-200": "#e8e5dd",
+      "--step--1": "clamp(0.83rem, 0.78rem + 0.22vw, 0.94rem)",
+      "--z-content": "1",
+      "--step-4": "clamp(2.07rem, 1.69rem + 1.91vw, 3.55rem)",
+      "--tracking-wordmark": "0.22em",
+      "--measure": "42rem",
+      "--z-skip": "60",
+      "--ink-800": "#0c0c0f",
+      "--accent-bright": "#e7cd93",
+      "--tracking-eyebrow": "0.34em",
+      "--font-mono": "ui-monospace, 'SF Mono', 'SFMono-Regular', 'JetBrains Mono', 'Roboto Mono', Menlo, monospace",
+      "--accent-deep": "#9b7e48",
+      "--d-slow": "460ms",
+      "--tracking-wide": "0.02em",
+      "--step--2": "clamp(0.69rem, 0.66rem + 0.13vw, 0.79rem)",
+      "--ink-300": "#3a3a44",
+      "--step-1": "clamp(1.2rem, 1.1rem + 0.49vw, 1.5rem)",
+      "--d-cinematic": "900ms",
+      "--e-in-out": "cubic-bezier(0.65, 0, 0.35, 1)",
+      "--step-7": "clamp(3.58rem, 2.38rem + 6vw, 8.41rem)",
+      "--glow-accent": "0 0 0 1px color-mix(in srgb, #c9a96a 40%, transparent),\n                 0 12px 40px -12px color-mix(in srgb, #c9a96a 30%, transparent)",
+      "--border-hairline": "color-mix(in srgb, #f6f4ef 9%, transparent)",
+      "--brass-bright": "#e7cd93",
+      "--ink-600": "#18181d",
+      "--fog-400": "#9d988c",
+      "--r-xs": "3px",
+      "--s-3": "0.75rem",
+      "--s-2": "0.5rem",
+      "--step-2": "clamp(1.44rem, 1.28rem + 0.79vw, 2rem)",
+      "--leading-tight": "0.98",
+      "--fog-300": "#cecabf",
+      "--font-sans": "'Space Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+      "--r-lg": "18px",
+      "--e-weight": "cubic-bezier(0.16, 0.84, 0.24, 1)",
+      "--border-strong": "color-mix(in srgb, #f6f4ef 18%, transparent)",
+      "--danger": "#d4836a",
+      "--elev-1": "0 1px 0 0 color-mix(in srgb, #f6f4ef 4%, transparent) inset,\n            0 24px 48px -28px rgba(0, 0, 0, 0.9)",
+      "--brass": "#c9a96a",
+      "--leading-body": "1.62",
+      "--z-nav": "40",
+      "--s-11": "12rem",
+      "--surface-sunken": "#08080a",
+      "--surface-raised": "#121216",
+      "--s-9": "6rem",
+      "--focus-ring": "#e7cd93",
+      "--text-strong": "#f6f4ef",
+      "--text-faint": "#6f6b61",
+      "--r-pill": "999px",
+      "--r-sm": "6px",
+      "--font-display": "'Fraunces', 'Hoefler Text', 'Iowan Old Style', Georgia, serif",
+      "--surface-glass": "color-mix(in srgb, #121216 72%, transparent)",
+      "--fog-100": "#f6f4ef",
+      "--brass-deep": "#9b7e48",
+      "--measure-wide": "58rem",
+      "--d-base": "240ms",
+      "--z-canvas": "0",
+      "--step-0": "clamp(1rem, 0.94rem + 0.29vw, 1.19rem)",
+      "--ink-900": "#08080a",
+      "--d-fast": "160ms",
+      "--section-pad": "clamp(5rem, 3rem + 9vw, 11rem)",
+      "--ink-200": "#51515d",
+      "--ink-400": "#2b2b33",
+      "--s-7": "3rem",
+      "--gutter": "clamp(1.25rem, 0.5rem + 4.5vw, 4rem)",
+      "--container": "82rem",
+      "--tracking-tight": "-0.02em"
+    },
+    "topColors": [
+      [
+        "rgb(206, 202, 191)",
+        224
+      ],
+      [
+        "rgb(157, 152, 140)",
+        78
+      ],
+      [
+        "rgb(201, 169, 106)",
+        73
+      ],
+      [
+        "rgb(246, 244, 239)",
+        63
+      ],
+      [
+        "rgb(5, 5, 6)",
+        23
+      ],
+      [
+        "rgb(111, 107, 97)",
+        14
+      ],
+      [
+        "color(srgb 0.964706 0.956863 0.937255 / 0.09)",
+        11
+      ],
+      [
+        "rgb(206, 202, 191) rgb(206, 202, 191) color(srgb 0.964706 0.956863 0.937255 / 0.09)",
+        9
+      ],
+      [
+        "rgb(157, 152, 140) rgb(157, 152, 140) color(srgb 0.788235 0.662745 0.415686 / 0.45)",
+        6
+      ],
+      [
+        "color(srgb 0.964706 0.956863 0.937255 / 0.18)",
+        4
+      ],
+      [
+        "color(srgb 0.964706 0.956863 0.937255 / 0.09) rgb(206, 202, 191) rgb(206, 202, 191)",
+        3
+      ],
+      [
+        "rgb(231, 205, 147)",
+        2
+      ],
+      [
+        "rgb(8, 8, 10)",
+        2
+      ],
+      [
+        "rgb(128, 128, 128)",
+        2
+      ],
+      [
+        "color(srgb 0.0196078 0.0196078 0.0235294 / 0.58)",
+        1
+      ],
+      [
+        "rgb(206, 202, 191) rgb(206, 202, 191) color(srgb 0.964706 0.956863 0.937255 / 0.06)",
+        1
+      ],
+      [
+        "rgb(58, 58, 68)",
+        1
+      ],
+      [
+        "color(srgb 0.0705882 0.0705882 0.0862745 / 0.72)",
+        1
+      ]
+    ],
+    "scrollWidth": 1512,
+    "clientWidth": 1512,
+    "scrollHeight": 10205
+  },
+  "consoleMessages": [
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x104001cea00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x104001cea00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x104001cea00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    }
+  ],
+  "pageErrors": [],
+  "capturedAt": "2026-06-22T17:40:27.106Z"
+}

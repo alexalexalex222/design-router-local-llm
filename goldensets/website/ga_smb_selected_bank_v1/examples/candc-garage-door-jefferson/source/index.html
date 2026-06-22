@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C&C Garage Door | Precision Mechanics & Installation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+          },
+          colors: {
+            graphite: '#111315',
+            carbon: '#1A1D21',
+            steel: '#8A95A5',
+            signal: '#FF5E00',
+            concrete: '#F0F2F5',
+          },
+          backgroundImage: {
+            'industrial-grid': 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)',
+            'hazard-stripes': 'repeating-linear-gradient(45deg, rgba(0,0,0,0.1) 0, rgba(0,0,0,0.1) 2px, transparent 2px, transparent 15px)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #F0F2F5; color: #111315; }
+    .bg-industrial-grid { background-size: 40px 40px; }
+    .motion-track {
+      position: absolute;
+      background: linear-gradient(90deg, transparent, rgba(255,94,0,0.8), transparent);
+      height: 1px;
+      width: 150%;
+      transform: rotate(-12deg);
+      pointer-events: none;
+    }
+    .panel-lift {
+      border-bottom: 2px solid rgba(255,255,255,0.05);
+      box-shadow: inset 0 -10px 20px rgba(0,0,0,0.4);
+    }
+    ::selection {
+      background-color: #FF5E00;
+      color: #FFF;
+    }
+  </style>
+</head>
+<body class="antialiased overflow-x-hidden selection:bg-signal selection:text-white">
+
+  <!-- Header -->
+  <header class="absolute top-0 w-full z-50 px-6 py-6 md:px-12 flex justify-between items-center border-b border-white/10 mix-blend-difference md:mix-blend-normal">
+    <div class="font-display font-black text-xl md:text-2xl text-white tracking-tight uppercase flex items-center gap-3 z-10">
+      <div class="w-8 h-8 bg-signal flex items-center justify-center rounded-sm">
+        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2.5" d="M4 8h16M4 16h16M4 12h16" /></svg>
+      </div>
+      C&C Garage Door
+    </div>
+    <div class="hidden md:flex items-center gap-6 z-10">
+      <a href="#anatomy" class="text-steel hover:text-white font-display text-sm uppercase tracking-widest font-bold transition-colors">Systems</a>
+      <a href="#services" class="text-steel hover:text-white font-display text-sm uppercase tracking-widest font-bold transition-colors">Services</a>
+      <a href="tel:7068701576" class="flex items-center gap-2 font-display font-bold text-white hover:text-signal transition-colors ml-4 border border-white/20 px-4 py-2">
+        (706) 870-1576
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative min-h-[90vh] bg-graphite flex items-center pt-32 pb-32 lg:pb-48 lg:[clip-path:polygon(0_0,100%_0,100%_88%,0_100%)] overflow-hidden z-20">
+    <div class="absolute inset-0 bg-industrial-grid opacity-20 pointer-events-none"></div>
+    
+    <!-- Abstract Garage Door Panels -->
+    <div class="hidden lg:flex absolute right-0 top-0 bottom-0 w-1/3 flex-col justify-end pb-32 pr-12 z-0 opacity-40 mix-blend-luminosity">
+      <div class="w-full h-40 bg-gradient-to-b from-white/5 to-transparent border-t border-white/20 panel-lift transform translate-y-8"></div>
+      <div class="w-full h-40 bg-gradient-to-b from-white/5 to-transparent border-t border-white/20 panel-lift transform translate-y-4"></div>
+      <div class="w-full h-40 bg-gradient-to-b from-white/5 to-transparent border-t border-white/20 panel-lift"></div>
+      <div class="w-full h-40 bg-gradient-to-b from-signal/20 to-transparent border-t-2 border-signal panel-lift shadow-[0_-20px_40px_rgba(255,94,0,0.15)] relative">
+        <div class="absolute bottom-4 right-4 text-signal/50 font-display text-xs tracking-widest uppercase">Drive System Active</div>
+      </div>
+    </div>
+
+    <!-- Motion Lines -->
+    <div class="motion-track top-[30%] -left-[20%] opacity-40"></div>
+    <div class="motion-track top-[70%] -left-[10%] opacity-20" style="background: linear-gradient(90deg, transparent, rgba(138,149,165,0.6), transparent);"></div>
+
+    <div class="container mx-auto px-6 md:px-12 relative z-10">
+      <div class="max-w-4xl">
+        <div class="inline-block bg-white/5 border border-white/10 px-4 py-1.5 mb-6 backdrop-blur-sm">
+          <span class="font-display text-sm text-signal font-bold uppercase tracking-widest flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-signal animate-pulse"></span>
+            Northeast Georgia Operations
+          </span>
+        </div>
+        
+        <h1 class="font-display text-6xl md:text-7xl lg:text-8xl font-black text-white leading-[0.9] tracking-tighter mb-8 uppercase">
+          Engineered For <br>
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-steel to-signal">Flawless Lift.</span>
+        </h1>
+        
+        <p class="text-steel text-lg md:text-xl font-light max-w-2xl mb-12 leading-relaxed">
+          Family-owned since 1991. We don't just repair doors—we calibrate heavy mechanical systems. From snapped high-tension springs to precision opener installations, get same-day service backed by 30+ years of mastery.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row gap-5">
+          <a href="tel:7068701576" class="group relative flex items-center justify-center px-8 py-5 bg-signal text-white font-display font-bold uppercase tracking-widest overflow-hidden">
+            <div class="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
+            <span class="relative group-hover:text-signal transition-colors duration-300 flex items-center gap-2">
+              Dispatch Technician
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            </span>
+          </a>
+          <a href="#anatomy" class="group flex items-center justify-center px-8 py-5 border border-steel/40 text-white font-display font-bold uppercase tracking-widest hover:bg-white/5 transition-colors">
+            View Systems
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem / Solution Section: The Anatomy -->
+  <section class="py-24 md:py-32 bg-concrete relative z-10" id="anatomy">
+    <div class="container mx-auto px-6 md:px-12">
+      <div class="flex flex-col lg:flex-row gap-16 items-center">
+        
+        <!-- Blueprint Graphic -->
+        <div class="w-full lg:w-1/2 relative">
+          <div class="aspect-[4/3] lg:aspect-square bg-carbon relative p-8 shadow-2xl flex flex-col justify-between overflow-hidden">
+             <!-- Crosshairs -->
+             <div class="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-signal"></div>
+             <div class="absolute top-4 right-4 w-4 h-4 border-t-2 border-r-2 border-signal"></div>
+             <div class="absolute bottom-4 left-4 w-4 h-4 border-b-2 border-l-2 border-signal"></div>
+             <div class="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 border-signal"></div>
+             
+             <!-- Industrial Image -->
+             <div class="absolute inset-0 m-8 bg-[url('https://images.unsplash.com/photo-1581092160562-40aa08e78837?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80')] bg-cover bg-center grayscale contrast-125 opacity-40 mix-blend-screen border border-white/10"></div>
+             
+             <!-- Grid Lines -->
+             <div class="absolute inset-0 bg-industrial-grid opacity-10"></div>
+
+             <div class="relative z-10">
+               <span class="bg-signal text-white font-display font-bold text-[10px] uppercase tracking-widest px-2 py-1">Diagnostic View</span>
+             </div>
+             
+             <!-- Callout Box -->
+             <div class="relative z-10 self-end bg-white p-6 shadow-xl border-l-4 border-signal max-w-sm mt-auto transform translate-x-4 translate-y-4">
+               <div class="flex justify-between items-start mb-2">
+                 <div class="text-[10px] font-display font-black text-steel uppercase tracking-widest">Component 01</div>
+                 <svg class="w-4 h-4 text-signal" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+               </div>
+               <div class="text-graphite font-black text-xl font-display mb-1 uppercase tracking-tight">Tension Springs</div>
+               <p class="text-sm text-graphite/70 font-sans leading-relaxed">Engineered to counter-balance hundreds of pounds of raw steel and aluminum with millimeter precision.</p>
+             </div>
+          </div>
+        </div>
+        
+        <!-- Text Content -->
+        <div class="w-full lg:w-1/2">
+          <h2 class="font-display text-4xl md:text-5xl lg:text-6xl font-black text-graphite uppercase tracking-tighter leading-[0.9] mb-8">
+            The Anatomy of <br>A Perfect Lift.
+          </h2>
+          <p class="text-graphite/70 text-lg mb-10 leading-relaxed font-light">
+            A garage door isn't just a barrier; it's the largest moving mechanical system in your home. When springs break, cables fray, or tracks warp, you need exact calibration from seasoned professionals, not a quick patch.
+          </p>
+          
+          <div class="space-y-8">
+            <!-- Item 1 -->
+            <div class="flex gap-6 items-start relative before:absolute before:left-[11px] before:top-10 before:bottom-[-2rem] before:w-[2px] before:bg-graphite/10 last:before:hidden">
+              <div class="w-6 h-6 rounded-full bg-signal flex-shrink-0 flex items-center justify-center mt-1 z-10 shadow-[0_0_10px_rgba(255,94,0,0.5)]">
+                <div class="w-2 h-2 bg-white rounded-full"></div>
+              </div>
+              <div>
+                <h3 class="font-display font-black text-xl uppercase tracking-wide text-graphite mb-1">Force & Balance</h3>
+                <p class="text-graphite/70 text-sm leading-relaxed">Broken springs safely removed and replaced with high-cycle variants, perfectly balanced to protect your motor's lifespan.</p>
+              </div>
+            </div>
+            
+            <!-- Item 2 -->
+            <div class="flex gap-6 items-start relative before:absolute before:left-[11px] before:top-10 before:bottom-[-2rem] before:w-[2px] before:bg-graphite/10 last:before:hidden">
+              <div class="w-6 h-6 border-2 border-graphite flex-shrink-0 bg-concrete flex items-center justify-center mt-1 z-10"></div>
+              <div>
+                <h3 class="font-display font-black text-xl uppercase tracking-wide text-graphite mb-1">Drive & Logic</h3>
+                <p class="text-graphite/70 text-sm leading-relaxed">Advanced opener diagnostics. We troubleshoot stripped gear kits, fried logic boards, and misaligned safety sensors instantly.</p>
+              </div>
+            </div>
+            
+            <!-- Item 3 -->
+            <div class="flex gap-6 items-start relative before:absolute before:left-[11px] before:top-10 before:bottom-[-2rem] before:w-[2px] before:bg-graphite/10 last:before:hidden">
+              <div class="w-6 h-6 border-2 border-graphite flex-shrink-0 bg-concrete flex items-center justify-center mt-1 z-10"></div>
+              <div>
+                <h3 class="font-display font-black text-xl uppercase tracking-wide text-graphite mb-1">Track & Hardware</h3>
+                <p class="text-graphite/70 text-sm leading-relaxed">Comprehensive panel replacements, heavy-duty roller upgrades, and track realignments to eliminate grinding and friction.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section class="py-24 md:py-32 bg-carbon relative lg:mt-[-8%] lg:pt-48 lg:[clip-path:polygon(0_8%,100%_0,100%_100%,0_100%)] z-20" id="services">
+    <div class="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.01)_25%,rgba(255,255,255,0.01)_50%,transparent_50%,transparent_75%,rgba(255,255,255,0.01)_75%,rgba(255,255,255,0.01)_100%)] bg-[length:20px_20px] pointer-events-none"></div>
+    
+    <div class="container mx-auto px-6 md:px-12 relative z-10">
+      <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+        <div>
+          <span class="font-display text-signal font-bold uppercase tracking-widest text-sm mb-4 block flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            Our Capabilities
+          </span>
+          <h2 class="font-display text-4xl md:text-6xl font-black text-white uppercase tracking-tighter leading-none">
+            Mechanical <br><span class="text-steel">Solutions.</span>
+          </h2>
+        </div>
+        <a href="https://candcgaragedoorsga.com/contact-us/" class="text-signal hover:text-white font-display font-bold uppercase tracking-widest flex items-center gap-2 transition-colors group text-sm">
+          Schedule Service 
+          <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+        </a>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Service Card 1 -->
+        <div class="group bg-graphite border border-white/10 hover:border-signal p-10 transition-all duration-300 relative overflow-hidden flex flex-col">
+          <div class="absolute top-0 right-0 p-6 text-white/5 font-display font-black text-8xl pointer-events-none group-hover:text-signal/5 transition-colors">01</div>
+          <div class="w-12 h-12 bg-carbon border border-white/10 flex items-center justify-center mb-8 group-hover:bg-signal group-hover:border-signal transition-colors shadow-lg">
+            <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+          </div>
+          <h3 class="font-display font-black text-2xl text-white uppercase tracking-tight mb-4">Precision Repair</h3>
+          <p class="text-steel font-light leading-relaxed text-sm mb-8 flex-grow">Mobile dispatch for broken springs, frayed cables, off-track doors, and damaged rollers. We restore safe operation instantly.</p>
+          <ul class="space-y-3 text-xs text-steel/80 font-display uppercase tracking-widest border-t border-white/10 pt-6">
+            <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-signal rounded-none"></span> Spring Replacement</li>
+            <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-signal rounded-none"></span> Cable Rewiring</li>
+            <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-signal rounded-none"></span> Track Realignment</li>
+          </ul>
+        </div>
+
+        <!-- Service Card 2 -->
+        <div class="group bg-graphite border border-white/10 hover:border-signal p-10 transition-all duration-300 relative overflow-hidden flex flex-col transform lg:-translate-y-6">
+          <div class="absolute top-0 right-0 p-6 text-white/5 font-display font-black text-8xl pointer-events-none group-hover:text-signal/5 transition-colors">02</div>
+          <div class="absolute top-0 left-0 w-full h-1 bg-signal transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+          <div class="w-12 h-12 bg-carbon border border-white/10 flex items-center justify-center mb-8 group-hover:bg-signal group-hover:border-signal transition-colors shadow-lg">
+            <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          </div>
+          <h3 class="font-display font-black text-2xl text-white uppercase tracking-tight mb-4">Opener Systems</h3>
+          <p class="text-steel font-light leading-relaxed text-sm mb-8 flex-grow">Installation and diagnostics for heavy-duty motors. We fix stripped gears, logic boards, and program new remotes.</p>
+          <ul class="space-y-3 text-xs text-steel/80 font-display uppercase tracking-widest border-t border-white/10 pt-6">
+            <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-signal rounded-none"></span> Drive Diagnostics</li>
+            <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-signal rounded-none"></span> Logic Board Reset</li>
+            <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-signal rounded-none"></span> Motor Replacement</li>
+          </ul>
+        </div>
+
+        <!-- Service Card 3 -->
+        <div class="group bg-graphite border border-white/10 hover:border-signal p-10 transition-all duration-300 relative overflow-hidden flex flex-col">
+          <div class="absolute top-0 right-0 p-6 text-white/5 font-display font-black text-8xl pointer-events-none group-hover:text-signal/5 transition-colors">03</div>
+          <div class="w-12 h-12 bg-carbon border border-white/10 flex items-center justify-center mb-8 group-hover:bg-signal group-hover:border-signal transition-colors shadow-lg">
+            <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+          </div>
+          <h3 class="font-display font-black text-2xl text-white uppercase tracking-tight mb-4">New Installations</h3>
+          <p class="text-steel font-light leading-relaxed text-sm mb-8 flex-grow">Premium garage door replacements that elevate curb appeal while delivering commercial-grade security and heavy insulation.</p>
+          <ul class="space-y-3 text-xs text-steel/80 font-display uppercase tracking-widest border-t border-white/10 pt-6">
+            <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-signal rounded-none"></span> Custom Fitting</li>
+            <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-signal rounded-none"></span> Panel Replacement</li>
+            <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-signal rounded-none"></span> Hardware Overhaul</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA / Footer Area -->
+  <section class="bg-signal py-24 relative overflow-hidden">
+    <!-- Hazard Stripes Background -->
+    <div class="absolute inset-0 bg-hazard-stripes opacity-10 pointer-events-none"></div>
+    
+    <!-- Abstract Geometric Cut -->
+    <div class="absolute right-0 top-0 h-full w-full lg:w-5/12 bg-graphite lg:[clip-path:polygon(15%_0,100%_0,100%_100%,0_100%)] hidden md:block mix-blend-multiply opacity-20"></div>
+    
+    <div class="container mx-auto px-6 md:px-12 relative z-10">
+      <div class="flex flex-col lg:flex-row justify-between items-center lg:items-stretch gap-16">
+        
+        <div class="w-full lg:w-7/12 text-graphite">
+          <h2 class="font-display text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tighter mb-6 leading-[0.9]">
+            System Down? <br>Let's Get It Moving.
+          </h2>
+          <p class="font-medium text-lg md:text-xl mb-10 max-w-lg opacity-90 leading-relaxed">
+            Over 30 years of family-owned mechanical mastery in Northeast Georgia. When hardware fails, we deploy rapid, permanent solutions.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4">
+            <a href="tel:7068701576" class="inline-flex items-center justify-center px-8 py-5 bg-graphite text-white font-display font-bold uppercase tracking-widest hover:bg-carbon hover:shadow-xl transition-all">
+              Call (706) 870-1576
+            </a>
+            <a href="https://candcgaragedoorsga.com/contact-us/" class="inline-flex items-center justify-center px-8 py-5 border-[3px] border-graphite text-graphite font-display font-bold uppercase tracking-widest hover:bg-graphite hover:text-white transition-colors">
+              Online Dispatch
+            </a>
+          </div>
+        </div>
+        
+        <div class="w-full lg:w-4/12 bg-graphite p-8 md:p-12 text-white relative shadow-2xl border border-white/10">
+          <!-- Industrial corner accents -->
+          <div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-signal"></div>
+          <div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-signal"></div>
+          <div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-signal"></div>
+          <div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-signal"></div>
+
+          <div class="mb-10">
+            <span class="block font-display font-black uppercase tracking-widest text-signal text-[10px] mb-3">Operations Headquarters</span>
+            <address class="not-italic">
+              <p class="font-display text-2xl font-bold uppercase tracking-tight">38 Apex Dr.</p>
+              <p class="font-display text-2xl font-bold uppercase tracking-tight text-steel">Jefferson, GA 30549</p>
+            </address>
+          </div>
+          <div>
+            <span class="block font-display font-black uppercase tracking-widest text-signal text-[10px] mb-3">Active Dispatch Zones</span>
+            <p class="text-steel font-light text-sm leading-loose">
+              Jefferson • Athens • Gainesville • Flowery Branch • Dacula • Buford • Lawrenceville • Sugar Hill • Suwanee • Duluth • Surrounding Northeast Georgia
+            </p>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </section>
+
+  <!-- True Footer -->
+  <footer class="bg-carbon py-8 border-t border-white/5 relative z-10">
+    <div class="container mx-auto px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-6">
+      <div class="flex items-center gap-3">
+        <div class="w-6 h-6 bg-signal flex items-center justify-center rounded-sm">
+          <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2.5" d="M4 8h16M4 16h16M4 12h16" /></svg>
+        </div>
+        <span class="font-display font-bold text-white tracking-widest uppercase text-xs">C&C Garage Door & Opener</span>
+      </div>
+      <div class="text-steel/50 text-[10px] font-display font-bold tracking-widest uppercase text-center md:text-right">
+        &copy; 2026 C&C Garage Door. <br class="md:hidden">Family-owned since 1991. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+
+
+<style id="below-fold-patch">
+  .glass-panel {
+    background: rgba(26, 29, 33, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .grid-overlay {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), 
+                      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .grid-overlay-dark {
+    background-image: linear-gradient(rgba(17, 19, 21, 0.05) 1px, transparent 1px), 
+                      linear-gradient(90deg, rgba(17, 19, 21, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .tech-corner {
+    position: relative;
+  }
+  .tech-corner::before, .tech-corner::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #FF5E00;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 10;
+  }
+  .tech-corner::before {
+    top: -2px; left: -2px; border-right: none; border-bottom: none;
+  }
+  .tech-corner::after {
+    bottom: -2px; right: -2px; border-left: none; border-top: none;
+  }
+  .group:hover .tech-corner::before, .group:hover .tech-corner::after {
+    width: 32px; height: 32px;
+  }
+  .ticker-tape {
+    display: flex;
+    animation: ticker 40s linear infinite;
+  }
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .hazard-pattern {
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 10px,
+      rgba(255, 94, 0, 0.15) 10px,
+      rgba(255, 94, 0, 0.15) 20px
+    );
+  }
+  .data-line {
+    position: relative;
+    padding-left: 2rem;
+  }
+  .data-line::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1px;
+    background-color: #FF5E00;
+  }
+</style>
+
+<!-- Ticker Tape -->
+<div class="bg-carbon border-y border-white/10 overflow-hidden py-4 relative z-30">
+  <div class="ticker-tape whitespace-nowrap flex items-center gap-12 font-display text-xs text-steel uppercase tracking-[0.2em] font-bold">
+    <span>// 24/7 Emergency Dispatch</span>
+    <span class="text-signal">■</span>
+    <span>// Commercial Grade Hardware</span>
+    <span class="text-signal">■</span>
+    <span>// High-Cycle Tension Springs</span>
+    <span class="text-signal">■</span>
+    <span>// Laser Track Alignment</span>
+    <span class="text-signal">■</span>
+    <span>// Family Owned Since 1991</span>
+    <span class="text-signal">■</span>
+    <span>// Serving Northeast Georgia</span>
+    <span class="text-signal">■</span>
+    <span>// 24/7 Emergency Dispatch</span>
+    <span class="text-signal">■</span>
+    <span>// Commercial Grade Hardware</span>
+    <span class="text-signal">■</span>
+    <span>// High-Cycle Tension Springs</span>
+    <span class="text-signal">■</span>
+    <span>// Laser Track Alignment</span>
+    <span class="text-signal">■</span>
+    <span>// Family Owned Since 1991</span>
+    <span class="text-signal">■</span>
+    <span>// Serving Northeast Georgia</span>
+    <span class="text-signal">■</span>
+  </div>
+</div>
+
+<!-- Diagnostics / Anatomy Section -->
+<section class="py-24 md:py-32 bg-concrete relative z-20 overflow-hidden" id="anatomy">
+  <div class="absolute inset-0 grid-overlay-dark opacity-40 pointer-events-none"></div>
+  
+  <div class="container mx-auto px-6 md:px-12 relative z-10">
+    <div class="flex flex-col lg:flex-row gap-16 lg:gap-24 items-center">
+      
+      <!-- Blueprint Graphic -->
+      <div class="w-full lg:w-1/2 relative group">
+        <div class="aspect-[4/3] lg:aspect-square bg-carbon relative p-8 shadow-2xl flex flex-col justify-between overflow-hidden tech-corner">
+           
+           <!-- Industrial Image -->
+           <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1581092160562-40aa08e78837?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80')] bg-cover bg-center grayscale contrast-125 opacity-30 mix-blend-screen border border-white/10 transition-transform duration-700 group-hover:scale-105"></div>
+           
+           <div class="absolute inset-0 bg-industrial-grid opacity-10"></div>
+
+           <div class="relative z-10 flex justify-between items-start">
+             <span class="bg-signal text-white font-display font-bold text-[10px] uppercase tracking-widest px-3 py-1.5 shadow-lg">Diagnostic View</span>
+             <span class="text-white/30 font-display text-[10px] tracking-[0.3em]">SYS-01-A</span>
+           </div>
+           
+           <!-- Callout Box -->
+           <div class="relative z-10 self-end bg-white p-6 shadow-xl border-l-4 border-signal w-[85%] sm:max-w-sm mt-auto transform translate-x-4 translate-y-4 group-hover:-translate-y-2 transition-transform duration-500">
+             <div class="flex justify-between items-start mb-3">
+               <div class="text-[10px] font-display font-black text-steel uppercase tracking-widest">Component 01</div>
+               <svg class="w-4 h-4 text-signal" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+             </div>
+             <div class="text-graphite font-black text-2xl font-display mb-2 uppercase tracking-tight">Tension Springs</div>
+             <p class="text-sm text-graphite/70 font-sans leading-relaxed">Engineered to counter-balance hundreds of pounds of raw steel and aluminum with exact mathematical precision.</p>
+           </div>
+        </div>
+      </div>
+      
+      <!-- Text Content -->
+      <div class="w-full lg:w-1/2">
+        <div class="flex items-center gap-4 mb-6">
+          <div class="w-12 h-1 bg-signal"></div>
+          <span class="font-display text-signal font-bold uppercase tracking-widest text-xs">System Analysis</span>
+        </div>
+        <h2 class="font-display text-4xl md:text-5xl lg:text-6xl font-black text-graphite uppercase tracking-tighter leading-[0.95] mb-8">
+          The Anatomy of <br>A Perfect Lift.
+        </h2>
+        <p class="text-graphite/70 text-lg mb-12 leading-relaxed font-light">
+          A garage door isn't just a barrier; it's the largest moving mechanical system in your home. When springs break, cables fray, or tracks warp, you need exact calibration from seasoned professionals, not a temporary patch.
+        </p>
+        
+        <div class="space-y-10 relative before:absolute before:left-[15px] before:top-4 before:bottom-4 before:w-[1px] before:bg-gradient-to-b before:from-signal before:via-graphite/20 before:to-transparent">
+          
+          <!-- Item 1 -->
+          <div class="flex gap-8 items-start relative group cursor-default">
+            <div class="w-8 h-8 rounded-none bg-carbon flex-shrink-0 flex items-center justify-center relative z-10 transition-colors group-hover:bg-signal">
+              <span class="font-display font-bold text-white text-[10px]">01</span>
+            </div>
+            <div>
+              <h3 class="font-display font-black text-xl uppercase tracking-wide text-graphite mb-2 transition-colors group-hover:text-signal">Force & Balance</h3>
+              <p class="text-graphite/70 text-sm leading-relaxed">Broken springs safely removed and replaced with high-cycle variants, perfectly balanced to protect your motor's internal gearing and lifespan.</p>
+            </div>
+          </div>
+          
+          <!-- Item 2 -->
+          <div class="flex gap-8 items-start relative group cursor-default">
+            <div class="w-8 h-8 rounded-none bg-concrete border border-graphite/20 flex-shrink-0 flex items-center justify-center relative z-10 transition-colors group-hover:bg-signal group-hover:border-signal">
+              <span class="font-display font-bold text-graphite group-hover:text-white text-[10px]">02</span>
+            </div>
+            <div>
+              <h3 class="font-display font-black text-xl uppercase tracking-wide text-graphite mb-2 transition-colors group-hover:text-signal">Drive & Logic</h3>
+              <p class="text-graphite/70 text-sm leading-relaxed">Advanced opener diagnostics. We troubleshoot stripped gear kits, fried logic boards, and misaligned safety sensors to restore automated access instantly.</p>
+            </div>
+          </div>
+          
+          <!-- Item 3 -->
+          <div class="flex gap-8 items-start relative group cursor-default">
+            <div class="w-8 h-8 rounded-none bg-concrete border border-graphite/20 flex-shrink-0 flex items-center justify-center relative z-10 transition-colors group-hover:bg-signal group-hover:border-signal">
+              <span class="font-display font-bold text-graphite group-hover:text-white text-[10px]">03</span>
+            </div>
+            <div>
+              <h3 class="font-display font-black text-xl uppercase tracking-wide text-graphite mb-2 transition-colors group-hover:text-signal">Track & Hardware</h3>
+              <p class="text-graphite/70 text-sm leading-relaxed">Comprehensive panel replacements, heavy-duty nylon roller upgrades, and laser track realignments to eliminate grinding, friction, and binding.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+<!-- Services Section -->
+<section class="py-24 md:py-32 bg-carbon relative lg:mt-[-4%] lg:pt-48 lg:[clip-path:polygon(0_6%,100%_0,100%_100%,0_100%)] z-30" id="services">
+  <div class="absolute inset-0 grid-overlay opacity-20 pointer-events-none"></div>
+  
+  <div class="container mx-auto px-6 md:px-12 relative z-10">
+    <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+      <div>
+        <span class="font-display text-signal font-bold uppercase tracking-widest text-xs mb-4 block flex items-center gap-3">
+          <span class="w-2 h-2 bg-signal"></span>
+          Deployment Capabilities
+        </span>
+        <h2 class="font-display text-4xl md:text-5xl lg:text-6xl font-black text-white uppercase tracking-tighter leading-[0.95]">
+          Mechanical <br><span class="text-steel">Solutions.</span>
+        </h2>
+      </div>
+      <a href="https://candcgaragedoorsga.com/contact-us/" class="text-signal hover:text-white font-display font-bold uppercase tracking-widest flex items-center gap-2 transition-colors group text-sm border-b border-signal/30 pb-1 hover:border-white">
+        View Service Area
+        <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+      </a>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <!-- Service Card 1 -->
+      <div class="group glass-panel hover:bg-graphite hover:border-signal p-10 transition-all duration-300 relative overflow-hidden flex flex-col">
+        <div class="absolute top-0 right-0 p-4 text-white/5 font-display font-black text-8xl pointer-events-none group-hover:text-signal/5 transition-colors leading-none">01</div>
+        <div class="absolute left-0 top-0 w-1 h-0 bg-signal transition-all duration-500 group-hover:h-full"></div>
+        
+        <div class="w-14 h-14 bg-carbon border border-white/10 flex items-center justify-center mb-8 group-hover:bg-signal group-hover:border-signal transition-colors shadow-lg">
+          <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+        </div>
+        <h3 class="font-display font-black text-2xl text-white uppercase tracking-tight mb-4">Precision Repair</h3>
+        <p class="text-steel font-light leading-relaxed text-sm mb-8 flex-grow">Mobile dispatch for broken springs, snapped cables, off-track doors, and damaged rollers. We restore safe operation to compromised systems instantly.</p>
+        <ul class="space-y-4 text-xs text-steel/80 font-display uppercase tracking-widest border-t border-white/10 pt-6">
+          <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-signal"></span> Torsion Spring Replacement</li>
+          <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-signal"></span> Aircraft Cable Rewiring</li>
+          <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-signal"></span> Laser Track Realignment</li>
+        </ul>
+      </div>
+
+      <!-- Service Card 2 -->
+      <div class="group glass-panel hover:bg-graphite hover:border-signal p-10 transition-all duration-300 relative overflow-hidden flex flex-col transform lg:-translate-y-6">
+        <div class="absolute top-0 right-0 p-4 text-white/5 font-display font-black text-8xl pointer-events-none group-hover:text-signal/5 transition-colors leading-none">02</div>
+        <div class="absolute left-0 top-0 w-1 h-0 bg-signal transition-all duration-500 group-hover:h-full"></div>
+
+        <div class="w-14 h-14 bg-carbon border border-white/10 flex items-center justify-center mb-8 group-hover:bg-signal group-hover:border-signal transition-colors shadow-lg">
+          <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+        </div>
+        <h3 class="font-display font-black text-2xl text-white uppercase tracking-tight mb-4">Motor Systems</h3>
+        <p class="text-steel font-light leading-relaxed text-sm mb-8 flex-grow">Installation and diagnostics for heavy-duty motors. We replace stripped gears, calibrate logic boards, and program secure remote access.</p>
+        <ul class="space-y-4 text-xs text-steel/80 font-display uppercase tracking-widest border-t border-white/10 pt-6">
+          <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-signal"></span> Belt & Chain Drive Diagnostics</li>
+          <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-signal"></span> Circuit Board Re-calibration</li>
+          <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-signal"></span> Complete Unit Upgrades</li>
+        </ul>
+      </div>
+
+      <!-- Service Card 3 -->
+      <div class="group glass-panel hover:bg-graphite hover:border-signal p-10 transition-all duration-300 relative overflow-hidden flex flex-col">
+        <div class="absolute top-0 right-0 p-4 text-white/5 font-display font-black text-8xl pointer-events-none group-hover:text-signal/5 transition-colors leading-none">03</div>
+        <div class="absolute left-0 top-0 w-1 h-0 bg-signal transition-all duration-500 group-hover:h-full"></div>
+
+        <div class="w-14 h-14 bg-carbon border border-white/10 flex items-center justify-center mb-8 group-hover:bg-signal group-hover:border-signal transition-colors shadow-lg">
+          <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+        </div>
+        <h3 class="font-display font-black text-2xl text-white uppercase tracking-tight mb-4">Custom Hardware</h3>
+        <p class="text-steel font-light leading-relaxed text-sm mb-8 flex-grow">Premium garage door installations that elevate property aesthetics while delivering commercial-grade security and maximum thermal insulation.</p>
+        <ul class="space-y-4 text-xs text-steel/80 font-display uppercase tracking-widest border-t border-white/10 pt-6">
+          <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-signal"></span> Architectural Fitting</li>
+          <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-signal"></span> Heavy Insulation Panels</li>
+          <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-signal"></span> Commercial Track Scaling</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Trust & Authority Metrics -->
+<section class="py-20 bg-graphite border-y border-white/5 relative z-20">
+  <div class="container mx-auto px-6 md:px-12">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-12 divide-x divide-white/10 text-center md:text-left">
+      <div class="md:pl-8 first:pl-0 border-none md:border-solid">
+        <div class="font-display text-4xl lg:text-5xl font-black text-white mb-2 tracking-tighter">1991</div>
+        <div class="text-steel text-xs font-bold uppercase tracking-widest font-display">Year Established</div>
+      </div>
+      <div class="md:pl-8 border-none md:border-solid">
+        <div class="font-display text-4xl lg:text-5xl font-black text-white mb-2 tracking-tighter">30<span class="text-signal">+</span></div>
+        <div class="text-steel text-xs font-bold uppercase tracking-widest font-display">Years of Mastery</div>
+      </div>
+      <div class="md:pl-8 border-none md:border-solid">
+        <div class="font-display text-4xl lg:text-5xl font-black text-white mb-2 tracking-tighter">24<span class="text-signal">/</span>7</div>
+        <div class="text-steel text-xs font-bold uppercase tracking-widest font-display">Emergency Dispatch</div>
+      </div>
+      <div class="md:pl-8 border-none md:border-solid">
+        <div class="font-display text-4xl lg:text-5xl font-black text-white mb-2 tracking-tighter">5<span class="text-signal">★</span></div>
+        <div class="text-steel text-xs font-bold uppercase tracking-widest font-display">Local Rating</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Operation Protocol -->
+<section class="py-24 md:py-32 bg-concrete relative z-10">
+  <div class="container mx-auto px-6 md:px-12">
+    <div class="text-center max-w-3xl mx-auto mb-20">
+      <span class="font-display text-signal font-bold uppercase tracking-widest text-xs mb-4 block">Standard Operating Procedure</span>
+      <h2 class="font-display text-4xl md:text-5xl font-black text-graphite uppercase tracking-tighter leading-[0.95] mb-6">
+        The C&C Execution <br>Protocol.
+      </h2>
+      <p class="text-graphite/70 text-lg font-light leading-relaxed">
+        We do not rely on guesswork. Every dispatch follows a strict mechanical protocol to ensure total system restoration, long-term durability, and client safety.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      
+      <!-- Phase 1 -->
+      <div class="bg-white p-10 border border-graphite/10 hover:border-signal/50 transition-colors shadow-sm relative group">
+        <div class="font-display text-6xl font-black text-concrete absolute top-6 right-6 select-none transition-colors group-hover:text-signal/10">01</div>
+        <div class="w-12 h-12 bg-graphite flex items-center justify-center mb-8">
+          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        </div>
+        <h3 class="font-display font-black text-xl text-graphite uppercase tracking-tight mb-4">Tactical Diagnostics</h3>
+        <p class="text-graphite/70 text-sm leading-relaxed mb-6">Our technicians perform a 25-point stress test on arrival. We locate the primary failure point and scan for secondary component fatigue before touching a tool.</p>
+        <div class="data-line text-xs font-display font-bold uppercase tracking-widest text-graphite">Zero Guesswork</div>
+      </div>
+
+      <!-- Phase 2 -->
+      <div class="bg-white p-10 border border-graphite/10 hover:border-signal/50 transition-colors shadow-sm relative group">
+        <div class="font-display text-6xl font-black text-concrete absolute top-6 right-6 select-none transition-colors group-hover:text-signal/10">02</div>
+        <div class="w-12 h-12 bg-graphite flex items-center justify-center mb-8">
+          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+        </div>
+        <h3 class="font-display font-black text-xl text-graphite uppercase tracking-tight mb-4">Hard Data Quote</h3>
+        <p class="text-graphite/70 text-sm leading-relaxed mb-6">You receive an exact, transparent breakdown of the required hardware and labor. No bait-and-switch pricing. No hidden fees. Just the required mechanical reality.</p>
+        <div class="data-line text-xs font-display font-bold uppercase tracking-widest text-graphite">Upfront Pricing</div>
+      </div>
+
+      <!-- Phase 3 -->
+      <div class="bg-white p-10 border border-graphite/10 hover:border-signal/50 transition-colors shadow-sm relative group">
+        <div class="font-display text-6xl font-black text-concrete absolute top-6 right-6 select-none transition-colors group-hover:text-signal/10">03</div>
+        <div class="w-12 h-12 bg-signal flex items-center justify-center mb-8">
+          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+        </div>
+        <h3 class="font-display font-black text-xl text-graphite uppercase tracking-tight mb-4">Precision Execution</h3>
+        <p class="text-graphite/70 text-sm leading-relaxed mb-6">Fully stocked mobile units allow us to execute the repair instantly. High-cycle springs tensioned, tracks aligned to the millimeter, and motors calibrated.</p>
+        <div class="data-line text-xs font-display font-bold uppercase tracking-widest text-graphite">Same-Day Fix</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Field Reports / Testimonials -->
+<section class="py-24 md:py-32 bg-carbon border-t border-white/5 relative">
+  <div class="container mx-auto px-6 md:px-12">
+    <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+      <div>
+        <span class="font-display text-steel font-bold uppercase tracking-widest text-xs mb-4 block">Verified Transcripts</span>
+        <h2 class="font-display text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-[0.95]">
+          Field <span class="text-signal">Reports.</span>
+        </h2>
+      </div>
+      <div class="flex gap-2">
+        <!-- Abstract UI elements -->
+        <div class="w-3 h-3 bg-signal"></div>
+        <div class="w-3 h-3 bg-white/20"></div>
+        <div class="w-3 h-3 bg-white/20"></div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      
+      <div class="bg-graphite p-8 border border-white/10 relative">
+        <svg class="w-8 h-8 text-white/10 absolute top-8 right-8" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+        <div class="flex items-center gap-1 mb-6">
+          <span class="text-signal text-lg">★</span><span class="text-signal text-lg">★</span><span class="text-signal text-lg">★</span><span class="text-signal text-lg">★</span><span class="text-signal text-lg">★</span>
+        </div>
+        <p class="text-steel font-light leading-relaxed mb-8 italic">"Tension spring snapped at 6 AM. Called C&C, and they had a truck in my driveway by 8:30. The technician explained the calibration process, replaced both springs with heavy-duty parts, and tuned the motor. Flawless execution."</p>
+        <div class="border-t border-white/10 pt-4 flex justify-between items-center">
+          <span class="font-display font-bold text-white uppercase text-xs tracking-widest">Mark T.</span>
+          <span class="text-steel/50 text-[10px] font-display uppercase tracking-widest">Athens, GA</span>
+        </div>
+      </div>
+
+      <div class="bg-graphite p-8 border border-white/10 relative">
+        <svg class="w-8 h-8 text-white/10 absolute top-8 right-8" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+        <div class="flex items-center gap-1 mb-6">
+          <span class="text-signal text-lg">★</span><span class="text-signal text-lg">★</span><span class="text-signal text-lg">★</span><span class="text-signal text-lg">★</span><span class="text-signal text-lg">★</span>
+        </div>
+        <p class="text-steel font-light leading-relaxed mb-8 italic">"We've used generic contractors before and the door always grinded. C&C came out, re-aligned the entire laser track system, swapped the rollers to nylon, and now it's whisper quiet. Real professionals."</p>
+        <div class="border-t border-white/10 pt-4 flex justify-between items-center">
+          <span class="font-display font-bold text-white uppercase text-xs tracking-widest">Sarah J.</span>
+          <span class="text-steel/50 text-[10px] font-display uppercase tracking-widest">Jefferson, GA</span>
+        </div>
+      </div>
+
+      <div class="bg-graphite p-8 border border-white/10 relative">
+        <svg class="w-8 h-8 text-white/10 absolute top-8 right-8" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+        <div class="flex items-center gap-1 mb-6">
+          <span class="text-signal text-lg">★</span><span class="text-signal text-lg">★</span><span class="text-signal text-lg">★</span><span class="text-signal text-lg">★</span><span class="text-signal text-lg">★</span>
+        </div>
+        <p class="text-steel font-light leading-relaxed mb-8 italic">"Complete installation of two insulated doors and new belt-drive motors. The crew was disciplined, kept the workspace clean, and the final fitment was perfect. Family owned makes a huge difference."</p>
+        <div class="border-t border-white/10 pt-4 flex justify-between items-center">
+          <span class="font-display font-bold text-white uppercase text-xs tracking-widest">David R.</span>
+          <span class="text-steel/50 text-[10px] font-display uppercase tracking-widest">Buford, GA</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CTA / Dispatch Headquarters -->
+<section class="bg-signal py-24 relative overflow-hidden">
+  <!-- Hazard Stripes Background -->
+  <div class="absolute inset-0 hazard-pattern pointer-events-none"></div>
+  
+  <!-- Abstract Geometric Cut -->
+  <div class="absolute right-0 top-0 h-full w-full lg:w-1/2 bg-graphite lg:[clip-path:polygon(15%_0,100%_0,100%_100%,0_100%)] hidden lg:block mix-blend-multiply opacity-30"></div>
+  
+  <div class="container mx-auto px-6 md:px-12 relative z-10">
+    <div class="flex flex-col lg:flex-row justify-between items-center lg:items-stretch gap-16">
+      
+      <div class="w-full lg:w-7/12 text-graphite">
+        <span class="inline-block bg-graphite text-white px-3 py-1 font-display text-xs font-bold uppercase tracking-widest mb-6">Immediate Response Unit</span>
+        <h2 class="font-display text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tighter mb-6 leading-[0.9]">
+          System Down? <br>Let's Get It Moving.
+        </h2>
+        <p class="font-medium text-lg md:text-xl mb-10 max-w-lg opacity-90 leading-relaxed">
+          Over 30 years of family-owned mechanical mastery in Northeast Georgia. When your hardware fails, we deploy rapid, permanent solutions.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <a href="tel:7068701576" class="group relative flex items-center justify-center px-8 py-5 bg-graphite text-white font-display font-bold uppercase tracking-widest overflow-hidden">
+            <div class="absolute inset-0 bg-carbon translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
+            <span class="relative flex items-center gap-2">
+              Call (706) 870-1576
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="3" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+            </span>
+          </a>
+          <a href="https://candcgaragedoorsga.com/contact-us/" class="inline-flex items-center justify-center px-8 py-5 border-[3px] border-graphite text-graphite font-display font-bold uppercase tracking-widest hover:bg-graphite hover:text-white transition-colors">
+            Online Dispatch
+          </a>
+        </div>
+      </div>
+      
+      <div class="w-full lg:w-5/12 bg-graphite p-8 md:p-12 text-white relative shadow-2xl border border-white/10 tech-corner">
+        <div class="mb-10 relative">
+          <span class="block font-display font-black uppercase tracking-widest text-signal text-[10px] mb-3 border-b border-white/10 pb-2">Operations Headquarters</span>
+          <address class="not-italic mt-4">
+            <p class="font-display text-3xl font-bold uppercase tracking-tight">38 Apex Dr.</p>
+            <p class="font-display text-2xl font-bold uppercase tracking-tight text-steel">Jefferson, GA 30549</p>
+          </address>
+        </div>
+        <div class="relative">
+          <span class="block font-display font-black uppercase tracking-widest text-signal text-[10px] mb-3 border-b border-white/10 pb-2">Active Dispatch Zones</span>
+          <div class="mt-4 grid grid-cols-2 gap-y-2 gap-x-4 text-steel font-light text-sm">
+            <span>Jefferson</span>
+            <span>Athens</span>
+            <span>Gainesville</span>
+            <span>Flowery Branch</span>
+            <span>Dacula</span>
+            <span>Buford</span>
+            <span>Lawrenceville</span>
+            <span>Sugar Hill</span>
+            <span>Suwanee</span>
+            <span>Duluth</span>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+<!-- True Footer -->
+<footer class="bg-carbon py-12 border-t border-white/5 relative z-10">
+  <div class="container mx-auto px-6 md:px-12 flex flex-col md:flex-row justify-between items-center md:items-end gap-8">
+    <div class="flex flex-col items-center md:items-start gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-signal flex items-center justify-center rounded-sm">
+          <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2.5" d="M4 8h16M4 16h16M4 12h16" /></svg>
+        </div>
+        <span class="font-display font-black text-white tracking-widest uppercase text-lg">C&C Garage Door</span>
+      </div>
+      <div class="text-steel/60 text-sm font-light">
+        Precision mechanics. Industrial-grade solutions. Family owned.
+      </div>
+    </div>
+    
+    <div class="text-steel/50 text-[10px] font-display font-bold tracking-widest uppercase text-center md:text-right flex flex-col gap-2">
+      <div class="flex justify-center md:justify-end gap-4 text-white/40 hover:text-white transition-colors cursor-pointer">
+        <span>Terms of Service</span>
+        <span>Privacy Policy</span>
+      </div>
+      <div>
+        &copy; 2026 C&C Garage Door. <br class="md:hidden">All rights reserved.
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

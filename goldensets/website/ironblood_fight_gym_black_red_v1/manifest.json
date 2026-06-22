@@ -1,0 +1,49 @@
+{
+  "pack_id": "ironblood_fight_gym_black_red_v1",
+  "role": "anchor",
+  "family": "website.local_service",
+  "source_paths": [
+    "source_snapshot/index.html",
+    "source_snapshot/styles.css"
+  ],
+  "reference_full_path": "reference/full_fixed_preview.html",
+  "stack": ["html_css", "vanilla", "website"],
+  "tones": ["premium", "industrial", "high-contrast", "dark", "professional", "restrained"],
+  "surfaces": ["homepage", "hero", "landing", "section"],
+  "motif_tags": [
+    "hero_shell",
+    "sticky_nav",
+    "cta_treatment",
+    "dark_texture",
+    "high_contrast_blocking",
+    "headline_hierarchy",
+    "process_timeline",
+    "proof_cards",
+    "stats_strip",
+    "trust_rail"
+  ],
+  "supports_tasks": [
+    "hero_redesign",
+    "homepage_polish",
+    "combat_sports_landing",
+    "fight_gym_website",
+    "mma_muay_thai_bjj_program_page",
+    "dark_high_contrast_training_facility"
+  ],
+  "anti_patterns": [
+    "family karate feel",
+    "kids class framing",
+    "generic fitness club",
+    "wellness spa softness",
+    "fake league claims",
+    "repeated placeholder visuals",
+    "template three-card hero"
+  ],
+  "screenshot_paths": [
+    "screenshots/ironblood-header-desktop-1512x320.png",
+    "screenshots/ironblood-history-wide-2048x1120.png",
+    "screenshots/ironblood-faq-open-wide-2048x1120.png"
+  ],
+  "token_budget_hint": 5200,
+  "confidence_score": 5
+}

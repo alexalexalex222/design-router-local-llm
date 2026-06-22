@@ -8,10 +8,11 @@ Router fixes the starting context. It turns a frontend brief into a compact
 design packet with a relevant anchor, hard UI rules, proof-safety rules, source
 snippets, and layout checks.
 
-This repo is a clean public snapshot of the local-LLM version. It keeps the
-runtime, the local MCP server, shared UI atoms, and synthetic public-safe design
-packs. Non-public handoffs, old donor history, local caches, and raw transcript
-material are intentionally not included.
+This repo is the open-source local-LLM version. It keeps the full canonical MCP
+runtime, routing engine, packet renderer, source excerpt loader, validation
+checks, shared UI atoms, and the routed goldenset library used by the server.
+Non-public handoffs, local caches, old benchmark dumps, scratch scripts, and raw
+transcript material are intentionally not included.
 
 ## What It Does
 
@@ -20,17 +21,24 @@ material are intentionally not included.
 - Pushes hard rules early so weak UI models see them before they start coding.
 - Keeps image, proof, and claim rules explicit.
 - Supports small-context models with `micro` and `compact` modes.
-- Exposes a local MCP server for LM Studio, OpenCode, and other local agents.
+- Exposes the full local MCP server for LM Studio, OpenCode, and other local
+  agents.
 
-## Included Public Packs
+## Included Library
 
-- `signalstack_saas_analytics_ink_v1` — B2B SaaS / dashboard landing page.
-- `iron_circuit_fight_academy_black_copper_v1` — combat-sports academy page.
-- `clear_ridge_water_works_field_blue_v1` — rural water-service page.
-- `freezebreeze_live_lab_ice_blue_v1` — live-commerce product education page.
+The public repo includes 22 routed packs:
 
-All four are synthetic. They are meant to teach structure, taste, and guardrails
-without publishing non-public donor material.
+- anchor packs for SaaS dashboards, combat sports, water service, live commerce,
+  developer docs, luxury/editorial pages, product/spec pages, interactive
+  instruments, finance terminals, garden care, legal/business pages, cabinetry,
+  flooring, and related local-service surfaces;
+- support banks for GA SMB page structures and the localhost full-site pattern
+  bank captured on 2026-06-22;
+- shared atoms for navigation, heroes, cards, forms, tabs, FAQs, pricing,
+  stats, galleries, footers, and interaction states.
+
+The server uses the same library from `goldensets/` during local development and
+from `src/design_router_mcp/goldensets/` when packaged.
 
 ## Quick Start
 
@@ -73,6 +81,19 @@ The main tool is:
 
 ```text
 resolve_design_context
+```
+
+The full MCP server also exposes:
+
+```text
+inspect_design_library
+get_source_excerpt
+export_opencode_bundle
+route_alternatives
+donor_starvation_audit
+code_density_metrics
+audit_source_hygiene
+validate_design_router
 ```
 
 For local models, start with `token_mode: "micro"` or `token_mode: "compact"`.

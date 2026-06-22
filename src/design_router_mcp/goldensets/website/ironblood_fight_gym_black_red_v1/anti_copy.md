@@ -1,0 +1,6 @@
+- Do not reuse the IRONBLOOD brand name, Atlanta location, exact navigation labels, exact copy, fake coach names, fake fighter names, fake testimonials, fake phone/email, or invented league references.
+- Do not copy UFC, Bellator, PFL, ONE, ADCC, IBJJF, WBC, championship, world ranking, or pro-record claims unless the user supplies them as real target-site facts.
+- Do not copy the exact red/black palette values, exact huge headline wording, exact timeline years, exact application requirements, or exact membership tier details.
+- Do not reuse repeated decorative lines, scanline effects, diamonds, plus controls, or grids one-to-one; borrow the controlled combat-sports hierarchy and interaction discipline only.
+- Do not use external fonts, raster/photo paths, data URI image blobs, route screenshot paths, or invented assets in generated pages unless the user explicitly supplies assets.
+- Do not soften the route into kids karate, family classes, wellness coaching, generic personal training, or SaaS dashboard grammar.

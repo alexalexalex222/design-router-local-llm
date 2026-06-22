@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moncrief Heating & Air Conditioning | Heritage Mechanical Atelier</title>
+<style>
+  :root {
+    --navy-deep: #03060d;
+    --navy-base: #0a1128;
+    --brass-solid: #c89650;
+    --brass-light: #f5d59f;
+    --brass-dark: #9a6e32;
+    --parchment: #f4f1ea;
+    --metallic-grey: #aab0c2;
+    --line-faint: rgba(200, 150, 80, 0.08);
+    --line-solid: rgba(200, 150, 80, 0.25);
+    
+    --font-serif: 'Georgia', 'Times New Roman', serif;
+    --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+  }
+
+  body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+    background-color: var(--navy-deep);
+    color: var(--parchment);
+    font-family: var(--font-sans);
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Outer viewport padding to frame the blueprint */
+  .viewport-frame {
+    min-height: 100vh;
+    padding: 1.5vw;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  /* The actual CSS Grid drawing board */
+  .blueprint-grid {
+    flex-grow: 1;
+    background-color: var(--line-solid); /* Forms the borders via grid gap */
+    display: grid;
+    grid-template-columns: 60px 1.2fr 1fr;
+    grid-template-rows: 100px minmax(65vh, auto) 100px;
+    gap: 1px;
+    border: 1px solid var(--line-solid);
+    position: relative;
+    max-width: 1800px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* Universal cell styling */
+  .cell {
+    background-color: var(--navy-base);
+    position: relative;
+    overflow: hidden;
+    /* Subtle radial dot grid on every cell */
+    background-image: radial-gradient(var(--line-faint) 1px, transparent 1px);
+    background-size: 24px 24px;
+    box-shadow: inset 0 0 60px rgba(3, 6, 13, 0.8);
+  }
+
+  /* Header Row */
+  .nav-logo {
+    grid-column: 1 / 3;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 60px;
+  }
+  
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .logo-mark {
+    font-family: var(--font-serif);
+    font-size: 2.8rem;
+    color: var(--brass-solid);
+    font-style: italic;
+    line-height: 1;
+  }
+
+  .logo-text {
+    font-weight: 600;
+    font-size: 1.25rem;
+    letter-spacing: 2px;
+    color: var(--parchment);
+    line-height: 1.3;
+  }
+
+  .logo-text small {
+    display: block;
+    font-size: 0.65rem;
+    letter-spacing: 4px;
+    color: var(--metallic-grey);
+    font-weight: 400;
+    margin-top: 4px;
+  }
+
+  .nav-contact {
+    grid-column: 3;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 60px;
+  }
+
+  .contact-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .contact-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--brass-solid);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+
+  .contact-number {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--parchment);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: color 0.3s ease;
+  }
+
+  .contact-number:hover {
+    color: var(--brass-solid);
+  }
+
+  /* Side Vertical Badge */
+  .side-badge {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .badge-text {
+    writing-mode: vertical-lr;
+    transform: rotate(180deg);
+    color: rgba(200, 150, 80, 0.6);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 6px;
+    white-space: nowrap;
+  }
+
+  .badge-text span {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  .badge-line {
+    display: inline-block;
+    width: 1px;
+    height: 40px;
+    background-color: rgba(200, 150, 80, 0.3);
+    margin: 0 20px;
+    vertical-align: middle;
+  }
+
+  /* Main Hero Content */
+  .hero-content {
+    grid-column: 2;
+    grid-row: 2;
+    padding: 80px 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .hero-label {
+    color: var(--brass-solid);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .hero-label::before {
+    content: '';
+    display: inline-block;
+    width: 40px;
+    height: 1px;
+    background-color: var(--brass-solid);
+  }
+
+  .hero-title {
+    font-family: var(--font-serif);
+    font-size: clamp(3rem, 5vw, 5.5rem);
+    line-height: 1.05;
+    color: var(--parchment);
+    margin: 0 0 35px 0;
+    font-weight: 400;
+  }
+
+  .hero-title span {
+    color: var(--brass-solid);
+    font-style: italic;
+    display: block;
+    margin-top: 10px;
+  }
+
+  .hero-desc {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: var(--metallic-grey);
+    max-width: 560px;
+    margin: 0 0 50px 0;
+    font-weight: 300;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    position: relative;
+    background-color: var(--brass-solid);
+    color: var(--navy-deep);
+    padding: 18px 40px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--brass-solid);
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: 0.6s ease;
+  }
+
+  .btn-primary:hover::before {
+    left: 100%;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--brass-light);
+    border-color: var(--brass-light);
+  }
+
+  .btn-secondary {
+    position: relative;
+    background-color: transparent;
+    color: var(--brass-solid);
+    padding: 18px 40px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border: 1px solid rgba(200, 150, 80, 0.4);
+    transition: all 0.3s ease;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--brass-solid);
+    background-color: rgba(200, 150, 80, 0.05);
+    color: var(--parchment);
+  }
+
+  /* SVG Diagram Cell */
+  .hero-diagram {
+    grid-column: 3;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .diagram-grid {
+    position: absolute;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(200, 150, 80, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200, 150, 80, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: center center;
+    pointer-events: none;
+  }
+
+  /* Corner Brackets for Diagram */
+  .bracket-tl, .bracket-tr, .bracket-bl, .bracket-br {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    border: 1px solid rgba(200, 150, 80, 0.5);
+    z-index: 10;
+    pointer-events: none;
+  }
+  .bracket-tl { top: 30px; left: 30px; border-right: none; border-bottom: none; }
+  .bracket-tr { top: 30px; right: 30px; border-left: none; border-bottom: none; }
+  .bracket-bl { bottom: 30px; left: 30px; border-right: none; border-top: none; }
+  .bracket-br { bottom: 30px; right: 30px; border-left: none; border-top: none; }
+
+  /* SVG Animations */
+  @keyframes slowSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes slowSpinReverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+  }
+  .rotate-cw {
+    animation: slowSpin 60s linear infinite;
+    transform-origin: 0 0;
+  }
+  .rotate-ccw {
+    animation: slowSpinReverse 40s linear infinite;
+    transform-origin: 0 0;
+  }
+
+  /* Trust Panel 1 (Left) */
+  .trust-panel-1 {
+    grid-column: 1 / 3;
+    grid-row: 3;
+    display: flex;
+    align-items: center;
+    padding: 0 60px;
+    gap: 40px;
+  }
+
+  .stat-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .stat-value {
+    font-family: var(--font-serif);
+    font-size: 2.2rem;
+    color: var(--parchment);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--metallic-grey);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    line-height: 1.4;
+  }
+
+  .trust-divider {
+    width: 1px;
+    height: 40px;
+    background-color: var(--line-solid);
+  }
+
+  /* Trust Panel 2 (Right) */
+  .trust-panel-2 {
+    grid-column: 3;
+    grid-row: 3;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 60px;
+  }
+
+  .verified-contact {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .vc-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(200, 150, 80, 0.1);
+    border: 1px solid var(--brass-solid);
+  }
+
+  .vc-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .vc-role {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--brass-solid);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .vc-name {
+    font-size: 1rem;
+    color: var(--parchment);
+    font-weight: 500;
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 1024px) {
+    .viewport-frame {
+      padding: 0;
+    }
+    .blueprint-grid {
+      grid-template-columns: 40px 1fr;
+      grid-template-rows: auto auto auto auto auto;
+      border: none;
+      border-bottom: 1px solid var(--line-solid);
+    }
+    .nav-logo {
+      grid-column: 1 / 3;
+      grid-row: 1;
+      padding: 30px 20px;
+      justify-content: center;
+    }
+    .logo {
+      flex-direction: column;
+      gap: 15px;
+      text-align: center;
+    }
+    .nav-contact { display: none; }
+    .side-badge {
+      grid-column: 1;
+      grid-row: 2;
+      padding: 40px 0;
+    }
+    .hero-content {
+      grid-column: 2;
+      grid-row: 2;
+      padding: 60px 30px;
+    }
+    .hero-title { font-size: 2.5rem; }
+    .hero-diagram {
+      grid-column: 1 / 3;
+      grid-row: 3;
+      min-height: 400px;
+    }
+    .trust-panel-1 {
+      grid-column: 1 / 3;
+      grid-row: 4;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 40px 30px;
+      gap: 24px;
+    }
+    .trust-divider {
+      width: 100%;
+      height: 1px;
+      max-width: 200px;
+    }
+    .trust-panel-2 {
+      grid-column: 1 / 3;
+      grid-row: 5;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 40px 30px;
+      gap: 30px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="viewport-frame">
+  <div class="blueprint-grid">
+    
+    <!-- Top Header -->
+    <div class="nav-logo cell">
+      <div class="logo">
+        <span class="logo-mark">M</span>
+        <span class="logo-text">MONCRIEF<br><small>HEATING & AIR CONDITIONING</small></span>
+      </div>
+    </div>
+    <div class="nav-contact cell">
+      <div class="contact-info">
+        <span class="contact-label">EMERGENCY DISPATCH</span>
+        <a href="tel:4043502300" class="contact-number">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          (404) 350-2300
+        </a>
+      </div>
+    </div>
+
+    <!-- Vertical Badge -->
+    <div class="side-badge cell">
+      <div class="badge-text">
+        <span>EST. 1898</span>
+        <span class="badge-line"></span>
+        <span>ATLANTA, GA</span>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="hero-content cell">
+      <div class="hero-label">Atlanta's Premier HVAC & Plumbing</div>
+      <h1 class="hero-title">
+        Atlanta's Heritage<br>of Comfort.<br>
+        <span>Engineered for Today.</span>
+      </h1>
+      <p class="hero-desc">
+        Since 1898, Moncrief Heating & Air Conditioning has defined indoor comfort for Atlanta’s most discerning homes. A legacy of mechanical mastery, built to endure.
+      </p>
+      <div class="hero-actions">
+        <a href="#" class="btn-primary">
+          Request Service
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#" class="btn-secondary">Explore Our Heritage</a>
+      </div>
+    </div>
+
+    <!-- Mechanical SVG Diagram -->
+    <div class="hero-diagram cell">
+      <div class="diagram-grid"></div>
+      <div class="bracket-tl"></div>
+      <div class="bracket-tr"></div>
+      <div class="bracket-bl"></div>
+      <div class="bracket-br"></div>
+      
+      <svg viewBox="0 0 600 600" width="100%" height="100%" style="max-height: 500px; padding: 40px; box-sizing: border-box;" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="brassGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#c89650" />
+            <stop offset="50%" stop-color="#f5d59f" />
+            <stop offset="100%" stop-color="#9a6e32" />
+          </linearGradient>
+        </defs>
+
+        <g transform="translate(300, 300)">
+          <!-- Static Structural Rings -->
+          <circle r="260" fill="none" stroke="rgba(200, 150, 80, 0.2)" stroke-width="1"/>
+          <circle r="240" fill="none" stroke="rgba(200, 150, 80, 0.4)" stroke-width="1" stroke-dasharray="4 8"/>
+          <circle r="200" fill="none" stroke="url(#brassGrad)" stroke-width="2"/>
+          
+          <!-- Outer Slow Rotation -->
+          <g class="rotate-cw">
+            <circle r="180" fill="none" stroke="rgba(200, 150, 80, 0.3)" stroke-width="12" stroke-dasharray="10 40"/>
+            <circle r="160" fill="none" stroke="rgba(200, 150, 80, 0.5)" stroke-width="1" stroke-dasharray="2 4"/>
+            <path d="M 0 -180 L 10 -190 L -10 -190 Z" fill="#c89650"/>
+            <path d="M 0 180 L 10 190 L -10 190 Z" fill="#c89650"/>
+            <path d="M 180 0 L 190 10 L 190 -10 Z" fill="#c89650"/>
+            <path d="M -180 0 L -190 10 L -190 -10 Z" fill="#c89650"/>
+          </g>
+
+          <!-- Axis Crosshairs -->
+          <line x1="-280" y1="0" x2="280" y2="0" stroke="rgba(200, 150, 80, 0.2)" stroke-width="1"/>
+          <line x1="0" y1="-280" x2="0" y2="280" stroke="rgba(200, 150, 80, 0.2)" stroke-width="1"/>
+          <line x1="-200" y1="-200" x2="200" y2="200" stroke="rgba(200, 150, 80, 0.1)" stroke-width="1"/>
+          <line x1="-200" y1="200" x2="200" y2="-200" stroke="rgba(200, 150, 80, 0.1)" stroke-width="1"/>
+
+          <!-- Inner Turbine Rotation -->
+          <g class="rotate-ccw">
+            <circle r="100" fill="none" stroke="#c89650" stroke-width="1"/>
+            <circle r="110" fill="none" stroke="rgba(200, 150, 80, 0.3)" stroke-width="1" stroke-dasharray="5 5"/>
+            <!-- Vents/Blades -->
+            <path d="M 0 -20 L 80 -80 L 90 -60 L 20 -10 Z" fill="rgba(200, 150, 80, 0.1)" stroke="#c89650" stroke-width="0.5"/>
+            <path d="M 0 20 L -80 80 L -90 60 L -20 10 Z" fill="rgba(200, 150, 80, 0.1)" stroke="#c89650" stroke-width="0.5"/>
+            <path d="M -20 0 L -80 -80 L -60 -90 L -10 -20 Z" fill="rgba(200, 150, 80, 0.1)" stroke="#c89650" stroke-width="0.5"/>
+            <path d="M 20 0 L 80 80 L 60 90 L 10 20 Z" fill="rgba(200, 150, 80, 0.1)" stroke="#c89650" stroke-width="0.5"/>
+          </g>
+
+          <!-- Core Hub -->
+          <circle r="30" fill="#0a1128" stroke="url(#brassGrad)" stroke-width="3"/>
+          <circle r="6" fill="#c89650"/>
+        </g>
+
+        <!-- Structural Corner Nodes -->
+        <g stroke="#c89650" stroke-width="1" fill="none">
+          <rect x="20" y="20" width="8" height="8"/>
+          <rect x="572" y="20" width="8" height="8"/>
+          <rect x="20" y="572" width="8" height="8"/>
+          <rect x="572" y="572" width="8" height="8"/>
+        </g>
+
+        <!-- Technical Readout Text -->
+        <g font-family="ui-monospace, monospace" font-size="11" fill="#aab0c2" letter-spacing="1.5">
+          <text x="40" y="32">SYS_REQ: 1898.0</text>
+          <text x="40" y="48">TYPE: THERMODYNAMIC</text>
+          <text x="390" y="580">CALIBRATION: ACTIVE</text>
+          <text x="40" y="580" fill="#c89650">MONCRIEF ATLANTA</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Trust Panel Left -->
+    <div class="trust-panel-1 cell">
+      <div class="stat-group">
+        <div class="stat-value">1898</div>
+        <div class="stat-label">Year<br>Founded</div>
+      </div>
+      <div class="trust-divider"></div>
+      <div class="stat-group">
+        <div class="stat-value">125<span style="color:var(--brass-solid); font-size: 1.5rem;">+</span></div>
+        <div class="stat-label">Years of<br>Service</div>
+      </div>
+      <div class="trust-divider"></div>
+      <div class="stat-group" style="display:flex; flex-direction:column; justify-content:center; align-items: flex-start;">
+        <div class="stat-value" style="font-size: 1.1rem; font-family: var(--font-sans); letter-spacing: 2px; color: var(--brass-solid); padding-top: 4px;">HVAC & PLUMBING</div>
+        <div class="stat-label" style="text-transform: none; color: var(--parchment); opacity: 0.8;">Atlanta's Original Authority</div>
+      </div>
+    </div>
+
+    <!-- Trust Panel Right -->
+    <div class="trust-panel-2 cell">
+      <div class="verified-contact">
+        <div class="vc-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brass-solid)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <div class="vc-text">
+          <span class="vc-role">Verified Contact</span>
+          <span class="vc-name">Chris Compton</span>
+        </div>
+      </div>
+      
+      <!-- Abstract Historical Seal -->
+      <svg width="50" height="50" viewBox="0 0 50 50">
+        <circle cx="25" cy="25" r="23" fill="none" stroke="rgba(200,150,80,0.3)" stroke-width="1"/>
+        <circle cx="25" cy="25" r="18" fill="none" stroke="var(--brass-solid)" stroke-dasharray="3 3"/>
+        <path d="M 25 10 L 25 40 M 10 25 L 40 25" stroke="rgba(200,150,80,0.2)"/>
+        <text x="25" y="29" fill="var(--parchment)" font-family="var(--font-serif)" font-size="12" text-anchor="middle" letter-spacing="1">M</text>
+      </svg>
+    </div>
+
+  </div>
+</div>
+
+
+
+<style id="below-fold-patch">
+  .blueprint-extension {
+    padding: 0 1.5vw 1.5vw;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5vw;
+  }
+  
+  .ext-grid {
+    background-color: var(--line-solid);
+    display: grid;
+    gap: 1px;
+    border: 1px solid var(--line-solid);
+    max-width: 1800px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .grid-1-col { grid-template-columns: 1fr; }
+  .grid-2-col { grid-template-columns: 1fr 1fr; }
+  .grid-3-col { grid-template-columns: 1fr 1fr 1fr; }
+
+  @media (max-width: 1024px) {
+    .grid-2-col, .grid-3-col {
+      grid-template-columns: 1fr;
+    }
+    .ext-grid {
+      border: none;
+      border-bottom: 1px solid var(--line-solid);
+    }
+    .blueprint-extension {
+      padding: 0;
+      gap: 0;
+    }
+  }
+
+  /* Shared content cell styles */
+  .ext-cell {
+    background-color: var(--navy-base);
+    position: relative;
+    overflow: hidden;
+    background-image: radial-gradient(var(--line-faint) 1px, transparent 1px);
+    background-size: 24px 24px;
+    box-shadow: inset 0 0 60px rgba(3, 6, 13, 0.8);
+    padding: 80px 60px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (max-width: 1024px) {
+    .ext-cell {
+      padding: 60px 30px;
+    }
+  }
+
+  /* Decorative corners */
+  .ext-corner {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border: 1px solid rgba(200, 150, 80, 0.4);
+    z-index: 5;
+    pointer-events: none;
+  }
+  .ext-corner.tl { top: 15px; left: 15px; border-right: none; border-bottom: none; }
+  .ext-corner.tr { top: 15px; right: 15px; border-left: none; border-bottom: none; }
+  .ext-corner.bl { bottom: 15px; left: 15px; border-right: none; border-top: none; }
+  .ext-corner.br { bottom: 15px; right: 15px; border-left: none; border-top: none; }
+
+  /* Section Typography */
+  .ext-label {
+    color: var(--brass-solid);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  .ext-label::before {
+    content: '';
+    display: inline-block;
+    width: 40px;
+    height: 1px;
+    background-color: var(--brass-solid);
+  }
+
+  .ext-title {
+    font-family: var(--font-serif);
+    font-size: clamp(2.5rem, 4vw, 3.5rem);
+    line-height: 1.1;
+    color: var(--parchment);
+    margin: 0 0 25px 0;
+    font-weight: 400;
+  }
+
+  .ext-desc {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: var(--metallic-grey);
+    max-width: 650px;
+    margin: 0 0 40px 0;
+    font-weight: 300;
+  }
+
+  /* Service Cards */
+  .ext-service-card {
+    border: 1px solid rgba(200, 150, 80, 0.2);
+    background: rgba(3, 6, 13, 0.4);
+    padding: 40px;
+    transition: all 0.3s ease;
+    height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 10;
+  }
+
+  .ext-service-card:hover {
+    border-color: var(--brass-solid);
+    background: rgba(3, 6, 13, 0.8);
+  }
+
+  .ext-service-icon {
+    width: 50px;
+    height: 50px;
+    border: 1px solid var(--brass-solid);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 25px;
+    color: var(--brass-solid);
+    background: rgba(200, 150, 80, 0.05);
+  }
+
+  .ext-service-title {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: var(--parchment);
+    margin: 0 0 15px 0;
+    font-weight: 400;
+  }
+
+  .ext-service-desc {
+    color: var(--metallic-grey);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0 0 25px 0;
+    flex-grow: 1;
+  }
+
+  .ext-service-link {
+    color: var(--brass-solid);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.3s;
+    margin-top: auto;
+  }
+
+  .ext-service-link:hover {
+    color: var(--parchment);
+  }
+
+  /* Process Steps */
+  .ext-process-step {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 40px;
+  }
+  .ext-process-step:last-child {
+    margin-bottom: 0;
+  }
+
+  .ext-step-num {
+    font-family: var(--font-mono);
+    font-size: 1.2rem;
+    color: var(--navy-deep);
+    background-color: var(--brass-solid);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-weight: 600;
+  }
+
+  .ext-step-content h3 {
+    font-family: var(--font-serif);
+    font-size: 1.3rem;
+    color: var(--parchment);
+    margin: 0 0 10px 0;
+    font-weight: 400;
+  }
+
+  .ext-step-content p {
+    color: var(--metallic-grey);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* Testimonial */
+  .ext-testimonial {
+    position: relative;
+    padding: 0 0 0 40px;
+    border-left: 1px solid var(--brass-solid);
+    margin-top: 20px;
+  }
+
+  .ext-quote-mark {
+    position: absolute;
+    top: -20px;
+    left: -15px;
+    font-family: var(--font-serif);
+    font-size: 5rem;
+    color: rgba(200, 150, 80, 0.2);
+    line-height: 1;
+  }
+
+  .ext-testimonial-text {
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    line-height: 1.6;
+    color: var(--parchment);
+    font-style: italic;
+    margin: 0 0 20px 0;
+  }
+
+  .ext-author-role {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--brass-solid);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .ext-author-loc {
+    display: block;
+    color: var(--metallic-grey);
+    font-size: 0.7rem;
+    margin-top: 6px;
+    letter-spacing: 1px;
+  }
+
+  /* Footer Links */
+  .ext-footer-grid {
+    background-color: var(--navy-base);
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    padding: 80px 60px 40px;
+    gap: 60px;
+    position: relative;
+    overflow: hidden;
+    background-image: radial-gradient(var(--line-faint) 1px, transparent 1px);
+    background-size: 24px 24px;
+    box-shadow: inset 0 0 60px rgba(3, 6, 13, 0.8);
+  }
+
+  @media (max-width: 1024px) {
+    .ext-footer-grid {
+      grid-template-columns: 1fr;
+      padding: 60px 30px;
+      gap: 40px;
+    }
+  }
+
+  .ext-footer-col h4 {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--brass-solid);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 0 0 25px 0;
+  }
+
+  .ext-footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .ext-footer-links li {
+    margin-bottom: 12px;
+  }
+
+  .ext-footer-links a {
+    color: var(--metallic-grey);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.3s;
+  }
+
+  .ext-footer-links a:hover {
+    color: var(--brass-solid);
+  }
+
+  .ext-footer-bottom {
+    grid-column: 1 / -1;
+    border-top: 1px solid rgba(200, 150, 80, 0.2);
+    padding-top: 30px;
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--metallic-grey);
+  }
+
+  @media (max-width: 768px) {
+    .ext-footer-bottom {
+      flex-direction: column;
+      gap: 15px;
+      text-align: center;
+    }
+  }
+</style>
+
+<div class="blueprint-extension">
+  
+  <!-- System Capabilities Heading -->
+  <div class="ext-grid grid-1-col">
+    <div class="ext-cell" style="padding-bottom: 40px;">
+      <div class="ext-corner tl"></div><div class="ext-corner tr"></div>
+      <div class="ext-label">System Capabilities</div>
+      <h2 class="ext-title">Precision Climate Control &amp; Plumbing</h2>
+      <p class="ext-desc" style="margin-bottom: 0;">We approach every home as a unique mechanical ecosystem. Our technicians design, install, and maintain systems that deliver uncompromising performance and absolute reliability.</p>
+    </div>
+  </div>
+
+  <!-- Services Grid -->
+  <div class="ext-grid grid-3-col">
+    <!-- Cooling -->
+    <div class="ext-cell" style="padding: 40px;">
+      <div class="ext-corner bl"></div>
+      <div class="ext-service-card">
+        <div class="ext-service-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="2" x2="12" y2="22"></line>
+            <line x1="22" y1="12" x2="2" y2="12"></line>
+            <line x1="19.07" y1="4.93" x2="4.93" y2="19.07"></line>
+            <line x1="19.07" y1="19.07" x2="4.93" y2="4.93"></line>
+          </svg>
+        </div>
+        <h3 class="ext-service-title">Cooling Systems</h3>
+        <p class="ext-service-desc">High-efficiency air conditioning installation, meticulous calibration, and rapid emergency repairs to combat the Georgia heat with whisper-quiet operation.</p>
+        <a href="#" class="ext-service-link">View Specifications <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      </div>
+    </div>
+    
+    <!-- Heating -->
+    <div class="ext-cell" style="padding: 40px;">
+      <div class="ext-service-card">
+        <div class="ext-service-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+          </svg>
+        </div>
+        <h3 class="ext-service-title">Heating Architecture</h3>
+        <p class="ext-service-desc">Advanced furnace and heat pump integration. We engineer heating solutions that maintain precise ambient temperatures while optimizing energy consumption year-round.</p>
+        <a href="#" class="ext-service-link">View Specifications <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      </div>
+    </div>
+
+    <!-- Plumbing -->
+    <div class="ext-cell" style="padding: 40px;">
+      <div class="ext-corner br"></div>
+      <div class="ext-service-card">
+        <div class="ext-service-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+          </svg>
+        </div>
+        <h3 class="ext-service-title">Plumbing Infrastructure</h3>
+        <p class="ext-service-desc">Comprehensive plumbing diagnostics, high-capacity water heating systems, and fixture installations executed with the exactness of master craftsmen.</p>
+        <a href="#" class="ext-service-link">View Specifications <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Philosophy & Testimonial Row -->
+  <div class="ext-grid grid-2-col">
+    <!-- Left: Philosophy / Process -->
+    <div class="ext-cell">
+      <div class="ext-corner tl"></div><div class="ext-corner bl"></div>
+      <div class="ext-label">The Atelier Process</div>
+      <h2 class="ext-title">Engineered to Outlast.</h2>
+      <p class="ext-desc">We do not believe in temporary fixes. A Moncrief installation is designed for decades of flawless operation, executed through a rigid framework of quality control.</p>
+      
+      <div style="margin-top: 30px;">
+        <div class="ext-process-step">
+          <div class="ext-step-num">01</div>
+          <div class="ext-step-content">
+            <h3>Diagnostic Auditing</h3>
+            <p>We analyze your home's thermal envelope, ductwork integrity, and load requirements before recommending any hardware modifications.</p>
+          </div>
+        </div>
+        <div class="ext-process-step">
+          <div class="ext-step-num">02</div>
+          <div class="ext-step-content">
+            <h3>Precision Installation</h3>
+            <p>Every joint, seal, and electrical connection is executed to tolerances that exceed standard municipal codes and manufacturer specifications.</p>
+          </div>
+        </div>
+        <div class="ext-process-step">
+          <div class="ext-step-num">03</div>
+          <div class="ext-step-content">
+            <h3>Lifecycle Calibration</h3>
+            <p>Post-installation tuning ensures your system operates at peak thermodynamic efficiency, reducing operational wear and energy costs.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Testimonial & Heritage -->
+    <div class="ext-cell" style="justify-content: center;">
+      <div class="ext-corner tr"></div><div class="ext-corner br"></div>
+      
+      <div class="ext-testimonial">
+        <div class="ext-quote-mark">"</div>
+        <p class="ext-testimonial-text">When you hire Moncrief, you aren't just getting an AC unit swapped out. You are hiring mechanical engineers who treat your home with an unparalleled level of respect. The quietest, most balanced system we've ever owned.</p>
+        <div class="ext-author-role">Jonathan E.</div>
+        <span class="ext-author-loc">BUCKHEAD, ATLANTA</span>
+      </div>
+
+      <div style="margin-top: 60px; padding-top: 40px; border-top: 1px solid rgba(200, 150, 80, 0.2);">
+        <div class="ext-label" style="margin-bottom: 25px;">Generational Trust</div>
+        <div style="display: flex; gap: 60px;">
+          <div>
+            <div style="font-family: var(--font-serif); font-size: 2.5rem; color: var(--parchment); line-height: 1;">A+</div>
+            <div style="font-size: 0.75rem; color: var(--metallic-grey); text-transform: uppercase; letter-spacing: 1px; margin-top: 8px;">BBB Rating</div>
+          </div>
+          <div>
+            <div style="font-family: var(--font-serif); font-size: 2.5rem; color: var(--parchment); line-height: 1;">100%</div>
+            <div style="font-size: 0.75rem; color: var(--metallic-grey); text-transform: uppercase; letter-spacing: 1px; margin-top: 8px;">Guaranteed Work</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA Row -->
+  <div class="ext-grid grid-1-col">
+    <div class="ext-cell" style="text-align: center; align-items: center; padding: 100px 40px;">
+      <div class="ext-corner tl"></div><div class="ext-corner tr"></div>
+      <div class="ext-corner bl"></div><div class="ext-corner br"></div>
+      
+      <!-- Subtle background element -->
+      <svg width="300" height="300" viewBox="0 0 200 200" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.03; pointer-events: none;">
+        <circle cx="100" cy="100" r="90" fill="none" stroke="var(--brass-solid)" stroke-width="1"/>
+        <circle cx="100" cy="100" r="70" fill="none" stroke="var(--brass-solid)" stroke-width="1" stroke-dasharray="4 4"/>
+        <path d="M100 0 L100 200 M0 100 L200 100" stroke="var(--brass-solid)" stroke-width="1"/>
+      </svg>
+
+      <div class="ext-label" style="justify-content: center; margin-bottom: 20px;">Initiate Protocol</div>
+      <h2 class="ext-title" style="font-size: clamp(3rem, 5vw, 4.5rem);">Restore Your Comfort.</h2>
+      <p class="ext-desc" style="margin: 0 auto 40px;">Our dispatch team is ready to deploy Atlanta's finest technicians to your residence. Immediate response, definitive solutions.</p>
+      
+      <div class="hero-actions" style="justify-content: center;">
+        <a href="tel:4043502300" class="btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          Dispatch Now: (404) 350-2300
+        </a>
+        <a href="#" class="btn-secondary">Schedule Consultation</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="ext-grid grid-1-col">
+    <footer class="ext-footer-grid">
+      <div class="ext-corner tl"></div><div class="ext-corner tr"></div>
+      <div class="ext-corner bl"></div><div class="ext-corner br"></div>
+      
+      <div class="ext-footer-col" style="padding-right: 40px;">
+        <div style="font-family: var(--font-serif); font-size: 2.8rem; color: var(--brass-solid); font-style: italic; line-height: 1; margin-bottom: 20px;">M</div>
+        <p class="ext-desc" style="font-size: 0.95rem; max-width: 320px; margin-bottom: 0;">Since 1898, defining indoor comfort for Atlanta’s most discerning homes. A legacy of mechanical mastery, built to endure.</p>
+      </div>
+      <div class="ext-footer-col">
+        <h4>Services</h4>
+        <ul class="ext-footer-links">
+          <li><a href="#">Cooling Architecture</a></li>
+          <li><a href="#">Heating Systems</a></li>
+          <li><a href="#">Plumbing Infrastructure</a></li>
+          <li><a href="#">Air Quality Engineering</a></li>
+          <li><a href="#">System Maintenance</a></li>
+        </ul>
+      </div>
+      <div class="ext-footer-col">
+        <h4>Headquarters</h4>
+        <ul class="ext-footer-links">
+          <li><a href="#">Atlanta, GA</a></li>
+          <li><a href="tel:4043502300">(404) 350-2300</a></li>
+          <li><a href="mailto:service@moncriefair.com">service@moncriefair.com</a></li>
+          <li><a href="#">License #CR108342</a></li>
+        </ul>
+      </div>
+      <div class="ext-footer-bottom">
+        <div>&copy; 2026 Moncrief Heating &amp; Air Conditioning. All Rights Reserved.</div>
+        <div style="display: flex; gap: 20px;">
+          <a href="#" style="color: var(--metallic-grey); text-decoration: none;">Privacy Policy</a>
+          <a href="#" style="color: var(--metallic-grey); text-decoration: none;">Terms of Service</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+</div>
+
+</body>
+</html>

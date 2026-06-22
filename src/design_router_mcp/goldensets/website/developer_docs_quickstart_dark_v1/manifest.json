@@ -1,0 +1,65 @@
+{
+  "pack_id": "developer_docs_quickstart_dark_v1",
+  "role": "anchor",
+  "family": "website.docs",
+  "source_paths": [
+    "source_snapshot/index.html",
+    "source_snapshot/styles.css",
+    "source_snapshot/extracted_patterns.md"
+  ],
+  "origin_example_ids": [
+    "developer-docs-quickstart"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "website"
+  ],
+  "tones": [
+    "dark",
+    "developer",
+    "precise",
+    "minimal",
+    "technical",
+    "green-accent",
+    "restrained"
+  ],
+  "surfaces": [
+    "homepage",
+    "hero",
+    "landing",
+    "section",
+    "full_site"
+  ],
+  "motif_tags": [
+    "docs_shell",
+    "sticky_nav",
+    "sidebar_nav",
+    "toc_rail",
+    "code_block",
+    "callout_box",
+    "footer_full",
+    "headline_hierarchy"
+  ],
+  "supports_tasks": [
+    "developer_docs_page",
+    "quickstart_documentation",
+    "api_docs_shell",
+    "sdk_cli_docs",
+    "database_docs_site",
+    "technical_documentation_page"
+  ],
+  "anti_patterns": [
+    "marketing hero before docs content",
+    "decorative code snippets that cannot be copied",
+    "hidden mobile navigation",
+    "fake package names or commands",
+    "copying exact library API names"
+  ],
+  "screenshot_paths": [
+    "screenshots/desktop-1512x812.png",
+    "screenshots/mobile-390x844.png"
+  ],
+  "token_budget_hint": 6200,
+  "confidence_score": 5
+}

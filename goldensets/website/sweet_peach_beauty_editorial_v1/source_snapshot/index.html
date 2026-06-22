@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sweet Peach Wax & Sugaring Studio - Premium Concept</title>
+<style>
+  :root {
+    --bg-color: #FDF6F5;
+    --text-main: #2C1E16;
+    --text-light: #6A564A;
+    --accent-peach: #FFAC8A;
+    --accent-peach-light: #FFD4C4;
+    --black: #0A0A0A;
+    
+    --font-heading: Didot, "Playfair Display", "Bodoni MT", "Times New Roman", serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background-color: var(--accent-peach-light);
+    color: var(--text-main);
+  }
+
+  /* Ambient background blurs */
+  .ambient-blur {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    z-index: 0;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .blob-1 {
+    top: -15%;
+    left: -10%;
+    width: 600px;
+    height: 600px;
+    background-color: var(--accent-peach-light);
+  }
+
+  .blob-2 {
+    bottom: -10%;
+    right: 40%;
+    width: 500px;
+    height: 500px;
+    background-color: #FFFFFF;
+  }
+
+  /* Navigation */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2.5rem 5vw;
+    position: relative;
+    z-index: 10;
+  }
+
+  .logo {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--black);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+  }
+
+  .logo-mark {
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, var(--accent-peach), var(--text-main));
+    border-radius: 50% 50% 0 50%;
+    transform: rotate(45deg);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 3.5rem;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: var(--text-main);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    position: relative;
+    padding-bottom: 0.25rem;
+  }
+
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: var(--accent-peach);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .nav-links a:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  .nav-contact {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .phone {
+    font-family: var(--font-heading);
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 1.25rem;
+    font-style: italic;
+    transition: color 0.3s ease;
+  }
+
+  .phone:hover {
+    color: var(--accent-peach);
+  }
+
+  .btn-book-nav {
+    background-color: transparent;
+    color: var(--black);
+    border: 1px solid rgba(10, 10, 10, 0.2);
+    padding: 0.875rem 1.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .btn-book-nav:hover {
+    background-color: var(--black);
+    color: var(--bg-color);
+    border-color: var(--black);
+  }
+
+  /* Hero Section */
+  .hero {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    padding: 2rem 5vw 5rem;
+    position: relative;
+    z-index: 2;
+    align-items: center;
+  }
+
+  .hero-content {
+    max-width: 680px;
+    padding-right: 3rem;
+  }
+
+  .eyebrow {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .eyebrow::before {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 1px;
+    background-color: var(--accent-peach);
+  }
+
+  h1 {
+    font-family: var(--font-heading);
+    font-size: clamp(4rem, 6vw, 6.5rem);
+    line-height: 1.05;
+    font-weight: 400;
+    color: var(--black);
+    margin-bottom: 2rem;
+    letter-spacing: -0.01em;
+  }
+
+  h1 span.italic {
+    font-style: italic;
+    color: var(--text-main);
+    position: relative;
+  }
+  
+  h1 span.italic::after {
+    content: '';
+    position: absolute;
+    bottom: 15%;
+    left: 0;
+    width: 100%;
+    height: 12px;
+    background-color: var(--accent-peach-light);
+    z-index: -1;
+    opacity: 0.6;
+  }
+
+  .description {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: var(--text-light);
+    margin-bottom: 3.5rem;
+    max-width: 90%;
+    font-weight: 400;
+  }
+
+  .cta-group {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    margin-bottom: 5rem;
+  }
+
+  .btn-primary {
+    background-color: var(--black);
+    color: var(--bg-color);
+    border: 1px solid var(--black);
+    padding: 1.25rem 2.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--text-main);
+    box-shadow: 0 15px 30px rgba(44, 30, 22, 0.2);
+    transform: translateY(-2px);
+  }
+
+  .btn-primary svg {
+    transition: transform 0.3s ease;
+  }
+
+  .btn-primary:hover svg {
+    transform: translateX(4px);
+  }
+
+  .btn-secondary {
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    position: relative;
+    padding-bottom: 0.25rem;
+  }
+
+  .btn-secondary::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: var(--text-main);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .btn-secondary:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  /* Trust/Locations Module */
+  .trust-module {
+    display: flex;
+    gap: 4rem;
+    padding-top: 2.5rem;
+    position: relative;
+  }
+
+  .trust-module::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 80%;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(44, 30, 22, 0.2) 0%, rgba(44, 30, 22, 0) 100%);
+  }
+
+  .trust-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .trust-value {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    color: var(--black);
+    font-style: italic;
+    line-height: 1;
+  }
+
+  .trust-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--text-light);
+  }
+
+  /* Hero Visual */
+  .hero-visual {
+    position: relative;
+    width: 100%;
+    height: 80vh;
+    min-height: 600px;
+    max-height: 800px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .art-frame {
+    width: 100%;
+    height: 100%;
+    background-color: var(--black);
+    border-radius: 300px 300px 0 0;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 30px 60px rgba(10, 10, 10, 0.15);
+  }
+
+  /* Abstract Sugar Paste Graphic using pure CSS/SVG */
+  .sugar-art {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: linear-gradient(160deg, #1A120E 0%, var(--black) 100%);
+  }
+
+  .sugar-art svg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .visual-badge {
+    position: absolute;
+    bottom: 4rem;
+    left: -3rem;
+    background-color: var(--bg-color);
+    padding: 2rem;
+    border-radius: 50%;
+    width: 160px;
+    height: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(44, 30, 22, 0.08);
+    z-index: 5;
+  }
+
+  .badge-ring {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    border: 1px solid rgba(255, 172, 138, 0.4);
+    border-radius: 50%;
+    animation: rotate 30s linear infinite;
+  }
+  
+  .badge-ring::before, .badge-ring::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background-color: var(--accent-peach);
+    border-radius: 50%;
+    top: -3px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .badge-ring::after {
+    top: auto;
+    bottom: -3px;
+  }
+
+  @keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .badge-text {
+    font-family: var(--font-heading);
+    font-size: 2.25rem;
+    line-height: 1;
+    color: var(--black);
+    font-style: italic;
+  }
+
+  .badge-sub {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--text-light);
+    margin-top: 0.5rem;
+  }
+
+  @media (max-width: 1024px) {
+    .nav-links {
+      display: none;
+    }
+    .hero {
+      grid-template-columns: 1fr;
+      gap: 4rem;
+      padding-top: 0;
+    }
+    .hero-content {
+      padding-right: 0;
+      max-width: 100%;
+    }
+    .art-frame {
+      border-radius: 200px 200px 0 0;
+      height: 600px;
+    }
+    .visual-badge {
+      left: 1rem;
+      bottom: 2rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <div class="ambient-blur blob-1"></div>
+  <div class="ambient-blur blob-2"></div>
+
+  <header>
+    <a href="/" class="logo">
+      <div class="logo-mark"></div>
+      Sweet Peach
+    </a>
+    <nav class="nav-links">
+      <a href="#services">Services</a>
+      <a href="#locations">Locations</a>
+      <a href="#story">Our Story</a>
+      <a href="#prep">Sugaring Prep</a>
+    </nav>
+    <div class="nav-contact">
+      <a href="tel:4048421788" class="phone">404.842.1788</a>
+      <a href="#book" class="btn-book-nav">Book Now</a>
+    </div>
+  </header>
+
+  <main class="hero">
+    <div class="hero-content">
+      <div class="eyebrow">Atlanta's Premier Beauty Brand</div>
+      <h1>The Art of <br><span class="italic">Natural</span> Hair Removal.</h1>
+      
+      <p class="description">
+        Founded by Raquel Souza, we are Georgia's first studio dedicated exclusively to the gentle, organic technique of sugaring. Experience a superior standard of smooth.
+      </p>
+
+      <div class="cta-group">
+        <a href="#book" class="btn-primary">
+          Reserve an Appointment
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <a href="#services" class="btn-secondary">Explore Services</a>
+      </div>
+
+      <div class="trust-module">
+        <div class="trust-item">
+          <span class="trust-value">5</span>
+          <span class="trust-label">Metro Locations</span>
+        </div>
+        <div class="trust-item">
+          <span class="trust-value">1st</span>
+          <span class="trust-label">In Georgia</span>
+        </div>
+        <div class="trust-item">
+          <span class="trust-value">100%</span>
+          <span class="trust-label">Organic Paste</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="art-frame">
+        <div class="sugar-art">
+          <svg viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="peachGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FFAC8A" stop-opacity="0.95" />
+                <stop offset="60%" stop-color="#FFD4C4" stop-opacity="0.8" />
+                <stop offset="100%" stop-color="#2C1E16" stop-opacity="0" />
+              </linearGradient>
+              <linearGradient id="espressoGrad" x1="100%" y1="100%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#3A271E" stop-opacity="0.9" />
+                <stop offset="100%" stop-color="#FFAC8A" stop-opacity="0.1" />
+              </linearGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="28" result="coloredBlur"/>
+                <feMerge>
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            
+            <path d="M-100,200 C350,20 450,650 950,450 L950,1100 L-100,1100 Z" fill="url(#espressoGrad)" />
+            <path d="M-50,550 C250,850 650,250 1000,750" fill="none" stroke="url(#peachGrad)" stroke-width="160" stroke-linecap="round" filter="url(#glow)" />
+            <path d="M150,-100 C350,350 150,750 850,950" fill="none" stroke="url(#peachGrad)" stroke-width="90" stroke-linecap="round" opacity="0.7" filter="url(#glow)" />
+            <path d="M450,-200 C550,250 850,450 1050,550" fill="none" stroke="#FFAC8A" stroke-width="45" stroke-linecap="round" opacity="0.5" filter="url(#glow)" />
+            
+            <!-- Structural geometry lines -->
+            <path d="M100,0 L100,1000" stroke="rgba(255,172,138,0.1)" stroke-width="1" />
+            <path d="M300,0 L300,1000" stroke="rgba(255,172,138,0.05)" stroke-width="1" />
+            <path d="M700,0 L700,1000" stroke="rgba(255,172,138,0.1)" stroke-width="1" />
+            
+            <filter id="noise">
+              <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" stitchTiles="stitch"/>
+              <feColorMatrix type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 0.12 0" />
+            </filter>
+            <rect width="100%" height="100%" filter="url(#noise)" style="pointer-events:none;" />
+          </svg>
+        </div>
+      </div>
+      
+      <div class="visual-badge">
+        <div class="badge-ring"></div>
+        <span class="badge-text">Est.</span>
+        <span class="badge-sub">Atlanta, GA</span>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

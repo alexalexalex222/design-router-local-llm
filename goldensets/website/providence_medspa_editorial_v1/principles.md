@@ -1,0 +1,5 @@
+- Lead with one exact headline block and one obvious consultation action.
+- Let the right-side visual frame feel like treatment proof, not an abstract decor panel or a homeowner-service image box.
+- Premium here should come from typography, proof hierarchy, and measured contrast rather than soft wellness vagueness.
+- Keep the page beauty-native and clinically specific: modalities, standards, and consult logic should feel native to the lane.
+- This family is strongest when the page reads like physician-led aesthetics with couture finish instead of influencer softness.

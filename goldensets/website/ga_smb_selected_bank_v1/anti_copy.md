@@ -1,0 +1,3 @@
+- Never dump all 9 examples into a single packet.
+- Never preserve another business identity or service wording.
+- Translate the pattern logic into the target business and screenshot constraint.

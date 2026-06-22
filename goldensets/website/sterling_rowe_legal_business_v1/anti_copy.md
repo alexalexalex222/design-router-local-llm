@@ -1,0 +1,7 @@
+- Do not use personal-injury billboard grammar ("WE FIGHT FOR YOU", giant verdict numbers, dramatic gavel imagery).
+- Do not invent verdict amounts, AV ratings, Super Lawyers callouts, or specific case wins.
+- Do not turn the firm into a consumer-friendly chat funnel; keep intake serious and conflict-aware.
+- Do not use neon gradients, glassmorphism, or SaaS dashboard panels.
+- Do not fabricate attorney bios, bar admissions, or law school details.
+- Do not present the firm as plaintiffs-only or insurance-defense-only when the source is business counsel.
+- Do not adopt beauty/medspa or landscape editorial pacing — the cadence should feel like a corporate practice, not a studio.

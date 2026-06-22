@@ -1,0 +1,839 @@
+{
+  "pack_id": "ga_smb_selected_bank_v1",
+  "role": "support_bank",
+  "family": "website.local_service",
+  "source_paths": [
+    "examples/11-budget-movers-augusta.md",
+    "examples/13-peachtree-flooring-atlanta.md",
+    "examples/19-tnt-cabinets-columbus.md",
+    "examples/21-henry-plumbing-savannah.md",
+    "examples/22-silverback-electric-savannah.md",
+    "examples/25-robins-body-paint-warner-robins.md",
+    "examples/34-proof-roofing-services-gainesville.md",
+    "examples/45-metro-storage-columbus.md",
+    "examples/47-miller-light-construction-commerce.md",
+    "examples/sweet-peach-wax-atlanta.md",
+    "examples/cook-tolley-athens.md",
+    "examples/barrett-landscaping-savannah.md",
+    "examples/moncrief-heating-air-atlanta.md",
+    "examples/spa-indigo-augusta.md",
+    "examples/providence-med-spa-macon.md",
+    "examples/bell-roofing-atlanta.md",
+    "examples/southern-ecoscapes-macon.md",
+    "examples/michaels-roofing-savannah.md",
+    "examples/athens-dental-associates-athens.md",
+    "examples/pell-plumbing-kennesaw.md",
+    "examples/mauldin-cook-fence-marietta.md",
+    "examples/candc-garage-door-jefferson.md",
+    "examples/butler-prather-columbus.md",
+    "examples/allison-landscape-macon.md",
+    "examples/7-seas-medspa-augusta.md",
+    "examples/compass-dental-savannah.md",
+    "examples/poston-dental-savannah.md",
+    "examples/spa-medical-macon.md",
+    "examples/plumb-doctor-marietta.md",
+    "examples/west-augusta-dental-augusta.md",
+    "examples/astre-wellness-macon.md"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "website"
+  ],
+  "tones": [
+    "premium",
+    "service",
+    "dark",
+    "light",
+    "industrial",
+    "restrained",
+    "warm",
+    "editorial",
+    "residential"
+  ],
+  "surfaces": [
+    "homepage",
+    "hero",
+    "landing",
+    "section"
+  ],
+  "motif_tags": [
+    "hero_shell",
+    "sticky_nav",
+    "trust_rail",
+    "cta_treatment",
+    "dark_texture",
+    "light_precision",
+    "headline_hierarchy",
+    "proof_cards",
+    "phone_pill",
+    "glass_panel",
+    "split_hero",
+    "process_timeline",
+    "material_showcase",
+    "service_map",
+    "testimonial_density"
+  ],
+  "supports_tasks": [
+    "hero_redesign",
+    "homepage_polish",
+    "local_service_layout",
+    "premium_service_website",
+    "clinic_homepage",
+    "med_spa_homepage",
+    "law_firm_homepage",
+    "landscape_homepage",
+    "roofing_homepage",
+    "plumbing_homepage"
+  ],
+  "anti_patterns": [
+    "template feel",
+    "soft SaaS gradients",
+    "marketing-agency vibe",
+    "irrelevant stock imagery"
+  ],
+  "screenshot_paths": [
+    "screenshots/contact_sheet.png"
+  ],
+  "token_budget_hint": 12000,
+  "confidence_score": 5,
+  "example_ids": [
+    "11-budget-movers-augusta",
+    "13-peachtree-flooring-atlanta",
+    "19-tnt-cabinets-columbus",
+    "21-henry-plumbing-savannah",
+    "22-silverback-electric-savannah",
+    "25-robins-body-paint-warner-robins",
+    "34-proof-roofing-services-gainesville",
+    "45-metro-storage-columbus",
+    "47-miller-light-construction-commerce",
+    "sweet-peach-wax-atlanta",
+    "cook-tolley-athens",
+    "barrett-landscaping-savannah",
+    "moncrief-heating-air-atlanta",
+    "spa-indigo-augusta",
+    "providence-med-spa-macon",
+    "bell-roofing-atlanta",
+    "southern-ecoscapes-macon",
+    "michaels-roofing-savannah",
+    "athens-dental-associates-athens",
+    "pell-plumbing-kennesaw",
+    "mauldin-cook-fence-marietta",
+    "candc-garage-door-jefferson",
+    "butler-prather-columbus",
+    "allison-landscape-macon",
+    "7-seas-medspa-augusta",
+    "compass-dental-savannah",
+    "poston-dental-savannah",
+    "spa-medical-macon",
+    "plumb-doctor-marietta",
+    "west-augusta-dental-augusta",
+    "astre-wellness-macon"
+  ],
+  "source_dirs": {
+    "11-budget-movers-augusta": "examples/11-budget-movers-augusta/source",
+    "13-peachtree-flooring-atlanta": "examples/13-peachtree-flooring-atlanta/source",
+    "19-tnt-cabinets-columbus": "examples/19-tnt-cabinets-columbus/source",
+    "21-henry-plumbing-savannah": "examples/21-henry-plumbing-savannah/source",
+    "22-silverback-electric-savannah": "examples/22-silverback-electric-savannah/source",
+    "25-robins-body-paint-warner-robins": "examples/25-robins-body-paint-warner-robins/source",
+    "34-proof-roofing-services-gainesville": "examples/34-proof-roofing-services-gainesville/source",
+    "45-metro-storage-columbus": "examples/45-metro-storage-columbus/source",
+    "47-miller-light-construction-commerce": "examples/47-miller-light-construction-commerce/source",
+    "sweet-peach-wax-atlanta": "examples/sweet-peach-wax-atlanta/source",
+    "cook-tolley-athens": "examples/cook-tolley-athens/source",
+    "barrett-landscaping-savannah": "examples/barrett-landscaping-savannah/source",
+    "moncrief-heating-air-atlanta": "examples/moncrief-heating-air-atlanta/source",
+    "spa-indigo-augusta": "examples/spa-indigo-augusta/source",
+    "providence-med-spa-macon": "examples/providence-med-spa-macon/source",
+    "bell-roofing-atlanta": "examples/bell-roofing-atlanta/source",
+    "southern-ecoscapes-macon": "examples/southern-ecoscapes-macon/source",
+    "michaels-roofing-savannah": "examples/michaels-roofing-savannah/source",
+    "athens-dental-associates-athens": "examples/athens-dental-associates-athens/source",
+    "pell-plumbing-kennesaw": "examples/pell-plumbing-kennesaw/source",
+    "mauldin-cook-fence-marietta": "examples/mauldin-cook-fence-marietta/source",
+    "candc-garage-door-jefferson": "examples/candc-garage-door-jefferson/source",
+    "butler-prather-columbus": "examples/butler-prather-columbus/source",
+    "allison-landscape-macon": "examples/allison-landscape-macon/source",
+    "7-seas-medspa-augusta": "examples/7-seas-medspa-augusta/source",
+    "compass-dental-savannah": "examples/compass-dental-savannah/source",
+    "poston-dental-savannah": "examples/poston-dental-savannah/source",
+    "spa-medical-macon": "examples/spa-medical-macon/source",
+    "plumb-doctor-marietta": "examples/plumb-doctor-marietta/source",
+    "west-augusta-dental-augusta": "examples/west-augusta-dental-augusta/source",
+    "astre-wellness-macon": "examples/astre-wellness-macon/source"
+  },
+  "preview_paths": {
+    "11-budget-movers-augusta": "screenshots/11-budget-movers-augusta_desktop_preview.png",
+    "13-peachtree-flooring-atlanta": "screenshots/13-peachtree-flooring-atlanta_desktop_preview.png",
+    "19-tnt-cabinets-columbus": "screenshots/19-tnt-cabinets-columbus_desktop_preview.png",
+    "21-henry-plumbing-savannah": "screenshots/21-henry-plumbing-savannah_desktop_preview.png",
+    "22-silverback-electric-savannah": "screenshots/22-silverback-electric-savannah_desktop_preview.png",
+    "25-robins-body-paint-warner-robins": "screenshots/25-robins-body-paint-warner-robins_desktop_preview.png",
+    "34-proof-roofing-services-gainesville": "screenshots/34-proof-roofing-services-gainesville_desktop_preview.png",
+    "45-metro-storage-columbus": "screenshots/45-metro-storage-columbus_desktop_preview.png",
+    "47-miller-light-construction-commerce": "screenshots/47-miller-light-construction-commerce_desktop_preview.png",
+    "sweet-peach-wax-atlanta": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/heartbeat-2026-03-19-batch8/redesign/raquel-souza-sweet-peach-wax-and-sugaring-studio.png",
+    "cook-tolley-athens": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/heartbeat-2026-03-19-batch8/redesign/jay-cook-cook-and-tolley-llp.png",
+    "barrett-landscaping-savannah": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/heartbeat-2026-03-19-batch8/redesign/hobie-barrett-barrett-landscaping.png",
+    "moncrief-heating-air-atlanta": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/heartbeat-2026-03-19-batch8/redesign/chris-compton-moncrief-heating-and-air-conditioning.png",
+    "spa-indigo-augusta": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/heartbeat-2026-03-19-batch7/redesign/tara-dozier-spa-indigo.png",
+    "providence-med-spa-macon": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/heartbeat-2026-03-19-batch6/redesign/jason-mann-providence-med-spa.png",
+    "bell-roofing-atlanta": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/heartbeat-2026-03-19-batch6/redesign/ricardo-sandoval-bell-roofing.png",
+    "southern-ecoscapes-macon": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/heartbeat-2026-03-19-batch5/redesign/tommy-thornton-southern-ecoscapes.png",
+    "michaels-roofing-savannah": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/heartbeat-2026-03-19-batch5/redesign/mike-cannon-michaels-roofing.jpg",
+    "athens-dental-associates-athens": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/heartbeat-2026-03-19-batch5/redesign/ashley-hill-lindsey-athens-dental-associates.png",
+    "pell-plumbing-kennesaw": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/past20/images/pell-plumbing-kennesaw-redesign.png",
+    "mauldin-cook-fence-marietta": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/past20/images/mauldin-cook-fence-marietta-redesign.png",
+    "candc-garage-door-jefferson": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/past20/images/candc-garage-door-jefferson-redesign.png",
+    "butler-prather-columbus": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/past20/images/butler-prather-columbus-redesign.png",
+    "allison-landscape-macon": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/past20/images/allison-landscape-macon-redesign.png",
+    "7-seas-medspa-augusta": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/past20/images/7-seas-medspa-augusta-redesign.png",
+    "compass-dental-savannah": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/past20/images/compass-dental-savannah-redesign.png",
+    "poston-dental-savannah": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/past20/images/poston-dental-savannah-redesign.png",
+    "spa-medical-macon": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/past20/images/spa-medical-macon-redesign.png",
+    "plumb-doctor-marietta": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/past20/images/plumb-doctor-marietta-redesign.png",
+    "west-augusta-dental-augusta": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/past20/images/west-augusta-dental-augusta-redesign.png",
+    "astre-wellness-macon": "/Users/alexburkhart/clawd-telegram-ops/artifacts/packets/past20/images/astre-wellness-macon-redesign.png"
+  },
+  "example_strengths": {
+    "11-budget-movers-augusta": [
+      "hero_treatment",
+      "cta_placement",
+      "phone_visibility",
+      "service_clarity",
+      "card_rhythm",
+      "service_grid",
+      "process_section"
+    ],
+    "13-peachtree-flooring-atlanta": [
+      "light_clarity",
+      "premium_spacing",
+      "headline_hierarchy",
+      "visual_restraint"
+    ],
+    "19-tnt-cabinets-columbus": [
+      "hero_treatment",
+      "premium_spacing",
+      "dark_contrast",
+      "headline_hierarchy",
+      "portfolio_section",
+      "consultation_block"
+    ],
+    "21-henry-plumbing-savannah": [
+      "light_clarity",
+      "premium_spacing",
+      "navigation_clarity",
+      "headline_hierarchy",
+      "service_grid",
+      "trust_expansion"
+    ],
+    "22-silverback-electric-savannah": [
+      "hero_treatment",
+      "dark_contrast",
+      "cta_placement",
+      "industrial_tone"
+    ],
+    "25-robins-body-paint-warner-robins": [
+      "hero_treatment",
+      "dark_contrast",
+      "proof_density",
+      "service_clarity"
+    ],
+    "34-proof-roofing-services-gainesville": [
+      "hero_treatment",
+      "trust_rail",
+      "dark_contrast",
+      "proof_density",
+      "headline_hierarchy"
+    ],
+    "45-metro-storage-columbus": [
+      "dark_contrast",
+      "visual_restraint",
+      "service_clarity",
+      "navigation_clarity"
+    ],
+    "47-miller-light-construction-commerce": [
+      "hero_treatment",
+      "cta_placement",
+      "dark_contrast",
+      "industrial_tone",
+      "phone_visibility"
+    ],
+    "sweet-peach-wax-atlanta": [
+      "light_clarity",
+      "premium_spacing",
+      "headline_hierarchy",
+      "service_clarity",
+      "visual_restraint",
+      "trust_rail"
+    ],
+    "cook-tolley-athens": [
+      "headline_hierarchy",
+      "proof_density",
+      "premium_spacing",
+      "visual_restraint",
+      "navigation_clarity",
+      "trust_rail"
+    ],
+    "barrett-landscaping-savannah": [
+      "light_clarity",
+      "premium_spacing",
+      "service_clarity",
+      "section_sequencing",
+      "visual_restraint",
+      "map_or_coverage_signal"
+    ],
+    "moncrief-heating-air-atlanta": [
+      "hero_treatment",
+      "dark_contrast",
+      "service_clarity",
+      "headline_hierarchy",
+      "proof_density",
+      "navigation_clarity"
+    ],
+    "spa-indigo-augusta": [
+      "light_clarity",
+      "headline_hierarchy",
+      "service_clarity",
+      "navigation_clarity",
+      "trust_rail",
+      "premium_spacing"
+    ],
+    "providence-med-spa-macon": [
+      "light_clarity",
+      "headline_hierarchy",
+      "service_clarity",
+      "premium_spacing",
+      "visual_restraint",
+      "trust_rail"
+    ],
+    "bell-roofing-atlanta": [
+      "hero_treatment",
+      "trust_rail",
+      "dark_contrast",
+      "proof_density",
+      "service_clarity",
+      "headline_hierarchy"
+    ],
+    "southern-ecoscapes-macon": [
+      "light_clarity",
+      "premium_spacing",
+      "service_clarity",
+      "section_sequencing",
+      "visual_restraint",
+      "map_or_coverage_signal"
+    ],
+    "michaels-roofing-savannah": [
+      "hero_treatment",
+      "dark_contrast",
+      "service_clarity",
+      "phone_visibility",
+      "headline_hierarchy",
+      "trust_rail"
+    ],
+    "athens-dental-associates-athens": [
+      "light_clarity",
+      "headline_hierarchy",
+      "service_clarity",
+      "navigation_clarity",
+      "trust_rail",
+      "premium_spacing"
+    ],
+    "pell-plumbing-kennesaw": [
+      "hero_treatment",
+      "cta_placement",
+      "service_clarity",
+      "phone_visibility",
+      "headline_hierarchy",
+      "section_sequencing"
+    ],
+    "mauldin-cook-fence-marietta": [
+      "light_clarity",
+      "premium_spacing",
+      "service_clarity",
+      "section_sequencing",
+      "visual_restraint",
+      "headline_hierarchy"
+    ],
+    "candc-garage-door-jefferson": [
+      "hero_treatment",
+      "dark_contrast",
+      "cta_placement",
+      "service_clarity",
+      "phone_visibility",
+      "headline_hierarchy"
+    ],
+    "butler-prather-columbus": [
+      "headline_hierarchy",
+      "proof_density",
+      "premium_spacing",
+      "visual_restraint",
+      "navigation_clarity",
+      "trust_rail"
+    ],
+    "allison-landscape-macon": [
+      "light_clarity",
+      "premium_spacing",
+      "service_clarity",
+      "section_sequencing",
+      "visual_restraint",
+      "map_or_coverage_signal"
+    ],
+    "7-seas-medspa-augusta": [
+      "light_clarity",
+      "headline_hierarchy",
+      "service_clarity",
+      "trust_rail",
+      "cta_placement",
+      "premium_spacing"
+    ],
+    "compass-dental-savannah": [
+      "light_clarity",
+      "headline_hierarchy",
+      "service_clarity",
+      "navigation_clarity",
+      "trust_rail",
+      "premium_spacing"
+    ],
+    "poston-dental-savannah": [
+      "light_clarity",
+      "headline_hierarchy",
+      "service_clarity",
+      "proof_density",
+      "trust_rail",
+      "visual_restraint"
+    ],
+    "spa-medical-macon": [
+      "headline_hierarchy",
+      "service_clarity",
+      "trust_rail",
+      "premium_spacing",
+      "visual_restraint",
+      "section_sequencing"
+    ],
+    "plumb-doctor-marietta": [
+      "hero_treatment",
+      "proof_density",
+      "service_clarity",
+      "cta_placement",
+      "headline_hierarchy",
+      "section_sequencing"
+    ],
+    "west-augusta-dental-augusta": [
+      "light_clarity",
+      "headline_hierarchy",
+      "service_clarity",
+      "navigation_clarity",
+      "trust_rail",
+      "visual_restraint"
+    ],
+    "astre-wellness-macon": [
+      "light_clarity",
+      "headline_hierarchy",
+      "service_clarity",
+      "trust_rail",
+      "premium_spacing",
+      "visual_restraint"
+    ]
+  },
+  "motif_overlaps": {
+    "11-budget-movers-augusta": [
+      "hero_shell",
+      "cta_treatment",
+      "phone_pill",
+      "stats_strip"
+    ],
+    "13-peachtree-flooring-atlanta": [
+      "hero_shell",
+      "headline_hierarchy",
+      "light_precision"
+    ],
+    "19-tnt-cabinets-columbus": [
+      "hero_shell",
+      "headline_hierarchy",
+      "dark_texture",
+      "high_contrast_blocking"
+    ],
+    "21-henry-plumbing-savannah": [
+      "hero_shell",
+      "headline_hierarchy",
+      "light_precision",
+      "sticky_nav"
+    ],
+    "22-silverback-electric-savannah": [
+      "hero_shell",
+      "cta_treatment",
+      "dark_texture",
+      "high_contrast_blocking"
+    ],
+    "25-robins-body-paint-warner-robins": [
+      "hero_shell",
+      "dark_texture",
+      "proof_cards",
+      "high_contrast_blocking"
+    ],
+    "34-proof-roofing-services-gainesville": [
+      "hero_shell",
+      "trust_rail",
+      "proof_cards",
+      "dark_texture",
+      "high_contrast_blocking"
+    ],
+    "45-metro-storage-columbus": [
+      "hero_shell",
+      "dark_texture",
+      "sticky_nav",
+      "high_contrast_blocking"
+    ],
+    "47-miller-light-construction-commerce": [
+      "hero_shell",
+      "cta_treatment",
+      "dark_texture",
+      "high_contrast_blocking",
+      "phone_pill"
+    ],
+    "sweet-peach-wax-atlanta": [
+      "hero_shell",
+      "light_precision",
+      "glass_panel",
+      "split_hero",
+      "trust_rail"
+    ],
+    "cook-tolley-athens": [
+      "hero_shell",
+      "dark_texture",
+      "proof_cards",
+      "high_contrast_blocking",
+      "trust_rail"
+    ],
+    "barrett-landscaping-savannah": [
+      "hero_shell",
+      "light_precision",
+      "process_timeline",
+      "material_showcase",
+      "service_map"
+    ],
+    "moncrief-heating-air-atlanta": [
+      "hero_shell",
+      "high_contrast_blocking",
+      "grid_backdrop",
+      "trust_rail",
+      "industrial_frame"
+    ],
+    "spa-indigo-augusta": [
+      "hero_shell",
+      "light_precision",
+      "glass_panel",
+      "split_hero",
+      "trust_rail"
+    ],
+    "providence-med-spa-macon": [
+      "hero_shell",
+      "light_precision",
+      "split_hero",
+      "glass_panel",
+      "headline_hierarchy"
+    ],
+    "bell-roofing-atlanta": [
+      "hero_shell",
+      "dark_texture",
+      "proof_cards",
+      "high_contrast_blocking",
+      "trust_rail"
+    ],
+    "southern-ecoscapes-macon": [
+      "hero_shell",
+      "light_precision",
+      "process_timeline",
+      "material_showcase",
+      "split_hero"
+    ],
+    "michaels-roofing-savannah": [
+      "hero_shell",
+      "dark_texture",
+      "cta_treatment",
+      "phone_pill",
+      "high_contrast_blocking"
+    ],
+    "athens-dental-associates-athens": [
+      "hero_shell",
+      "light_precision",
+      "split_hero",
+      "trust_rail",
+      "phone_pill"
+    ],
+    "pell-plumbing-kennesaw": [
+      "hero_shell",
+      "cta_treatment",
+      "phone_pill",
+      "split_hero",
+      "process_timeline"
+    ],
+    "mauldin-cook-fence-marietta": [
+      "hero_shell",
+      "light_precision",
+      "material_showcase",
+      "process_timeline",
+      "sticky_nav"
+    ],
+    "candc-garage-door-jefferson": [
+      "hero_shell",
+      "cta_treatment",
+      "phone_pill",
+      "high_contrast_blocking",
+      "industrial_frame"
+    ],
+    "butler-prather-columbus": [
+      "hero_shell",
+      "dark_texture",
+      "proof_cards",
+      "high_contrast_blocking",
+      "sticky_nav"
+    ],
+    "allison-landscape-macon": [
+      "hero_shell",
+      "light_precision",
+      "material_showcase",
+      "split_hero",
+      "service_map"
+    ],
+    "7-seas-medspa-augusta": [
+      "hero_shell",
+      "light_precision",
+      "split_hero",
+      "glass_panel",
+      "cta_treatment"
+    ],
+    "compass-dental-savannah": [
+      "hero_shell",
+      "light_precision",
+      "split_hero",
+      "trust_rail",
+      "glass_panel"
+    ],
+    "poston-dental-savannah": [
+      "hero_shell",
+      "light_precision",
+      "proof_cards",
+      "testimonial_density",
+      "trust_rail"
+    ],
+    "spa-medical-macon": [
+      "hero_shell",
+      "light_precision",
+      "glass_panel",
+      "process_timeline",
+      "split_hero"
+    ],
+    "plumb-doctor-marietta": [
+      "hero_shell",
+      "proof_cards",
+      "cta_treatment",
+      "process_timeline",
+      "phone_pill"
+    ],
+    "west-augusta-dental-augusta": [
+      "hero_shell",
+      "light_precision",
+      "trust_rail",
+      "split_hero",
+      "proof_cards"
+    ],
+    "astre-wellness-macon": [
+      "hero_shell",
+      "light_precision",
+      "glass_panel",
+      "split_hero",
+      "trust_rail"
+    ]
+  },
+  "example_ux_roles": {
+    "11-budget-movers-augusta": [
+      "form_intake",
+      "phone_priority_layout",
+      "service_area_signal",
+      "coverage_signal"
+    ],
+    "13-peachtree-flooring-atlanta": [
+      "form_intake",
+      "proof_rail",
+      "process_steps",
+      "service_lane_set"
+    ],
+    "19-tnt-cabinets-columbus": [
+      "consultation_flow",
+      "process_steps",
+      "proof_rail",
+      "service_lane_set"
+    ],
+    "21-henry-plumbing-savannah": [
+      "form_intake",
+      "phone_priority_layout",
+      "service_area_signal",
+      "coverage_signal"
+    ],
+    "22-silverback-electric-savannah": [
+      "form_intake",
+      "phone_priority_layout",
+      "service_area_signal",
+      "coverage_signal",
+      "process_steps"
+    ],
+    "25-robins-body-paint-warner-robins": [
+      "form_intake",
+      "proof_rail",
+      "process_steps",
+      "trust_rail"
+    ],
+    "34-proof-roofing-services-gainesville": [
+      "form_intake",
+      "proof_rail",
+      "process_steps",
+      "phone_priority_layout"
+    ],
+    "45-metro-storage-columbus": [
+      "form_intake",
+      "service_lane_set",
+      "service_area_signal",
+      "coverage_signal"
+    ],
+    "47-miller-light-construction-commerce": [
+      "form_intake",
+      "proof_rail",
+      "process_steps",
+      "coverage_signal"
+    ],
+    "sweet-peach-wax-atlanta": [
+      "consultation_flow",
+      "service_lane_set",
+      "form_intake",
+      "trust_rail"
+    ],
+    "cook-tolley-athens": [
+      "consultation_flow",
+      "trust_rail",
+      "proof_rail",
+      "form_intake"
+    ],
+    "barrett-landscaping-savannah": [
+      "consultation_flow",
+      "process_steps",
+      "service_area_signal",
+      "coverage_signal"
+    ],
+    "moncrief-heating-air-atlanta": [
+      "form_intake",
+      "phone_priority_layout",
+      "service_area_signal",
+      "coverage_signal",
+      "process_steps"
+    ],
+    "spa-indigo-augusta": [
+      "consultation_flow",
+      "service_lane_set",
+      "form_intake",
+      "trust_rail"
+    ],
+    "providence-med-spa-macon": [
+      "consultation_flow",
+      "service_lane_set",
+      "form_intake",
+      "trust_rail"
+    ],
+    "bell-roofing-atlanta": [
+      "form_intake",
+      "proof_rail",
+      "process_steps",
+      "phone_priority_layout"
+    ],
+    "southern-ecoscapes-macon": [
+      "consultation_flow",
+      "process_steps",
+      "service_area_signal",
+      "coverage_signal"
+    ],
+    "michaels-roofing-savannah": [
+      "form_intake",
+      "proof_rail",
+      "process_steps",
+      "phone_priority_layout"
+    ],
+    "athens-dental-associates-athens": [
+      "consultation_flow",
+      "form_intake",
+      "trust_rail",
+      "proof_rail"
+    ],
+    "pell-plumbing-kennesaw": [
+      "form_intake",
+      "phone_priority_layout",
+      "service_area_signal",
+      "coverage_signal"
+    ],
+    "mauldin-cook-fence-marietta": [
+      "form_intake",
+      "process_steps",
+      "service_area_signal",
+      "coverage_signal"
+    ],
+    "candc-garage-door-jefferson": [
+      "form_intake",
+      "phone_priority_layout",
+      "process_steps",
+      "service_area_signal"
+    ],
+    "butler-prather-columbus": [
+      "consultation_flow",
+      "trust_rail",
+      "proof_rail",
+      "form_intake"
+    ],
+    "allison-landscape-macon": [
+      "consultation_flow",
+      "process_steps",
+      "service_area_signal",
+      "coverage_signal"
+    ],
+    "7-seas-medspa-augusta": [
+      "consultation_flow",
+      "service_lane_set",
+      "form_intake",
+      "trust_rail"
+    ],
+    "compass-dental-savannah": [
+      "consultation_flow",
+      "form_intake",
+      "trust_rail",
+      "proof_rail"
+    ],
+    "poston-dental-savannah": [
+      "consultation_flow",
+      "form_intake",
+      "trust_rail",
+      "proof_rail"
+    ],
+    "spa-medical-macon": [
+      "consultation_flow",
+      "service_lane_set",
+      "form_intake",
+      "trust_rail"
+    ],
+    "plumb-doctor-marietta": [
+      "form_intake",
+      "phone_priority_layout",
+      "service_area_signal",
+      "coverage_signal"
+    ],
+    "west-augusta-dental-augusta": [
+      "consultation_flow",
+      "form_intake",
+      "trust_rail",
+      "proof_rail"
+    ],
+    "astre-wellness-macon": [
+      "consultation_flow",
+      "service_lane_set"
+    ]
+  }
+}

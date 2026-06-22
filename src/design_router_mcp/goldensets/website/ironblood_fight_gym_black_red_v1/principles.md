@@ -1,0 +1,6 @@
+- Use a severe black/red fight-camp composition with a fixed, disciplined header, huge display typography, and one clear application CTA.
+- The first fold should feel like a serious training facility: angular grid lines, constrained red accents, controlled motion, and no cheerful academy or generic fitness language.
+- Keep the navigation mechanically clean. Announcement bars and fixed headers must reserve vertical space, collapse cleanly on scroll, and never cover hero copy or section anchors.
+- Use alternating timeline/process structure for history, intake, camp phases, or training progression; center the spine precisely and keep side-by-side events aligned.
+- Use application, discipline, facility, schedule, and process sections as proof surfaces. If no user images exist, build them with distinct SVG/CSS structures rather than fake image boxes.
+- Claims must stay grounded. Treat the original IronBlood code as visual grammar only; do not reuse invented fight records, famous coaches, league affiliations, titles, testimonials, or statistics.

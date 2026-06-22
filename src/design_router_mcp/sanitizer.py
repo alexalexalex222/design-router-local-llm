@@ -18,6 +18,7 @@ HTTP_URL_RE = re.compile(r"https?://[^\s\"')<>]+", re.IGNORECASE)
 DOMAIN_RE = re.compile(r"\b(?:www\.)?[a-z0-9][a-z0-9\-]{1,62}\.(?:com|net|org|co|io|biz|info|us)\b", re.IGNORECASE)
 MAILTO_RE = re.compile(r"mailto:[^\"'\s<>]+", re.IGNORECASE)
 TEL_RE = re.compile(r"tel:[^\"'\s<>]+", re.IGNORECASE)
+LOCAL_PATH_RE = re.compile(r"/Users/[^\"'\s<>]+")
 IMAGE_TAG_RE = re.compile(r"<\s*(?:img|picture|source)\b[^>]*>", re.IGNORECASE | re.DOTALL)
 SRCSET_RE = re.compile(r"\s(?:src|srcset)\s*=\s*(['\"])[^'\"]*(?:https?://|data:image|\.jpg|\.jpeg|\.png|\.webp|\.gif)[^'\"]*\1", re.IGNORECASE)
 CSS_RASTER_URL_RE = re.compile(r"url\(\s*(['\"]?)(?:https?://|data:image|[^)]*\.(?:jpg|jpeg|png|webp|gif))[^)]*\)", re.IGNORECASE)
@@ -28,13 +29,92 @@ AWARD_CLAIM_RE = re.compile(r"\b(?:A\+\s*BBB|BBB|award[-\s]?winning|certified|#\
 TESTIMONIAL_RE = re.compile(r"\b(?:testimonial|testimonials|review\s+quote|review\s+quotes|reviewer|verified\s+reviews?)\b", re.IGNORECASE)
 REVIEW_AUTHOR_RE = re.compile(r"(?:--|—)\s*[A-Z][A-Za-z .'-]{1,40},\s*[A-Z][A-Za-z .'-]{1,40}")
 
-KNOWN_BRAND_TOKENS: tuple[str, ...] = ()
+KNOWN_BRAND_TOKENS = (
+    # Anchor-pack brands (real-business-derived). Longest forms first so the
+    # alternation neutralizes the full name before any shorter overlapping token.
+    "Sweet Peach Wax & Sugaring Studio",
+    "Allison Landscape and Design",
+    "TNT Custom Built Cabinets",
+    "Providence Med Spa",
+    "TNT Cabinetry",
+    "Sweet Peach",
+    "Peachtree Flooring",
+    "Budget Movers of Augusta",
+    "Budget Movers",
+    "Henry Plumbing",
+    "Silverback Electric",
+    "Robins Body",
+    "Proof Roofing",
+    "Metro Storage",
+    "Miller Light Construction",
+    "TNT Cabinets",
+    "7 Seas Medspa",
+    "Astre Wellness",
+    "Sweet Peach Wax",
+    "Spa Indigo",
+    "Plumb Doctor",
+    "Bell Roofing",
+    "Moncrief Heating",
+    "Poston Dental",
+    "Compass Dental",
+    "Butler Prather",
+    "Mauldin Cook Fence",
+    "Southern Ecoscapes",
+    "Allison Landscape",
+    "Barrett Landscaping",
+)
+
+CASE_SENSITIVE_BRAND_TOKENS = (
+    # Synthetic/localhost donor identities captured for router pattern packs.
+    # Keep these case-sensitive so common words such as "tape" and "epoch" are
+    # not over-sanitized in unrelated user briefs.
+    "AETHON",
+    "Meridian",
+    "Ardent",
+    "TAPE",
+    "Epoch",
+    "Pénombre",
+    "PÉNOMBRE",
+    "TACET",
+    "Umbra",
+    "PHOSPHOR",
+)
+
+CONTEXTUAL_BRAND_PATTERNS = (
+    # Lowercase docs donor identity appears in package/import/command contexts.
+    # Avoid replacing the ordinary English word "epoch" in prose.
+    r"(?<=install\s)epoch\b",
+    r"\bepoch(?=(?:/|\s+(?:Docs|Labs|Cloud|deploy|dev|init|schema|react)))",
+    r"\btape(?=-)",
+    r"\btape-terminal\b",
+    r"\bpénombre\b",
+    r"\btacet\b",
+    r"\bumbra\b",
+    r"\bphosphor\b",
+)
+
+DONOR_COPY_PHRASES = (
+    "Mass to orbit",
+    "Read the tape",
+    "tape   tape   tape",
+    "tape tape tape",
+    "Trust the screen",
+    "Everything the desk reads, in one surface",
+    "The market is moving",
+    "The house",
+    "Five hours await",
+    "Engineered to disappear",
+    "Most headphones have a sound",
+    "Nothing here is decorative",
+    "The quietest thing we build is the silence",
+)
 
 SCAN_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("tel_link", TEL_RE),
     ("mailto_link", MAILTO_RE),
     ("email", EMAIL_RE),
     ("phone", PHONE_RE),
+    ("local_path", LOCAL_PATH_RE),
     ("external_url", HTTP_URL_RE),
     ("domain", DOMAIN_RE),
     ("image_tag", IMAGE_TAG_RE),
@@ -50,13 +130,14 @@ SCAN_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
 
 
 def _brand_pattern() -> re.Pattern[str]:
-    if not KNOWN_BRAND_TOKENS:
-        return re.compile(r"(?!x)x")
     escaped = [re.escape(token) for token in KNOWN_BRAND_TOKENS]
     return re.compile(r"\b(?:" + "|".join(escaped) + r")\b", re.IGNORECASE)
 
 
 BRAND_RE = _brand_pattern()
+CASE_SENSITIVE_BRAND_RE = re.compile(r"\b(?:" + "|".join(re.escape(token) for token in CASE_SENSITIVE_BRAND_TOKENS) + r")\b")
+CONTEXTUAL_BRAND_RE = re.compile(r"(?:" + "|".join(CONTEXTUAL_BRAND_PATTERNS) + r")")
+DONOR_COPY_RE = re.compile(r"(?:" + "|".join(re.escape(phrase) for phrase in DONOR_COPY_PHRASES) + r")", re.IGNORECASE)
 
 
 def scan_source_hygiene(text: str) -> list[HygieneHit]:
@@ -68,6 +149,12 @@ def scan_source_hygiene(text: str) -> list[HygieneHit]:
             hits.append(HygieneHit(kind=kind, value=match.group(0)[:160], start=match.start(), end=match.end()))
     for match in BRAND_RE.finditer(text):
         hits.append(HygieneHit(kind="brand_identity", value=match.group(0)[:160], start=match.start(), end=match.end()))
+    for match in CASE_SENSITIVE_BRAND_RE.finditer(text):
+        hits.append(HygieneHit(kind="brand_identity", value=match.group(0)[:160], start=match.start(), end=match.end()))
+    for match in CONTEXTUAL_BRAND_RE.finditer(text):
+        hits.append(HygieneHit(kind="brand_identity", value=match.group(0)[:160], start=match.start(), end=match.end()))
+    for match in DONOR_COPY_RE.finditer(text):
+        hits.append(HygieneHit(kind="donor_copy_phrase", value=match.group(0)[:160], start=match.start(), end=match.end()))
     hits.sort(key=lambda hit: (hit.start, hit.end, hit.kind))
     deduped: list[HygieneHit] = []
     seen: set[tuple[str, int, int]] = set()
@@ -102,9 +189,13 @@ def sanitize_source_text(text: str) -> str:
     sanitized = MAILTO_RE.sub("[EMAIL]", sanitized)
     sanitized = EMAIL_RE.sub("[EMAIL]", sanitized)
     sanitized = PHONE_RE.sub("[PHONE]", sanitized)
+    sanitized = LOCAL_PATH_RE.sub("[LOCAL_PATH]", sanitized)
     sanitized = HTTP_URL_RE.sub("[URL]", sanitized)
     sanitized = DOMAIN_RE.sub("[URL]", sanitized)
     sanitized = BRAND_RE.sub("[BUSINESS_NAME]", sanitized)
+    sanitized = CASE_SENSITIVE_BRAND_RE.sub("[BUSINESS_NAME]", sanitized)
+    sanitized = CONTEXTUAL_BRAND_RE.sub("[BUSINESS_NAME]", sanitized)
+    sanitized = DONOR_COPY_RE.sub("[DONOR_COPY]", sanitized)
     sanitized = REVIEW_AUTHOR_RE.sub("[VERIFY_FROM_BRIEF]", sanitized)
     sanitized = STAR_RATING_RE.sub("[VERIFY_FROM_BRIEF]", sanitized)
     sanitized = YEARS_CLAIM_RE.sub("[VERIFY_FROM_BRIEF]", sanitized)

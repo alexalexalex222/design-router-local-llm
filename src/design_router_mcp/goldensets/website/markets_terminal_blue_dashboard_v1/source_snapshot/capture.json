@@ -1,0 +1,1552 @@
+{
+  "id": "capabilities_5247",
+  "url": "http://localhost:5247/#capabilities",
+  "finalUrl": "http://localhost:5247/#capabilities",
+  "httpStatus": 200,
+  "title": "TAPE — Markets Intelligence Terminal",
+  "renderedHtml": {
+    "file": "rendered.html",
+    "bytes": 105837,
+    "sha256": "a4916ba2fabe7d6aa08c4082300b79fcc5e4502e795314c37455c74f4edd8ddd"
+  },
+  "screenshots": [
+    {
+      "viewport": {
+        "name": "desktop-1512x812",
+        "width": 1512,
+        "height": 812
+      },
+      "path": "desktop-1512x812.png",
+      "metrics": {
+        "scrollWidth": 1512,
+        "clientWidth": 1512,
+        "bodyScrollWidth": 1512,
+        "horizontalOverflow": false,
+        "textLength": 4969
+      }
+    },
+    {
+      "viewport": {
+        "name": "mobile-390x844",
+        "width": 390,
+        "height": 844
+      },
+      "path": "mobile-390x844.png",
+      "metrics": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "bodyScrollWidth": 390,
+        "horizontalOverflow": false,
+        "textLength": 4944
+      }
+    }
+  ],
+  "resources": [
+    {
+      "url": "http://localhost:5247/",
+      "status": 200,
+      "resourceType": "document",
+      "contentType": "text/html",
+      "bytes": 1073,
+      "sha256": "a89562e4c42de4b9362df2570f3f381fb029510c3a419327c333d8327bee88ab",
+      "file": "resources/01-root.html"
+    },
+    {
+      "url": "http://localhost:5247/@vite/client",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 182810,
+      "sha256": "e2f8e740dd54d40e48c45228766d48ac517bfe5769a0e7ceeaaf270bf9bcb470",
+      "file": "resources/02-_vite_client.js"
+    },
+    {
+      "url": "http://localhost:5247/src/main.tsx?t=1782149162612",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2345,
+      "sha256": "66dc96c7bd982d3f699c3a03c65b85af2c59b0e037b17c6163b267915a4b3111",
+      "file": "resources/03-src_main.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/@fs/Users/alexburkhart/.nvm/versions/node/v22.14.0/lib/node_modules/vite/dist/client/env.mjs",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3861,
+      "sha256": "004862df937de3eaacc341fe72d9b0b72454278a7accf493998a6b35a7c61217",
+      "file": "resources/04-_fs_Users_alexburkhart_.nvm_versions_node_v22.14.0_lib_node_modules_vite_dist_client_env.mjs.js"
+    },
+    {
+      "url": "http://localhost:5247/@react-refresh",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 113132,
+      "sha256": "7dde26f0a69f61ae02753398bedbe8c058345a02cf8b4048607303db540240bb",
+      "file": "resources/05-_react-refresh.js"
+    },
+    {
+      "url": "http://localhost:5247/src/styles/global.css?t=1782148320088",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 17110,
+      "sha256": "143770a39661ea57d062dfcdf5af837f783957b493525f3507ab73f7ab12e2d4",
+      "file": "resources/06-src_styles_global.css.js"
+    },
+    {
+      "url": "http://localhost:5247/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=f8a73430",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 37091,
+      "sha256": "b90ead7838e49cf309fa775d62655271a6812a7e59a2528b2777558a4b0a6ea9",
+      "file": "resources/07-node_modules_.vite_deps_react_jsx-dev-runtime.js.js"
+    },
+    {
+      "url": "http://localhost:5247/node_modules/.vite/deps/react.js?v=f8a73430",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 724,
+      "sha256": "edcb5630bb6d28dd5057bd381153843f48427b4bb3ebbfbe91f2bfb19f99dc5f",
+      "file": "resources/08-node_modules_.vite_deps_react.js.js"
+    },
+    {
+      "url": "http://localhost:5247/node_modules/.vite/deps/chunk-JTR2U2B6.js?v=d2b14b11",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 79205,
+      "sha256": "f32afeeea378df71c56abbaeab97df78746c1a303a5aaa0a7315f591d030df89",
+      "file": "resources/09-node_modules_.vite_deps_chunk-JTR2U2B6.js.js"
+    },
+    {
+      "url": "http://localhost:5247/node_modules/.vite/deps/react-dom_client.js?v=b7aac879",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1152,
+      "sha256": "1deb3af3f487c19e1dd523835843621845e58876b05335c5360491673bff9949",
+      "file": "resources/10-node_modules_.vite_deps_react-dom_client.js.js"
+    },
+    {
+      "url": "http://localhost:5247/src/App.tsx?t=1782149162612",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 8015,
+      "sha256": "5a1e0a82220e8119df8735ee8457b0774149385fe254bdde371ebbcc43749fa9",
+      "file": "resources/11-src_App.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/node_modules/.vite/deps/chunk-UUAH3ILG.js?v=d2b14b11",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 932208,
+      "sha256": "2c3ee4191bda2d2d579f8e71b9f448b66c258d145af44e851b3f0f42260915d4",
+      "file": "resources/12-node_modules_.vite_deps_chunk-UUAH3ILG.js.js"
+    },
+    {
+      "url": "http://localhost:5247/src/hooks/useMarketConnection.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9797,
+      "sha256": "77f2d04efd78e8698b46278a93f80d52cd416d83867e010fdcf6db1c672e4f42",
+      "file": "resources/13-src_hooks_useMarketConnection.ts.js"
+    },
+    {
+      "url": "http://localhost:5247/node_modules/.vite/deps/react-router-dom.js?v=4dbf0b0c",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 209911,
+      "sha256": "bf6f2824a1e16fe48d0ba8254ad00df01aae3df6aaa99dd141339a0a710bfc94",
+      "file": "resources/14-node_modules_.vite_deps_react-router-dom.js.js"
+    },
+    {
+      "url": "http://localhost:5247/src/routes/Terminal.tsx?t=1782147885347",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 16344,
+      "sha256": "e71c2cea492c1673b242e3e1bdf6c74c6cda97064fb845d7432735ac54d3fb55",
+      "file": "resources/15-src_routes_Terminal.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/src/routes/Landing.tsx?t=1782149162612",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 69495,
+      "sha256": "57998f2ccfd3f259f8180e5e5348a5d8c2b6cf05aead685f3dda9211044a69d4",
+      "file": "resources/16-src_routes_Landing.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/src/lib/cryptocom/rest.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 6498,
+      "sha256": "16babed0d5781dbca0b509ce64406e481385c81bb649f788a1f364dbe8d69b14",
+      "file": "resources/17-src_lib_cryptocom_rest.ts.js"
+    },
+    {
+      "url": "http://localhost:5247/src/lib/cryptocom/ws.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 23113,
+      "sha256": "3d39b17c6bd90f063d988769e94bbcc7254f01f38148f99fc50c88ada4917a87",
+      "file": "resources/18-src_lib_cryptocom_ws.ts.js"
+    },
+    {
+      "url": "http://localhost:5247/src/components/terminal/TopBar.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 12214,
+      "sha256": "d66c6fe4e3a5dcb8eb925b966d28ef2e2d598287eec86ed09351aabb3eb5d312",
+      "file": "resources/19-src_components_terminal_TopBar.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/src/components/terminal/TickerTape.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9697,
+      "sha256": "525c0827c8ae8c357a72a5e84d260669b0b6abb5bea84653c7a1ec1c8047160f",
+      "file": "resources/20-src_components_terminal_TickerTape.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/src/lib/instruments.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 12505,
+      "sha256": "f6ebb3228d67a1623ae12311700a73db3502311e03601b0e11f7689c4b57da9c",
+      "file": "resources/21-src_lib_instruments.ts.js"
+    },
+    {
+      "url": "http://localhost:5247/src/store/marketStore.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 11860,
+      "sha256": "45ac7ee0928f263d7a4e18c56fe3cb0f39e52cfda9b236b55d72cdc3b7d0e491",
+      "file": "resources/22-src_store_marketStore.ts.js"
+    },
+    {
+      "url": "http://localhost:5247/src/components/terminal/Watchlist.tsx?t=1782147885347",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 28952,
+      "sha256": "200a80bacdc566154eeeac77a91ba24068fa5cedec5cedc0f344f98dce451b3e",
+      "file": "resources/23-src_components_terminal_Watchlist.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/src/components/terminal/InstrumentHeader.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 21988,
+      "sha256": "fa0842b09191ffe31c41692b4fa5d5313ce7907cf88683c76613b33e76be06dc",
+      "file": "resources/24-src_components_terminal_InstrumentHeader.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/src/components/terminal/OrderBook.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 22263,
+      "sha256": "ca8f21cfb0aecf38a38a7ed184cf3abc26d6b7d5c530dfb657f6a31221f21b21",
+      "file": "resources/25-src_components_terminal_OrderBook.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/src/hooks/useMediaQuery.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1966,
+      "sha256": "2367941bec7dfb757ed6dbf4b2b2b87abdc706a1a81949970b62a30feefde1cd",
+      "file": "resources/26-src_hooks_useMediaQuery.ts.js"
+    },
+    {
+      "url": "http://localhost:5247/src/components/terminal/Chart.tsx?t=1782147707912",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 76657,
+      "sha256": "799ce8b9ab823ddd168554ef2fe11d71ec9645af56ca46641748e5fb8df6bf6c",
+      "file": "resources/27-src_components_terminal_Chart.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/src/styles/terminal.css?t=1782147501327",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 19193,
+      "sha256": "1d5fc8af6821654b225c23922fbe168e0f40ac9db6dece953076eae0ee77901c",
+      "file": "resources/28-src_styles_terminal.css.js"
+    },
+    {
+      "url": "http://localhost:5247/src/components/terminal/TimeSales.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 13647,
+      "sha256": "6628479e46cad77ba483bf133b12cbbad77fe56acfe9e6db8c010666ed35576a",
+      "file": "resources/29-src_components_terminal_TimeSales.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/src/components/terminal/StatusBar.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 14152,
+      "sha256": "12da1bc9b5e0696901bae1e0644fedef80b8feeab787553f3bbeebbaaa8e302f",
+      "file": "resources/30-src_components_terminal_StatusBar.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/src/components/ui/Logo.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9631,
+      "sha256": "f499fb59667beb5acea8e70a42fa8cba2da3f55d9d4887a95e5be1ae5b70c04b",
+      "file": "resources/31-src_components_ui_Logo.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/src/components/ui/Reveal.tsx?t=1782149068318",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3572,
+      "sha256": "bd3448cc1f2f88f9f1a9f214185ba865ffd915a7045f3bd90aebac83bc898f3c",
+      "file": "resources/32-src_components_ui_Reveal.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/src/components/landing/LiveBoard.tsx?t=1782148505859",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 17985,
+      "sha256": "bbb125560b4447c085c12ae8cc7ff78d5aa7fc20962b83cea7eb3839b95a4361",
+      "file": "resources/33-src_components_landing_LiveBoard.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/src/components/landing/LivePreview.tsx?t=1782147707912",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 10139,
+      "sha256": "95c6f5e85468b5afa64e0293ef207224e520c4c5d2408242f5fb8cb2d430e7b3",
+      "file": "resources/34-src_components_landing_LivePreview.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/src/components/landing/icons.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 18313,
+      "sha256": "1af1bac6a386ad7492954cdbfce014f1103ea7059179bfe21a588596e4bbd8ba",
+      "file": "resources/35-src_components_landing_icons.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/src/lib/cryptocom/types.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 8922,
+      "sha256": "c9c9ff342819ae68637d89a7ffe64e354c92d23bbd5e671612791d42ce6384ed",
+      "file": "resources/36-src_lib_cryptocom_types.ts.js"
+    },
+    {
+      "url": "http://localhost:5247/src/styles/landing.css?t=1782149162612",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 17903,
+      "sha256": "f82bb0fe29ef91f89c9cb0311a84aa4d1cd95cf526e7e277063ac828e97777e9",
+      "file": "resources/37-src_styles_landing.css.js"
+    },
+    {
+      "url": "http://localhost:5247/src/lib/format.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 10811,
+      "sha256": "a705322fed5338477749393057dc054bed756cf39c0da4953a02267e05df22ca",
+      "file": "resources/38-src_lib_format.ts.js"
+    },
+    {
+      "url": "http://localhost:5247/src/hooks/useNow.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1485,
+      "sha256": "155d7b3912b85da974458956b22ddbe6ccea577b96b629e83b50a55afbd7cf05",
+      "file": "resources/39-src_hooks_useNow.ts.js"
+    },
+    {
+      "url": "http://localhost:5247/src/components/ui/ConnDot.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 7268,
+      "sha256": "1238c7aa95b32b4edd13ee3230c4d58b43c80eff1d4beac9572d8067a79a0b49",
+      "file": "resources/40-src_components_ui_ConnDot.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/src/components/ui/FlashNum.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 6130,
+      "sha256": "ab88922c6f12cd4f64c2494704f7741981ce0aee47cccee85b99e2710f1ca732",
+      "file": "resources/41-src_components_ui_FlashNum.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/node_modules/.vite/deps/zustand.js?v=db89204d",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 12368,
+      "sha256": "c4ad9e37977ffb37d4f86f8b6779070bf09c33e99d57b599adae730a8aa654c5",
+      "file": "resources/42-node_modules_.vite_deps_zustand.js.js"
+    },
+    {
+      "url": "http://localhost:5247/src/components/ui/ChangePill.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 6937,
+      "sha256": "f81860e5d7f506318c35a203c25897166d7f97b25d1ae51fc11897c4e4d9eb67",
+      "file": "resources/43-src_components_ui_ChangePill.tsx.js"
+    },
+    {
+      "url": "http://localhost:5247/src/lib/palette.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3682,
+      "sha256": "1dd4a467a4bfa0078ce5803d0eb00717338cfbef81f465645b368ec7625c5e60",
+      "file": "resources/44-src_lib_palette.ts.js"
+    },
+    {
+      "url": "http://localhost:5247/src/components/ui/Sparkline.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 10899,
+      "sha256": "f02aa21b313fa6ce8993a6a3d40ad8d11fde467a8efb8049140aea0f2ec21687",
+      "file": "resources/45-src_components_ui_Sparkline.tsx.js"
+    },
+    {
+      "url": "https://api.crypto.com/exchange/v1/public/get-book?instrument_name=BTCUSD-PERP&depth=50",
+      "status": 200,
+      "resourceType": "fetch",
+      "contentType": "application/json",
+      "bytes": 3227,
+      "sha256": "abccba244373fc88040f4d2173e18a9c0c5a57391285e1800269aaa48491bbb2",
+      "file": "resources/46-exchange_v1_public_get-book.json"
+    },
+    {
+      "url": "https://api.crypto.com/exchange/v1/public/get-candlestick?instrument_name=ETHUSD-PERP&timeframe=15m&count=96",
+      "status": 200,
+      "resourceType": "fetch",
+      "contentType": "application/json",
+      "bytes": 14704,
+      "sha256": "49900c5428e4e7c671715bc8818a8572aba3238733c4ece9bbccf06c607401e1",
+      "file": "resources/47-exchange_v1_public_get-candlestick.json"
+    },
+    {
+      "url": "https://api.crypto.com/exchange/v1/public/get-candlestick?instrument_name=BTCUSD-PERP&timeframe=15m&count=96",
+      "status": 200,
+      "resourceType": "fetch",
+      "contentType": "application/json",
+      "bytes": 14578,
+      "sha256": "88bda0e8e45808b845a622462659bde5d6cf7ce62854dc54cfa13ce882d8f53b",
+      "file": "resources/48-exchange_v1_public_get-candlestick.json"
+    },
+    {
+      "url": "https://api.crypto.com/exchange/v1/public/get-candlestick?instrument_name=SPYUSD-PERP&timeframe=15m&count=96",
+      "status": 200,
+      "resourceType": "fetch",
+      "contentType": "application/json",
+      "bytes": 13789,
+      "sha256": "84b71636029e3fe938a653660300650accac6b4e20f1baf07932f4c25156e144",
+      "file": "resources/49-exchange_v1_public_get-candlestick.json"
+    },
+    {
+      "url": "https://api.crypto.com/exchange/v1/public/get-candlestick?instrument_name=XAUUSD-PERP&timeframe=15m&count=96",
+      "status": 200,
+      "resourceType": "fetch",
+      "contentType": "application/json",
+      "bytes": 14383,
+      "sha256": "25452db8f2f8d2657e1c6b6e9ee9a719aa6583a16ed0c02480bd48fd769ea4de",
+      "file": "resources/50-exchange_v1_public_get-candlestick.json"
+    },
+    {
+      "url": "https://api.crypto.com/exchange/v1/public/get-candlestick?instrument_name=XAGUSD-PERP&timeframe=15m&count=96",
+      "status": 200,
+      "resourceType": "fetch",
+      "contentType": "application/json",
+      "bytes": 14068,
+      "sha256": "a5e9a5383cb118e0f44990cddab6285eac86c992fd9ed683591c2d3b5a98bf9e",
+      "file": "resources/51-exchange_v1_public_get-candlestick.json"
+    },
+    {
+      "url": "https://api.crypto.com/exchange/v1/public/get-candlestick?instrument_name=CLUSD-PERP&timeframe=15m&count=96",
+      "status": 200,
+      "resourceType": "fetch",
+      "contentType": "application/json",
+      "bytes": 14007,
+      "sha256": "06d13d6c50b2174cb0376e5cc6c5e20de547948de10be0e0822b781d42a3c19e",
+      "file": "resources/52-exchange_v1_public_get-candlestick.json"
+    },
+    {
+      "url": "https://api.crypto.com/exchange/v1/public/get-tickers",
+      "status": 200,
+      "resourceType": "fetch",
+      "contentType": "application/json",
+      "bytes": 236088,
+      "sha256": "12b56e31f3f9bdd5682114d70f4e3e03786a1e2e6299e4d0c020a2976122716a",
+      "file": "resources/53-exchange_v1_public_get-tickers.json"
+    },
+    {
+      "url": "https://api.crypto.com/exchange/v1/public/get-candlestick?instrument_name=SPYUSD-PERP&timeframe=15m&count=96",
+      "status": 200,
+      "resourceType": "fetch",
+      "contentType": "application/json",
+      "bytes": 13789,
+      "sha256": "84b71636029e3fe938a653660300650accac6b4e20f1baf07932f4c25156e144",
+      "file": "resources/54-exchange_v1_public_get-candlestick.json"
+    },
+    {
+      "url": "https://api.crypto.com/exchange/v1/public/get-candlestick?instrument_name=XAUUSD-PERP&timeframe=15m&count=96",
+      "status": 200,
+      "resourceType": "fetch",
+      "contentType": "application/json",
+      "bytes": 14383,
+      "sha256": "25452db8f2f8d2657e1c6b6e9ee9a719aa6583a16ed0c02480bd48fd769ea4de",
+      "file": "resources/55-exchange_v1_public_get-candlestick.json"
+    },
+    {
+      "url": "https://api.crypto.com/exchange/v1/public/get-candlestick?instrument_name=BTCUSD-PERP&timeframe=15m&count=96",
+      "status": 200,
+      "resourceType": "fetch",
+      "contentType": "application/json",
+      "bytes": 14578,
+      "sha256": "88bda0e8e45808b845a622462659bde5d6cf7ce62854dc54cfa13ce882d8f53b",
+      "file": "resources/56-exchange_v1_public_get-candlestick.json"
+    },
+    {
+      "url": "https://api.crypto.com/exchange/v1/public/get-candlestick?instrument_name=XAGUSD-PERP&timeframe=15m&count=96",
+      "status": 200,
+      "resourceType": "fetch",
+      "contentType": "application/json",
+      "bytes": 14068,
+      "sha256": "a5e9a5383cb118e0f44990cddab6285eac86c992fd9ed683591c2d3b5a98bf9e",
+      "file": "resources/57-exchange_v1_public_get-candlestick.json"
+    },
+    {
+      "url": "https://api.crypto.com/exchange/v1/public/get-candlestick?instrument_name=ETHUSD-PERP&timeframe=15m&count=96",
+      "status": 200,
+      "resourceType": "fetch",
+      "contentType": "application/json",
+      "bytes": 14704,
+      "sha256": "49900c5428e4e7c671715bc8818a8572aba3238733c4ece9bbccf06c607401e1",
+      "file": "resources/58-exchange_v1_public_get-candlestick.json"
+    },
+    {
+      "url": "https://api.crypto.com/exchange/v1/public/get-candlestick?instrument_name=CLUSD-PERP&timeframe=15m&count=96",
+      "status": 200,
+      "resourceType": "fetch",
+      "contentType": "application/json",
+      "bytes": 14007,
+      "sha256": "06d13d6c50b2174cb0376e5cc6c5e20de547948de10be0e0822b781d42a3c19e",
+      "file": "resources/59-exchange_v1_public_get-candlestick.json"
+    },
+    {
+      "url": "https://api.crypto.com/exchange/v1/public/get-trades?instrument_name=BTCUSD-PERP&count=80",
+      "status": 200,
+      "resourceType": "fetch",
+      "contentType": "application/json",
+      "bytes": 18520,
+      "sha256": "1031585eb31f4f26c338425834dea6d5ad5ebf884c834e6161afb1b7ab1bb54a",
+      "file": "resources/60-exchange_v1_public_get-trades.json"
+    },
+    {
+      "url": "https://api.crypto.com/exchange/v1/public/get-candlestick?instrument_name=BTCUSD-PERP&timeframe=5m&count=300",
+      "status": 200,
+      "resourceType": "fetch",
+      "contentType": "application/json",
+      "bytes": 45054,
+      "sha256": "d801335c4d27d57be7f883de0643f78ef4f779c7f72b80c05c317123af375908",
+      "file": "resources/61-exchange_v1_public_get-candlestick.json"
+    }
+  ],
+  "extraction": {
+    "title": "TAPE — Markets Intelligence Terminal",
+    "lang": "en",
+    "bodyTextLength": 4978,
+    "headings": [
+      {
+        "tag": "h1",
+        "text": "Read the tape. Trust the screen.",
+        "box": {
+          "x": 156,
+          "y": 190,
+          "width": 641,
+          "height": 269
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(238, 242, 248)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "88px",
+          "fontWeight": "680",
+          "lineHeight": "89.76px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Everything the desk reads, in one surface.",
+        "box": {
+          "x": 180,
+          "y": 1258,
+          "width": 492,
+          "height": 181
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(238, 242, 248)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "57.6px",
+          "fontWeight": "680",
+          "lineHeight": "60.48px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "The order book, alive",
+        "box": {
+          "x": 205,
+          "y": 1739,
+          "width": 713,
+          "height": 38
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(238, 242, 248)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "25.6px",
+          "fontWeight": "600",
+          "lineHeight": "38.4px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Every print",
+        "box": {
+          "x": 984,
+          "y": 1642,
+          "width": 323,
+          "height": 28
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(211, 218, 228)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "18.4px",
+          "fontWeight": "600",
+          "lineHeight": "27.6px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "One tape, every market",
+        "box": {
+          "x": 984,
+          "y": 1860,
+          "width": 323,
+          "height": 28
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(211, 218, 228)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "18.4px",
+          "fontWeight": "600",
+          "lineHeight": "27.6px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Candles & volume",
+        "box": {
+          "x": 205,
+          "y": 2078,
+          "width": 323,
+          "height": 28
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(211, 218, 228)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "18.4px",
+          "fontWeight": "600",
+          "lineHeight": "27.6px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Built for the glance",
+        "box": {
+          "x": 594,
+          "y": 2078,
+          "width": 323,
+          "height": 28
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(211, 218, 228)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "18.4px",
+          "fontWeight": "600",
+          "lineHeight": "27.6px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h3",
+        "text": "Honest by design",
+        "box": {
+          "x": 984,
+          "y": 2078,
+          "width": 323,
+          "height": 28
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(211, 218, 228)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "18.4px",
+          "fontWeight": "600",
+          "lineHeight": "27.6px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Not a screenshot. The actual feed.",
+        "box": {
+          "x": 180,
+          "y": 2355,
+          "width": 492,
+          "height": 121
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(238, 242, 248)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "57.6px",
+          "fontWeight": "680",
+          "lineHeight": "60.48px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Four markets. One watchlist.",
+        "box": {
+          "x": 180,
+          "y": 3342,
+          "width": 492,
+          "height": 121
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(238, 242, 248)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "57.6px",
+          "fontWeight": "680",
+          "lineHeight": "60.48px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "The market is moving. Open the screen.",
+        "box": {
+          "x": 379,
+          "y": 4322,
+          "width": 754,
+          "height": 121
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(238, 242, 248)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "57.6px",
+          "fontWeight": "680",
+          "lineHeight": "60.48px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      }
+    ],
+    "navLinks": [
+      {
+        "text": "TAPE",
+        "href": "/"
+      },
+      {
+        "text": "Capabilities",
+        "href": "#capabilities"
+      },
+      {
+        "text": "Terminal",
+        "href": "#preview"
+      },
+      {
+        "text": "Coverage",
+        "href": "#coverage"
+      },
+      {
+        "text": "Open terminal",
+        "href": "/terminal"
+      }
+    ],
+    "forms": [],
+    "sections": [
+      {
+        "index": 0,
+        "tag": "header",
+        "id": "",
+        "className": "ln-nav ",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [],
+        "buttons": [
+          "TAPE",
+          "Capabilities",
+          "Terminal",
+          "Coverage",
+          "Open terminal"
+        ],
+        "text": "TAPE Capabilities Terminal Coverage Open terminal",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 1512,
+          "height": 65
+        },
+        "styles": {
+          "display": "block",
+          "position": "fixed",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(170, 182, 198)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "13px",
+          "fontWeight": "400",
+          "lineHeight": "19.5px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 1,
+        "tag": "nav",
+        "id": "",
+        "className": "ln-nav-links",
+        "role": "",
+        "ariaLabel": "Sections",
+        "headings": [],
+        "buttons": [
+          "Capabilities",
+          "Terminal",
+          "Coverage"
+        ],
+        "text": "Capabilities Terminal Coverage",
+        "box": {
+          "x": 857,
+          "y": 20,
+          "width": 290,
+          "height": 24
+        },
+        "styles": {
+          "display": "flex",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(170, 182, 198)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "13px",
+          "fontWeight": "400",
+          "lineHeight": "19.5px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 2,
+        "tag": "main",
+        "id": "main",
+        "className": "",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h1",
+            "text": "Read the tape. Trust the screen."
+          },
+          {
+            "tag": "h2",
+            "text": "Everything the desk reads, in one surface."
+          },
+          {
+            "tag": "h3",
+            "text": "The order book, alive"
+          },
+          {
+            "tag": "h3",
+            "text": "Every print"
+          },
+          {
+            "tag": "h3",
+            "text": "One tape, every market"
+          },
+          {
+            "tag": "h3",
+            "text": "Candles & volume"
+          }
+        ],
+        "buttons": [
+          "Open the terminal",
+          "Explore coverage",
+          "BTC Bitcoin 64,406.4 ▲ +0.61%",
+          "ETH Ethereum 1,732.48 ▲ +0.46%",
+          "XAU Gold 4,179.42 ▲ +0.38%",
+          "XAG Silver 65.155 ▲ +0.23%",
+          "CL WTI Crude 73.789 ▼ -6.01%",
+          "SPY S&P 500 744.74 ▲ +0.07%",
+          "BTC 64,406.4 +0.61%",
+          "ETH 1,732.48 +0.46%",
+          "SOL 72.77 -1.72%",
+          "XRP 1.1337 -0.60%"
+        ],
+        "text": "MARKETS INTELLIGENCE TERMINAL Read the tape. Trust the screen. Real-time price, depth, and order flow across crypto, metals, energy, and equity-index markets — one terminal, built to be read at a glance and trusted with size. Open the terminal Explore coverage Live market data via the Crypto.com Exchange public feed · no account required LIVE MARKETS BTC Bitcoin 64,406.4 ▲ +0.61% ETH Ethereum 1,732.48 ▲ +0.46% XAU Gold 4,179.42 ▲ +0.38% XAG Silver 65.155 ▲ +0.23% CL WTI Crude 73.789 ▼ -6.01% SPY S&P 500 744.74 ▲ +0.07% 37 updates/s Crypto.com Exchange 18 instruments wired live 4 asset classes 6 chart timeframes 24 / 7 streaming, auto-reconnect BTC 64,406.4 +0.61% ETH 1,732.48 +0.46% SOL 72.77 -1.72% XRP 1.1337 -0.60% DOGE 0.082993 -0.27% ADA 0.15872 -1.48% SUI 0.71912 +1.55% LTC 44.754 -1.08% XAU 4,179.42 +0.38% XAG 65.155 +0.23% XPT 1,669.19 -0.65% XPD 1,258.66 +1.15% CL 73.789 -6.01% NG 3.3082 +1.88% SPY 744.74 +0.07% QQQ 736.52 -0.26% NVDA 209.45 -0.06% INTC 140.82 +1.81% BTC 64,406",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 1512,
+          "height": 4705
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(170, 182, 198)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "13px",
+          "fontWeight": "400",
+          "lineHeight": "19.5px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 3,
+        "tag": "section",
+        "id": "",
+        "className": "ln-hero",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h1",
+            "text": "Read the tape. Trust the screen."
+          }
+        ],
+        "buttons": [
+          "Open the terminal",
+          "Explore coverage",
+          "BTC Bitcoin 64,406.4 ▲ +0.61%",
+          "ETH Ethereum 1,732.48 ▲ +0.46%",
+          "XAU Gold 4,179.42 ▲ +0.38%",
+          "XAG Silver 65.155 ▲ +0.23%",
+          "CL WTI Crude 73.789 ▼ -6.01%",
+          "SPY S&P 500 744.74 ▲ +0.07%"
+        ],
+        "text": "MARKETS INTELLIGENCE TERMINAL Read the tape. Trust the screen. Real-time price, depth, and order flow across crypto, metals, energy, and equity-index markets — one terminal, built to be read at a glance and trusted with size. Open the terminal Explore coverage Live market data via the Crypto.com Exchange public feed · no account required LIVE MARKETS BTC Bitcoin 64,406.4 ▲ +0.61% ETH Ethereum 1,732.48 ▲ +0.46% XAU Gold 4,179.42 ▲ +0.38% XAG Silver 65.155 ▲ +0.23% CL WTI Crude 73.789 ▼ -6.01% SPY S&P 500 744.74 ▲ +0.07% 37 updates/s Crypto.com Exchange 18 instruments wired live 4 asset classes 6 chart timeframes 24 / 7 streaming, auto-reconnect",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 1512,
+          "height": 1010
+        },
+        "styles": {
+          "display": "block",
+          "position": "relative",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(170, 182, 198)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "13px",
+          "fontWeight": "400",
+          "lineHeight": "19.5px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 4,
+        "tag": "section",
+        "id": "capabilities",
+        "className": "ln-section",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h2",
+            "text": "Everything the desk reads, in one surface."
+          },
+          {
+            "tag": "h3",
+            "text": "The order book, alive"
+          },
+          {
+            "tag": "h3",
+            "text": "Every print"
+          },
+          {
+            "tag": "h3",
+            "text": "One tape, every market"
+          },
+          {
+            "tag": "h3",
+            "text": "Candles & volume"
+          },
+          {
+            "tag": "h3",
+            "text": "Built for the glance"
+          }
+        ],
+        "buttons": [],
+        "text": "CAPABILITIES Everything the desk reads, in one surface. Each panel is engineered for the one thing a trader needs from it — and nothing that gets in the way. The order book, alive Live bids and asks with cumulative depth, bid/ask imbalance, and the spread in basis points — the resting liquidity, not a summary of it. Every print Time & sales streaming trade-by-trade, each tagged by aggressor side, with size bars that surface the blocks. One tape, every market Crypto, precious metals, energy, and equity-index perpetuals in a single watchlist — switch in one keystroke. Candles & volume Six timeframes, a crosshair that reads OHLC anywhere, and a live last-print line — rendered on canvas for a steady frame. Built for the glance Tabular numerals that never jiggle, instant tick flashes, and a layout that holds its hierarchy under pressure. Density without noise. Honest by design Real data only. When the stream drops, the screen freezes the last true value and flags it stale — it never invents",
+        "box": {
+          "x": 156,
+          "y": 1100,
+          "width": 1200,
+          "height": 1097
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(170, 182, 198)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "13px",
+          "fontWeight": "400",
+          "lineHeight": "19.5px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 5,
+        "tag": "section",
+        "id": "preview",
+        "className": "ln-section ln-preview-section",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h2",
+            "text": "Not a screenshot. The actual feed."
+          }
+        ],
+        "buttons": [
+          "1m",
+          "5m",
+          "15m",
+          "1H",
+          "4H",
+          "1D",
+          "Open the full terminal"
+        ],
+        "text": "THE TERMINAL Not a screenshot. The actual feed. This is the live order book and chart, streaming right now — the same panels you open below. TAPE · BTC BTCUSD-PERP 1m 5m 15m 1H 4H 1D scroll zoom · drag pan CANDLES 300 Order Book DEPTH 24 PRICE SIZE · BTC TOTAL 64,402.7 0.1377 0.14 64,402.8 0.1700 0.31 64,403.0 0.0500 0.36 64,404.3 0.0016 0.36 64,404.4 0.0187 0.38 64,404.5 0.1016 0.48 64,404.6 0.1300 0.61 64,405.0 0.0700 0.68 64,405.6 0.0001 0.68 64,406.2 0.0400 0.72 64,406.4 0.0500 0.77 64,406.6 0.0457 0.82 64,407.7 0.0776 0.89 64,407.8 0.0090 0.9 64,409.0 0.0574 0.96 64,409.1 0.0090 0.97 64,409.7 0.0187 0.99 64,409.9 0.0038 0.99 64,410.0 0.0773 1.07 64,410.1 0.2588 1.33 64,410.4 0.0090 1.34 64,411.6 0.0090 1.34 64,412.9 0.0090 1.35 64,413.0 0.0001 1.35 64,406.4 SPREAD 0.1 · 0.0bp 64,402.6 0.1201 0.12 64,402.4 0.0400 0.16 64,402.0 0.1000 0.26 64,401.4 0.1158 0.38 64,401.3 0.0360 0.41 64,401.0 0.3200 0.73 64,400.7 0.0300 0.76 64,400.0 0.0090 0.77 64,399.1 0.0005 0.77 64,398.8 0.0090 0.7",
+        "box": {
+          "x": 156,
+          "y": 2197,
+          "width": 1200,
+          "height": 986
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(170, 182, 198)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "13px",
+          "fontWeight": "400",
+          "lineHeight": "19.5px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 6,
+        "tag": "section",
+        "id": "",
+        "className": "panel ob",
+        "role": "",
+        "ariaLabel": "Order book",
+        "headings": [],
+        "buttons": [],
+        "text": "Order Book DEPTH 24 PRICE SIZE · BTC TOTAL 64,402.7 0.1377 0.14 64,402.8 0.1700 0.31 64,403.0 0.0500 0.36 64,404.3 0.0016 0.36 64,404.4 0.0187 0.38 64,404.5 0.1016 0.48 64,404.6 0.1300 0.61 64,405.0 0.0700 0.68 64,405.6 0.0001 0.68 64,406.2 0.0400 0.72 64,406.4 0.0500 0.77 64,406.6 0.0457 0.82 64,407.7 0.0776 0.89 64,407.8 0.0090 0.9 64,409.0 0.0574 0.96 64,409.1 0.0090 0.97 64,409.7 0.0187 0.99 64,409.9 0.0038 0.99 64,410.0 0.0773 1.07 64,410.1 0.2588 1.33 64,410.4 0.0090 1.34 64,411.6 0.0090 1.34 64,412.9 0.0090 1.35 64,413.0 0.0001 1.35 64,406.4 SPREAD 0.1 · 0.0bp 64,402.6 0.1201 0.12 64,402.4 0.0400 0.16 64,402.0 0.1000 0.26 64,401.4 0.1158 0.38 64,401.3 0.0360 0.41 64,401.0 0.3200 0.73 64,400.7 0.0300 0.76 64,400.0 0.0090 0.77 64,399.1 0.0005 0.77 64,398.8 0.0090 0.78 64,398.5 0.0005 0.78 64,398.1 0.0038 0.78 64,398.0 0.0001 0.78 64,397.5 0.0090 0.79 64,396.8 0.1288 0.92 64,396.4 0.0038 0.93 64,396.2 0.2805 1.21 64,395.4 0.0001 1.21 64,395.1 0.0038 1.21 64,394.9 0.0090 1.22 64,394",
+        "box": {
+          "x": 1028,
+          "y": 2639,
+          "width": 303,
+          "height": 468
+        },
+        "styles": {
+          "display": "flex",
+          "position": "static",
+          "background": "rgb(10, 13, 18)",
+          "color": "rgb(170, 182, 198)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "13px",
+          "fontWeight": "400",
+          "lineHeight": "19.5px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 7,
+        "tag": "section",
+        "id": "coverage",
+        "className": "ln-section",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h2",
+            "text": "Four markets. One watchlist."
+          }
+        ],
+        "buttons": [
+          "BTC Bitcoin 64,406.4 +0.61%",
+          "ETH Ethereum 1,732.48 +0.46%",
+          "SOL Solana 72.77 -1.72%",
+          "XRP XRP 1.1337 -0.60%",
+          "DOGE Dogecoin 0.082993 -0.27%",
+          "ADA Cardano 0.15872 -1.48%",
+          "SUI Sui 0.71912 +1.55%",
+          "LTC Litecoin 44.754 -1.08%",
+          "XAU Gold 4,179.42 +0.38%",
+          "XAG Silver 65.155 +0.23%",
+          "XPT Platinum 1,669.19 -0.65%",
+          "XPD Palladium 1,258.66 +1.15%"
+        ],
+        "text": "COVERAGE Four markets. One watchlist. Every instrument below is streaming live. Click any to open it in the terminal. Crypto Digital assets BTC Bitcoin 64,406.4 +0.61% ETH Ethereum 1,732.48 +0.46% SOL Solana 72.77 -1.72% XRP XRP 1.1337 -0.60% DOGE Dogecoin 0.082993 -0.27% ADA Cardano 0.15872 -1.48% SUI Sui 0.71912 +1.55% LTC Litecoin 44.754 -1.08% Metals Precious metals XAU Gold 4,179.42 +0.38% XAG Silver 65.155 +0.23% XPT Platinum 1,669.19 -0.65% XPD Palladium 1,258.66 +1.15% Energy Commodities CL WTI Crude 73.789 -6.01% NG Natural Gas 3.3082 +1.88% Equity Index & single-name SPY S&P 500 744.74 +0.07% QQQ Nasdaq 100 736.52 -0.26% NVDA NVIDIA 209.45 -0.06% INTC Intel 140.82 +1.81%",
+        "box": {
+          "x": 156,
+          "y": 3184,
+          "width": 1200,
+          "height": 905
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(170, 182, 198)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "13px",
+          "fontWeight": "400",
+          "lineHeight": "19.5px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 8,
+        "tag": "section",
+        "id": "",
+        "className": "ln-cta",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h2",
+            "text": "The market is moving. Open the screen."
+          }
+        ],
+        "buttons": [
+          "Open the terminal"
+        ],
+        "text": "The market is moving. Open the screen. No sign-up, no paywall. The live terminal is one click away. Open the terminal",
+        "box": {
+          "x": 0,
+          "y": 4217,
+          "width": 1512,
+          "height": 489
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(170, 182, 198)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "13px",
+          "fontWeight": "400",
+          "lineHeight": "19.5px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 9,
+        "tag": "footer",
+        "id": "",
+        "className": "ln-footer",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [],
+        "buttons": [
+          "Terminal",
+          "Capabilities",
+          "Live preview",
+          "Coverage",
+          "Crypto",
+          "Metals",
+          "Energy",
+          "Equity",
+          "Crypto.com Exchange API"
+        ],
+        "text": "TAPE A real-time, cross-asset markets intelligence terminal. Price, depth, and order flow — read at a glance. PRODUCT Terminal Capabilities Live preview Coverage MARKETS Crypto Metals Energy Equity DATA Crypto.com Exchange API Public market feed REST + WebSocket © 2026 TAPE Market data is provided for informational purposes via the Crypto.com Exchange public API and may be delayed or unavailable. Not investment advice.",
+        "box": {
+          "x": 0,
+          "y": 4833,
+          "width": 1512,
+          "height": 338
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgb(10, 13, 18)",
+          "color": "rgb(170, 182, 198)",
+          "fontFamily": "\"Inter Variable\", -apple-system, \"system-ui\", \"Segoe UI\", Roboto, sans-serif",
+          "fontSize": "13px",
+          "fontWeight": "400",
+          "lineHeight": "19.5px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      }
+    ],
+    "cssVars": {
+      "--topbar-h": "46px",
+      "--fs-price": "clamp(20px, 1.4vw + 12px, 30px)",
+      "--ease-in-out": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "--fluid-xl": "clamp(1.55rem, 1.3rem + 1.2vw, 2.4rem)",
+      "--n-5": "#232b3a",
+      "--sh-1": "0 1px 2px rgba(0, 0, 0, 0.5)",
+      "--n-0": "#06080b",
+      "--r-md": "5px",
+      "--n-2": "#0e121a",
+      "--bg-app": "#06080b",
+      "--text-hi": "#d3dae4",
+      "--bg-overlay": "#0b0f16",
+      "--sp-10": "10px",
+      "--fw-regular": "400",
+      "--z-base": "0",
+      "--dur-4": "340ms",
+      "--line-strong": "rgba(255, 255, 255, 0.13)",
+      "--watchlist-w": "252px",
+      "--accent": "#3d7bff",
+      "--sp-8": "8px",
+      "--sp-96": "96px",
+      "--fluid-sm": "clamp(0.875rem, 0.83rem + 0.22vw, 1rem)",
+      "--sp-6": "6px",
+      "--n-8": "#5d6a7e",
+      "--down-line": "rgba(246, 70, 93, 0.42)",
+      "--r-2xl": "18px",
+      "--fs-md": "13px",
+      "--fw-bold": "680",
+      "--z-sticky": "100",
+      "--line": "rgba(255, 255, 255, 0.075)",
+      "--flash-down": "rgba(246, 70, 93, 0.30)",
+      "--lh-snug": "1.22",
+      "--sp-48": "48px",
+      "--n-6": "#313b4d",
+      "--accent-line": "rgba(61, 123, 255, 0.5)",
+      "--rightcol-w": "322px",
+      "--text-lo": "#5d6a7e",
+      "--dur-5": "560ms",
+      "--sp-24": "24px",
+      "--fs-2xs": "10px",
+      "--dur-3": "220ms",
+      "--sell": "#f6465d",
+      "--statusbar-h": "26px",
+      "--warn-soft": "rgba(231, 168, 58, 0.15)",
+      "--accent-glow": "rgba(61, 123, 255, 0.35)",
+      "--font-mono": "'JetBrains Mono Variable', ui-monospace, 'SF Mono', 'SFMono-Regular', Menlo, Consolas, monospace",
+      "--bg-elev": "#0e121a",
+      "--tracking-wide": "0.04em",
+      "--ease-spring": "cubic-bezier(0.34, 1.4, 0.64, 1)",
+      "--n-11": "#d3dae4",
+      "--text-mid": "#8794a6",
+      "--down-strong": "#ff5e72",
+      "--sp-1": "1px",
+      "--z-toast": "500",
+      "--dur-1": "90ms",
+      "--fluid-lg": "clamp(1.2rem, 1.08rem + 0.6vw, 1.6rem)",
+      "--z-raised": "10",
+      "--buy": "#1fc77d",
+      "--fw-semi": "600",
+      "--flash-up": "rgba(31, 199, 125, 0.30)",
+      "--sp-56": "56px",
+      "--tracking-caps": "0.08em",
+      "--font-ui": "'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      "--ease-out": "cubic-bezier(0.22, 0.61, 0.36, 1)",
+      "--dur-2": "140ms",
+      "--up-soft": "rgba(31, 199, 125, 0.14)",
+      "--up-dim": "rgba(31, 199, 125, 0.5)",
+      "--n-7": "#46526691",
+      "--sp-3": "3px",
+      "--n-1": "#0a0d12",
+      "--bg-input": "#141925",
+      "--r-xs": "2px",
+      "--up-strong": "#38e08f",
+      "--lh-tight": "1.05",
+      "--fs-sm": "12px",
+      "--line-faint": "rgba(255, 255, 255, 0.045)",
+      "--sp-128": "128px",
+      "--z-dropdown": "200",
+      "--lh-loose": "1.65",
+      "--fluid-base": "clamp(1rem, 0.95rem + 0.28vw, 1.15rem)",
+      "--sp-64": "64px",
+      "--up": "#1fc77d",
+      "--sp-4": "4px",
+      "--z-modal": "400",
+      "--r-lg": "8px",
+      "--down-soft": "rgba(246, 70, 93, 0.14)",
+      "--sp-32": "32px",
+      "--bg-panel": "#0a0d12",
+      "--n-12": "#eef2f8",
+      "--bg-hover": "#1b212e",
+      "--r-xl": "12px",
+      "--sp-80": "80px",
+      "--sp-40": "40px",
+      "--n-10": "#aab6c6",
+      "--text-max": "#eef2f8",
+      "--sp-12": "12px",
+      "--fluid-xs": "clamp(0.78rem, 0.74rem + 0.18vw, 0.875rem)",
+      "--warn-line": "rgba(231, 168, 58, 0.5)",
+      "--tape-h": "30px",
+      "--text": "#aab6c6",
+      "--fs-lg": "15px",
+      "--lh-base": "1.5",
+      "--text-faint": "#475264",
+      "--r-pill": "999px",
+      "--tracking-snug": "-0.01em",
+      "--r-sm": "3px",
+      "--bg-active": "#232b3a",
+      "--fs-xs": "11px",
+      "--up-line": "rgba(31, 199, 125, 0.42)",
+      "--z-overlay": "300",
+      "--down": "#f6465d",
+      "--n-3": "#141925",
+      "--accent-strong": "#5e93ff",
+      "--sp-2": "2px",
+      "--warn": "#e7a83a",
+      "--accent-soft": "rgba(61, 123, 255, 0.16)",
+      "--n-9": "#8794a6",
+      "--sh-3": "0 30px 70px -20px rgba(0, 0, 0, 0.78), 0 10px 28px rgba(0, 0, 0, 0.5)",
+      "--fluid-3xl": "clamp(2.7rem, 1.9rem + 3.9vw, 5.5rem)",
+      "--fw-medium": "500",
+      "--fluid-2xl": "clamp(2.1rem, 1.6rem + 2.4vw, 3.6rem)",
+      "--fs-xl": "17px",
+      "--sp-20": "20px",
+      "--n-4": "#1b212e",
+      "--sh-2": "0 10px 28px -10px rgba(0, 0, 0, 0.66), 0 2px 8px rgba(0, 0, 0, 0.45)",
+      "--sp-16": "16px",
+      "--tracking-tight": "-0.02em"
+    },
+    "topColors": [
+      [
+        "rgb(170, 182, 198)",
+        663
+      ],
+      [
+        "rgb(93, 106, 126)",
+        164
+      ],
+      [
+        "rgb(211, 218, 228)",
+        139
+      ],
+      [
+        "rgb(31, 199, 125)",
+        112
+      ],
+      [
+        "rgb(246, 70, 93)",
+        96
+      ],
+      [
+        "rgb(94, 147, 255)",
+        60
+      ],
+      [
+        "rgb(255, 255, 255)",
+        37
+      ],
+      [
+        "rgb(170, 182, 198) rgba(255, 255, 255, 0.043) rgb(170, 182, 198) rgb(170, 182, 198)",
+        36
+      ],
+      [
+        "rgb(135, 148, 166)",
+        30
+      ],
+      [
+        "rgba(31, 199, 125, 0.14)",
+        29
+      ],
+      [
+        "rgba(246, 70, 93, 0.14)",
+        25
+      ],
+      [
+        "rgb(238, 242, 248)",
+        24
+      ],
+      [
+        "rgb(170, 182, 198) rgb(170, 182, 198) rgba(255, 255, 255, 0.043)",
+        16
+      ],
+      [
+        "rgba(255, 255, 255, 0.075)",
+        7
+      ],
+      [
+        "rgba(61, 123, 255, 0.16)",
+        7
+      ],
+      [
+        "rgb(61, 123, 255)",
+        6
+      ],
+      [
+        "rgb(10, 13, 18)",
+        5
+      ],
+      [
+        "rgb(14, 18, 26)",
+        4
+      ],
+      [
+        "rgb(71, 82, 100)",
+        4
+      ],
+      [
+        "rgb(35, 43, 58)",
+        4
+      ],
+      [
+        "rgba(255, 255, 255, 0.13)",
+        3
+      ],
+      [
+        "rgb(170, 182, 198) rgb(170, 182, 198) rgba(255, 255, 255, 0.075)",
+        3
+      ],
+      [
+        "rgba(255, 255, 255, 0.075) rgb(170, 182, 198)",
+        2
+      ],
+      [
+        "rgb(6, 8, 11)",
+        1
+      ],
+      [
+        "rgb(170, 182, 198) rgb(170, 182, 198) rgba(0, 0, 0, 0)",
+        1
+      ],
+      [
+        "rgba(255, 255, 255, 0.016)",
+        1
+      ],
+      [
+        "rgba(61, 123, 255, 0.5)",
+        1
+      ],
+      [
+        "rgb(20, 25, 37)",
+        1
+      ],
+      [
+        "rgb(170, 182, 198) rgb(170, 182, 198) rgb(170, 182, 198) rgba(255, 255, 255, 0.075)",
+        1
+      ]
+    ],
+    "scrollWidth": 1512,
+    "clientWidth": 1512,
+    "scrollHeight": 5171
+  },
+  "consoleMessages": [
+    {
+      "type": "warning",
+      "text": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    }
+  ],
+  "pageErrors": [],
+  "capturedAt": "2026-06-22T17:40:11.926Z"
+}

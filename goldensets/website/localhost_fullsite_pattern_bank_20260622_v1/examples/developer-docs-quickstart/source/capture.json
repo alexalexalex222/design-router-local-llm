@@ -1,0 +1,3492 @@
+{
+  "id": "quickstart_5180",
+  "url": "http://localhost:5180/docs/quickstart",
+  "finalUrl": "http://localhost:5180/docs/quickstart",
+  "httpStatus": 200,
+  "title": "Quickstart — Epoch",
+  "renderedHtml": {
+    "file": "rendered.html",
+    "bytes": 108554,
+    "sha256": "34a330297ab40d04f9748862f2c21b44babcde75c4b119f87aa6b0c4fd3c4c09"
+  },
+  "screenshots": [
+    {
+      "viewport": {
+        "name": "desktop-1512x812",
+        "width": 1512,
+        "height": 812
+      },
+      "path": "desktop-1512x812.png",
+      "metrics": {
+        "scrollWidth": 1501,
+        "clientWidth": 1512,
+        "bodyScrollWidth": 1501,
+        "horizontalOverflow": false,
+        "textLength": 4973
+      }
+    },
+    {
+      "viewport": {
+        "name": "mobile-390x844",
+        "width": 390,
+        "height": 844
+      },
+      "path": "mobile-390x844.png",
+      "metrics": {
+        "scrollWidth": 379,
+        "clientWidth": 390,
+        "bodyScrollWidth": 379,
+        "horizontalOverflow": false,
+        "textLength": 4767
+      }
+    }
+  ],
+  "resources": [
+    {
+      "url": "http://localhost:5180/docs/quickstart",
+      "status": 200,
+      "resourceType": "document",
+      "contentType": "text/html",
+      "bytes": 1424,
+      "sha256": "b618719f4333e42be77adef1b3fb1faf31522d3fc8c98b9611333130efc8f2aa",
+      "file": "resources/01-docs_quickstart.html"
+    },
+    {
+      "url": "http://localhost:5180/@vite/client",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 137703,
+      "sha256": "52088668680011ada6acd563a938159b4230543c51e0831a603c7be6bf3d93a5",
+      "file": "resources/02-_vite_client.js"
+    },
+    {
+      "url": "http://localhost:5180/src/main.tsx?t=1782148600802",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3236,
+      "sha256": "daa05be5effc608dde7f1cd8826c5e39a8d8232c548034b5239e770560a5a7e6",
+      "file": "resources/03-src_main.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/@react-refresh",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 117548,
+      "sha256": "39f29d0992fa297d5eb610e097febb02dbaf5663c746be93268daf64414fb9b8",
+      "file": "resources/04-_react-refresh.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/vite/dist/client/env.mjs",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4021,
+      "sha256": "9d6cb716911e93c84d69aac1fc482d3d41150b0f3bd7c8f9402057ee4d363804",
+      "file": "resources/05-node_modules_vite_dist_client_env.mjs.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 37035,
+      "sha256": "8da7daff69af0ea10f482f77ca5e2a7901accc19a3c5edd44fe3fb270e7db59d",
+      "file": "resources/06-node_modules_.vite_deps_react_jsx-dev-runtime.js.js"
+    },
+    {
+      "url": "http://localhost:5180/src/styles/global.css?t=1782148094005",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 19413,
+      "sha256": "4f3db390ac9095d86fe50b72bac6d0639515603ed88abcae17a89487bbde55c3",
+      "file": "resources/07-src_styles_global.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/App.tsx?t=1782148600802",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 23048,
+      "sha256": "e3e45211b60b845da7f5c11f03c97bb2e94fd6d01be87481453f2689a7c944a8",
+      "file": "resources/08-src_App.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/react.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 219,
+      "sha256": "9c2862cedff6577b22b50d13e49f683c4897c70d0fa985b5e90e84ddc8d1354d",
+      "file": "resources/09-node_modules_.vite_deps_react.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-DP4XHQAG.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2542,
+      "sha256": "3194d9d2ee50ee8867f0e8b0a094b9e3f50241fb5ff4caa262da2852cd061dd0",
+      "file": "resources/10-node_modules_.vite_deps_chunk-DP4XHQAG.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/react-dom_client.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1118,
+      "sha256": "1527a56d82ae1d4e0822a3514ee99d6556d975c8396228da931fabc726dd5c3e",
+      "file": "resources/11-node_modules_.vite_deps_react-dom_client.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-4AFIVRCK.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 77818,
+      "sha256": "6cf41b2cda041f0f8d61ce81f467657854d0f579d106d4ce7bc30212f1258b88",
+      "file": "resources/12-node_modules_.vite_deps_chunk-4AFIVRCK.js.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/SiteHeader.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 24557,
+      "sha256": "db79030557dce28766c05099421406912593e89686a6681bac3672aa2f6d64a6",
+      "file": "resources/13-src_components_SiteHeader.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/SiteFooter.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 17504,
+      "sha256": "25fbdbdd5af06091d398b7691e321a8e590ad0abbc038f5154a057b56fe92bf2",
+      "file": "resources/14-src_components_SiteFooter.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/NotFound.tsx?t=1782147054858",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 10699,
+      "sha256": "25198710dc2bd9363bf4a003a10f70b980275075b9683980b5666170a4f50de3",
+      "file": "resources/15-src_pages_NotFound.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/DocsLayout.tsx?t=1782146817165",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 20295,
+      "sha256": "24464d4ae720fc65c4b4b645fea2d70ba00d0c0a218bd313450e3e061ddbf843",
+      "file": "resources/16-src_pages_docs_DocsLayout.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/react-router-dom.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 209661,
+      "sha256": "220acffe2c990559bed5b87ca59b76d2208944f219345de5002784495975318d",
+      "file": "resources/17-node_modules_.vite_deps_react-router-dom.js.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/CommandMenu.tsx?t=1782147181674",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 37130,
+      "sha256": "366028257d003ee1e15ec6db69f6213476e239b392394574cf5d22f35a25ab35",
+      "file": "resources/18-src_components_CommandMenu.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/index.tsx?t=1782148600802",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 7157,
+      "sha256": "55c3ada450e280177ada61ac5d46d95728c2aadeb4a8969080574f670bf28724",
+      "file": "resources/19-src_pages_Home_index.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Pricing/index.tsx?t=1782148316363",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 27042,
+      "sha256": "81696cf95ed26ed971e0b19a3fd9c7faff852b8d040ed092e2938408af2a419d",
+      "file": "resources/20-src_pages_Pricing_index.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/LiveQueries.tsx?t=1782148164236",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 23862,
+      "sha256": "60a6731355eeacbbe32fbe5ace956b8a7768932a1bcaba4f8e7f8d7d8dd19432",
+      "file": "resources/21-src_pages_docs_LiveQueries.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/SchemaAndTypes.tsx?t=1782148164236",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 27237,
+      "sha256": "c6c23dafbfd32263093b350522510bfe7a5f1e1a05d926113fff29eb392d53c7",
+      "file": "resources/22-src_pages_docs_SchemaAndTypes.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/Logo.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 6860,
+      "sha256": "5589541630a46fef2b66c2d29c9fdea59e3e31d6e7b88184eb4d21867389fa69",
+      "file": "resources/23-src_components_Logo.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/Button.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9109,
+      "sha256": "d8d502fa15f0e7e3dddaf74eae3e03cb4d37b4ef48bc8d164b82964dd106780e",
+      "file": "resources/24-src_components_primitives_Button.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/Quickstart.tsx?t=1782148164236",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 22661,
+      "sha256": "c3373d5ed02fef6bb5f81c41e9104f3bfe831c5a5505baa77f35fbfc646ea0bc",
+      "file": "resources/25-src_pages_docs_Quickstart.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/Kbd.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3276,
+      "sha256": "d7e2db79aa48f9b4971f3cf00ec98951695d1ce9637de2a96af3643012fbeb1b",
+      "file": "resources/26-src_components_primitives_Kbd.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/icons.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 26970,
+      "sha256": "2f8ae3abda0ac64d24ca5685f2c2a85f5f7080fecac97ba87761f71b3a45b8ab",
+      "file": "resources/27-src_components_icons.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/lib/cn.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 648,
+      "sha256": "8d7fe8123d07681cfd82187788f21992de17b14350ccc6f80b8b2fae635845f4",
+      "file": "resources/28-src_lib_cn.ts.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/SiteHeader.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4334,
+      "sha256": "5fdfac4aab618117fa01d8dda755600246a6c5918d32c8f300d90190ab5fba5a",
+      "file": "resources/29-src_components_SiteHeader.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/Pill.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3480,
+      "sha256": "6a65787b80c08d14447443152e79d971d07cbd5bf8fb812924b39f329ecb70d2",
+      "file": "resources/30-src_components_primitives_Pill.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/SiteFooter.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2653,
+      "sha256": "5c4e091fd6edb87f6541401fbb3ccca8f837f241ce6bcaf3f38c01adeaa5cb4b",
+      "file": "resources/31-src_components_SiteFooter.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/nav.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3475,
+      "sha256": "e077ca35c80f2cd68c3bf52faf8b6376afabda3bcb78e48c0cd55dce45d9dfb4",
+      "file": "resources/32-src_pages_docs_nav.ts.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/NotFound.css?t=1782147054858",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1860,
+      "sha256": "b31bcc8c44e4e360dfdd5742d9ba9ee29b14b121d5d56a2247bbd92232cea0a3",
+      "file": "resources/33-src_pages_NotFound.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/lib/useDocumentTitle.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1184,
+      "sha256": "67bd3579dab14cfb2ac38ce0d80842a58edd7ba5ea5eac7bfc0212d17ca87899",
+      "file": "resources/34-src_lib_useDocumentTitle.ts.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/Docs.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9283,
+      "sha256": "649a029f4b051dc83bc1475eb0479d5adb6dafcaf8e9e3f993afa7868a2d8c20",
+      "file": "resources/35-src_pages_docs_Docs.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/CommandMenu.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4358,
+      "sha256": "999076d9cbbf0bbcf23ffff6eaa53f6f6d7cdcaec56d622e8cddbadba536edbe",
+      "file": "resources/36-src_components_CommandMenu.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/lib/highlighter.ts?t=1782147268904",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 13756,
+      "sha256": "6ab5d4a21afb6b8baa1f92a0c865ac6b095bae32f5d0d080aa10eacad0eab479",
+      "file": "resources/37-src_lib_highlighter.ts.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Hero.tsx?t=1782148600802",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 16282,
+      "sha256": "050e02fe60af77d2803eb012d10108da4d6d4b192e847d014276263956af5ac5",
+      "file": "resources/38-src_pages_Home_Hero.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Model.tsx?t=1782148194700",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 12805,
+      "sha256": "3ed2e64b100f3638adfd705177033fbb7c5720f7a8b5430bf25173d83c25dbb4",
+      "file": "resources/39-src_pages_Home_Model.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-3ZJ2S23Y.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 928095,
+      "sha256": "d3a0d5ce1257f2facc78e9b19c64576ea083bb78847a96683f25d562ec0aaf52",
+      "file": "resources/40-node_modules_.vite_deps_chunk-3ZJ2S23Y.js.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Benchmark.tsx?t=1782148262381",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 20161,
+      "sha256": "92c5283624898a02b681a2ba5562eb2549075681cc01e5bd5858fd9ca31cdbc0",
+      "file": "resources/41-src_pages_Home_Benchmark.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/CallToAction.tsx?t=1782148232961",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 10527,
+      "sha256": "f2637024c4575180910f8e9a62b888b41361e652b939b366df37e5e4dde9f32c",
+      "file": "resources/42-src_pages_Home_CallToAction.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/TypeSafety.tsx?t=1782148205115",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9170,
+      "sha256": "80aeca3f28f3205e64b7ccf9b68fd062ee147948067f98fa6f319f435ff4e1c0",
+      "file": "resources/43-src_pages_Home_TypeSafety.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Guarantees.tsx?t=1782148307187",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 14318,
+      "sha256": "2ba50181da7c1d226772f502966ec30c2b06eca2a96b1081a427c88f35122640",
+      "file": "resources/44-src_pages_Home_Guarantees.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Architecture.tsx?t=1782148214500",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 26811,
+      "sha256": "e534a0b0096fde69bc0200d08c5b2e7ff70458ca0c660f2b91648e9d91b9c3e8",
+      "file": "resources/45-src_pages_Home_Architecture.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/Logo.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1222,
+      "sha256": "2303200c8ff8f51025713b415997ae4b2a9ddb07563a06e25d7ae5fe0cf0a883",
+      "file": "resources/46-src_components_Logo.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/CodeBlock.tsx?t=1782148164236",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 17021,
+      "sha256": "e8fee2179b2cd544f1181543aef4bb32531058ba2983a901c9bb39b2fa8381ad",
+      "file": "resources/47-src_components_CodeBlock.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/content/snippets.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 16091,
+      "sha256": "b0492e488bbea71325fd5562092732c5fc3c4b820790a481315645e1a5e66906",
+      "file": "resources/48-src_content_snippets.ts.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Pricing/Pricing.css?t=1782148255872",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4560,
+      "sha256": "f1163188f1f3c77eef399cbeeb88734e61f5693e6cfc81509c64b90d2d79055a",
+      "file": "resources/49-src_pages_Pricing_Pricing.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/DocPage.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 11594,
+      "sha256": "88f1beefb0b788384274e5b6a52e3c79a3ed56cc8a776d0457228aa78fe56519",
+      "file": "resources/50-src_pages_docs_DocPage.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/prose.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9124,
+      "sha256": "dbf3c7b2fee922d32c8ffbaee40ef860a6b4c8c298c96b9e8ec47e83ba047332",
+      "file": "resources/51-src_pages_docs_prose.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/Button.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2575,
+      "sha256": "3f34502653d2cd40e4f6a2ac929d94ae464edd556d2062c24e7b472b5a316c74",
+      "file": "resources/52-src_components_primitives_Button.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/Kbd.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 932,
+      "sha256": "56782a3477c0cbf93b3c62110f3b078a4c02ed15c7bb0c82ec3ade924e17cecf",
+      "file": "resources/53-src_components_primitives_Kbd.css.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/clsx.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 691,
+      "sha256": "dc1ca6045ab0a9a05f0201c0d01ae47934891d7841018b32bbbcc00f822f6e76",
+      "file": "resources/54-node_modules_.vite_deps_clsx.js.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/Pill.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1062,
+      "sha256": "225a027f1c8a5272ce03c15c74e1028b18545d62a629e17d9e682500a9329e20",
+      "file": "resources/55-src_components_primitives_Pill.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/LiveDemo.tsx?t=1782148126620",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 20125,
+      "sha256": "27dbdc1fad1c53b43b98d35973d59dd767d60203f6298c89be01842b918e8874",
+      "file": "resources/56-src_pages_Home_LiveDemo.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/LiveDot.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4834,
+      "sha256": "e73c61e9c3a2e5e6d903e4edefef1bbcdab38d3c8a6959d4aca61bf60f668761",
+      "file": "resources/57-src_components_primitives_LiveDot.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Hero.css?t=1782148600802",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3877,
+      "sha256": "70bc0fd9e0fa3cae739f6f00e066378930578f4155613d20b13ebef077cbc4ee",
+      "file": "resources/58-src_pages_Home_Hero.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Model.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1533,
+      "sha256": "bfc3c01a73762cd6101dde5611ec377bd8be4ee59a6e1beed8098859ef3b4dba",
+      "file": "resources/59-src_pages_Home_Model.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Benchmark.css?t=1782148262381",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3593,
+      "sha256": "45af664a5c42968c096212169c64e644ab7e678babd8291af2d9753cb37d8b47",
+      "file": "resources/60-src_pages_Home_Benchmark.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/CallToAction.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1811,
+      "sha256": "49ffabd10a016b40c7060eaf8664430695f82b384dd5763b34732f6447a1581c",
+      "file": "resources/61-src_pages_Home_CallToAction.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/TypeSafety.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1067,
+      "sha256": "d7747f12164f3c49ff2188166dea550520a22cc510846a3783d80a20eda8e1e0",
+      "file": "resources/62-src_pages_Home_TypeSafety.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Guarantees.css?t=1782148156479",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2665,
+      "sha256": "4da98ecc772c93b0803d395456ffaf416f8435cb50b19dac7bebd065a73787b9",
+      "file": "resources/63-src_pages_Home_Guarantees.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Architecture.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2950,
+      "sha256": "defe637ee220d7bdea8d4389dfd1e2e9f43bc2c0708df972de219abe7acb06c3",
+      "file": "resources/64-src_pages_Home_Architecture.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/CodeBlock.css?t=1782148164236",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3831,
+      "sha256": "536e883330fad591959b208289f0817bac02a89bcb60d821555fe00da6047feb",
+      "file": "resources/65-src_components_CodeBlock.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/lib/dedent.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2429,
+      "sha256": "cced55496725f68c2bb94f128cda4cd15bc483f923f66809ccddd947daec5ed8",
+      "file": "resources/66-src_lib_dedent.ts.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/LiveDemo.css?t=1782148126620",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4474,
+      "sha256": "86e5785217f3787c4b33c9347f7a58e9ca577af0dce3da19835d5cf4376cf687",
+      "file": "resources/67-src_pages_Home_LiveDemo.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/LiveDot.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1706,
+      "sha256": "3211145ca225777c7faa663d5b43b1070ab395494f6fbfd9fc786af058d78dbf",
+      "file": "resources/68-src_components_primitives_LiveDot.css.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_core.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2403,
+      "sha256": "eff60518ca126918636820a8f6c31553cb466208c8480227da5ce92349a112aa",
+      "file": "resources/69-node_modules_.vite_deps_shiki_core.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_engine_javascript.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 435,
+      "sha256": "cba46e26d618a4914d6b97ba963bd235042de7a8466c2b424330e809992ee5ef",
+      "file": "resources/70-node_modules_.vite_deps_shiki_engine_javascript.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_langs_typescript__mjs.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 258,
+      "sha256": "59685ff090ce0f4e98b8413899d942bb28eeb7e6542e1179437ed148646b2430",
+      "file": "resources/71-node_modules_.vite_deps_shiki_langs_typescript__mjs.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_langs_tsx__mjs.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 237,
+      "sha256": "ea7bf0b2d66489c86b0f73f5773928a8bd001d98e2ce604a908496fb9d80ce06",
+      "file": "resources/72-node_modules_.vite_deps_shiki_langs_tsx__mjs.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_langs_bash__mjs.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 254,
+      "sha256": "b6f6660528cb6288fef8aa26b7bbc97183956ed208fa23188556770adae4d3f3",
+      "file": "resources/73-node_modules_.vite_deps_shiki_langs_bash__mjs.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_langs_sql__mjs.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 237,
+      "sha256": "08c06dda1d6c58584331dc70cef0c4e70a6146a758b43701294eb2bd1eac737b",
+      "file": "resources/74-node_modules_.vite_deps_shiki_langs_sql__mjs.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_langs_json__mjs.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 240,
+      "sha256": "09f979291f5793305afc61dfbb074f90c50fcc0b7e6cfc1328cc1accb7bf458b",
+      "file": "resources/75-node_modules_.vite_deps_shiki_langs_json__mjs.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-ZPMFOPLE.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 250220,
+      "sha256": "c8d20f00e5dc8958ebe468a6106e96f09dc826e3b3aa88db11bd3234d9a1c56a",
+      "file": "resources/76-node_modules_.vite_deps_chunk-ZPMFOPLE.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-7KGCUYLU.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 120931,
+      "sha256": "030a52c31242da7c7f3b2471788e661d85f2672c13d0cfb464a6dc59b0e214d8",
+      "file": "resources/77-node_modules_.vite_deps_chunk-7KGCUYLU.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-225ZOSUH.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 209165,
+      "sha256": "8e98c6bdbe345e4c29c7b537d9fbf725c2fe20867826f406424f748d294c957e",
+      "file": "resources/78-node_modules_.vite_deps_chunk-225ZOSUH.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-OMHRIQUR.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3039,
+      "sha256": "9c8f9c52c80f40587d47879353275b245b3e5f1a16a08cf763b65dc004eb0efc",
+      "file": "resources/79-node_modules_.vite_deps_chunk-OMHRIQUR.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-KGL4C4JY.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 198872,
+      "sha256": "6e1c67d893dfabf4a020b395239f244e7643c09208c76c3bfd5e2d83f2859012",
+      "file": "resources/80-node_modules_.vite_deps_chunk-KGL4C4JY.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-KH5D6LT7.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 42857,
+      "sha256": "b30a0ead907dd9b61b89fa250e649b32f0125db910d19524ece8fcd5c921080e",
+      "file": "resources/81-node_modules_.vite_deps_chunk-KH5D6LT7.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-NGGKY7UN.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 24440,
+      "sha256": "f50e7cb0b6c7b0f7b929b5d26ae1dbff7c982a55afc9d1d5d0601bd05ab608e7",
+      "file": "resources/82-node_modules_.vite_deps_chunk-NGGKY7UN.js.js"
+    },
+    {
+      "url": "http://localhost:5180/docs/quickstart",
+      "status": 200,
+      "resourceType": "document",
+      "contentType": "text/html",
+      "bytes": 1424,
+      "sha256": "b618719f4333e42be77adef1b3fb1faf31522d3fc8c98b9611333130efc8f2aa",
+      "file": "resources/83-docs_quickstart.html"
+    },
+    {
+      "url": "http://localhost:5180/src/main.tsx?t=1782148600802",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3236,
+      "sha256": "daa05be5effc608dde7f1cd8826c5e39a8d8232c548034b5239e770560a5a7e6",
+      "file": "resources/84-src_main.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/@vite/client",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 137703,
+      "sha256": "52088668680011ada6acd563a938159b4230543c51e0831a603c7be6bf3d93a5",
+      "file": "resources/85-_vite_client.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 37035,
+      "sha256": "8da7daff69af0ea10f482f77ca5e2a7901accc19a3c5edd44fe3fb270e7db59d",
+      "file": "resources/86-node_modules_.vite_deps_react_jsx-dev-runtime.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/react.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 219,
+      "sha256": "9c2862cedff6577b22b50d13e49f683c4897c70d0fa985b5e90e84ddc8d1354d",
+      "file": "resources/87-node_modules_.vite_deps_react.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/react-dom_client.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1118,
+      "sha256": "1527a56d82ae1d4e0822a3514ee99d6556d975c8396228da931fabc726dd5c3e",
+      "file": "resources/88-node_modules_.vite_deps_react-dom_client.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/react-router-dom.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 209661,
+      "sha256": "220acffe2c990559bed5b87ca59b76d2208944f219345de5002784495975318d",
+      "file": "resources/89-node_modules_.vite_deps_react-router-dom.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-4AFIVRCK.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 77818,
+      "sha256": "6cf41b2cda041f0f8d61ce81f467657854d0f579d106d4ce7bc30212f1258b88",
+      "file": "resources/90-node_modules_.vite_deps_chunk-4AFIVRCK.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-DP4XHQAG.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2542,
+      "sha256": "3194d9d2ee50ee8867f0e8b0a094b9e3f50241fb5ff4caa262da2852cd061dd0",
+      "file": "resources/91-node_modules_.vite_deps_chunk-DP4XHQAG.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-3ZJ2S23Y.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 928095,
+      "sha256": "d3a0d5ce1257f2facc78e9b19c64576ea083bb78847a96683f25d562ec0aaf52",
+      "file": "resources/92-node_modules_.vite_deps_chunk-3ZJ2S23Y.js.js"
+    },
+    {
+      "url": "http://localhost:5180/@react-refresh",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 117548,
+      "sha256": "39f29d0992fa297d5eb610e097febb02dbaf5663c746be93268daf64414fb9b8",
+      "file": "resources/93-_react-refresh.js"
+    },
+    {
+      "url": "http://localhost:5180/src/App.tsx?t=1782148600802",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 23048,
+      "sha256": "e3e45211b60b845da7f5c11f03c97bb2e94fd6d01be87481453f2689a7c944a8",
+      "file": "resources/94-src_App.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/styles/global.css?t=1782148094005",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 19413,
+      "sha256": "4f3db390ac9095d86fe50b72bac6d0639515603ed88abcae17a89487bbde55c3",
+      "file": "resources/95-src_styles_global.css.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/vite/dist/client/env.mjs",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4021,
+      "sha256": "9d6cb716911e93c84d69aac1fc482d3d41150b0f3bd7c8f9402057ee4d363804",
+      "file": "resources/96-node_modules_vite_dist_client_env.mjs.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/SiteHeader.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 24557,
+      "sha256": "db79030557dce28766c05099421406912593e89686a6681bac3672aa2f6d64a6",
+      "file": "resources/97-src_components_SiteHeader.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/SiteFooter.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 17504,
+      "sha256": "25fbdbdd5af06091d398b7691e321a8e590ad0abbc038f5154a057b56fe92bf2",
+      "file": "resources/98-src_components_SiteFooter.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/CommandMenu.tsx?t=1782147181674",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 37130,
+      "sha256": "366028257d003ee1e15ec6db69f6213476e239b392394574cf5d22f35a25ab35",
+      "file": "resources/99-src_components_CommandMenu.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/index.tsx?t=1782148600802",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 7157,
+      "sha256": "55c3ada450e280177ada61ac5d46d95728c2aadeb4a8969080574f670bf28724",
+      "file": "resources/100-src_pages_Home_index.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/NotFound.tsx?t=1782147054858",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 10699,
+      "sha256": "25198710dc2bd9363bf4a003a10f70b980275075b9683980b5666170a4f50de3",
+      "file": "resources/101-src_pages_NotFound.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Pricing/index.tsx?t=1782148316363",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 27042,
+      "sha256": "81696cf95ed26ed971e0b19a3fd9c7faff852b8d040ed092e2938408af2a419d",
+      "file": "resources/102-src_pages_Pricing_index.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/DocsLayout.tsx?t=1782146817165",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 20295,
+      "sha256": "24464d4ae720fc65c4b4b645fea2d70ba00d0c0a218bd313450e3e061ddbf843",
+      "file": "resources/103-src_pages_docs_DocsLayout.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/Quickstart.tsx?t=1782148164236",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 22661,
+      "sha256": "c3373d5ed02fef6bb5f81c41e9104f3bfe831c5a5505baa77f35fbfc646ea0bc",
+      "file": "resources/104-src_pages_docs_Quickstart.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/LiveQueries.tsx?t=1782148164236",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 23862,
+      "sha256": "60a6731355eeacbbe32fbe5ace956b8a7768932a1bcaba4f8e7f8d7d8dd19432",
+      "file": "resources/105-src_pages_docs_LiveQueries.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/SchemaAndTypes.tsx?t=1782148164236",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 27237,
+      "sha256": "c6c23dafbfd32263093b350522510bfe7a5f1e1a05d926113fff29eb392d53c7",
+      "file": "resources/106-src_pages_docs_SchemaAndTypes.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/Logo.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 6860,
+      "sha256": "5589541630a46fef2b66c2d29c9fdea59e3e31d6e7b88184eb4d21867389fa69",
+      "file": "resources/107-src_components_Logo.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/Button.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9109,
+      "sha256": "d8d502fa15f0e7e3dddaf74eae3e03cb4d37b4ef48bc8d164b82964dd106780e",
+      "file": "resources/108-src_components_primitives_Button.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/Kbd.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3276,
+      "sha256": "d7e2db79aa48f9b4971f3cf00ec98951695d1ce9637de2a96af3643012fbeb1b",
+      "file": "resources/109-src_components_primitives_Kbd.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/lib/cn.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 648,
+      "sha256": "8d7fe8123d07681cfd82187788f21992de17b14350ccc6f80b8b2fae635845f4",
+      "file": "resources/110-src_lib_cn.ts.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/icons.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 26970,
+      "sha256": "2f8ae3abda0ac64d24ca5685f2c2a85f5f7080fecac97ba87761f71b3a45b8ab",
+      "file": "resources/111-src_components_icons.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/SiteHeader.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4334,
+      "sha256": "5fdfac4aab618117fa01d8dda755600246a6c5918d32c8f300d90190ab5fba5a",
+      "file": "resources/112-src_components_SiteHeader.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/Pill.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3480,
+      "sha256": "6a65787b80c08d14447443152e79d971d07cbd5bf8fb812924b39f329ecb70d2",
+      "file": "resources/113-src_components_primitives_Pill.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/SiteFooter.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2653,
+      "sha256": "5c4e091fd6edb87f6541401fbb3ccca8f837f241ce6bcaf3f38c01adeaa5cb4b",
+      "file": "resources/114-src_components_SiteFooter.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/CommandMenu.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4358,
+      "sha256": "999076d9cbbf0bbcf23ffff6eaa53f6f6d7cdcaec56d622e8cddbadba536edbe",
+      "file": "resources/115-src_components_CommandMenu.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/lib/useDocumentTitle.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1184,
+      "sha256": "67bd3579dab14cfb2ac38ce0d80842a58edd7ba5ea5eac7bfc0212d17ca87899",
+      "file": "resources/116-src_lib_useDocumentTitle.ts.js"
+    },
+    {
+      "url": "http://localhost:5180/src/lib/highlighter.ts?t=1782147268904",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 13756,
+      "sha256": "6ab5d4a21afb6b8baa1f92a0c865ac6b095bae32f5d0d080aa10eacad0eab479",
+      "file": "resources/117-src_lib_highlighter.ts.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Hero.tsx?t=1782148600802",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 16282,
+      "sha256": "050e02fe60af77d2803eb012d10108da4d6d4b192e847d014276263956af5ac5",
+      "file": "resources/118-src_pages_Home_Hero.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Model.tsx?t=1782148194700",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 12805,
+      "sha256": "3ed2e64b100f3638adfd705177033fbb7c5720f7a8b5430bf25173d83c25dbb4",
+      "file": "resources/119-src_pages_Home_Model.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Guarantees.tsx?t=1782148307187",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 14318,
+      "sha256": "2ba50181da7c1d226772f502966ec30c2b06eca2a96b1081a427c88f35122640",
+      "file": "resources/120-src_pages_Home_Guarantees.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/TypeSafety.tsx?t=1782148205115",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9170,
+      "sha256": "80aeca3f28f3205e64b7ccf9b68fd062ee147948067f98fa6f319f435ff4e1c0",
+      "file": "resources/121-src_pages_Home_TypeSafety.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Architecture.tsx?t=1782148214500",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 26811,
+      "sha256": "e534a0b0096fde69bc0200d08c5b2e7ff70458ca0c660f2b91648e9d91b9c3e8",
+      "file": "resources/122-src_pages_Home_Architecture.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Benchmark.tsx?t=1782148262381",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 20161,
+      "sha256": "92c5283624898a02b681a2ba5562eb2549075681cc01e5bd5858fd9ca31cdbc0",
+      "file": "resources/123-src_pages_Home_Benchmark.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/CallToAction.tsx?t=1782148232961",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 10527,
+      "sha256": "f2637024c4575180910f8e9a62b888b41361e652b939b366df37e5e4dde9f32c",
+      "file": "resources/124-src_pages_Home_CallToAction.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/NotFound.css?t=1782147054858",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1860,
+      "sha256": "b31bcc8c44e4e360dfdd5742d9ba9ee29b14b121d5d56a2247bbd92232cea0a3",
+      "file": "resources/125-src_pages_NotFound.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Pricing/Pricing.css?t=1782148255872",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4560,
+      "sha256": "f1163188f1f3c77eef399cbeeb88734e61f5693e6cfc81509c64b90d2d79055a",
+      "file": "resources/126-src_pages_Pricing_Pricing.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/nav.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3475,
+      "sha256": "e077ca35c80f2cd68c3bf52faf8b6376afabda3bcb78e48c0cd55dce45d9dfb4",
+      "file": "resources/127-src_pages_docs_nav.ts.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/Docs.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9283,
+      "sha256": "649a029f4b051dc83bc1475eb0479d5adb6dafcaf8e9e3f993afa7868a2d8c20",
+      "file": "resources/128-src_pages_docs_Docs.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/CodeBlock.tsx?t=1782148164236",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 17021,
+      "sha256": "e8fee2179b2cd544f1181543aef4bb32531058ba2983a901c9bb39b2fa8381ad",
+      "file": "resources/129-src_components_CodeBlock.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/content/snippets.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 16091,
+      "sha256": "b0492e488bbea71325fd5562092732c5fc3c4b820790a481315645e1a5e66906",
+      "file": "resources/130-src_content_snippets.ts.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/DocPage.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 11594,
+      "sha256": "88f1beefb0b788384274e5b6a52e3c79a3ed56cc8a776d0457228aa78fe56519",
+      "file": "resources/131-src_pages_docs_DocPage.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/prose.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9124,
+      "sha256": "dbf3c7b2fee922d32c8ffbaee40ef860a6b4c8c298c96b9e8ec47e83ba047332",
+      "file": "resources/132-src_pages_docs_prose.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/clsx.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 691,
+      "sha256": "dc1ca6045ab0a9a05f0201c0d01ae47934891d7841018b32bbbcc00f822f6e76",
+      "file": "resources/133-node_modules_.vite_deps_clsx.js.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/Logo.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1222,
+      "sha256": "2303200c8ff8f51025713b415997ae4b2a9ddb07563a06e25d7ae5fe0cf0a883",
+      "file": "resources/134-src_components_Logo.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/Button.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2575,
+      "sha256": "3f34502653d2cd40e4f6a2ac929d94ae464edd556d2062c24e7b472b5a316c74",
+      "file": "resources/135-src_components_primitives_Button.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/Kbd.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 932,
+      "sha256": "56782a3477c0cbf93b3c62110f3b078a4c02ed15c7bb0c82ec3ade924e17cecf",
+      "file": "resources/136-src_components_primitives_Kbd.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/Pill.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1062,
+      "sha256": "225a027f1c8a5272ce03c15c74e1028b18545d62a629e17d9e682500a9329e20",
+      "file": "resources/137-src_components_primitives_Pill.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/LiveDot.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4834,
+      "sha256": "e73c61e9c3a2e5e6d903e4edefef1bbcdab38d3c8a6959d4aca61bf60f668761",
+      "file": "resources/138-src_components_primitives_LiveDot.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/LiveDemo.tsx?t=1782148126620",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 20125,
+      "sha256": "27dbdc1fad1c53b43b98d35973d59dd767d60203f6298c89be01842b918e8874",
+      "file": "resources/139-src_pages_Home_LiveDemo.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Hero.css?t=1782148600802",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3877,
+      "sha256": "70bc0fd9e0fa3cae739f6f00e066378930578f4155613d20b13ebef077cbc4ee",
+      "file": "resources/140-src_pages_Home_Hero.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Model.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1533,
+      "sha256": "bfc3c01a73762cd6101dde5611ec377bd8be4ee59a6e1beed8098859ef3b4dba",
+      "file": "resources/141-src_pages_Home_Model.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Guarantees.css?t=1782148156479",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2665,
+      "sha256": "4da98ecc772c93b0803d395456ffaf416f8435cb50b19dac7bebd065a73787b9",
+      "file": "resources/142-src_pages_Home_Guarantees.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/TypeSafety.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1067,
+      "sha256": "d7747f12164f3c49ff2188166dea550520a22cc510846a3783d80a20eda8e1e0",
+      "file": "resources/143-src_pages_Home_TypeSafety.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Architecture.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2950,
+      "sha256": "defe637ee220d7bdea8d4389dfd1e2e9f43bc2c0708df972de219abe7acb06c3",
+      "file": "resources/144-src_pages_Home_Architecture.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Benchmark.css?t=1782148262381",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3593,
+      "sha256": "45af664a5c42968c096212169c64e644ab7e678babd8291af2d9753cb37d8b47",
+      "file": "resources/145-src_pages_Home_Benchmark.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/CallToAction.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1811,
+      "sha256": "49ffabd10a016b40c7060eaf8664430695f82b384dd5763b34732f6447a1581c",
+      "file": "resources/146-src_pages_Home_CallToAction.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/CodeBlock.css?t=1782148164236",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3831,
+      "sha256": "536e883330fad591959b208289f0817bac02a89bcb60d821555fe00da6047feb",
+      "file": "resources/147-src_components_CodeBlock.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/lib/dedent.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2429,
+      "sha256": "cced55496725f68c2bb94f128cda4cd15bc483f923f66809ccddd947daec5ed8",
+      "file": "resources/148-src_lib_dedent.ts.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/LiveDot.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1706,
+      "sha256": "3211145ca225777c7faa663d5b43b1070ab395494f6fbfd9fc786af058d78dbf",
+      "file": "resources/149-src_components_primitives_LiveDot.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/LiveDemo.css?t=1782148126620",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4474,
+      "sha256": "86e5785217f3787c4b33c9347f7a58e9ca577af0dce3da19835d5cf4376cf687",
+      "file": "resources/150-src_pages_Home_LiveDemo.css.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_core.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2403,
+      "sha256": "eff60518ca126918636820a8f6c31553cb466208c8480227da5ce92349a112aa",
+      "file": "resources/151-node_modules_.vite_deps_shiki_core.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_engine_javascript.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 435,
+      "sha256": "cba46e26d618a4914d6b97ba963bd235042de7a8466c2b424330e809992ee5ef",
+      "file": "resources/152-node_modules_.vite_deps_shiki_engine_javascript.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_langs_typescript__mjs.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 258,
+      "sha256": "59685ff090ce0f4e98b8413899d942bb28eeb7e6542e1179437ed148646b2430",
+      "file": "resources/153-node_modules_.vite_deps_shiki_langs_typescript__mjs.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_langs_tsx__mjs.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 237,
+      "sha256": "ea7bf0b2d66489c86b0f73f5773928a8bd001d98e2ce604a908496fb9d80ce06",
+      "file": "resources/154-node_modules_.vite_deps_shiki_langs_tsx__mjs.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_langs_bash__mjs.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 254,
+      "sha256": "b6f6660528cb6288fef8aa26b7bbc97183956ed208fa23188556770adae4d3f3",
+      "file": "resources/155-node_modules_.vite_deps_shiki_langs_bash__mjs.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_langs_sql__mjs.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 237,
+      "sha256": "08c06dda1d6c58584331dc70cef0c4e70a6146a758b43701294eb2bd1eac737b",
+      "file": "resources/156-node_modules_.vite_deps_shiki_langs_sql__mjs.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_langs_json__mjs.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 240,
+      "sha256": "09f979291f5793305afc61dfbb074f90c50fcc0b7e6cfc1328cc1accb7bf458b",
+      "file": "resources/157-node_modules_.vite_deps_shiki_langs_json__mjs.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-ZPMFOPLE.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 250220,
+      "sha256": "c8d20f00e5dc8958ebe468a6106e96f09dc826e3b3aa88db11bd3234d9a1c56a",
+      "file": "resources/158-node_modules_.vite_deps_chunk-ZPMFOPLE.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-7KGCUYLU.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 120931,
+      "sha256": "030a52c31242da7c7f3b2471788e661d85f2672c13d0cfb464a6dc59b0e214d8",
+      "file": "resources/159-node_modules_.vite_deps_chunk-7KGCUYLU.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-225ZOSUH.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 209165,
+      "sha256": "8e98c6bdbe345e4c29c7b537d9fbf725c2fe20867826f406424f748d294c957e",
+      "file": "resources/160-node_modules_.vite_deps_chunk-225ZOSUH.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-KGL4C4JY.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 198872,
+      "sha256": "6e1c67d893dfabf4a020b395239f244e7643c09208c76c3bfd5e2d83f2859012",
+      "file": "resources/161-node_modules_.vite_deps_chunk-KGL4C4JY.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-KH5D6LT7.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 42857,
+      "sha256": "b30a0ead907dd9b61b89fa250e649b32f0125db910d19524ece8fcd5c921080e",
+      "file": "resources/162-node_modules_.vite_deps_chunk-KH5D6LT7.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-NGGKY7UN.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 24440,
+      "sha256": "f50e7cb0b6c7b0f7b929b5d26ae1dbff7c982a55afc9d1d5d0601bd05ab608e7",
+      "file": "resources/163-node_modules_.vite_deps_chunk-NGGKY7UN.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-OMHRIQUR.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3039,
+      "sha256": "9c8f9c52c80f40587d47879353275b245b3e5f1a16a08cf763b65dc004eb0efc",
+      "file": "resources/164-node_modules_.vite_deps_chunk-OMHRIQUR.js.js"
+    },
+    {
+      "url": "http://localhost:5180/docs/quickstart",
+      "status": 200,
+      "resourceType": "document",
+      "contentType": "text/html",
+      "bytes": 1424,
+      "sha256": "b618719f4333e42be77adef1b3fb1faf31522d3fc8c98b9611333130efc8f2aa",
+      "file": "resources/165-docs_quickstart.html"
+    },
+    {
+      "url": "http://localhost:5180/src/main.tsx?t=1782148600802",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3236,
+      "sha256": "daa05be5effc608dde7f1cd8826c5e39a8d8232c548034b5239e770560a5a7e6",
+      "file": "resources/166-src_main.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 37035,
+      "sha256": "8da7daff69af0ea10f482f77ca5e2a7901accc19a3c5edd44fe3fb270e7db59d",
+      "file": "resources/167-node_modules_.vite_deps_react_jsx-dev-runtime.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/react.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 219,
+      "sha256": "9c2862cedff6577b22b50d13e49f683c4897c70d0fa985b5e90e84ddc8d1354d",
+      "file": "resources/168-node_modules_.vite_deps_react.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/react-dom_client.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1118,
+      "sha256": "1527a56d82ae1d4e0822a3514ee99d6556d975c8396228da931fabc726dd5c3e",
+      "file": "resources/169-node_modules_.vite_deps_react-dom_client.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/react-router-dom.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 209661,
+      "sha256": "220acffe2c990559bed5b87ca59b76d2208944f219345de5002784495975318d",
+      "file": "resources/170-node_modules_.vite_deps_react-router-dom.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-4AFIVRCK.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 77818,
+      "sha256": "6cf41b2cda041f0f8d61ce81f467657854d0f579d106d4ce7bc30212f1258b88",
+      "file": "resources/171-node_modules_.vite_deps_chunk-4AFIVRCK.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-DP4XHQAG.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2542,
+      "sha256": "3194d9d2ee50ee8867f0e8b0a094b9e3f50241fb5ff4caa262da2852cd061dd0",
+      "file": "resources/172-node_modules_.vite_deps_chunk-DP4XHQAG.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-3ZJ2S23Y.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 928095,
+      "sha256": "d3a0d5ce1257f2facc78e9b19c64576ea083bb78847a96683f25d562ec0aaf52",
+      "file": "resources/173-node_modules_.vite_deps_chunk-3ZJ2S23Y.js.js"
+    },
+    {
+      "url": "http://localhost:5180/@vite/client",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 137703,
+      "sha256": "52088668680011ada6acd563a938159b4230543c51e0831a603c7be6bf3d93a5",
+      "file": "resources/174-_vite_client.js"
+    },
+    {
+      "url": "http://localhost:5180/@react-refresh",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 117548,
+      "sha256": "39f29d0992fa297d5eb610e097febb02dbaf5663c746be93268daf64414fb9b8",
+      "file": "resources/175-_react-refresh.js"
+    },
+    {
+      "url": "http://localhost:5180/src/styles/global.css?t=1782148094005",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 19413,
+      "sha256": "4f3db390ac9095d86fe50b72bac6d0639515603ed88abcae17a89487bbde55c3",
+      "file": "resources/176-src_styles_global.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/App.tsx?t=1782148600802",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 23048,
+      "sha256": "e3e45211b60b845da7f5c11f03c97bb2e94fd6d01be87481453f2689a7c944a8",
+      "file": "resources/177-src_App.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/vite/dist/client/env.mjs",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4021,
+      "sha256": "9d6cb716911e93c84d69aac1fc482d3d41150b0f3bd7c8f9402057ee4d363804",
+      "file": "resources/178-node_modules_vite_dist_client_env.mjs.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/SiteHeader.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 24557,
+      "sha256": "db79030557dce28766c05099421406912593e89686a6681bac3672aa2f6d64a6",
+      "file": "resources/179-src_components_SiteHeader.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/SiteFooter.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 17504,
+      "sha256": "25fbdbdd5af06091d398b7691e321a8e590ad0abbc038f5154a057b56fe92bf2",
+      "file": "resources/180-src_components_SiteFooter.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/CommandMenu.tsx?t=1782147181674",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 37130,
+      "sha256": "366028257d003ee1e15ec6db69f6213476e239b392394574cf5d22f35a25ab35",
+      "file": "resources/181-src_components_CommandMenu.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/index.tsx?t=1782148600802",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 7157,
+      "sha256": "55c3ada450e280177ada61ac5d46d95728c2aadeb4a8969080574f670bf28724",
+      "file": "resources/182-src_pages_Home_index.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Pricing/index.tsx?t=1782148316363",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 27042,
+      "sha256": "81696cf95ed26ed971e0b19a3fd9c7faff852b8d040ed092e2938408af2a419d",
+      "file": "resources/183-src_pages_Pricing_index.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/NotFound.tsx?t=1782147054858",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 10699,
+      "sha256": "25198710dc2bd9363bf4a003a10f70b980275075b9683980b5666170a4f50de3",
+      "file": "resources/184-src_pages_NotFound.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/DocsLayout.tsx?t=1782146817165",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 20295,
+      "sha256": "24464d4ae720fc65c4b4b645fea2d70ba00d0c0a218bd313450e3e061ddbf843",
+      "file": "resources/185-src_pages_docs_DocsLayout.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/Quickstart.tsx?t=1782148164236",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 22661,
+      "sha256": "c3373d5ed02fef6bb5f81c41e9104f3bfe831c5a5505baa77f35fbfc646ea0bc",
+      "file": "resources/186-src_pages_docs_Quickstart.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/LiveQueries.tsx?t=1782148164236",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 23862,
+      "sha256": "60a6731355eeacbbe32fbe5ace956b8a7768932a1bcaba4f8e7f8d7d8dd19432",
+      "file": "resources/187-src_pages_docs_LiveQueries.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/SchemaAndTypes.tsx?t=1782148164236",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 27237,
+      "sha256": "c6c23dafbfd32263093b350522510bfe7a5f1e1a05d926113fff29eb392d53c7",
+      "file": "resources/188-src_pages_docs_SchemaAndTypes.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/Logo.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 6860,
+      "sha256": "5589541630a46fef2b66c2d29c9fdea59e3e31d6e7b88184eb4d21867389fa69",
+      "file": "resources/189-src_components_Logo.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/Button.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9109,
+      "sha256": "d8d502fa15f0e7e3dddaf74eae3e03cb4d37b4ef48bc8d164b82964dd106780e",
+      "file": "resources/190-src_components_primitives_Button.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/Kbd.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3276,
+      "sha256": "d7e2db79aa48f9b4971f3cf00ec98951695d1ce9637de2a96af3643012fbeb1b",
+      "file": "resources/191-src_components_primitives_Kbd.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/lib/cn.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 648,
+      "sha256": "8d7fe8123d07681cfd82187788f21992de17b14350ccc6f80b8b2fae635845f4",
+      "file": "resources/192-src_lib_cn.ts.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/icons.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 26970,
+      "sha256": "2f8ae3abda0ac64d24ca5685f2c2a85f5f7080fecac97ba87761f71b3a45b8ab",
+      "file": "resources/193-src_components_icons.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/SiteHeader.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4334,
+      "sha256": "5fdfac4aab618117fa01d8dda755600246a6c5918d32c8f300d90190ab5fba5a",
+      "file": "resources/194-src_components_SiteHeader.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/SiteFooter.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2653,
+      "sha256": "5c4e091fd6edb87f6541401fbb3ccca8f837f241ce6bcaf3f38c01adeaa5cb4b",
+      "file": "resources/195-src_components_SiteFooter.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/Pill.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3480,
+      "sha256": "6a65787b80c08d14447443152e79d971d07cbd5bf8fb812924b39f329ecb70d2",
+      "file": "resources/196-src_components_primitives_Pill.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/clsx.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 691,
+      "sha256": "dc1ca6045ab0a9a05f0201c0d01ae47934891d7841018b32bbbcc00f822f6e76",
+      "file": "resources/197-node_modules_.vite_deps_clsx.js.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/CommandMenu.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4358,
+      "sha256": "999076d9cbbf0bbcf23ffff6eaa53f6f6d7cdcaec56d622e8cddbadba536edbe",
+      "file": "resources/198-src_components_CommandMenu.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/lib/useDocumentTitle.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1184,
+      "sha256": "67bd3579dab14cfb2ac38ce0d80842a58edd7ba5ea5eac7bfc0212d17ca87899",
+      "file": "resources/199-src_lib_useDocumentTitle.ts.js"
+    },
+    {
+      "url": "http://localhost:5180/src/lib/highlighter.ts?t=1782147268904",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 13756,
+      "sha256": "6ab5d4a21afb6b8baa1f92a0c865ac6b095bae32f5d0d080aa10eacad0eab479",
+      "file": "resources/200-src_lib_highlighter.ts.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Hero.tsx?t=1782148600802",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 16282,
+      "sha256": "050e02fe60af77d2803eb012d10108da4d6d4b192e847d014276263956af5ac5",
+      "file": "resources/201-src_pages_Home_Hero.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Model.tsx?t=1782148194700",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 12805,
+      "sha256": "3ed2e64b100f3638adfd705177033fbb7c5720f7a8b5430bf25173d83c25dbb4",
+      "file": "resources/202-src_pages_Home_Model.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Guarantees.tsx?t=1782148307187",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 14318,
+      "sha256": "2ba50181da7c1d226772f502966ec30c2b06eca2a96b1081a427c88f35122640",
+      "file": "resources/203-src_pages_Home_Guarantees.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/TypeSafety.tsx?t=1782148205115",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9170,
+      "sha256": "80aeca3f28f3205e64b7ccf9b68fd062ee147948067f98fa6f319f435ff4e1c0",
+      "file": "resources/204-src_pages_Home_TypeSafety.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Architecture.tsx?t=1782148214500",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 26811,
+      "sha256": "e534a0b0096fde69bc0200d08c5b2e7ff70458ca0c660f2b91648e9d91b9c3e8",
+      "file": "resources/205-src_pages_Home_Architecture.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Benchmark.tsx?t=1782148262381",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 20161,
+      "sha256": "92c5283624898a02b681a2ba5562eb2549075681cc01e5bd5858fd9ca31cdbc0",
+      "file": "resources/206-src_pages_Home_Benchmark.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/CallToAction.tsx?t=1782148232961",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 10527,
+      "sha256": "f2637024c4575180910f8e9a62b888b41361e652b939b366df37e5e4dde9f32c",
+      "file": "resources/207-src_pages_Home_CallToAction.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Pricing/Pricing.css?t=1782148255872",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4560,
+      "sha256": "f1163188f1f3c77eef399cbeeb88734e61f5693e6cfc81509c64b90d2d79055a",
+      "file": "resources/208-src_pages_Pricing_Pricing.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/NotFound.css?t=1782147054858",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1860,
+      "sha256": "b31bcc8c44e4e360dfdd5742d9ba9ee29b14b121d5d56a2247bbd92232cea0a3",
+      "file": "resources/209-src_pages_NotFound.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/Docs.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9283,
+      "sha256": "649a029f4b051dc83bc1475eb0479d5adb6dafcaf8e9e3f993afa7868a2d8c20",
+      "file": "resources/210-src_pages_docs_Docs.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/CodeBlock.tsx?t=1782148164236",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 17021,
+      "sha256": "e8fee2179b2cd544f1181543aef4bb32531058ba2983a901c9bb39b2fa8381ad",
+      "file": "resources/211-src_components_CodeBlock.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/content/snippets.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 16091,
+      "sha256": "b0492e488bbea71325fd5562092732c5fc3c4b820790a481315645e1a5e66906",
+      "file": "resources/212-src_content_snippets.ts.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/DocPage.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 11594,
+      "sha256": "88f1beefb0b788384274e5b6a52e3c79a3ed56cc8a776d0457228aa78fe56519",
+      "file": "resources/213-src_pages_docs_DocPage.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/nav.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3475,
+      "sha256": "e077ca35c80f2cd68c3bf52faf8b6376afabda3bcb78e48c0cd55dce45d9dfb4",
+      "file": "resources/214-src_pages_docs_nav.ts.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/Logo.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1222,
+      "sha256": "2303200c8ff8f51025713b415997ae4b2a9ddb07563a06e25d7ae5fe0cf0a883",
+      "file": "resources/215-src_components_Logo.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/Button.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2575,
+      "sha256": "3f34502653d2cd40e4f6a2ac929d94ae464edd556d2062c24e7b472b5a316c74",
+      "file": "resources/216-src_components_primitives_Button.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/Kbd.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 932,
+      "sha256": "56782a3477c0cbf93b3c62110f3b078a4c02ed15c7bb0c82ec3ade924e17cecf",
+      "file": "resources/217-src_components_primitives_Kbd.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/Pill.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1062,
+      "sha256": "225a027f1c8a5272ce03c15c74e1028b18545d62a629e17d9e682500a9329e20",
+      "file": "resources/218-src_components_primitives_Pill.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/docs/prose.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9124,
+      "sha256": "dbf3c7b2fee922d32c8ffbaee40ef860a6b4c8c298c96b9e8ec47e83ba047332",
+      "file": "resources/219-src_pages_docs_prose.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/LiveDemo.tsx?t=1782148126620",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 20125,
+      "sha256": "27dbdc1fad1c53b43b98d35973d59dd767d60203f6298c89be01842b918e8874",
+      "file": "resources/220-src_pages_Home_LiveDemo.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Hero.css?t=1782148600802",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3877,
+      "sha256": "70bc0fd9e0fa3cae739f6f00e066378930578f4155613d20b13ebef077cbc4ee",
+      "file": "resources/221-src_pages_Home_Hero.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/LiveDot.tsx",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4834,
+      "sha256": "e73c61e9c3a2e5e6d903e4edefef1bbcdab38d3c8a6959d4aca61bf60f668761",
+      "file": "resources/222-src_components_primitives_LiveDot.tsx.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Architecture.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2950,
+      "sha256": "defe637ee220d7bdea8d4389dfd1e2e9f43bc2c0708df972de219abe7acb06c3",
+      "file": "resources/223-src_pages_Home_Architecture.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Model.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1533,
+      "sha256": "bfc3c01a73762cd6101dde5611ec377bd8be4ee59a6e1beed8098859ef3b4dba",
+      "file": "resources/224-src_pages_Home_Model.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Guarantees.css?t=1782148156479",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2665,
+      "sha256": "4da98ecc772c93b0803d395456ffaf416f8435cb50b19dac7bebd065a73787b9",
+      "file": "resources/225-src_pages_Home_Guarantees.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/TypeSafety.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1067,
+      "sha256": "d7747f12164f3c49ff2188166dea550520a22cc510846a3783d80a20eda8e1e0",
+      "file": "resources/226-src_pages_Home_TypeSafety.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/Benchmark.css?t=1782148262381",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3593,
+      "sha256": "45af664a5c42968c096212169c64e644ab7e678babd8291af2d9753cb37d8b47",
+      "file": "resources/227-src_pages_Home_Benchmark.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/CallToAction.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1811,
+      "sha256": "49ffabd10a016b40c7060eaf8664430695f82b384dd5763b34732f6447a1581c",
+      "file": "resources/228-src_pages_Home_CallToAction.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/CodeBlock.css?t=1782148164236",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3831,
+      "sha256": "536e883330fad591959b208289f0817bac02a89bcb60d821555fe00da6047feb",
+      "file": "resources/229-src_components_CodeBlock.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/pages/Home/LiveDemo.css?t=1782148126620",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4474,
+      "sha256": "86e5785217f3787c4b33c9347f7a58e9ca577af0dce3da19835d5cf4376cf687",
+      "file": "resources/230-src_pages_Home_LiveDemo.css.js"
+    },
+    {
+      "url": "http://localhost:5180/src/lib/dedent.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2429,
+      "sha256": "cced55496725f68c2bb94f128cda4cd15bc483f923f66809ccddd947daec5ed8",
+      "file": "resources/231-src_lib_dedent.ts.js"
+    },
+    {
+      "url": "http://localhost:5180/src/components/primitives/LiveDot.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1706,
+      "sha256": "3211145ca225777c7faa663d5b43b1070ab395494f6fbfd9fc786af058d78dbf",
+      "file": "resources/232-src_components_primitives_LiveDot.css.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_core.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2403,
+      "sha256": "eff60518ca126918636820a8f6c31553cb466208c8480227da5ce92349a112aa",
+      "file": "resources/233-node_modules_.vite_deps_shiki_core.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_engine_javascript.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 435,
+      "sha256": "cba46e26d618a4914d6b97ba963bd235042de7a8466c2b424330e809992ee5ef",
+      "file": "resources/234-node_modules_.vite_deps_shiki_engine_javascript.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_langs_typescript__mjs.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 258,
+      "sha256": "59685ff090ce0f4e98b8413899d942bb28eeb7e6542e1179437ed148646b2430",
+      "file": "resources/235-node_modules_.vite_deps_shiki_langs_typescript__mjs.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_langs_tsx__mjs.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 237,
+      "sha256": "ea7bf0b2d66489c86b0f73f5773928a8bd001d98e2ce604a908496fb9d80ce06",
+      "file": "resources/236-node_modules_.vite_deps_shiki_langs_tsx__mjs.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_langs_bash__mjs.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 254,
+      "sha256": "b6f6660528cb6288fef8aa26b7bbc97183956ed208fa23188556770adae4d3f3",
+      "file": "resources/237-node_modules_.vite_deps_shiki_langs_bash__mjs.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_langs_sql__mjs.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 237,
+      "sha256": "08c06dda1d6c58584331dc70cef0c4e70a6146a758b43701294eb2bd1eac737b",
+      "file": "resources/238-node_modules_.vite_deps_shiki_langs_sql__mjs.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/shiki_langs_json__mjs.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 240,
+      "sha256": "09f979291f5793305afc61dfbb074f90c50fcc0b7e6cfc1328cc1accb7bf458b",
+      "file": "resources/239-node_modules_.vite_deps_shiki_langs_json__mjs.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-ZPMFOPLE.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 250220,
+      "sha256": "c8d20f00e5dc8958ebe468a6106e96f09dc826e3b3aa88db11bd3234d9a1c56a",
+      "file": "resources/240-node_modules_.vite_deps_chunk-ZPMFOPLE.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-7KGCUYLU.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 120931,
+      "sha256": "030a52c31242da7c7f3b2471788e661d85f2672c13d0cfb464a6dc59b0e214d8",
+      "file": "resources/241-node_modules_.vite_deps_chunk-7KGCUYLU.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-225ZOSUH.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 209165,
+      "sha256": "8e98c6bdbe345e4c29c7b537d9fbf725c2fe20867826f406424f748d294c957e",
+      "file": "resources/242-node_modules_.vite_deps_chunk-225ZOSUH.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-KGL4C4JY.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 198872,
+      "sha256": "6e1c67d893dfabf4a020b395239f244e7643c09208c76c3bfd5e2d83f2859012",
+      "file": "resources/243-node_modules_.vite_deps_chunk-KGL4C4JY.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-KH5D6LT7.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 42857,
+      "sha256": "b30a0ead907dd9b61b89fa250e649b32f0125db910d19524ece8fcd5c921080e",
+      "file": "resources/244-node_modules_.vite_deps_chunk-KH5D6LT7.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-NGGKY7UN.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 24440,
+      "sha256": "f50e7cb0b6c7b0f7b929b5d26ae1dbff7c982a55afc9d1d5d0601bd05ab608e7",
+      "file": "resources/245-node_modules_.vite_deps_chunk-NGGKY7UN.js.js"
+    },
+    {
+      "url": "http://localhost:5180/node_modules/.vite/deps/chunk-OMHRIQUR.js?v=16025390",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3039,
+      "sha256": "9c8f9c52c80f40587d47879353275b245b3e5f1a16a08cf763b65dc004eb0efc",
+      "file": "resources/246-node_modules_.vite_deps_chunk-OMHRIQUR.js.js"
+    }
+  ],
+  "extraction": {
+    "title": "Quickstart — Epoch",
+    "lang": "en",
+    "bodyTextLength": 4973,
+    "headings": [
+      {
+        "tag": "h1",
+        "text": "Quickstart",
+        "box": {
+          "x": 367,
+          "y": 144,
+          "width": 736,
+          "height": 52
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "48px",
+          "fontWeight": "580",
+          "lineHeight": "51.84px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "# Install",
+        "box": {
+          "x": 367,
+          "y": 349,
+          "width": 736,
+          "height": 43
+        },
+        "styles": {
+          "display": "block",
+          "position": "relative",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": "570",
+          "lineHeight": "30.24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "# Describe your data",
+        "box": {
+          "x": 367,
+          "y": 822,
+          "width": 736,
+          "height": 43
+        },
+        "styles": {
+          "display": "block",
+          "position": "relative",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": "570",
+          "lineHeight": "30.24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "# Run the dev server",
+        "box": {
+          "x": 367,
+          "y": 1461,
+          "width": 736,
+          "height": 43
+        },
+        "styles": {
+          "display": "block",
+          "position": "relative",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": "570",
+          "lineHeight": "30.24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "# Write a query and a mutation",
+        "box": {
+          "x": 367,
+          "y": 1875,
+          "width": 736,
+          "height": 43
+        },
+        "styles": {
+          "display": "block",
+          "position": "relative",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": "570",
+          "lineHeight": "30.24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "# Subscribe from your app",
+        "box": {
+          "x": 367,
+          "y": 2536,
+          "width": 736,
+          "height": 43
+        },
+        "styles": {
+          "display": "block",
+          "position": "relative",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": "570",
+          "lineHeight": "30.24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "# Deploy or self-host",
+        "box": {
+          "x": 367,
+          "y": 3700,
+          "width": 736,
+          "height": 43
+        },
+        "styles": {
+          "display": "block",
+          "position": "relative",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": "570",
+          "lineHeight": "30.24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "PRODUCT",
+        "box": {
+          "x": 677,
+          "y": 4488,
+          "width": 219,
+          "height": 12
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(111, 116, 124)",
+          "fontFamily": "\"JetBrains Mono Variable\", ui-monospace, \"SF Mono\", SFMono-Regular, Menlo, \"Cascadia Code\", Consolas, \"Liberation Mono\", monospace",
+          "fontSize": "11px",
+          "fontWeight": "500",
+          "lineHeight": "11.88px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "DEVELOPERS",
+        "box": {
+          "x": 920,
+          "y": 4488,
+          "width": 219,
+          "height": 12
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(111, 116, 124)",
+          "fontFamily": "\"JetBrains Mono Variable\", ui-monospace, \"SF Mono\", SFMono-Regular, Menlo, \"Cascadia Code\", Consolas, \"Liberation Mono\", monospace",
+          "fontSize": "11px",
+          "fontWeight": "500",
+          "lineHeight": "11.88px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "RESOURCES",
+        "box": {
+          "x": 1163,
+          "y": 4488,
+          "width": 219,
+          "height": 12
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(111, 116, 124)",
+          "fontFamily": "\"JetBrains Mono Variable\", ui-monospace, \"SF Mono\", SFMono-Regular, Menlo, \"Cascadia Code\", Consolas, \"Liberation Mono\", monospace",
+          "fontSize": "11px",
+          "fontWeight": "500",
+          "lineHeight": "11.88px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      }
+    ],
+    "navLinks": [
+      {
+        "text": "epoch",
+        "href": "/"
+      },
+      {
+        "text": "Docs",
+        "href": "/docs"
+      },
+      {
+        "text": "Pricing",
+        "href": "/pricing"
+      },
+      {
+        "text": "",
+        "href": "https://github.com"
+      },
+      {
+        "text": "Start building",
+        "href": "/docs"
+      },
+      {
+        "text": "Docs",
+        "href": "/docs"
+      },
+      {
+        "text": "Pricing",
+        "href": "/pricing"
+      },
+      {
+        "text": "GitHub",
+        "href": "https://github.com"
+      },
+      {
+        "text": "Start building",
+        "href": "/docs"
+      },
+      {
+        "text": "Quickstart",
+        "href": "/docs/quickstart"
+      },
+      {
+        "text": "Live queries",
+        "href": "/docs/live-queries"
+      },
+      {
+        "text": "Schema & types",
+        "href": "/docs/schema"
+      },
+      {
+        "text": "Quickstart",
+        "href": "/docs/quickstart"
+      },
+      {
+        "text": "Live queries",
+        "href": "/docs/live-queries"
+      },
+      {
+        "text": "Schema & types",
+        "href": "/docs/schema"
+      },
+      {
+        "text": "Next Live queries",
+        "href": "/docs/live-queries"
+      },
+      {
+        "text": "Overview",
+        "href": "/"
+      },
+      {
+        "text": "Documentation",
+        "href": "/docs"
+      },
+      {
+        "text": "Pricing",
+        "href": "/pricing"
+      },
+      {
+        "text": "Quickstart",
+        "href": "/docs/quickstart"
+      },
+      {
+        "text": "Live queries",
+        "href": "/docs/live-queries"
+      },
+      {
+        "text": "Schema & types",
+        "href": "/docs/schema"
+      },
+      {
+        "text": "GitHub",
+        "href": "https://github.com"
+      },
+      {
+        "text": "Consistency model",
+        "href": "/docs/live-queries#delivery"
+      },
+      {
+        "text": "Self-host",
+        "href": "/docs/quickstart#self-host"
+      }
+    ],
+    "forms": [],
+    "sections": [
+      {
+        "index": 0,
+        "tag": "header",
+        "id": "",
+        "className": "site-header",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [],
+        "buttons": [
+          "epoch",
+          "Docs",
+          "Pricing",
+          "Search ⌘ K",
+          "",
+          "Start building",
+          "",
+          "Docs",
+          "Pricing",
+          "GitHub",
+          "Start building"
+        ],
+        "text": "epoch Docs Pricing Search ⌘ K Start building",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 1501,
+          "height": 60
+        },
+        "styles": {
+          "display": "block",
+          "position": "sticky",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 1,
+        "tag": "nav",
+        "id": "",
+        "className": "site-header__nav",
+        "role": "",
+        "ariaLabel": "Primary",
+        "headings": [],
+        "buttons": [
+          "Docs",
+          "Pricing"
+        ],
+        "text": "Docs Pricing",
+        "box": {
+          "x": 232,
+          "y": 12,
+          "width": 134,
+          "height": 35
+        },
+        "styles": {
+          "display": "flex",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 2,
+        "tag": "nav",
+        "id": "",
+        "className": "mobile-menu__nav",
+        "role": "",
+        "ariaLabel": "Mobile",
+        "headings": [],
+        "buttons": [
+          "Docs",
+          "Pricing",
+          "GitHub"
+        ],
+        "text": "DocsPricingGitHub",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "styles": {
+          "display": "flex",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 3,
+        "tag": "main",
+        "id": "main",
+        "className": "app-main",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h1",
+            "text": "Quickstart"
+          },
+          {
+            "tag": "h2",
+            "text": "# Install"
+          },
+          {
+            "tag": "h2",
+            "text": "# Describe your data"
+          },
+          {
+            "tag": "h2",
+            "text": "# Run the dev server"
+          },
+          {
+            "tag": "h2",
+            "text": "# Write a query and a mutation"
+          },
+          {
+            "tag": "h2",
+            "text": "# Subscribe from your app"
+          }
+        ],
+        "buttons": [
+          "Quickstart",
+          "Live queries",
+          "Schema & types",
+          "Quickstart",
+          "Live queries",
+          "Schema & types",
+          "#",
+          "Copy",
+          "Copy",
+          "#",
+          "Copy",
+          "#"
+        ],
+        "text": "GETTING STARTED Quickstart CORE CONCEPTS Live queries Schema & types GETTING STARTED Quickstart Install the CLI, describe your data, and get a typed, reactive database running on your machine. About five minutes from here to a query that updates itself. # Install Epoch is one package and one CLI. Add it to an existing project, or scaffold a new one with the starter — either way you'll have a local database, schema push, and type generation wired up. terminal Copy npm install epoch Starting fresh? The init command sets up the project structure and an example schema for you. terminal Copy npx epoch@latest init # Describe your data A schema is plain TypeScript. Define your tables, their columns, and the indexes you'll query by. This file is the source of truth for the whole stack — your client types are generated from it. epoch/schema.ts Copy import { defineSchema, defineTable, t } from \"epoch/schema\"; export default defineSchema({ channels: defineTable({ slug: t.string().unique(), name: ",
+        "box": {
+          "x": 0,
+          "y": 60,
+          "width": 1501,
+          "height": 4267
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 4,
+        "tag": "aside",
+        "id": "",
+        "className": "docs__sidebar",
+        "role": "",
+        "ariaLabel": "Documentation",
+        "headings": [],
+        "buttons": [
+          "Quickstart",
+          "Live queries",
+          "Schema & types"
+        ],
+        "text": "GETTING STARTED Quickstart CORE CONCEPTS Live queries Schema & types",
+        "box": {
+          "x": 119,
+          "y": 108,
+          "width": 208,
+          "height": 198
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 5,
+        "tag": "nav",
+        "id": "",
+        "className": "docs-nav docs-nav--rail",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [],
+        "buttons": [
+          "Quickstart",
+          "Live queries",
+          "Schema & types"
+        ],
+        "text": "GETTING STARTED Quickstart CORE CONCEPTS Live queries Schema & types",
+        "box": {
+          "x": 119,
+          "y": 108,
+          "width": 208,
+          "height": 198
+        },
+        "styles": {
+          "display": "flex",
+          "position": "sticky",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 6,
+        "tag": "nav",
+        "id": "",
+        "className": "docs-nav docs-nav--bar",
+        "role": "",
+        "ariaLabel": "Documentation",
+        "headings": [],
+        "buttons": [
+          "Quickstart",
+          "Live queries",
+          "Schema & types"
+        ],
+        "text": "QuickstartLive queriesSchema & types",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "styles": {
+          "display": "none",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 7,
+        "tag": "main",
+        "id": "",
+        "className": "docs__content",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h1",
+            "text": "Quickstart"
+          },
+          {
+            "tag": "h2",
+            "text": "# Install"
+          },
+          {
+            "tag": "h2",
+            "text": "# Describe your data"
+          },
+          {
+            "tag": "h2",
+            "text": "# Run the dev server"
+          },
+          {
+            "tag": "h2",
+            "text": "# Write a query and a mutation"
+          },
+          {
+            "tag": "h2",
+            "text": "# Subscribe from your app"
+          }
+        ],
+        "buttons": [
+          "#",
+          "Copy",
+          "Copy",
+          "#",
+          "Copy",
+          "#",
+          "Copy",
+          "#",
+          "Copy",
+          "#",
+          "Copy",
+          "Copy"
+        ],
+        "text": "GETTING STARTED Quickstart Install the CLI, describe your data, and get a typed, reactive database running on your machine. About five minutes from here to a query that updates itself. # Install Epoch is one package and one CLI. Add it to an existing project, or scaffold a new one with the starter — either way you'll have a local database, schema push, and type generation wired up. terminal Copy npm install epoch Starting fresh? The init command sets up the project structure and an example schema for you. terminal Copy npx epoch@latest init # Describe your data A schema is plain TypeScript. Define your tables, their columns, and the indexes you'll query by. This file is the source of truth for the whole stack — your client types are generated from it. epoch/schema.ts Copy import { defineSchema, defineTable, t } from \"epoch/schema\"; export default defineSchema({ channels: defineTable({ slug: t.string().unique(), name: t.string(), createdBy: t.id(\"users\"), }), messages: defineTable({ cha",
+        "box": {
+          "x": 367,
+          "y": 108,
+          "width": 736,
+          "height": 4155
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 8,
+        "tag": "article",
+        "id": "",
+        "className": "doc-article",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h1",
+            "text": "Quickstart"
+          },
+          {
+            "tag": "h2",
+            "text": "# Install"
+          },
+          {
+            "tag": "h2",
+            "text": "# Describe your data"
+          },
+          {
+            "tag": "h2",
+            "text": "# Run the dev server"
+          },
+          {
+            "tag": "h2",
+            "text": "# Write a query and a mutation"
+          },
+          {
+            "tag": "h2",
+            "text": "# Subscribe from your app"
+          }
+        ],
+        "buttons": [
+          "#",
+          "Copy",
+          "Copy",
+          "#",
+          "Copy",
+          "#",
+          "Copy",
+          "#",
+          "Copy",
+          "#",
+          "Copy",
+          "Copy"
+        ],
+        "text": "GETTING STARTED Quickstart Install the CLI, describe your data, and get a typed, reactive database running on your machine. About five minutes from here to a query that updates itself. # Install Epoch is one package and one CLI. Add it to an existing project, or scaffold a new one with the starter — either way you'll have a local database, schema push, and type generation wired up. terminal Copy npm install epoch Starting fresh? The init command sets up the project structure and an example schema for you. terminal Copy npx epoch@latest init # Describe your data A schema is plain TypeScript. Define your tables, their columns, and the indexes you'll query by. This file is the source of truth for the whole stack — your client types are generated from it. epoch/schema.ts Copy import { defineSchema, defineTable, t } from \"epoch/schema\"; export default defineSchema({ channels: defineTable({ slug: t.string().unique(), name: t.string(), createdBy: t.id(\"users\"), }), messages: defineTable({ cha",
+        "box": {
+          "x": 367,
+          "y": 108,
+          "width": 736,
+          "height": 4155
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 9,
+        "tag": "header",
+        "id": "",
+        "className": "doc-header",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h1",
+            "text": "Quickstart"
+          }
+        ],
+        "buttons": [],
+        "text": "GETTING STARTED Quickstart Install the CLI, describe your data, and get a typed, reactive database running on your machine. About five minutes from here to a query that updates itself.",
+        "box": {
+          "x": 367,
+          "y": 108,
+          "width": 736,
+          "height": 193
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 10,
+        "tag": "aside",
+        "id": "",
+        "className": "callout callout--tip",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [],
+        "buttons": [],
+        "text": "LEAVE IT RUNNING Every save re-pushes your schema and re-runs codegen in milliseconds. You should never have to restart it or generate types by hand.",
+        "box": {
+          "x": 367,
+          "y": 1715,
+          "width": 736,
+          "height": 112
+        },
+        "styles": {
+          "display": "grid",
+          "position": "static",
+          "background": "rgb(12, 13, 15)",
+          "color": "rgb(196, 201, 207)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "27.2px",
+          "borderRadius": "9px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 11,
+        "tag": "aside",
+        "id": "",
+        "className": "callout callout--note",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [],
+        "buttons": [],
+        "text": "NO LOCK-IN The wire protocol and the server are open source under the MIT license. Self-hosting is a first-class path, not a downgrade — the cloud just runs the same binary for you.",
+        "box": {
+          "x": 367,
+          "y": 3981,
+          "width": 736,
+          "height": 112
+        },
+        "styles": {
+          "display": "grid",
+          "position": "static",
+          "background": "rgb(12, 13, 15)",
+          "color": "rgb(196, 201, 207)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "27.2px",
+          "borderRadius": "9px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 12,
+        "tag": "nav",
+        "id": "",
+        "className": "doc-pager",
+        "role": "",
+        "ariaLabel": "Page navigation",
+        "headings": [],
+        "buttons": [
+          "Next Live queries"
+        ],
+        "text": "Next Live queries",
+        "box": {
+          "x": 367,
+          "y": 4157,
+          "width": 736,
+          "height": 107
+        },
+        "styles": {
+          "display": "grid",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 13,
+        "tag": "aside",
+        "id": "",
+        "className": "docs__toc",
+        "role": "",
+        "ariaLabel": "On this page",
+        "headings": [],
+        "buttons": [
+          "Install",
+          "Describe your data",
+          "Run the dev server",
+          "Write a query and a mutation",
+          "Subscribe from your app",
+          "Deploy or self-host"
+        ],
+        "text": "ON THIS PAGE Install Describe your data Run the dev server Write a query and a mutation Subscribe from your app Deploy or self-host",
+        "box": {
+          "x": 1191,
+          "y": 108,
+          "width": 192,
+          "height": 209
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 14,
+        "tag": "footer",
+        "id": "",
+        "className": "site-footer",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h2",
+            "text": "PRODUCT"
+          },
+          {
+            "tag": "h2",
+            "text": "DEVELOPERS"
+          },
+          {
+            "tag": "h2",
+            "text": "RESOURCES"
+          }
+        ],
+        "buttons": [
+          "Star on GitHub",
+          "Overview",
+          "Documentation",
+          "Pricing",
+          "Quickstart",
+          "Live queries",
+          "Schema & types",
+          "GitHub",
+          "Consistency model",
+          "Self-host"
+        ],
+        "text": "epoch A real-time database with serializable transactions, live queries, and end-to-end type safety. Open source, self-hostable, built for production. v0.1.0 Star on GitHub PRODUCT Overview Documentation Pricing DEVELOPERS Quickstart Live queries Schema & types RESOURCES GitHub Consistency model Self-host © 2026 Epoch Labs The database that's always now",
+        "box": {
+          "x": 0,
+          "y": 4423,
+          "width": 1501,
+          "height": 393
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 15,
+        "tag": "nav",
+        "id": "",
+        "className": "site-footer__cols",
+        "role": "",
+        "ariaLabel": "Footer",
+        "headings": [
+          {
+            "tag": "h2",
+            "text": "PRODUCT"
+          },
+          {
+            "tag": "h2",
+            "text": "DEVELOPERS"
+          },
+          {
+            "tag": "h2",
+            "text": "RESOURCES"
+          }
+        ],
+        "buttons": [
+          "Overview",
+          "Documentation",
+          "Pricing",
+          "Quickstart",
+          "Live queries",
+          "Schema & types",
+          "GitHub",
+          "Consistency model",
+          "Self-host"
+        ],
+        "text": "PRODUCT Overview Documentation Pricing DEVELOPERS Quickstart Live queries Schema & types RESOURCES GitHub Consistency model Self-host",
+        "box": {
+          "x": 677,
+          "y": 4488,
+          "width": 706,
+          "height": 179
+        },
+        "styles": {
+          "display": "grid",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(233, 235, 238)",
+          "fontFamily": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      }
+    ],
+    "cssVars": {
+      "--border": "#24262b",
+      "--space-16": "10rem",
+      "--tracking-tight": "-0.02em",
+      "--text-2xl": "clamp(1.375rem, 1.24rem + 0.66vw, 1.75rem)",
+      "--space-14": "8rem",
+      "--live-lo": "#28b97f",
+      "--leading-relaxed": "1.7",
+      "--black-rgb": "0 0 0",
+      "--dur-4": "420ms",
+      "--live-ink": "#042016",
+      "--leading-snug": "1.22",
+      "--gray-8": "#393d44",
+      "--gray-11": "#9aa0a8",
+      "--space-9": "3rem",
+      "--text-lg": "clamp(1.0625rem, 1.02rem + 0.22vw, 1.1875rem)",
+      "--space-4": "1rem",
+      "--bg-subtle": "#0c0d0f",
+      "--gray-1": "#08090a",
+      "--gray-7": "#2c2f35",
+      "--elev-2": "0 1px 0 0 rgb(255 255 255 / 0.03) inset,\n    0 4px 14px -4px rgb(0 0 0 / 0.5)",
+      "--space-7": "2rem",
+      "--space-8": "2.5rem",
+      "--text-muted": "#9aa0a8",
+      "--gray-4": "#17191c",
+      "--text-md": "0.9375rem",
+      "--bg": "#08090a",
+      "--leading-normal": "1.5",
+      "--dur-3": "260ms",
+      "--gray-2": "#0c0d0f",
+      "--font-mono": "\"JetBrains Mono Variable\", ui-monospace, \"SF Mono\", \"SFMono-Regular\",\n    Menlo, \"Cascadia Code\", Consolas, \"Liberation Mono\", monospace",
+      "--surface-hover": "#17191c",
+      "--tracking-wide": "0.04em",
+      "--gray-12": "#e9ebee",
+      "--gray-3": "#121316",
+      "--dur-1": "120ms",
+      "--text-sm": "0.8125rem",
+      "--white-rgb": "255 255 255",
+      "--text-disabled": "#565b63",
+      "--ease-out": "cubic-bezier(0.16, 1, 0.3, 1)",
+      "--gray-5": "#1d1f23",
+      "--tracking-caps": "0.08em",
+      "--space-6": "1.5rem",
+      "--ring": "rgb(79 239 166)",
+      "--dur-2": "180ms",
+      "--space-11": "5rem",
+      "--space-5": "1.25rem",
+      "--surface-active": "#1d1f23",
+      "--leading-tight": "1.08",
+      "--maxw-content": "72rem",
+      "--header-h": "60px",
+      "--radius-sm": "6px",
+      "--font-sans": "\"Inter Variable\", ui-sans-serif, system-ui, -apple-system,\n    \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+      "--text-4xl": "clamp(2rem, 1.62rem + 1.9vw, 3rem)",
+      "--elev-3": "0 1px 0 0 rgb(255 255 255 / 0.04) inset,\n    0 18px 50px -12px rgb(0 0 0 / 0.7)",
+      "--space-2": "0.5rem",
+      "--radius-full": "999px",
+      "--space-3": "0.75rem",
+      "--tracking-normal": "0em",
+      "--live": "rgb(79 239 166)",
+      "--border-strong": "#2c2f35",
+      "--danger-ink": "#2a0a08",
+      "--danger": "#ff6b63",
+      "--elev-1": "0 1px 0 0 rgb(255 255 255 / 0.02) inset,\n    0 1px 2px rgb(0 0 0 / 0.35)",
+      "--text-2xs": "0.6875rem",
+      "--text-5xl": "clamp(2.5rem, 1.95rem + 2.75vw, 4rem)",
+      "--text-6xl": "clamp(3rem, 2.18rem + 4.1vw, 4.75rem)",
+      "--text-3xl": "clamp(1.625rem, 1.4rem + 1.12vw, 2.25rem)",
+      "--text-xs": "0.75rem",
+      "--live-rgb": "79 239 166",
+      "--maxw-prose": "46rem",
+      "--space-1": "0.25rem",
+      "--selection": "rgb(79 239 166 / 0.22)",
+      "--space-10": "4rem",
+      "--text": "#e9ebee",
+      "--radius-xs": "4px",
+      "--maxw-wide": "84rem",
+      "--text-faint": "#6f747c",
+      "--tracking-snug": "-0.011em",
+      "--gray-6": "#24262b",
+      "--space-12": "6rem",
+      "--radius-xl": "18px",
+      "--radius-2xl": "26px",
+      "--gray-10": "#6f747c",
+      "--radius-md": "9px",
+      "--radius-lg": "13px",
+      "--text-xl": "clamp(1.1875rem, 1.11rem + 0.38vw, 1.375rem)",
+      "--border-interactive": "#393d44",
+      "--surface": "#121316",
+      "--gray-9": "#565b63",
+      "--text-base": "1rem",
+      "--live-hi": "#7dffc4",
+      "--ease-in-out": "cubic-bezier(0.65, 0, 0.35, 1)"
+    },
+    "topColors": [
+      [
+        "rgb(136, 143, 152)",
+        402
+      ],
+      [
+        "rgb(201, 205, 211)",
+        322
+      ],
+      [
+        "rgb(111, 116, 124)",
+        111
+      ],
+      [
+        "rgb(155, 178, 218)",
+        110
+      ],
+      [
+        "rgb(233, 235, 238)",
+        81
+      ],
+      [
+        "rgb(237, 239, 242)",
+        80
+      ],
+      [
+        "rgb(196, 201, 207)",
+        75
+      ],
+      [
+        "rgb(84, 226, 160)",
+        56
+      ],
+      [
+        "rgb(154, 160, 168)",
+        28
+      ],
+      [
+        "rgb(227, 176, 121)",
+        28
+      ],
+      [
+        "rgb(194, 198, 204)",
+        16
+      ],
+      [
+        "rgb(138, 217, 196)",
+        16
+      ],
+      [
+        "rgb(12, 13, 15)",
+        14
+      ],
+      [
+        "rgb(44, 47, 53)",
+        10
+      ],
+      [
+        "rgb(57, 61, 68)",
+        10
+      ],
+      [
+        "rgb(36, 38, 43)",
+        7
+      ],
+      [
+        "rgb(79, 239, 166)",
+        7
+      ],
+      [
+        "rgb(233, 235, 238) rgb(233, 235, 238) rgb(36, 38, 43)",
+        7
+      ],
+      [
+        "rgba(255, 255, 255, 0.01)",
+        7
+      ],
+      [
+        "rgb(196, 201, 207) rgb(196, 201, 207) rgb(36, 38, 43)",
+        7
+      ],
+      [
+        "rgb(4, 32, 22)",
+        6
+      ],
+      [
+        "rgb(95, 102, 110)",
+        6
+      ],
+      [
+        "rgb(233, 235, 238) rgb(233, 235, 238) rgb(57, 61, 68)",
+        5
+      ],
+      [
+        "rgb(18, 19, 22)",
+        4
+      ],
+      [
+        "rgb(215, 219, 224)",
+        3
+      ],
+      [
+        "rgb(154, 160, 168) rgb(154, 160, 168) rgb(36, 38, 43)",
+        2
+      ],
+      [
+        "rgb(154, 160, 168) rgb(154, 160, 168) rgb(154, 160, 168) rgba(0, 0, 0, 0)",
+        2
+      ],
+      [
+        "rgb(233, 235, 238) rgb(233, 235, 238) rgba(0, 0, 0, 0)",
+        1
+      ],
+      [
+        "rgba(8, 9, 10, 0.96)",
+        1
+      ],
+      [
+        "rgba(79, 239, 166, 0.05)",
+        1
+      ],
+      [
+        "rgba(79, 239, 166, 0.06)",
+        1
+      ],
+      [
+        "rgba(79, 239, 166, 0.3)",
+        1
+      ]
+    ],
+    "scrollWidth": 1501,
+    "clientWidth": 1512,
+    "scrollHeight": 4816
+  },
+  "consoleMessages": [],
+  "pageErrors": [],
+  "capturedAt": "2026-06-22T17:40:16.208Z"
+}

@@ -79,7 +79,11 @@ def _mirror_drift(repo_root: Path) -> dict[str, Any]:
     if not active.exists():
         return {"available": False, "drift": []}
     if not src_rebuild.exists() and not rebuild_pkg.exists():
-        return {"available": False, "drift": []}
+        return {
+            "available": False,
+            "drift": [],
+            "note": "Legacy mirror trees are not present; src/design_router_mcp is canonical.",
+        }
     drift: list[dict[str, str]] = []
     mirrors = [("src_rebuild", src_rebuild), ("rebuild_package", rebuild_pkg)]
     for file_name in CRITICAL_MIRROR_FILES:

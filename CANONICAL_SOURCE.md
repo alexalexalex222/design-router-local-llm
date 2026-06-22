@@ -5,7 +5,7 @@ the CLI, exposed by the MCP server, and packaged. All real changes go here.
 
 | Tree | Status | Role |
 |---|---|---|
-| `src/design_router_mcp/` | **CANONICAL** | runtime + package (`pyproject.toml` builds from `src`), tests (`tests_rebuild/conftest.py` adds `src` to `sys.path`), CLI, MCP server |
+| `src/design_router_mcp/` | **CANONICAL** | runtime + package (`pyproject.toml` builds from `src`), public tests, CLI, MCP server |
 | `src_rebuild/` | **REMOVED FROM PUBLIC SNAPSHOT** | legacy mirror from the local working tree; intentionally not published |
 | `rebuild_package/design_router_mcp/` | **REMOVED FROM PUBLIC SNAPSHOT** | legacy mirror from the local working tree; intentionally not published |
 

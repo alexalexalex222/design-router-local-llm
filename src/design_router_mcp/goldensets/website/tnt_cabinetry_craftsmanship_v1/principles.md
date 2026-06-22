@@ -1,0 +1,5 @@
+- Lead with one precise headline block and one obvious design-consultation action.
+- Let the right-side visual prove material intelligence through finish direction, joinery, or cabinet elevation cues rather than generic cards.
+- Keep the palette warm and premium, but do not let darkness turn into aggression or contractor grit.
+- Trust should feel like reputation, fit, and meticulous execution instead of volume-driven bravado.
+- Premium here should come from detailing, spacing, and material hierarchy rather than vague luxury slogans.

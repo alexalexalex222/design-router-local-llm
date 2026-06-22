@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cook & Tolley, LLP - Concept</title>
+    <style>
+        :root {
+            /* Palette: Parchment, Charcoal Ink, Muted Oxblood, Antique Brass */
+            --parchment: #F2EFE9;
+            --parchment-dark: #E6E1D6;
+            --charcoal: #1C1B1A;
+            --charcoal-light: #4A4744;
+            --oxblood: #7A2C25;
+            --oxblood-hover: #5A1E19;
+            --brass-light: #D4B872;
+            --brass: #B5934F;
+            --brass-dark: #8A6D33;
+            
+            --font-serif: "Georgia", "Times New Roman", serif;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            color: var(--charcoal);
+            background-color: var(--parchment);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .hero-container {
+            width: 100%;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background-color: var(--parchment);
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(255,255,255,0.7), transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(181, 147, 79, 0.1), transparent 50%),
+                url("data:image/svg+xml,%3Csvg width='150' height='150' viewBox='0 0 150 150' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='150' height='150' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Architectural Elements */
+        .watermark {
+            position: absolute;
+            font-family: var(--font-serif);
+            font-size: 60vw;
+            color: rgba(28, 27, 26, 0.02);
+            top: 50%;
+            left: 15%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            z-index: 0;
+            line-height: 1;
+        }
+
+        .library-texture {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 42vw;
+            background-image: 
+                linear-gradient(90deg, transparent, rgba(28,27,26,0.015) 20%, rgba(28,27,26,0.03) 100%);
+            border-left: 1px solid rgba(28,27,26,0.04);
+            z-index: 1;
+        }
+
+        .library-pillar-1 {
+            position: absolute;
+            right: 8vw;
+            top: 0;
+            bottom: 0;
+            width: 140px;
+            background: linear-gradient(90deg, 
+                rgba(255,255,255,0.3) 0%, 
+                rgba(255,255,255,0.05) 10%, 
+                rgba(0,0,0,0.02) 90%, 
+                rgba(0,0,0,0.04) 100%);
+            border-left: 1px solid rgba(255,255,255,0.4);
+            border-right: 1px solid rgba(0,0,0,0.08);
+            z-index: 1;
+        }
+
+        .library-pillar-2 {
+            position: absolute;
+            right: calc(8vw + 160px);
+            top: 0;
+            bottom: 0;
+            width: 80px;
+            background: linear-gradient(90deg, 
+                rgba(255,255,255,0.2) 0%, 
+                rgba(0,0,0,0.01) 90%, 
+                rgba(0,0,0,0.03) 100%);
+            border-left: 1px solid rgba(255,255,255,0.3);
+            border-right: 1px solid rgba(0,0,0,0.06);
+            z-index: 1;
+        }
+
+        /* Header */
+        header {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            padding: 35px 80px;
+            position: relative;
+            z-index: 10;
+            border-bottom: 1px solid rgba(28, 27, 26, 0.06);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-mark {
+            display: flex;
+            gap: 3px;
+            height: 28px;
+        }
+
+        .mark-line {
+            width: 2px;
+            height: 100%;
+            background: var(--brass);
+        }
+
+        .mark-line:nth-child(2) {
+            height: 70%;
+            margin-top: auto;
+        }
+
+        .mark-line:nth-child(3) {
+            height: 40%;
+            margin-top: auto;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-name {
+            font-family: var(--font-serif);
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--charcoal);
+            letter-spacing: 0.05em;
+            line-height: 1;
+        }
+
+        .logo-suffix {
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.25em;
+            color: var(--charcoal-light);
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+        .header-nav {
+            display: flex;
+            justify-content: center;
+            gap: 45px;
+        }
+
+        .header-nav a {
+            text-decoration: none;
+            color: var(--charcoal-light);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .header-nav a:hover {
+            color: var(--oxblood);
+        }
+
+        .header-contact {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+
+        .header-contact span {
+            color: var(--charcoal-light);
+        }
+
+        .header-contact .phone {
+            color: var(--charcoal);
+            text-decoration: none;
+            border-bottom: 1px solid var(--brass);
+            padding-bottom: 3px;
+            transition: border-color 0.3s ease;
+        }
+
+        .header-contact .phone:hover {
+            border-color: var(--oxblood);
+        }
+
+        /* Main Content */
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            flex-grow: 1;
+            padding: 0 80px;
+            align-items: center;
+            position: relative;
+        }
+
+        .typography-column {
+            position: relative;
+            z-index: 10;
+            padding-right: 60px;
+        }
+
+        .badge {
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            font-weight: 700;
+            color: var(--charcoal);
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            border: 1px solid var(--brass);
+            margin-bottom: 35px;
+            background: rgba(181, 147, 79, 0.05);
+        }
+
+        h1 {
+            font-family: var(--font-serif);
+            font-size: 5rem;
+            line-height: 1.05;
+            margin: 0 0 35px 0;
+            color: var(--charcoal);
+            letter-spacing: -0.01em;
+            font-weight: 400;
+        }
+
+        p.lead {
+            font-family: var(--font-serif);
+            font-size: 1.35rem;
+            line-height: 1.6;
+            color: var(--charcoal-light);
+            max-width: 580px;
+            margin-bottom: 50px;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .cta-primary {
+            background: var(--charcoal);
+            color: var(--parchment);
+            border: 1px solid var(--charcoal);
+            padding: 20px 38px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .cta-primary:hover {
+            background: var(--oxblood);
+            border-color: var(--oxblood);
+            box-shadow: 0 10px 20px rgba(122, 44, 37, 0.2);
+        }
+
+        .cta-secondary {
+            background: transparent;
+            color: var(--charcoal);
+            border: 1px solid rgba(28,27,26,0.3);
+            padding: 20px 38px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .cta-secondary:hover {
+            border-color: var(--charcoal);
+            background: rgba(28,27,26,0.04);
+        }
+
+        /* Trust Module */
+        .trust-module {
+            margin-top: 70px;
+            display: flex;
+            align-items: center;
+            gap: 35px;
+            flex-wrap: wrap;
+        }
+
+        .trust-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .trust-value {
+            font-family: var(--font-serif);
+            font-size: 1.4rem;
+            color: var(--charcoal);
+            font-style: italic;
+        }
+
+        .trust-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--charcoal-light);
+            font-weight: 700;
+        }
+
+        .divider {
+            width: 1px;
+            height: 40px;
+            background: rgba(28, 27, 26, 0.15);
+        }
+
+        /* Docket Column */
+        .docket-column {
+            position: relative;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+        }
+
+        .docket-panel {
+            background: #FAFAF8;
+            border: 1px solid rgba(28, 27, 26, 0.1);
+            box-shadow: 
+                30px 30px 60px rgba(0,0,0,0.06),
+                0 0 0 1px rgba(255,255,255,1) inset;
+            padding: 55px 45px;
+            position: relative;
+            width: 100%;
+            max-width: 460px;
+        }
+
+        .docket-panel::before {
+            content: '';
+            position: absolute;
+            left: -1px;
+            top: -1px;
+            bottom: -1px;
+            width: 5px;
+            background: linear-gradient(180deg, var(--brass-light), var(--brass), var(--brass-dark));
+        }
+
+        .docket-panel::after {
+            content: '';
+            position: absolute;
+            right: -12px;
+            top: 12px;
+            bottom: -12px;
+            width: 100%;
+            background: rgba(28, 27, 26, 0.03);
+            z-index: -1;
+            border: 1px solid rgba(28, 27, 26, 0.05);
+        }
+
+        .docket-seal {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            width: 44px;
+            height: 44px;
+            border: 1px solid var(--brass-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.6;
+        }
+
+        .docket-seal::after {
+            content: '';
+            width: 34px;
+            height: 34px;
+            border: 1px dashed var(--brass);
+            border-radius: 50%;
+        }
+
+        .panel-header {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 35px;
+            border-bottom: 1px solid rgba(28, 27, 26, 0.1);
+            padding-bottom: 20px;
+            padding-right: 50px;
+        }
+
+        .panel-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--charcoal);
+            font-weight: 700;
+        }
+
+        .docket-entries {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .entry {
+            position: relative;
+            padding: 16px;
+            margin: -16px;
+            border-radius: 4px;
+            transition: background 0.3s ease;
+            cursor: pointer;
+        }
+
+        .entry:hover {
+            background: rgba(28, 27, 26, 0.025);
+        }
+
+        .entry:hover .entry-title {
+            color: var(--oxblood);
+        }
+
+        .entry-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--brass-dark);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .entry-date {
+            color: var(--charcoal-light);
+            font-weight: 600;
+        }
+
+        .entry-title {
+            font-family: var(--font-serif);
+            font-size: 1.15rem;
+            color: var(--charcoal);
+            margin-bottom: 12px;
+            line-height: 1.4;
+            transition: color 0.3s ease;
+        }
+
+        .entry-status {
+            font-size: 0.75rem;
+            color: var(--charcoal-light);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--oxblood);
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+        }
+
+        .status-dot::after {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            border: 1px solid var(--oxblood);
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+
+        .status-dot.resolved {
+            background: var(--brass-dark);
+        }
+
+        .status-dot.resolved::after {
+            border-color: var(--brass-dark);
+        }
+
+        .entry-divider {
+            height: 1px;
+            width: 100%;
+            background: linear-gradient(to right, rgba(28, 27, 26, 0.1), transparent);
+            margin: 20px 0;
+        }
+
+        .panel-footer {
+            margin-top: 35px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(28, 27, 26, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.7rem;
+            color: var(--charcoal-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .typography-column > * {
+            animation: fadeUp 0.8s cubic-bezier(0.2, 0, 0, 1) forwards;
+            opacity: 0;
+        }
+
+        .typography-column > *:nth-child(1) { animation-delay: 0.1s; }
+        .typography-column > *:nth-child(2) { animation-delay: 0.2s; }
+        .typography-column > *:nth-child(3) { animation-delay: 0.3s; }
+        .typography-column > *:nth-child(4) { animation-delay: 0.4s; }
+        .typography-column > *:nth-child(5) { animation-delay: 0.5s; }
+
+        .docket-panel {
+            animation: fadeUp 1s cubic-bezier(0.2, 0, 0, 1) 0.4s forwards;
+            opacity: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            h1 { font-size: 4rem; }
+            .hero-content { padding: 0 40px; }
+            header { padding: 30px 40px; }
+        }
+
+        @media (max-width: 1024px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                padding: 60px 40px;
+                gap: 60px;
+            }
+            .header-nav, .library-texture, .library-pillar-1, .library-pillar-2, .watermark {
+                display: none;
+            }
+            .docket-column {
+                justify-content: flex-start;
+            }
+            .typography-column {
+                padding-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero-container">
+        
+        <div class="watermark">§</div>
+        <div class="library-texture"></div>
+        <div class="library-pillar-1"></div>
+        <div class="library-pillar-2"></div>
+
+        <header>
+            <div class="logo">
+                <div class="logo-mark">
+                    <div class="mark-line"></div>
+                    <div class="mark-line"></div>
+                    <div class="mark-line"></div>
+                </div>
+                <div class="logo-text">
+                    <span class="logo-name">Cook & Tolley</span>
+                    <span class="logo-suffix">LLP</span>
+                </div>
+            </div>
+            <div class="header-nav">
+                <a href="#firm">The Firm</a>
+                <a href="#practices">Practice Areas</a>
+                <a href="#attorneys">Attorneys</a>
+            </div>
+            <div class="header-contact">
+                <span>Athens, GA</span>
+                <a href="tel:7065496111" class="phone">(706) 549-6111</a>
+            </div>
+        </header>
+
+        <main class="hero-content">
+            
+            <div class="typography-column">
+                <div class="badge">Decades of Trial Precedent</div>
+                
+                <h1>Commanding the <br>Courtroom.</h1>
+                
+                <p class="lead">Athens’ premier litigation firm. When the stakes demand deep Georgia trial experience, Cook & Tolley provides the precision, precedent, and authority to prevail.</p>
+                
+                <div class="cta-group">
+                    <button class="cta-primary">Request Consultation</button>
+                    <button class="cta-secondary">Review Our Precedent</button>
+                </div>
+                
+                <div class="trust-module">
+                    <div class="trust-item">
+                        <span class="trust-value">1964</span>
+                        <span class="trust-label">Established</span>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="trust-item">
+                        <span class="trust-value">Multi-Specialty</span>
+                        <span class="trust-label">Litigation Strength</span>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="trust-item">
+                        <span class="trust-value">J. Vincent Cook</span>
+                        <span class="trust-label">Founder & Trial Lead</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="docket-column">
+                <div class="docket-panel">
+                    <div class="docket-seal"></div>
+                    
+                    <div class="panel-header">
+                        <span class="panel-title">Active Docket / Athens, GA</span>
+                    </div>
+                    
+                    <div class="docket-entries">
+                        
+                        <div class="entry">
+                            <div class="entry-meta">
+                                <span>Practice: Civil Litigation</span>
+                                <span class="entry-date">Ongoing</span>
+                            </div>
+                            <div class="entry-title">Complex Multi-Party Commercial Dispute</div>
+                            <div class="entry-status">
+                                <span class="status-dot"></span> Trial Preparation
+                            </div>
+                        </div>
+                        
+                        <div class="entry-divider"></div>
+                        
+                        <div class="entry">
+                            <div class="entry-meta">
+                                <span>Practice: Medical Malpractice</span>
+                                <span class="entry-date">Resolved</span>
+                            </div>
+                            <div class="entry-title">Catastrophic Liability & Negligence Claim</div>
+                            <div class="entry-status">
+                                <span class="status-dot resolved"></span> Precedent Set
+                            </div>
+                        </div>
+                        
+                        <div class="entry-divider"></div>
+                        
+                        <div class="entry">
+                            <div class="entry-meta">
+                                <span>Practice: Criminal Defense</span>
+                                <span class="entry-date">Active</span>
+                            </div>
+                            <div class="entry-title">High-Stakes Felony Defense Representation</div>
+                            <div class="entry-status">
+                                <span class="status-dot"></span> Motions Filed
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                    <div class="panel-footer">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        Verified Public Record Representation
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+<style id="below-fold-patch">
+    /* Core Layout Utilities */
+    .section {
+        padding: 120px 80px;
+        position: relative;
+    }
+    
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 100px;
+        align-items: center;
+    }
+
+    .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 50px;
+    }
+
+    /* Section Backgrounds */
+    .bg-dark {
+        background-color: var(--charcoal);
+        color: var(--parchment);
+    }
+
+    .bg-parchment-dark {
+        background-color: var(--parchment-dark);
+        color: var(--charcoal);
+    }
+
+    .bg-parchment {
+        background-color: var(--parchment);
+        color: var(--charcoal);
+    }
+
+    /* Typography Extensions */
+    .section-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        font-weight: 700;
+        margin-bottom: 24px;
+        display: block;
+    }
+    
+    .bg-dark .section-label {
+        color: var(--brass);
+    }
+
+    .bg-parchment .section-label, .bg-parchment-dark .section-label {
+        color: var(--oxblood);
+    }
+
+    .section-title {
+        font-family: var(--font-serif);
+        font-size: 3.5rem;
+        line-height: 1.1;
+        margin-bottom: 40px;
+        letter-spacing: -0.01em;
+        font-weight: 400;
+    }
+
+    .bg-dark .section-title {
+        color: var(--parchment);
+    }
+
+    .section-text {
+        font-family: var(--font-serif);
+        font-size: 1.25rem;
+        line-height: 1.6;
+        margin-bottom: 30px;
+    }
+
+    .bg-dark .section-text {
+        color: rgba(242, 239, 233, 0.8);
+    }
+
+    /* Philosophy Section */
+    .philosophy-stats {
+        display: flex;
+        gap: 60px;
+        margin-top: 60px;
+        padding-top: 40px;
+        border-top: 1px solid rgba(242, 239, 233, 0.15);
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .stat-number {
+        font-family: var(--font-serif);
+        font-size: 2.8rem;
+        color: var(--brass-light);
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: rgba(242, 239, 233, 0.6);
+        font-weight: 700;
+    }
+
+    /* Practice Areas */
+    .practice-card {
+        border-top: 2px solid var(--charcoal);
+        padding-top: 35px;
+        transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .practice-card:hover {
+        transform: translateY(-8px);
+    }
+
+    .practice-title {
+        font-family: var(--font-serif);
+        font-size: 1.8rem;
+        color: var(--charcoal);
+        margin-bottom: 20px;
+        line-height: 1.25;
+    }
+
+    .practice-desc {
+        font-size: 1rem;
+        line-height: 1.6;
+        color: var(--charcoal-light);
+        margin-bottom: 35px;
+    }
+
+    .practice-link {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        font-weight: 700;
+        color: var(--oxblood);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: color 0.3s ease;
+    }
+
+    .practice-link::after {
+        content: '→';
+        transition: transform 0.3s ease;
+    }
+
+    .practice-link:hover {
+        color: var(--charcoal);
+    }
+
+    .practice-link:hover::after {
+        transform: translateX(5px);
+    }
+
+    /* Outcomes / Approach */
+    .approach-timeline {
+        border-left: 1px solid rgba(28, 27, 26, 0.15);
+        padding-left: 50px;
+        margin-left: 20px;
+    }
+
+    .timeline-step {
+        position: relative;
+        margin-bottom: 60px;
+    }
+
+    .timeline-step:last-child {
+        margin-bottom: 0;
+    }
+
+    .timeline-step::before {
+        content: '';
+        position: absolute;
+        left: -56px;
+        top: 6px;
+        width: 11px;
+        height: 11px;
+        background: var(--charcoal);
+        border-radius: 50%;
+        box-shadow: 0 0 0 4px var(--parchment);
+    }
+
+    .step-number {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        font-weight: 700;
+        color: var(--brass-dark);
+        margin-bottom: 12px;
+        display: block;
+    }
+
+    .step-title {
+        font-family: var(--font-serif);
+        font-size: 1.6rem;
+        color: var(--charcoal);
+        margin-bottom: 15px;
+    }
+
+    .step-desc {
+        font-size: 1.05rem;
+        line-height: 1.6;
+        color: var(--charcoal-light);
+    }
+
+    /* CTA Section */
+    .cta-section {
+        text-align: center;
+        padding: 140px 80px;
+        background-color: var(--parchment);
+        background-image: radial-gradient(circle at 50% 50%, rgba(181, 147, 79, 0.05), transparent 70%);
+    }
+
+    .cta-wrapper {
+        max-width: 850px;
+        margin: 0 auto;
+        border: 1px solid rgba(181, 147, 79, 0.3);
+        padding: 90px 60px;
+        background: rgba(250, 250, 248, 0.5);
+        position: relative;
+    }
+
+    .cta-wrapper::before {
+        content: '§';
+        position: absolute;
+        top: -24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--parchment);
+        padding: 0 25px;
+        font-family: var(--font-serif);
+        font-size: 2.2rem;
+        color: var(--brass);
+        line-height: 1;
+    }
+
+    .cta-title {
+        font-family: var(--font-serif);
+        font-size: 3.2rem;
+        color: var(--charcoal);
+        margin-bottom: 25px;
+    }
+
+    .cta-text {
+        font-family: var(--font-serif);
+        font-size: 1.3rem;
+        line-height: 1.6;
+        color: var(--charcoal-light);
+        margin-bottom: 45px;
+    }
+
+    /* Footer */
+    .footer {
+        background-color: var(--charcoal);
+        color: var(--parchment);
+        padding: 100px 80px 40px;
+        border-top: 4px solid var(--brass);
+    }
+
+    .footer-grid {
+        display: grid;
+        grid-template-columns: 2.5fr 1fr 1fr 1fr;
+        gap: 80px;
+        margin-bottom: 100px;
+    }
+
+    .footer-logo {
+        margin-bottom: 25px;
+    }
+
+    .footer-logo-name {
+        font-family: var(--font-serif);
+        font-size: 1.8rem;
+        color: var(--parchment);
+        display: block;
+        margin-bottom: 8px;
+        letter-spacing: 0.05em;
+    }
+
+    .footer-logo-suffix {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.25em;
+        color: var(--brass);
+        font-weight: 600;
+    }
+
+    .footer-desc {
+        color: rgba(242, 239, 233, 0.6);
+        font-size: 0.95rem;
+        line-height: 1.7;
+        max-width: 340px;
+        margin-top: 25px;
+    }
+
+    .footer-nav h4 {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: var(--brass);
+        margin-bottom: 25px;
+    }
+
+    .footer-nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .footer-nav li {
+        margin-bottom: 16px;
+    }
+
+    .footer-nav a {
+        color: rgba(242, 239, 233, 0.8);
+        text-decoration: none;
+        font-size: 0.95rem;
+        transition: color 0.3s ease;
+    }
+
+    .footer-nav a:hover {
+        color: var(--parchment);
+    }
+
+    .footer-bottom {
+        border-top: 1px solid rgba(242, 239, 233, 0.1);
+        padding-top: 35px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        color: rgba(242, 239, 233, 0.5);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 1200px) {
+        .grid-2 { gap: 60px; }
+        .footer-grid { gap: 40px; }
+    }
+
+    @media (max-width: 1024px) {
+        .section { padding: 90px 50px; }
+        .grid-2 { grid-template-columns: 1fr; align-items: start; }
+        .grid-3 { grid-template-columns: 1fr; gap: 50px; }
+        .footer-grid { grid-template-columns: 1fr 1fr; }
+        .section-title { font-size: 3rem; }
+    }
+
+    @media (max-width: 768px) {
+        .section { padding: 70px 30px; }
+        .footer-grid { grid-template-columns: 1fr; }
+        .footer-bottom { flex-direction: column; gap: 20px; text-align: center; }
+        .philosophy-stats { flex-direction: column; gap: 40px; }
+        .cta-wrapper { padding: 70px 30px; }
+        .cta-title { font-size: 2.4rem; }
+    }
+</style>
+
+<section class="section bg-dark" id="firm">
+    <div class="container grid-2">
+        <div>
+            <span class="section-label">Our Legacy</span>
+            <h2 class="section-title">A tradition of aggressive, principled advocacy.</h2>
+        </div>
+        <div>
+            <p class="section-text">Since 1964, Cook & Tolley has stood as Athens' premier litigation firm, built on a foundation of uncompromising courtroom presence and meticulous preparation.</p>
+            <p class="section-text">We do not merely process cases; we prepare every matter as though it is destined for trial. This posture commands respect from adversaries and delivers decisive outcomes for our clients.</p>
+            
+            <div class="philosophy-stats">
+                <div class="stat-item">
+                    <span class="stat-number">1964</span>
+                    <span class="stat-label">Year Established</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">Deep</span>
+                    <span class="stat-label">Trial Experience</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">Proven</span>
+                    <span class="stat-label">Precedent Set</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section bg-parchment-dark" id="practices">
+    <div class="container">
+        <span class="section-label">Signature Offerings</span>
+        <h2 class="section-title" style="margin-bottom: 70px;">Commanding the Courtroom<br>Across Critical Domains.</h2>
+        
+        <div class="grid-3">
+            <div class="practice-card">
+                <h3 class="practice-title">Medical Malpractice</h3>
+                <p class="practice-desc">Holding negligent medical professionals and institutions accountable. We possess the resources and network of medical experts required to litigate complex, catastrophic injury claims against formidable healthcare defense teams.</p>
+                <a href="#" class="practice-link">Review Medical Precedent</a>
+            </div>
+            
+            <div class="practice-card">
+                <h3 class="practice-title">Criminal Defense</h3>
+                <p class="practice-desc">Fierce, strategic representation in high-stakes state and federal criminal matters. We intervene early to challenge evidence, negotiate from strength, and defend your liberties relentlessly before a jury.</p>
+                <a href="#" class="practice-link">Defend Your Rights</a>
+            </div>
+            
+            <div class="practice-card">
+                <h3 class="practice-title">Civil Litigation</h3>
+                <p class="practice-desc">Navigating complex multi-party commercial disputes, torts, and liability claims. Our attorneys dismantle opposing arguments through superior discovery tactics and commanding trial presentations.</p>
+                <a href="#" class="practice-link">Explore Civil Practice</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section bg-parchment" id="approach">
+    <div class="container grid-2">
+        <div>
+            <div class="approach-timeline">
+                <div class="timeline-step">
+                    <span class="step-number">Phase 01</span>
+                    <h3 class="step-title">Exhaustive Discovery</h3>
+                    <p class="step-desc">Cases are won before opening statements. We deploy a surgical approach to evidence gathering, uncovering critical details that opposing counsel overlooks or attempts to obscure.</p>
+                </div>
+                <div class="timeline-step">
+                    <span class="step-number">Phase 02</span>
+                    <h3 class="step-title">Strategic Pressure</h3>
+                    <p class="step-desc">We immediately seize the initiative. By filing targeted motions and establishing an aggressive litigation posture, we force adversaries onto their heels from the outset.</p>
+                </div>
+                <div class="timeline-step">
+                    <span class="step-number">Phase 03</span>
+                    <h3 class="step-title">Trial Execution</h3>
+                    <p class="step-desc">When negotiation fails to yield justice, we proceed to trial without hesitation. Our litigators possess the gravitas and rhetorical precision necessary to persuade juries and secure favorable verdicts.</p>
+                </div>
+            </div>
+        </div>
+        <div>
+            <span class="section-label">The Cook & Tolley Standard</span>
+            <h2 class="section-title">Prepared to litigate.<br>Positioned to win.</h2>
+            <p class="section-text" style="color: var(--charcoal-light);">Our reputation precedes us in Athens and throughout Georgia. Opposing counsel knows that Cook & Tolley does not bluff. We build every case with the explicit assumption that it will go to trial, ensuring maximum leverage during settlement negotiations and unshakeable confidence in the courtroom.</p>
+            <button class="cta-primary" style="margin-top: 20px;">Consult With An Attorney</button>
+        </div>
+    </div>
+</section>
+
+<section class="section cta-section">
+    <div class="cta-wrapper">
+        <h2 class="cta-title">When the stakes are absolute.</h2>
+        <p class="cta-text">Do not leave your future, your business, or your freedom to chance. Secure Athens' most formidable legal representation.</p>
+        <button class="cta-primary">Contact Cook & Tolley</button>
+        <p style="margin-top: 30px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--charcoal-light); font-weight: 700;">Confidential Case Evaluation</p>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div>
+                <div class="footer-logo">
+                    <span class="footer-logo-name">Cook & Tolley</span>
+                    <span class="footer-logo-suffix">LLP</span>
+                </div>
+                <p class="footer-desc">Athens’ premier litigation firm, providing commanding representation in medical malpractice, criminal defense, and complex civil litigation since 1964.</p>
+            </div>
+            
+            <div class="footer-nav">
+                <h4>Practice Areas</h4>
+                <ul>
+                    <li><a href="#">Medical Malpractice</a></li>
+                    <li><a href="#">Criminal Defense</a></li>
+                    <li><a href="#">Civil Litigation</a></li>
+                    <li><a href="#">Personal Injury</a></li>
+                    <li><a href="#">Corporate Law</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-nav">
+                <h4>The Firm</h4>
+                <ul>
+                    <li><a href="#">Our History</a></li>
+                    <li><a href="#">Attorneys</a></li>
+                    <li><a href="#">Notable Precedents</a></li>
+                    <li><a href="#">News & Insights</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-nav">
+                <h4>Contact</h4>
+                <ul>
+                    <li><a href="tel:7065496111">(706) 549-6111</a></li>
+                    <li><a href="#">info@cooktolley.com</a></li>
+                    <li style="margin-top: 20px; color: rgba(242, 239, 233, 0.8); line-height: 1.6; font-size: 0.95rem;">
+                        304 E Washington St<br>
+                        Athens, GA 30601
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <span>&copy; 2026 Cook & Tolley, LLP. All Rights Reserved.</span>
+            <span>
+                <a href="#" style="color: rgba(242, 239, 233, 0.5); text-decoration: none; margin-right: 25px;">Privacy Policy</a>
+                <a href="#" style="color: rgba(242, 239, 233, 0.5); text-decoration: none;">Disclaimer</a>
+            </span>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

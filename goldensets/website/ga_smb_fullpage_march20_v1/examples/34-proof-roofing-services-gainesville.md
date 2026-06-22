@@ -1,0 +1,7 @@
+# 34 Proof Roofing Services Gainesville
+
+- preview: `screenshots/34-proof-roofing-services-gainesville_desktop_preview.png`
+- strength_tags: `hero_treatment`, `trust_rail`, `dark_contrast`, `proof_density`, `headline_hierarchy`
+- motif_tags: `hero_shell`, `trust_rail`, `proof_cards`, `dark_texture`, `high_contrast_blocking`
+- good when the task needs dark proof-first trust framing and a stronger evidence signal in the hero.
+- this is one of the best support examples for Holland-like industrial tasks that still need service-business credibility.

@@ -1,0 +1,5 @@
+- Do not reuse TNT wording, the `Bespoke Cabinetry.` / `Uncompromising Quality.` headline structure, or the exact millwork claims.
+- Do not copy the exact brass-on-espresso palette values or the compass-style brand mark.
+- Do not preserve the same two-card feature stack or the exact right-side callout sequence one-to-one.
+- Do not reuse cabinetry-specific imagery, finish notes, or Columbus-local proof unless the target business truly owns them.
+- Borrow the material-led craftsmanship grammar, premium restraint, and phone-first studio clarity only.

@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astre Wellness | Macon, GA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --deep-plum: #2B1A2A;
+            --moonlit-silver: #E2E5E9;
+            --soft-blush: #F4DCD6;
+            --warm-ivory: #FAF9F6;
+            --aurora-1: #634B66;
+            --aurora-2: #B999B0;
+            --text-main: #2B1A2A;
+            --text-light: #5A4A59;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--warm-ivory);
+            color: var(--text-main);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Ambient Aurora Background */
+        .ambient-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .glow-1 {
+            position: absolute;
+            top: -10%;
+            right: -5%;
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, rgba(185,153,176,0.3) 0%, rgba(250,249,246,0) 70%);
+            filter: blur(80px);
+            animation: pulse 12s ease-in-out infinite alternate;
+        }
+
+        .glow-2 {
+            position: absolute;
+            bottom: -20%;
+            left: -10%;
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, rgba(99,75,102,0.15) 0%, rgba(250,249,246,0) 70%);
+            filter: blur(100px);
+            animation: pulse 15s ease-in-out infinite alternate-reverse;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1) translate(0, 0); opacity: 0.8; }
+            100% { transform: scale(1.1) translate(-20px, 20px); opacity: 1; }
+        }
+
+        /* Navigation */
+        header {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem 5%;
+            max-width: 1600px;
+            margin: 0 auto;
+            animation: fadeDown 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            font-weight: 500;
+            color: var(--deep-plum);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-mark {
+            width: 12px;
+            height: 12px;
+            background-color: var(--aurora-2);
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        nav {
+            display: flex;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            font-weight: 400;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--deep-plum);
+        }
+
+        .nav-location {
+            font-size: 0.8rem;
+            color: var(--aurora-1);
+            font-weight: 500;
+            padding-left: 2.5rem;
+            border-left: 1px solid var(--moonlit-silver);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-location span {
+            color: var(--text-light);
+            font-weight: 300;
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            padding: 4rem 5% 8rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1.1fr;
+            gap: 6rem;
+            align-items: center;
+            min-height: calc(100vh - 100px);
+            z-index: 2;
+        }
+
+        .hero-content {
+            max-width: 640px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background-color: rgba(244, 220, 214, 0.4);
+            border: 1px solid rgba(226, 229, 233, 0.8);
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--aurora-1);
+            margin-bottom: 2rem;
+            animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(3.5rem, 5vw, 5.5rem);
+            font-weight: 400;
+            line-height: 1.05;
+            color: var(--deep-plum);
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+            animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        h1 i {
+            font-style: italic;
+            color: var(--aurora-1);
+        }
+
+        .hero-desc {
+            font-size: 1.125rem;
+            line-height: 1.7;
+            color: var(--text-light);
+            margin-bottom: 2.5rem;
+            font-weight: 300;
+            animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            margin-bottom: 4rem;
+            animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .btn-primary {
+            background-color: var(--deep-plum);
+            color: var(--warm-ivory);
+            text-decoration: none;
+            padding: 1.125rem 2.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-primary:hover::after {
+            left: 100%;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--aurora-1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(43, 26, 42, 0.15);
+        }
+
+        .btn-secondary {
+            text-decoration: none;
+            color: var(--deep-plum);
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary::after {
+            content: '→';
+            font-family: system-ui;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            color: var(--aurora-1);
+        }
+
+        .btn-secondary:hover::after {
+            transform: translateX(4px);
+        }
+
+        /* Trust Cues */
+        .trust-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            padding-top: 2.5rem;
+            border-top: 1px solid var(--moonlit-silver);
+            animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .trust-item h4 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            color: var(--deep-plum);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .trust-item p {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            line-height: 1.5;
+            font-weight: 300;
+        }
+
+        /* Visual Composition */
+        .hero-visual {
+            position: relative;
+            height: 750px;
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            animation: fadeLeft 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+            opacity: 0;
+            transform: translateX(30px);
+        }
+
+        .visual-backdrop {
+            position: absolute;
+            top: 5%;
+            right: 15%;
+            width: 70%;
+            height: 90%;
+            background-color: var(--soft-blush);
+            border-radius: 200px 200px 0 0;
+            z-index: 1;
+        }
+
+        .image-container {
+            position: relative;
+            width: 85%;
+            height: 100%;
+            border-radius: 200px 200px 0 0;
+            overflow: hidden;
+            z-index: 2;
+            box-shadow: 0 24px 48px rgba(43, 26, 42, 0.08);
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 20%;
+            transition: transform 7s ease;
+        }
+
+        .hero-visual:hover .image-container img {
+            transform: scale(1.05);
+        }
+
+        .image-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(43, 26, 42, 0.2) 0%, transparent 40%);
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .floating-card {
+            position: absolute;
+            bottom: 40px;
+            left: -40px;
+            background-color: var(--warm-ivory);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 20px 40px rgba(43, 26, 42, 0.08);
+            z-index: 4;
+            max-width: 280px;
+            border: 1px solid rgba(226, 229, 233, 0.5);
+        }
+
+        .floating-card-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--deep-plum);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--soft-blush);
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+
+        .floating-card h5 {
+            font-size: 0.9rem;
+            color: var(--deep-plum);
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
+
+        .floating-card p {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            line-height: 1.4;
+        }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeLeft {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .hero {
+                gap: 3rem;
+            }
+            h1 {
+                font-size: clamp(3rem, 4vw, 4rem);
+            }
+            .hero-visual {
+                height: 600px;
+            }
+            .floating-card {
+                left: -20px;
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .hero {
+                grid-template-columns: 1fr;
+                padding-top: 2rem;
+                gap: 4rem;
+            }
+            .hero-content {
+                max-width: 100%;
+                text-align: center;
+            }
+            .cta-group {
+                justify-content: center;
+            }
+            .badge {
+                margin-inline: auto;
+            }
+            .trust-grid {
+                text-align: left;
+                margin-top: 1rem;
+            }
+            .hero-visual {
+                height: 500px;
+                justify-content: center;
+            }
+            .visual-backdrop {
+                right: 10%;
+                width: 80%;
+            }
+            .image-container {
+                width: 90%;
+            }
+            .nav-location {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                display: none; /* In a real build, replace with hamburger menu */
+            }
+            .hero {
+                padding-bottom: 4rem;
+            }
+            .trust-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                text-align: center;
+            }
+            .floating-card {
+                bottom: -20px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 90%;
+                max-width: none;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-glow">
+        <div class="glow-1"></div>
+        <div class="glow-2"></div>
+    </div>
+
+    <header>
+        <a href="#" class="logo">
+            <span class="logo-mark"></span>
+            Astre Wellness
+        </a>
+        <nav>
+            <a href="#" class="nav-link">Treatments</a>
+            <a href="#" class="nav-link">About Tonya</a>
+            <a href="#" class="nav-link">Membership</a>
+            <div class="nav-location">
+                Macon, GA
+                <span>300 Northside Crossing</span>
+            </div>
+        </nav>
+    </header>
+
+    <main class="hero">
+        <div class="hero-content">
+            <div class="badge">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                Premium Med Spa & Wellness Studio
+            </div>
+            
+            <h1>Celestial calm. <br><i>Clinical</i> confidence.</h1>
+            
+            <p class="hero-desc">
+                Discover personalized care that transforms. Led by Tonya Fitch's 25+ years of healthcare expertise, our tailored weight loss programs, IV therapies, and aesthetic treatments are designed entirely around helping you look and feel your absolute best.
+            </p>
+            
+            <div class="cta-group">
+                <a href="#" class="btn-primary">Book Consultation</a>
+                <a href="#" class="btn-secondary">Explore Treatments</a>
+            </div>
+
+            <div class="trust-grid">
+                <div class="trust-item">
+                    <h4>Clinical Precision</h4>
+                    <p>Advanced medical weight loss, customized IV therapy, and targeted skin tightening.</p>
+                </div>
+                <div class="trust-item">
+                    <h4>Artful Aesthetics</h4>
+                    <p>Subtle, natural enhancements and rejuvenating facials tailored to your unique structure.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-visual">
+            <div class="visual-backdrop"></div>
+            <div class="image-container">
+                <!-- Using a highly curated, sophisticated Unsplash image fitting the celestial/wellness vibe -->
+                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop" alt="Abstract fluid artistic representation of wellness and aesthetic beauty">
+                <div class="image-overlay"></div>
+            </div>
+            
+            <div class="floating-card">
+                <div class="floating-card-icon">T</div>
+                <h5>Tonya Fitch, NP</h5>
+                <p>Over 25 years of deep healthcare expertise, bringing unparalleled safety and artistry to every personalized treatment plan.</p>
+            </div>
+        </div>
+    
+
+<style id="below-fold-patch">
+    .section-padding {
+        padding: 8rem 5%;
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+    
+    .bg-ivory { background-color: var(--warm-ivory); }
+    .bg-blush { background-color: var(--soft-blush); }
+    .bg-plum { background-color: var(--deep-plum); color: var(--warm-ivory); }
+    
+    .text-center { text-align: center; }
+    .mb-2 { margin-bottom: 2rem; }
+    .mb-3 { margin-bottom: 3rem; }
+    .mb-4 { margin-bottom: 4rem; }
+    
+    .heading-secondary {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(2.5rem, 4vw, 3.5rem);
+        font-weight: 400;
+        color: var(--deep-plum);
+        letter-spacing: -0.01em;
+        line-height: 1.1;
+    }
+    
+    .bg-plum .heading-secondary { color: var(--warm-ivory); }
+    
+    .heading-tertiary {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: var(--deep-plum);
+        margin-bottom: 1rem;
+    }
+    
+    .subheading {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--aurora-1);
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .bg-plum .subheading { color: var(--aurora-2); }
+    
+    .body-text {
+        font-size: 1.05rem;
+        line-height: 1.7;
+        color: var(--text-light);
+    }
+    
+    .bg-plum .body-text { color: rgba(250, 249, 246, 0.8); }
+
+    /* Philosophy Section */
+    .philosophy-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        gap: 6rem;
+        align-items: center;
+    }
+    .philosophy-image {
+        position: relative;
+        border-radius: 200px 200px 0 0;
+        overflow: hidden;
+        box-shadow: 0 24px 48px rgba(43, 26, 42, 0.08);
+        height: 650px;
+    }
+    .philosophy-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 7s ease;
+    }
+    .philosophy-image:hover img {
+        transform: scale(1.05);
+    }
+
+    /* Services Section */
+    .services-wrapper {
+        position: relative;
+    }
+    .services-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 2rem;
+        position: relative;
+        z-index: 2;
+    }
+    .service-card {
+        background: var(--warm-ivory);
+        border: 1px solid var(--moonlit-silver);
+        padding: 3rem 2.5rem;
+        border-radius: 8px;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .service-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--aurora-2);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s ease;
+    }
+    .service-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(43, 26, 42, 0.05);
+        border-color: transparent;
+    }
+    .service-card:hover::before {
+        transform: scaleX(1);
+    }
+    .service-icon {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        color: var(--aurora-1);
+        margin-bottom: 1.5rem;
+        font-style: italic;
+    }
+    .service-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: auto;
+        padding-top: 2rem;
+        color: var(--deep-plum);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: color 0.3s ease;
+    }
+    .service-link::after {
+        content: '→';
+        transition: transform 0.3s ease;
+    }
+    .service-card:hover .service-link {
+        color: var(--aurora-1);
+    }
+    .service-card:hover .service-link::after {
+        transform: translateX(4px);
+    }
+
+    /* Testimonials */
+    .testimonial-wrapper {
+        background: linear-gradient(to bottom, var(--warm-ivory) 0%, var(--soft-blush) 100%);
+    }
+    .testimonial-slider {
+        max-width: 900px;
+        margin: 0 auto;
+        text-align: center;
+        position: relative;
+    }
+    .quote-mark {
+        font-family: 'Playfair Display', serif;
+        font-size: 8rem;
+        color: var(--aurora-2);
+        opacity: 0.2;
+        line-height: 0.5;
+        margin-bottom: 1rem;
+    }
+    .testimonial-text {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        line-height: 1.4;
+        color: var(--deep-plum);
+        font-style: italic;
+        margin-bottom: 2.5rem;
+    }
+    .testimonial-author {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--aurora-1);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+    .testimonial-treatment {
+        font-size: 0.85rem;
+        color: var(--text-light);
+        margin-top: 0.25rem;
+        font-weight: 300;
+    }
+
+    /* Credentials & Process */
+    .credentials-inner {
+        background: var(--warm-ivory);
+        border: 1px solid var(--moonlit-silver);
+        padding: 5rem;
+        border-radius: 8px;
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 5rem;
+        align-items: center;
+        box-shadow: 0 10px 30px rgba(43, 26, 42, 0.03);
+    }
+    .credentials-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 3rem;
+    }
+    .stat-item {
+        position: relative;
+    }
+    .stat-item::after {
+        content: '';
+        position: absolute;
+        bottom: -1.5rem;
+        left: 0;
+        width: 40px;
+        height: 1px;
+        background: var(--aurora-2);
+    }
+    .stat-item:last-child::after {
+        display: none;
+    }
+    .stat-number {
+        font-family: 'Playfair Display', serif;
+        font-size: 4rem;
+        color: var(--aurora-1);
+        line-height: 1;
+        margin-bottom: 0.5rem;
+        font-style: italic;
+    }
+    .stat-label {
+        font-size: 0.85rem;
+        color: var(--text-main);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 500;
+    }
+
+    /* CTA Section */
+    .cta-section {
+        background-color: var(--deep-plum);
+        position: relative;
+        overflow: hidden;
+    }
+    .cta-glow {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100vw;
+        height: 100vw;
+        background: radial-gradient(circle, rgba(185,153,176,0.15) 0%, rgba(43,26,42,0) 50%);
+        pointer-events: none;
+    }
+    .cta-container {
+        position: relative;
+        z-index: 2;
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+    }
+    .btn-primary-light {
+        background-color: var(--warm-ivory);
+        color: var(--deep-plum);
+        text-decoration: none;
+        padding: 1.25rem 3rem;
+        border-radius: 4px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        letter-spacing: 0.03em;
+        transition: all 0.3s ease;
+        display: inline-block;
+        margin-top: 2rem;
+    }
+    .btn-primary-light:hover {
+        background-color: var(--soft-blush);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Footer */
+    .site-footer {
+        background-color: var(--warm-ivory);
+        padding: 5rem 5% 2rem;
+        border-top: 1px solid var(--moonlit-silver);
+    }
+    .footer-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1.5fr;
+        gap: 4rem;
+        max-width: 1600px;
+        margin: 0 auto;
+        margin-bottom: 4rem;
+    }
+    .footer-brand {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        max-width: 300px;
+    }
+    .footer-logo {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.5rem;
+        color: var(--deep-plum);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .footer-col h6 {
+        font-size: 0.9rem;
+        color: var(--deep-plum);
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+    .footer-links {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .footer-links a {
+        text-decoration: none;
+        color: var(--text-light);
+        font-size: 0.95rem;
+        transition: color 0.3s ease;
+    }
+    .footer-links a:hover {
+        color: var(--aurora-1);
+    }
+    .footer-contact p {
+        color: var(--text-light);
+        font-size: 0.95rem;
+        margin-bottom: 0.75rem;
+        line-height: 1.6;
+    }
+    .footer-bottom {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding-top: 2rem;
+        border-top: 1px solid var(--moonlit-silver);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+        color: var(--text-light);
+    }
+
+    @media (max-width: 1200px) {
+        .philosophy-grid { gap: 4rem; grid-template-columns: 1fr 1fr; }
+        .philosophy-image { height: 500px; }
+        .credentials-inner { padding: 4rem; gap: 4rem; }
+        .footer-grid { grid-template-columns: 1fr 1fr; gap: 3rem; }
+    }
+
+    @media (max-width: 992px) {
+        .philosophy-grid { grid-template-columns: 1fr; }
+        .philosophy-image { height: 500px; order: -1; border-radius: 100px 100px 0 0; }
+        .credentials-inner { grid-template-columns: 1fr; padding: 3rem; gap: 3rem; }
+        .credentials-stats { flex-direction: row; flex-wrap: wrap; gap: 2rem; justify-content: space-between; }
+        .stat-item::after { display: none; }
+    }
+
+    @media (max-width: 768px) {
+        .section-padding { padding: 5rem 5%; }
+        .heading-secondary { font-size: 2.25rem; }
+        .testimonial-text { font-size: 1.5rem; }
+        .footer-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+        .footer-bottom { flex-direction: column; gap: 1rem; text-align: center; }
+        .credentials-stats { flex-direction: column; text-align: center; }
+    }
+</style>
+
+<section class="bg-ivory">
+    <div class="section-padding philosophy-grid">
+        <div class="philosophy-image">
+            <img src="https://images.unsplash.com/photo-1519823551278-64ac92734fb1?q=80&w=2487&auto=format&fit=crop" alt="Calm wellness interior with botanical shadows">
+        </div>
+        <div class="philosophy-content">
+            <span class="subheading">Our Philosophy</span>
+            <h2 class="heading-secondary mb-3">Beauty grounded in medical integrity.</h2>
+            <p class="body-text mb-3">
+                Astre Wellness isn't just about surface-level changes. It's about deep, physiological optimization that radiates outward. We believe true aesthetic enhancement begins with cellular health.
+            </p>
+            <p class="body-text mb-4">
+                Led by 25+ years of clinical expertise, we merge advanced medical weight loss, targeted IV nutrient therapies, and precision aesthetic treatments into a single, cohesive wellness strategy tailored exclusively to your biology.
+            </p>
+            <a href="#" class="btn-primary" style="display: inline-block;">Meet Tonya Fitch</a>
+        </div>
+    </div>
+</section>
+
+<section class="bg-blush services-wrapper">
+    <div class="section-padding">
+        <div class="text-center mb-4" style="max-width: 700px; margin-inline: auto;">
+            <span class="subheading">Curated Treatments</span>
+            <h2 class="heading-secondary mb-3">Signature services tailored to your unique structure.</h2>
+            <p class="body-text">We utilize industry-leading techniques and pharmaceutical-grade treatments to deliver natural, profound results.</p>
+        </div>
+        
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="service-icon">01</div>
+                <h3 class="heading-tertiary">Medical Weight Loss</h3>
+                <p class="body-text">Physician-guided programs utilizing Semaglutide, Tirzepatide, and custom protocols to achieve sustainable, healthy weight management.</p>
+                <a href="#" class="service-link">Explore Programs</a>
+            </div>
+            
+            <div class="service-card">
+                <div class="service-icon">02</div>
+                <h3 class="heading-tertiary">IV Nutrient Therapy</h3>
+                <p class="body-text">Custom-blended intravenous infusions designed to boost immunity, accelerate recovery, and enhance natural cellular radiance.</p>
+                <a href="#" class="service-link">View Infusions</a>
+            </div>
+            
+            <div class="service-card">
+                <div class="service-icon">03</div>
+                <h3 class="heading-tertiary">Aesthetic Injections</h3>
+                <p class="body-text">Precision neuromodulators and dermal fillers carefully applied to restore volume, smooth fine lines, and refine your natural contours.</p>
+                <a href="#" class="service-link">Discover Aesthetics</a>
+            </div>
+            
+            <div class="service-card">
+                <div class="service-icon">04</div>
+                <h3 class="heading-tertiary">Skin Rejuvenation</h3>
+                <p class="body-text">Advanced facials, targeted skin tightening, and restorative dermal treatments to unveil a flawless, luminous complexion.</p>
+                <a href="#" class="service-link">Review Treatments</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="bg-ivory">
+    <div class="section-padding">
+        <div class="credentials-inner">
+            <div class="credentials-stats">
+                <div class="stat-item">
+                    <div class="stat-number">25+</div>
+                    <div class="stat-label">Years Clinical Experience</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Customized Protocols</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">Mcn</div>
+                    <div class="stat-label">Based in Macon, GA</div>
+                </div>
+            </div>
+            <div class="credentials-content">
+                <span class="subheading">Clinical Excellence</span>
+                <h2 class="heading-secondary mb-3">Safety is our foundation. Artistry is our signature.</h2>
+                <p class="body-text mb-3">
+                    In an industry often clouded by rushed procedures, Astre Wellness stands apart through meticulous clinical governance. Tonya Fitch, NP, brings over two decades of critical healthcare experience to every aesthetic decision.
+                </p>
+                <p class="body-text">
+                    Every dose, every placement, and every protocol is administered with a deep understanding of human anatomy. We never compromise on safety, ensuring your journey to renewed confidence is as secure as it is transformative.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="testimonial-wrapper">
+    <div class="section-padding">
+        <div class="testimonial-slider">
+            <div class="quote-mark">"</div>
+            <p class="testimonial-text">
+                Tonya didn't just give me a treatment; she gave me a comprehensive plan. Her clinical background made me feel incredibly safe, and the results of my weight loss protocol and skin treatments have been nothing short of life-changing. I finally feel like myself again.
+            </p>
+            <div class="testimonial-author">Sarah M.</div>
+            <div class="testimonial-treatment">Medical Weight Loss & Aesthetic Patient</div>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <div class="cta-glow"></div>
+    <div class="section-padding cta-container">
+        <span class="subheading" style="color: var(--aurora-2);">Begin Your Journey</span>
+        <h2 class="heading-secondary mb-3" style="color: var(--warm-ivory);">Ready to experience the Astre difference?</h2>
+        <p class="body-text mb-4" style="color: rgba(250, 249, 246, 0.8);">
+            Schedule a comprehensive consultation at our Macon studio to discuss your goals, evaluate your options, and craft a personalized wellness roadmap.
+        </p>
+        <a href="#" class="btn-primary-light">Book Your Consultation</a>
+    </div>
+</section>
+
+<footer class="site-footer">
+    <div class="footer-grid">
+        <div class="footer-brand">
+            <a href="#" class="footer-logo">
+                <span class="logo-mark"></span>
+                Astre Wellness
+            </a>
+            <p class="body-text" style="font-size: 0.9rem;">
+                A premium med spa and wellness studio in Macon, GA, blending decades of clinical expertise with refined aesthetic artistry.
+            </p>
+        </div>
+        
+        <div class="footer-col">
+            <h6>Treatments</h6>
+            <ul class="footer-links">
+                <li><a href="#">Medical Weight Loss</a></li>
+                <li><a href="#">IV Therapy</a></li>
+                <li><a href="#">Injectables</a></li>
+                <li><a href="#">Skin Rejuvenation</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-col">
+            <h6>Studio</h6>
+            <ul class="footer-links">
+                <li><a href="#">About Tonya</a></li>
+                <li><a href="#">Membership</a></li>
+                <li><a href="#">Patient Portal</a></li>
+                <li><a href="#">Contact Us</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-col">
+            <h6>Visit Us</h6>
+            <div class="footer-contact">
+                <p>300 Northside Crossing</p>
+                <p>Macon, GA 31210</p>
+                <br>
+                <p><strong>Phone:</strong> (478) 555-0198</p>
+                <p><strong>Email:</strong> hello@astrewellness.com</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer-bottom">
+        <div>&copy; 2026 Astre Wellness. All rights reserved.</div>
+        <div style="display: flex; gap: 1.5rem;">
+            <a href="#" style="color: var(--text-light); text-decoration: none;">Privacy Policy</a>
+            <a href="#" style="color: var(--text-light); text-decoration: none;">Terms of Service</a>
+        </div>
+    </div>
+</footer>
+
+</main>
+
+</body>
+</html>

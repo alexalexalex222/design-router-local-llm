@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Michael's Roofing | Savannah's Coastal Roofing Authority</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --weathered-slate: #2C3338;
+  --slate-light: #4A555C;
+  --fog-white: #F4F6F7;
+  --fog-dense: #E2E8EC;
+  --oxidized-copper: #529688;
+  --copper-dark: #3A6D62;
+  --muted-sand: #D5CBB8;
+  --sand-dark: #BCAE94;
+  --nav-height: 100px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Georgia", serif;
+  background-color: var(--fog-white);
+  color: var(--weathered-slate);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, .serif {
+  font-family: "Playfair Display", "Georgia", serif;
+}
+
+p, a, button, .sans {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Header */
+header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5vw;
+  z-index: 100;
+  border-bottom: 1px solid rgba(44, 51, 56, 0.08);
+}
+
+.logo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.logo-main {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--weathered-slate);
+  text-transform: uppercase;
+}
+
+.logo-sub {
+  font-family: "Inter", sans-serif;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--oxidized-copper);
+  margin-top: 0.2rem;
+  font-weight: 600;
+}
+
+nav.desktop-nav {
+  display: flex;
+  gap: 3.5rem;
+  align-items: center;
+}
+
+nav.desktop-nav a {
+  text-decoration: none;
+  color: var(--slate-light);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+  position: relative;
+  font-family: "Inter", sans-serif;
+}
+
+nav.desktop-nav a:hover {
+  color: var(--weathered-slate);
+}
+
+nav.desktop-nav a::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--oxidized-copper);
+  transition: width 0.3s ease;
+}
+
+nav.desktop-nav a:hover::after {
+  width: 100%;
+}
+
+.contact-button {
+  background-color: transparent;
+  color: var(--weathered-slate);
+  border: 1px solid var(--weathered-slate);
+  padding: 0.875rem 1.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: "Inter", sans-serif;
+}
+
+.contact-button:hover {
+  background-color: var(--weathered-slate);
+  color: var(--fog-white);
+}
+
+/* Hero Section */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  padding-top: var(--nav-height);
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  background-color: var(--fog-white);
+}
+
+/* Angular Roofline Background Split */
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 62%;
+  height: 100%;
+  background: linear-gradient(145deg, var(--weathered-slate) 0%, #1e2428 100%);
+  clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%);
+  z-index: 0;
+}
+
+/* Subtle Noise Texture Overlay on Dark Slate */
+.hero::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 62%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
+  clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Left Content */
+.hero-content {
+  position: relative;
+  z-index: 10;
+  padding: 6vw 2vw 6vw 5vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.established-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.established-line {
+  width: 48px;
+  height: 2px;
+  background-color: var(--oxidized-copper);
+}
+
+.established-text {
+  font-family: "Inter", sans-serif;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--slate-light);
+  font-weight: 700;
+}
+
+.hero h1 {
+  font-size: clamp(3.5rem, 5vw, 5.5rem);
+  line-height: 1.05;
+  color: var(--weathered-slate);
+  margin-bottom: 2rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.hero h1 span.italic {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--oxidized-copper);
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.hero p.lead {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: var(--slate-light);
+  max-width: 440px;
+  margin-bottom: 3.5rem;
+  font-weight: 400;
+}
+
+.cta-group {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.btn-primary {
+  background-color: var(--oxidized-copper);
+  color: white;
+  border: none;
+  padding: 1.25rem 2.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  font-family: "Inter", sans-serif;
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  transition: left 0.6s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--copper-dark);
+}
+
+.btn-primary:hover::after {
+  left: 100%;
+}
+
+.btn-secondary {
+  color: var(--weathered-slate);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: color 0.3s ease;
+  font-family: "Inter", sans-serif;
+}
+
+.btn-secondary:hover {
+  color: var(--oxidized-copper);
+}
+
+.btn-secondary svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  transition: transform 0.3s ease;
+}
+
+.btn-secondary:hover svg {
+  transform: translateX(4px);
+}
+
+/* Right Content - Visual & Craftsmanship Panel */
+.hero-visual {
+  position: relative;
+  z-index: 10;
+  padding: 6vw 5vw 6vw 3vw;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.image-frame {
+  position: relative;
+  width: 100%;
+  max-width: 680px;
+  height: 65vh;
+  min-height: 540px;
+  background-color: var(--muted-sand);
+  border: 1px solid rgba(213, 203, 184, 0.4);
+  box-shadow: -30px 40px 80px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.roof-art {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background:
+    radial-gradient(circle at 78% 18%, rgba(255,255,255,0.22), transparent 18%),
+    linear-gradient(135deg, rgba(255,255,255,0.08), transparent 42%),
+    repeating-linear-gradient(180deg, rgba(255,255,255,0.08) 0 2px, transparent 2px 28px),
+    linear-gradient(205deg, transparent 0 35%, rgba(32, 40, 45, 0.95) 35% 36%, transparent 36% 100%),
+    linear-gradient(156deg, transparent 0 27%, rgba(55, 66, 72, 0.95) 27% 28%, transparent 28% 100%),
+    linear-gradient(160deg, #d5c7ae 0 48%, #b49f81 48% 58%, #2c3439 58% 100%);
+  background-color: var(--muted-sand);
+  filter: contrast(1.05) saturate(0.95);
+  transition: transform 10s ease;
+}
+
+.roof-art::before,
+.roof-art::after {
+  content: '';
+  position: absolute;
+  border: 2px solid rgba(241, 235, 220, 0.7);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.22);
+}
+
+.roof-art::before {
+  inset: 14% 14% 18% 18%;
+  border-left-width: 0;
+  transform: skewX(-10deg);
+}
+
+.roof-art::after {
+  left: 16%;
+  right: 22%;
+  bottom: 20%;
+  height: 22%;
+  border-top-width: 0;
+  border-right-width: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(0,0,0,0.12));
+  transform: skewX(-18deg);
+}
+
+.image-frame:hover .roof-art {
+  transform: scale(1.05);
+}
+
+/* Architectural framing accents */
+.frame-accent-top {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 120px;
+  height: 120px;
+  border-top: 3px solid var(--oxidized-copper);
+  border-right: 3px solid var(--oxidized-copper);
+  z-index: 12;
+}
+
+.frame-accent-bottom {
+  position: absolute;
+  bottom: -20px;
+  left: -20px;
+  width: 120px;
+  height: 120px;
+  border-bottom: 3px solid var(--muted-sand);
+  border-left: 3px solid var(--muted-sand);
+  z-index: 12;
+}
+
+/* Craftsmanship Panel - Displaced for depth */
+.proof-panel {
+  position: absolute;
+  bottom: 3rem;
+  left: -4rem;
+  background-color: var(--fog-white);
+  padding: 3rem;
+  width: 360px;
+  box-shadow: 15px 25px 50px rgba(0,0,0,0.2);
+  border-left: 6px solid var(--oxidized-copper);
+  z-index: 20;
+}
+
+.proof-icon {
+  margin-bottom: 1.5rem;
+}
+
+.proof-icon svg {
+  width: 44px;
+  height: 44px;
+  stroke: var(--oxidized-copper);
+  fill: none;
+  stroke-width: 1.2;
+  stroke-linejoin: miter;
+  stroke-linecap: square;
+}
+
+.proof-title {
+  font-family: "Playfair Display", "Georgia", serif;
+  font-size: 1.35rem;
+  color: var(--weathered-slate);
+  margin-bottom: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.proof-desc {
+  font-family: "Inter", sans-serif;
+  font-size: 0.875rem;
+  color: var(--slate-light);
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+
+.proof-badges {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  border-top: 1px solid var(--fog-dense);
+  padding-top: 1.5rem;
+}
+
+.badge-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.badge-val {
+  font-family: "Playfair Display", serif;
+  font-size: 1.75rem;
+  color: var(--weathered-slate);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.badge-label {
+  font-family: "Inter", sans-serif;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--slate-light);
+  margin-top: 0.5rem;
+  font-weight: 600;
+}
+
+/* Vertical guide lines */
+.architectural-lines {
+  position: absolute;
+  top: 0;
+  left: 5vw;
+  width: 1px;
+  height: 100vh;
+  background-color: rgba(44, 51, 56, 0.05);
+  z-index: 1;
+}
+.architectural-lines::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 25vw;
+  width: 1px;
+  height: 100vh;
+  background-color: rgba(44, 51, 56, 0.05);
+}
+
+@media (max-width: 1200px) {
+  .hero {
+    grid-template-columns: 1.1fr 1fr;
+  }
+  .proof-panel {
+    left: -2rem;
+    width: 320px;
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding-top: calc(var(--nav-height) + 4rem);
+  }
+  
+  .hero::before, .hero::after {
+    clip-path: polygon(0 50%, 100% 40%, 100% 100%, 0 100%);
+    width: 100%;
+  }
+
+  .hero-content {
+    padding: 0 5vw 8vw 5vw;
+  }
+  
+  .hero h1 {
+    max-width: 600px;
+  }
+
+  .hero-visual {
+    padding: 5vw;
+    justify-content: center;
+  }
+  
+  .proof-panel {
+    left: 5vw;
+    bottom: -3rem;
+  }
+  
+  nav.desktop-nav {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .contact-button {
+    display: none;
+  }
+  
+  .hero h1 {
+    font-size: 3.25rem;
+  }
+  
+  .hero::before, .hero::after {
+    clip-path: polygon(0 40%, 100% 30%, 100% 100%, 0 100%);
+  }
+  
+  .proof-panel {
+    position: relative;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    margin-top: -3rem;
+    padding: 2rem;
+  }
+  
+  .image-frame {
+    height: 50vh;
+    min-height: 400px;
+    max-width: 100%;
+  }
+  
+  .cta-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+</style>
+</head>
+<body>
+
+  <div class="architectural-lines"></div>
+
+  <header>
+    <div class="logo">
+      <div class="logo-main">Michael's</div>
+      <div class="logo-sub">Roofing & Construction</div>
+    </div>
+    
+    <nav class="desktop-nav">
+      <a href="#residential">Residential</a>
+      <a href="#commercial">Commercial</a>
+      <a href="#heritage">Our Heritage</a>
+      <a href="#portfolio">Portfolio</a>
+    </nav>
+    
+    <button class="contact-button">Request Evaluation</button>
+  </header>
+
+  <section class="hero">
+    <div class="hero-content">
+      <div class="established-badge">
+        <div class="established-line"></div>
+        <div class="established-text">Serving Savannah Since 1982</div>
+      </div>
+      
+      <h1>
+        Coastal defense.
+        <span class="italic">Generational craft.</span>
+      </h1>
+      
+      <p class="lead">
+        For over four decades, we’ve fortified Savannah’s homes and commercial properties against coastal weather. As an Owens Corning Platinum Preferred contractor, our standards outlast the storms.
+      </p>
+      
+      <div class="cta-group">
+        <button class="btn-primary">Schedule Inspection</button>
+        <a href="#portfolio" class="btn-secondary">
+          View Projects
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 4L10.59 5.41L16.17 11H4V13H16.17L10.59 18.59L12 20L20 12L12 4Z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+    
+    <div class="hero-visual">
+      <div class="frame-accent-top"></div>
+      
+      <div class="image-frame">
+        <div class="roof-art" aria-label="Layered coastal roofline illustration"></div>
+      </div>
+      
+      <div class="frame-accent-bottom"></div>
+
+      <div class="proof-panel">
+        <div class="proof-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 21H21" stroke="var(--oxidized-copper)" stroke-width="1.5" stroke-linecap="square"/>
+            <path d="M12 3L3 10V21H21V10L12 3Z" stroke="var(--oxidized-copper)" stroke-width="1.5" stroke-linejoin="miter"/>
+            <path d="M9 21V14H15V21" stroke="var(--oxidized-copper)" stroke-width="1.5" stroke-linejoin="miter"/>
+            <path d="M12 8V11" stroke="var(--oxidized-copper)" stroke-width="1.5"/>
+          </svg>
+        </div>
+        
+        <div class="proof-title">Platinum Preferred</div>
+        <div class="proof-desc">
+          Top 1% of roofing contractors nationwide. Certified for elite installations and extended material warranties.
+        </div>
+        
+        <div class="proof-badges">
+          <div class="badge-item">
+            <div class="badge-val">42+</div>
+            <div class="badge-label">Years Local</div>
+          </div>
+          <div class="badge-item">
+            <div class="badge-val">5k+</div>
+            <div class="badge-label">Roofs Built</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+
+<style id="below-fold-patch">
+  /* Common below fold styles */
+  .section-padding {
+    padding: 8vw 5vw;
+    position: relative;
+  }
+  
+  .bg-dark {
+    background-color: var(--weathered-slate);
+    color: var(--fog-white);
+  }
+
+  .bg-sand {
+    background-color: var(--muted-sand);
+    color: var(--weathered-slate);
+  }
+
+  .bg-light {
+    background-color: var(--fog-white);
+    color: var(--weathered-slate);
+  }
+  
+  .section-header {
+    margin-bottom: 4.5rem;
+    max-width: 700px;
+  }
+  
+  .section-kicker {
+    font-family: "Inter", sans-serif;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--oxidized-copper);
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    display: block;
+  }
+  
+  .bg-dark .section-kicker {
+    color: var(--sand-dark);
+  }
+  
+  .section-title {
+    font-size: clamp(2.5rem, 4vw, 3.5rem);
+    line-height: 1.1;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    font-family: "Playfair Display", "Georgia", serif;
+    letter-spacing: -0.01em;
+  }
+  
+  .section-title span.italic {
+    font-style: italic;
+    color: var(--oxidized-copper);
+    font-weight: 400;
+  }
+  
+  .bg-dark .section-title span.italic {
+    color: var(--sand-dark);
+  }
+
+  .section-desc {
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: var(--slate-light);
+    font-family: "Inter", sans-serif;
+  }
+  
+  .bg-dark .section-desc {
+    color: rgba(244, 246, 247, 0.75);
+  }
+
+  /* Services Section */
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.5vw;
+    position: relative;
+    z-index: 10;
+  }
+  
+  .service-card {
+    background: #ffffff;
+    padding: 3.5rem 2.5rem;
+    border: 1px solid rgba(44, 51, 56, 0.06);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .service-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--oxidized-copper);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+
+  .service-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.04);
+  }
+  
+  .service-card:hover::before {
+    transform: scaleX(1);
+  }
+  
+  .service-icon {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 2.5rem;
+    stroke: var(--weathered-slate);
+    stroke-width: 1.2;
+    fill: none;
+    transition: stroke 0.4s ease;
+  }
+  
+  .service-card:hover .service-icon {
+    stroke: var(--oxidized-copper);
+  }
+
+  .service-title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    color: var(--weathered-slate);
+    font-family: "Playfair Display", serif;
+  }
+  
+  .service-text {
+    font-size: 0.9375rem;
+    color: var(--slate-light);
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    font-family: "Inter", sans-serif;
+  }
+
+  .service-link {
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--weathered-slate);
+    text-decoration: none;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: "Inter", sans-serif;
+    transition: color 0.3s ease;
+  }
+  
+  .service-link svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+    transition: transform 0.3s ease;
+  }
+  
+  .service-card:hover .service-link {
+    color: var(--oxidized-copper);
+  }
+  
+  .service-card:hover .service-link svg {
+    transform: translateX(4px);
+  }
+
+  /* Philosophy / Split Section */
+  .philosophy-section {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    min-height: 85vh;
+    border-top: 1px solid rgba(44, 51, 56, 0.08);
+  }
+  
+  .philosophy-image {
+    background-color: var(--weathered-slate);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .philosophy-image::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #1e2428 0%, var(--weathered-slate) 100%);
+  }
+
+  .philosophy-image::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  .philosophy-art {
+    position: absolute;
+    inset: 15%;
+    border: 1px solid rgba(213, 203, 184, 0.15);
+    background: linear-gradient(135deg, transparent 40%, rgba(82, 150, 136, 0.05));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .philosophy-art::before,
+  .philosophy-art::after {
+    content: '';
+    position: absolute;
+    border: 1px solid rgba(213, 203, 184, 0.3);
+  }
+
+  .philosophy-art::before {
+    inset: -20px 20px 20px -20px;
+    border-top: none;
+    border-right: none;
+    opacity: 0.5;
+  }
+
+  .philosophy-art::after {
+    width: 60%;
+    height: 60%;
+    transform: skewX(-12deg);
+    border-left: none;
+    border-bottom: none;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .philosophy-content {
+    padding: 8vw 6vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+  }
+  
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem 2rem;
+    margin-top: 4rem;
+    padding-top: 3rem;
+    border-top: 1px solid rgba(244, 246, 247, 0.08);
+  }
+  
+  .stat-block .stat-num {
+    font-size: 3.5rem;
+    font-family: "Playfair Display", serif;
+    color: var(--muted-sand);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+  
+  .stat-block .stat-label {
+    font-size: 0.75rem;
+    font-family: "Inter", sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 600;
+    color: rgba(244, 246, 247, 0.6);
+  }
+
+  /* Process Section */
+  .process-section {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .process-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+    max-width: 800px;
+    position: relative;
+    margin-top: 3rem;
+  }
+  
+  .process-steps::before {
+    content: '';
+    position: absolute;
+    top: 24px;
+    bottom: 24px;
+    left: 28px;
+    width: 1px;
+    background-color: var(--oxidized-copper);
+    opacity: 0.3;
+    z-index: 0;
+  }
+  
+  .step {
+    display: flex;
+    gap: 3rem;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .step-number {
+    width: 56px;
+    height: 56px;
+    background-color: var(--fog-white);
+    border: 2px solid var(--oxidized-copper);
+    color: var(--weathered-slate);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Playfair Display", serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 8px var(--fog-white);
+  }
+  
+  .step-content {
+    padding-top: 0.5rem;
+  }
+  
+  .step-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--weathered-slate);
+    font-family: "Playfair Display", serif;
+  }
+  
+  .step-desc {
+    color: var(--slate-light);
+    line-height: 1.7;
+    font-size: 1rem;
+    font-family: "Inter", sans-serif;
+  }
+
+  /* Testimonial Section */
+  .testimonial-wrapper {
+    background-color: var(--muted-sand);
+    padding: 8vw 5vw;
+    text-align: center;
+    position: relative;
+  }
+  
+  .testimonial-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  .quote-mark {
+    font-family: "Playfair Display", serif;
+    font-size: 8rem;
+    line-height: 0;
+    color: rgba(44, 51, 56, 0.12);
+    margin-bottom: -1rem;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .testimonial-text {
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    font-family: "Playfair Display", serif;
+    font-style: italic;
+    color: var(--weathered-slate);
+    max-width: 900px;
+    margin: 0 auto 3.5rem auto;
+    line-height: 1.4;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .testimonial-author {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--slate-light);
+    font-family: "Inter", sans-serif;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .testimonial-author span {
+    color: var(--weathered-slate);
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    opacity: 0.8;
+  }
+
+  /* CTA Banner */
+  .cta-banner {
+    background-color: var(--weathered-slate);
+    padding: 6vw 5vw;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .cta-banner::before {
+    content: '';
+    position: absolute;
+    right: -5%;
+    top: -50%;
+    width: 40%;
+    height: 200%;
+    background: rgba(213, 203, 184, 0.04);
+    transform: rotate(15deg);
+    pointer-events: none;
+  }
+
+  .cta-content {
+    max-width: 600px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .cta-content h2 {
+    color: var(--fog-white);
+    font-size: clamp(2rem, 3vw, 2.75rem);
+    margin-bottom: 1rem;
+    font-family: "Playfair Display", serif;
+    line-height: 1.2;
+  }
+
+  .cta-content p {
+    color: rgba(244, 246, 247, 0.7);
+    font-family: "Inter", sans-serif;
+    font-size: 1.125rem;
+  }
+  
+  .cta-banner .btn-primary {
+    background-color: var(--muted-sand);
+    color: var(--weathered-slate);
+    z-index: 2;
+  }
+  
+  .cta-banner .btn-primary:hover {
+    background-color: white;
+  }
+
+  /* Footer */
+  .site-footer {
+    background-color: #161a1d;
+    color: var(--fog-white);
+    padding: 6vw 5vw 2vw 5vw;
+    position: relative;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1.5fr;
+    gap: 4vw;
+    margin-bottom: 5rem;
+  }
+  
+  .footer-brand .logo-main {
+    color: white;
+  }
+  
+  .footer-desc {
+    margin-top: 1.5rem;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    max-width: 320px;
+    font-family: "Inter", sans-serif;
+  }
+  
+  .footer-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted-sand);
+    margin-bottom: 2rem;
+    font-weight: 700;
+    font-family: "Inter", sans-serif;
+  }
+  
+  .footer-links {
+    list-style: none;
+  }
+  
+  .footer-links li {
+    margin-bottom: 1rem;
+  }
+  
+  .footer-links a {
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    transition: color 0.3s ease;
+    font-size: 0.9375rem;
+    font-family: "Inter", sans-serif;
+  }
+  
+  .footer-links a:hover {
+    color: white;
+  }
+  
+  .footer-contact p {
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 0.75rem;
+    font-size: 0.9375rem;
+    font-family: "Inter", sans-serif;
+  }
+  
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.8125rem;
+    color: rgba(255,255,255,0.3);
+    font-family: "Inter", sans-serif;
+  }
+
+  /* Responsive below fold */
+  @media (max-width: 1024px) {
+    .philosophy-section {
+      grid-template-columns: 1fr;
+    }
+    .philosophy-image {
+      min-height: 400px;
+    }
+  }
+
+  @media (max-width: 992px) {
+    .services-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .footer-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .cta-banner {
+      flex-direction: column;
+      text-align: left;
+      align-items: flex-start;
+      gap: 2.5rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .services-grid {
+      grid-template-columns: 1fr;
+    }
+    .footer-grid {
+      grid-template-columns: 1fr;
+      gap: 3.5rem;
+    }
+    .stat-grid {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    .step {
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .process-steps::before {
+      display: none;
+    }
+    .footer-bottom {
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+    }
+  }
+</style>
+
+<section id="services" class="bg-light section-padding">
+  <div class="section-header">
+    <span class="section-kicker">Expertise</span>
+    <h2 class="section-title">Architectural integration. <span class="italic">Coastal durability.</span></h2>
+    <p class="section-desc">We engineer roofing systems built specifically for Savannah's climate—balancing strict historic district requirements with modern wind, moisture, and thermal defense technology.</p>
+  </div>
+
+  <div class="services-grid">
+    <div class="service-card">
+      <svg class="service-icon" viewBox="0 0 24 24">
+        <path d="M3 10L12 3L21 10M5 21V11M19 21V11M9 21V16H15V21" />
+      </svg>
+      <h3 class="service-title">Residential Systems</h3>
+      <p class="service-text">Complete roof replacements and protective upgrades using elite architectural shingles, built to withstand coastal weather while elevating your home's curb appeal.</p>
+      <a href="#residential" class="service-link">
+        Explore Residential
+        <svg viewBox="0 0 24 24"><path d="M12 4L10.59 5.41L16.17 11H4V13H16.17L10.59 18.59L12 20L20 12L12 4Z"/></svg>
+      </a>
+    </div>
+
+    <div class="service-card">
+      <svg class="service-icon" viewBox="0 0 24 24">
+        <path d="M4 21V7H14V21M14 11H20V21M8 11V13M8 15V17M17 15V17" />
+      </svg>
+      <h3 class="service-title">Commercial Infrastructure</h3>
+      <p class="service-text">Specialized TPO, EPDM, and metal roofing solutions for Savannah's businesses. We minimize operational downtime while installing low-maintenance, high-efficiency barriers.</p>
+      <a href="#commercial" class="service-link">
+        Explore Commercial
+        <svg viewBox="0 0 24 24"><path d="M12 4L10.59 5.41L16.17 11H4V13H16.17L10.59 18.59L12 20L20 12L12 4Z"/></svg>
+      </a>
+    </div>
+
+    <div class="service-card">
+      <svg class="service-icon" viewBox="0 0 24 24">
+        <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" />
+      </svg>
+      <h3 class="service-title">Historic Preservation</h3>
+      <p class="service-text">Savannah demands a nuanced approach. We provide specialized slate, copper, and custom architectural fabrication to maintain the integrity of historic district properties.</p>
+      <a href="#heritage" class="service-link">
+        View Heritage Work
+        <svg viewBox="0 0 24 24"><path d="M12 4L10.59 5.41L16.17 11H4V13H16.17L10.59 18.59L12 20L20 12L12 4Z"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="heritage" class="philosophy-section bg-dark">
+  <div class="philosophy-image">
+    <div class="philosophy-art"></div>
+  </div>
+  <div class="philosophy-content">
+    <span class="section-kicker">Our Heritage</span>
+    <h2 class="section-title">Defending Savannah's <span class="italic">legacy.</span></h2>
+    <p class="section-desc">For over four decades, we have treated every roof not merely as a weather barrier, but as the structural crown of your property. Our adherence to rigorous historic preservation standards and advanced coastal codes ensures your investment endures the elements without compromising on beauty.</p>
+    
+    <div class="stat-grid">
+      <div class="stat-block">
+        <div class="stat-num">42+</div>
+        <div class="stat-label">Years Local Excellence</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num">Top 1%</div>
+        <div class="stat-label">Platinum Preferred</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num">5k+</div>
+        <div class="stat-label">Coastal Roofs Built</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num">50yr</div>
+        <div class="stat-label">Workmanship Warranties</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="process" class="bg-light section-padding process-section">
+  <div class="section-header">
+    <span class="section-kicker">The Process</span>
+    <h2 class="section-title">Precision from <span class="italic">inspection to installation.</span></h2>
+    <p class="section-desc">We leave nothing to chance. Our systematic approach to roof replacement guarantees structural integrity, transparent communication, and a flawless final product.</p>
+  </div>
+
+  <div class="process-steps">
+    <div class="step">
+      <div class="step-number">01</div>
+      <div class="step-content">
+        <h3 class="step-title">Diagnostic Evaluation</h3>
+        <p class="step-desc">We don't guess. We perform a comprehensive exterior envelope inspection, identifying hidden structural vulnerabilities, moisture intrusion, and precise material requirements before drafting your proposal.</p>
+      </div>
+    </div>
+    
+    <div class="step">
+      <div class="step-number">02</div>
+      <div class="step-content">
+        <h3 class="step-title">Material Curation</h3>
+        <p class="step-desc">Select from elite coastal-grade materials. We guide you through architectural profiles, wind-ratings, and color palettes that complement your property's specific aesthetic and neighborhood regulations.</p>
+      </div>
+    </div>
+    
+    <div class="step">
+      <div class="step-number">03</div>
+      <div class="step-content">
+        <h3 class="step-title">Master Craftsmanship</h3>
+        <p class="step-desc">Installation is executed by our dedicated in-house teams—never subbed out to unknown crews. We adhere strictly to Platinum Preferred standards, ensuring every flashing, valley, and ridge is sealed perfectly.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">04</div>
+      <div class="step-content">
+        <h3 class="step-title">Final Quality Audit</h3>
+        <p class="step-desc">A meticulous post-installation inspection. We verify the structural integrity of the build, clean the perimeter completely of all debris and nails, and issue your extended manufacturer warranties.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="testimonial-wrapper">
+  <div class="quote-mark">"</div>
+  <p class="testimonial-text">Michael's team didn't just replace our roof—they restored the historic character of our home while bringing it up to modern hurricane codes. Their attention to the custom copper detailing was extraordinary.</p>
+  <div class="testimonial-author">
+    James & Eleanor Thornton
+    <span>Historic District, Savannah</span>
+  </div>
+</section>
+
+<section class="cta-banner">
+  <div class="cta-content">
+    <h2>Secure your property's future.</h2>
+    <p>Schedule a comprehensive roof evaluation with Savannah's most trusted craftsmen.</p>
+  </div>
+  <button class="btn-primary">Request Evaluation</button>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo">
+        <div class="logo-main">Michael's</div>
+        <div class="logo-sub">Roofing & Construction</div>
+      </div>
+      <p class="footer-desc">Generational craftsmanship meeting coastal defense standards. Serving Savannah's residential and commercial properties with uncompromising quality since 1982.</p>
+    </div>
+    
+    <div>
+      <h4 class="footer-title">Expertise</h4>
+      <ul class="footer-links">
+        <li><a href="#residential">Residential Roofing</a></li>
+        <li><a href="#commercial">Commercial Systems</a></li>
+        <li><a href="#heritage">Historic Preservation</a></li>
+        <li><a href="#repairs">Storm Restoration</a></li>
+      </ul>
+    </div>
+    
+    <div>
+      <h4 class="footer-title">Company</h4>
+      <ul class="footer-links">
+        <li><a href="#about">Our Heritage</a></li>
+        <li><a href="#portfolio">Project Portfolio</a></li>
+        <li><a href="#warranties">Warranties</a></li>
+        <li><a href="#contact">Contact Us</a></li>
+      </ul>
+    </div>
+    
+    <div class="footer-contact">
+      <h4 class="footer-title">Contact</h4>
+      <p>912-555-0198</p>
+      <p>service@michaelsroofing.com</p>
+      <p>Savannah, GA 31401</p>
+    </div>
+  </div>
+  
+  <div class="footer-bottom">
+    <div>&copy; 2026 Michael's Roofing & Construction. All rights reserved.</div>
+    <div>Owens Corning Platinum Preferred Contractor</div>
+  </div>
+</footer>
+
+</body>
+</html>

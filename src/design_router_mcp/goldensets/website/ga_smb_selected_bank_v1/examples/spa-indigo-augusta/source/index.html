@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spa Indigo - Augusta's Premier Med Spa & Wellness Destination</title>
+<style>
+  :root {
+    --indigo-dark: #070914;
+    --indigo-base: #0f1329;
+    --indigo-light: #1c2242;
+    --lilac-smoke: #3b364d;
+    --pearl: #fdfdfd;
+    --pearl-muted: #b5b5c3;
+    --silver-gold: #d6c7b3;
+    --silver-gold-hover: #e8dbcb;
+    --silver-gold-glow: rgba(214, 199, 179, 0.12);
+  }
+  
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--indigo-dark);
+    color: var(--pearl);
+    line-height: 1.6;
+    overflow-x: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* Textural Noise Overlay for Editorial Print Feel */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 50;
+  }
+
+  /* Ambient Lighting */
+  .ambient-light-1 {
+    position: absolute;
+    top: -10%;
+    right: 5%;
+    width: 50vw;
+    height: 50vw;
+    background: radial-gradient(circle, var(--silver-gold-glow) 0%, rgba(7, 9, 20, 0) 70%);
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+    filter: blur(80px);
+  }
+  
+  .ambient-light-2 {
+    position: absolute;
+    bottom: -15%;
+    left: -5%;
+    width: 60vw;
+    height: 60vw;
+    background: radial-gradient(circle, rgba(59, 54, 77, 0.15) 0%, rgba(7, 9, 20, 0) 70%);
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+    filter: blur(100px);
+  }
+
+  header {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 4rem;
+    border-bottom: 1px solid rgba(253, 253, 253, 0.04);
+  }
+
+  .logo {
+    font-family: "Didot", "Playfair Display", "Georgia", serif;
+    font-size: 1.75rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    color: var(--pearl);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+  
+  .logo svg {
+    width: 26px;
+    height: 26px;
+    fill: none;
+    stroke: var(--silver-gold);
+    stroke-width: 1.5;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 3rem;
+  }
+
+  .nav-links a {
+    color: var(--pearl-muted);
+    text-decoration: none;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color 0.3s ease;
+  }
+
+  .nav-links a:hover {
+    color: var(--pearl);
+  }
+
+  .header-cta {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .phone-link {
+    color: var(--silver-gold);
+    text-decoration: none;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    transition: opacity 0.3s ease;
+  }
+  
+  .phone-link:hover {
+    opacity: 0.8;
+  }
+
+  .btn-primary {
+    background-color: var(--silver-gold);
+    color: var(--indigo-dark);
+    border: none;
+    padding: 1rem 2.25rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--silver-gold-hover);
+    transform: translateY(-1px);
+  }
+
+  main {
+    position: relative;
+    z-index: 10;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 2rem 4rem;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 5rem;
+    max-width: 1500px;
+    margin: 0 auto;
+    width: 100%;
+    align-items: center;
+  }
+
+  .hero-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  .eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--silver-gold);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .eyebrow::before {
+    content: '';
+    display: block;
+    width: 50px;
+    height: 1px;
+    background-color: var(--silver-gold);
+    opacity: 0.6;
+  }
+
+  h1 {
+    font-family: "Didot", "Playfair Display", "Georgia", serif;
+    font-size: 4.5rem;
+    line-height: 1.05;
+    font-weight: 400;
+    color: var(--pearl);
+    letter-spacing: -0.01em;
+  }
+  
+  h1 span {
+    color: var(--silver-gold);
+    font-style: italic;
+  }
+
+  .hero-desc {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: var(--pearl-muted);
+    max-width: 92%;
+    font-weight: 300;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    margin-top: 0.5rem;
+  }
+
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--pearl);
+    border: 1px solid rgba(253, 253, 253, 0.15);
+    padding: 0.95rem 2.25rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--silver-gold);
+    color: var(--silver-gold);
+  }
+  
+  .trust-strip {
+    margin-top: 2rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid rgba(253, 253, 253, 0.06);
+    display: flex;
+    gap: 4rem;
+  }
+  
+  .trust-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  
+  .trust-item strong {
+    font-size: 1.6rem;
+    font-family: "Didot", "Playfair Display", "Georgia", serif;
+    font-weight: 400;
+    color: var(--silver-gold);
+    line-height: 1;
+  }
+  
+  .trust-item span {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--pearl-muted);
+  }
+
+  /* Sculptural Module */
+  .sculptural-module {
+    position: relative;
+    height: 720px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .glass-panel {
+    position: absolute;
+    background: linear-gradient(145deg, rgba(28, 34, 66, 0.6) 0%, rgba(15, 19, 41, 0.8) 100%);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(214, 199, 179, 0.12);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
+  }
+  
+  .panel-main {
+    width: 90%;
+    height: 85%;
+    z-index: 2;
+    padding: 3.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .panel-accent-1 {
+    width: 80%;
+    height: 70%;
+    top: 2%;
+    right: -2%;
+    z-index: 1;
+    background: linear-gradient(145deg, rgba(59, 54, 77, 0.3) 0%, rgba(15, 19, 41, 0.4) 100%);
+    border: 1px solid rgba(253, 253, 253, 0.04);
+  }
+  
+  .panel-accent-2 {
+    width: 75%;
+    height: auto;
+    bottom: 0%;
+    left: -5%;
+    z-index: 3;
+    background: var(--indigo-dark);
+    border: 1px solid rgba(214, 199, 179, 0.15);
+    padding: 2rem 2.5rem;
+    border-left: 3px solid var(--silver-gold);
+  }
+  
+  .module-header {
+    font-family: "Didot", "Playfair Display", "Georgia", serif;
+    font-size: 2.15rem;
+    color: var(--pearl);
+    margin-bottom: 2.5rem;
+    line-height: 1.2;
+  }
+  
+  .treatment-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .treatment-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+    border-bottom: 1px solid rgba(253, 253, 253, 0.05);
+    padding-bottom: 2rem;
+  }
+  
+  .treatment-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  
+  .treatment-icon {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.15rem;
+  }
+  
+  .treatment-icon svg {
+    width: 100%;
+    height: 100%;
+    stroke: var(--silver-gold);
+    stroke-width: 0.75;
+    fill: none;
+  }
+  
+  .treatment-text h3 {
+    font-size: 1.05rem;
+    font-weight: 400;
+    color: var(--pearl);
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.03em;
+  }
+  
+  .treatment-text p {
+    font-size: 0.85rem;
+    color: var(--pearl-muted);
+    font-weight: 300;
+    line-height: 1.5;
+  }
+  
+  .abstract-figure {
+    position: absolute;
+    right: 2rem;
+    bottom: 2rem;
+    opacity: 0.15;
+    pointer-events: none;
+  }
+
+  .mini-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--silver-gold);
+    margin-bottom: 1.25rem;
+    display: block;
+  }
+
+  @media (max-width: 1200px) {
+    h1 { font-size: 3.75rem; }
+    .hero-grid { gap: 3rem; }
+    header { padding: 2rem; }
+    main { padding: 2rem; }
+  }
+
+  @media (max-width: 992px) {
+    .hero-grid {
+      grid-template-columns: 1fr;
+      gap: 5rem;
+    }
+    .sculptural-module {
+      height: 650px;
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .nav-links {
+      display: none;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <div class="ambient-light-1"></div>
+  <div class="ambient-light-2"></div>
+
+  <header>
+    <a href="https://spaindigo.com" class="logo">
+      <svg viewBox="0 0 40 40">
+        <path d="M20 2L24.5 15.5L38 20L24.5 24.5L20 38L15.5 24.5L2 20L15.5 15.5L20 2Z"/>
+      </svg>
+      Spa Indigo
+    </a>
+    <nav class="nav-links">
+      <a href="#aesthetics">Aesthetics</a>
+      <a href="#wellness">Wellness</a>
+      <a href="#hormones">Hormone Optimization</a>
+      <a href="#about">Our Practice</a>
+    </nav>
+    <div class="header-cta">
+      <a href="tel:7063059096" class="phone-link">(706) 305-9096</a>
+      <a href="#consultation" class="btn-primary">Book Consult</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero-grid">
+      <div class="hero-content">
+        <div class="eyebrow">Augusta's Premier Med Spa</div>
+        <h1>Elevate your <span>vitality</span>.<br>Refine your form.</h1>
+        <p class="hero-desc">
+          Spa Indigo merges clinical expertise with an elevated wellness experience. From restorative IV therapies and hormone optimization to advanced structural aesthetics, we provide a comprehensive approach to modern longevity.
+        </p>
+        <div class="hero-actions">
+          <a href="#consultation" class="btn-primary">Schedule Consultation</a>
+          <a href="#treatments" class="btn-secondary">Explore Modalities</a>
+        </div>
+        
+        <div class="trust-strip">
+          <div class="trust-item">
+            <strong>Clinical</strong>
+            <span>Grade Efficacy</span>
+          </div>
+          <div class="trust-item">
+            <strong>Bespoke</strong>
+            <span>Treatment Plans</span>
+          </div>
+          <div class="trust-item">
+            <strong>Augusta, GA</strong>
+            <span>Trusted Authority</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sculptural-module">
+        <div class="glass-panel panel-accent-1"></div>
+        <div class="glass-panel panel-main">
+          <div>
+            <span class="mini-label">Core Protocols</span>
+            <h2 class="module-header">Advanced Aesthetic<br>& Wellness Architecture</h2>
+            <ul class="treatment-list">
+              <li class="treatment-item">
+                <div class="treatment-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 2L12 22M2 12L22 12M4.92893 4.92893L19.0711 19.0711M19.0711 4.92893L4.92893 19.0711"/>
+                  </svg>
+                </div>
+                <div class="treatment-text">
+                  <h3>Morpheus8 & Injectables</h3>
+                  <p>Targeted dermal remodeling and precise structural enhancements.</p>
+                </div>
+              </li>
+              <li class="treatment-item">
+                <div class="treatment-icon">
+                   <svg viewBox="0 0 24 24">
+                     <circle cx="12" cy="12" r="9"/>
+                     <circle cx="12" cy="12" r="3"/>
+                   </svg>
+                </div>
+                <div class="treatment-text">
+                  <h3>Hormone Optimization</h3>
+                  <p>Comprehensive physiological balance for lasting vitality.</p>
+                </div>
+              </li>
+              <li class="treatment-item">
+                <div class="treatment-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 4C12 4 18 9 18 14.5C18 17.5376 15.3137 20 12 20C8.68629 20 6 17.5376 6 14.5C6 9 12 4 12 4Z"/>
+                  </svg>
+                </div>
+                <div class="treatment-text">
+                  <h3>IV Wellness Therapy</h3>
+                  <p>Direct cellular nourishment promoting restorative recovery.</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+          
+          <!-- Abstract structural geometry -->
+          <div class="abstract-figure">
+            <svg width="140" height="140" viewBox="0 0 140 140" fill="none" stroke="var(--silver-gold)" stroke-width="0.5">
+              <circle cx="70" cy="70" r="60"/>
+              <circle cx="70" cy="70" r="35"/>
+              <path d="M70 10 L70 130 M10 70 L130 70"/>
+              <path d="M27.5 27.5 L112.5 112.5 M112.5 27.5 L27.5 112.5"/>
+            </svg>
+          </div>
+        </div>
+        
+        <div class="glass-panel panel-accent-2">
+          <span class="mini-label">Clinical Direction</span>
+          <p style="color: var(--pearl); font-family: 'Didot', 'Playfair Display', serif; font-size: 1.35rem; font-style: italic; margin-bottom: 0.4rem;">Led by Tara Dozier</p>
+          <p style="color: var(--pearl-muted); font-size: 0.85rem; font-weight: 300; line-height: 1.5;">Setting Augusta's standard for patient-first care, combining artistry with rigorous medical science.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+<style id="below-fold-patch">
+  .section-padding {
+    padding: 8rem 4rem;
+    position: relative;
+    z-index: 10;
+  }
+  
+  .container {
+    max-width: 1500px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    align-items: center;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+
+  .section-eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--silver-gold);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .section-eyebrow::before {
+    content: '';
+    display: block;
+    width: 50px;
+    height: 1px;
+    background-color: var(--silver-gold);
+    opacity: 0.6;
+  }
+
+  .section-eyebrow.centered {
+    justify-content: center;
+  }
+  
+  .section-eyebrow.centered::after {
+    content: '';
+    display: block;
+    width: 50px;
+    height: 1px;
+    background-color: var(--silver-gold);
+    opacity: 0.6;
+  }
+
+  .section-header {
+    font-family: "Didot", "Playfair Display", "Georgia", serif;
+    font-size: 3.5rem;
+    line-height: 1.1;
+    font-weight: 400;
+    color: var(--pearl);
+    margin-bottom: 2rem;
+    letter-spacing: -0.01em;
+  }
+
+  .section-header em {
+    color: var(--silver-gold);
+    font-style: italic;
+  }
+
+  .section-header.centered {
+    text-align: center;
+  }
+
+  .text-muted {
+    font-size: 1.1rem;
+    color: var(--pearl-muted);
+    font-weight: 300;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Philosophy Section */
+  .philosophy-visual {
+    position: relative;
+    height: 600px;
+    background: linear-gradient(145deg, rgba(28, 34, 66, 0.4) 0%, rgba(15, 19, 41, 0.6) 100%);
+    border: 1px solid rgba(253, 253, 253, 0.04);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .philosophy-visual::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle at 70% 30%, rgba(214, 199, 179, 0.08) 0%, transparent 60%);
+  }
+
+  .philosophy-accent {
+    position: absolute;
+    bottom: -2rem;
+    left: -2rem;
+    width: 200px;
+    height: 200px;
+    border: 1px solid var(--silver-gold);
+    border-radius: 50%;
+    opacity: 0.2;
+  }
+
+  .philosophy-accent-2 {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    width: 100px;
+    height: 1px;
+    background: var(--silver-gold);
+    opacity: 0.3;
+  }
+
+  /* Modalities Cards */
+  .modality-card {
+    background: linear-gradient(145deg, rgba(28, 34, 66, 0.2) 0%, rgba(15, 19, 41, 0.4) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(253, 253, 253, 0.05);
+    padding: 3.5rem 3rem;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .modality-card:hover {
+    border-color: rgba(214, 199, 179, 0.25);
+    transform: translateY(-4px);
+    background: linear-gradient(145deg, rgba(28, 34, 66, 0.3) 0%, rgba(15, 19, 41, 0.5) 100%);
+  }
+
+  .modality-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at top right, var(--silver-gold-glow) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+  }
+
+  .modality-card:hover::before {
+    opacity: 1;
+  }
+
+  .modality-num {
+    font-family: "Didot", "Playfair Display", serif;
+    font-size: 1.5rem;
+    color: var(--silver-gold);
+    opacity: 0.5;
+    margin-bottom: 2rem;
+    font-style: italic;
+  }
+
+  .modality-title {
+    font-family: "Didot", "Playfair Display", serif;
+    font-size: 1.8rem;
+    color: var(--pearl);
+    margin-bottom: 1.5rem;
+    font-weight: 400;
+  }
+
+  .modality-list {
+    list-style: none;
+    margin-top: 2rem;
+    border-top: 1px solid rgba(253, 253, 253, 0.06);
+    padding-top: 2rem;
+  }
+
+  .modality-list li {
+    font-size: 0.85rem;
+    color: var(--pearl);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .modality-list li::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: var(--silver-gold);
+  }
+
+  /* Process Section */
+  .process-wrapper {
+    position: relative;
+  }
+
+  .process-step {
+    display: grid;
+    grid-template-columns: 0.2fr 1fr;
+    gap: 3rem;
+    border-top: 1px solid rgba(253, 253, 253, 0.06);
+    padding: 4rem 0;
+    align-items: start;
+  }
+
+  .process-step:last-child {
+    border-bottom: 1px solid rgba(253, 253, 253, 0.06);
+  }
+
+  .step-number {
+    font-family: "Didot", "Playfair Display", serif;
+    font-size: 3rem;
+    color: var(--silver-gold);
+    line-height: 1;
+  }
+
+  .step-content h3 {
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--pearl);
+    margin-bottom: 1rem;
+    letter-spacing: 0.02em;
+  }
+
+  .step-content p {
+    font-size: 1rem;
+    color: var(--pearl-muted);
+    font-weight: 300;
+    line-height: 1.6;
+    max-width: 80%;
+  }
+
+  /* Quote Section */
+  .quote-section {
+    background-color: rgba(7, 9, 20, 0.5);
+    border-top: 1px solid rgba(253, 253, 253, 0.03);
+    border-bottom: 1px solid rgba(253, 253, 253, 0.03);
+    text-align: center;
+  }
+
+  .quote-text {
+    font-family: "Didot", "Playfair Display", serif;
+    font-size: 2.75rem;
+    line-height: 1.3;
+    color: var(--pearl);
+    font-style: italic;
+    max-width: 900px;
+    margin: 0 auto 3rem auto;
+  }
+  
+  .quote-author {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--silver-gold);
+  }
+
+  /* CTA Section */
+  .cta-section {
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-ambient {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60vw;
+    height: 60vw;
+    background: radial-gradient(circle, rgba(214, 199, 179, 0.08) 0%, rgba(7, 9, 20, 0) 60%);
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .cta-content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  /* Footer */
+  .site-footer {
+    border-top: 1px solid rgba(253, 253, 253, 0.08);
+    padding: 6rem 4rem 2rem;
+    position: relative;
+    z-index: 10;
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1.5fr;
+    gap: 4rem;
+    margin-bottom: 6rem;
+  }
+
+  .footer-brand .logo {
+    margin-bottom: 1.5rem;
+    display: inline-flex;
+  }
+
+  .footer-desc {
+    color: var(--pearl-muted);
+    font-size: 0.9rem;
+    font-weight: 300;
+    line-height: 1.6;
+    max-width: 80%;
+  }
+
+  .footer-heading {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--silver-gold);
+    margin-bottom: 2rem;
+  }
+
+  .footer-links {
+    list-style: none;
+  }
+
+  .footer-links li {
+    margin-bottom: 1rem;
+  }
+
+  .footer-links a, .footer-contact a {
+    color: var(--pearl-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+  }
+
+  .footer-links a:hover, .footer-contact a:hover {
+    color: var(--pearl);
+  }
+
+  .footer-contact p {
+    color: var(--pearl-muted);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .footer-contact .address {
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(253, 253, 253, 0.04);
+    font-size: 0.75rem;
+    color: rgba(181, 181, 195, 0.6);
+    letter-spacing: 0.05em;
+  }
+
+  @media (max-width: 1200px) {
+    .section-header { font-size: 3rem; }
+    .grid-2 { gap: 4rem; }
+    .grid-3 { grid-template-columns: repeat(2, 1fr); }
+    .footer-grid { grid-template-columns: repeat(2, 1fr); gap: 3rem; }
+  }
+
+  @media (max-width: 992px) {
+    .section-padding { padding: 6rem 2rem; }
+    .site-footer { padding: 4rem 2rem 2rem; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .grid-3 { grid-template-columns: 1fr; }
+    .philosophy-visual { height: 400px; order: -1; }
+    .quote-text { font-size: 2rem; }
+    .process-step { grid-template-columns: 1fr; gap: 1rem; }
+    .step-number { font-size: 2.5rem; margin-bottom: 0.5rem; }
+  }
+</style>
+
+<!-- PHILOSOPHY SECTION -->
+<section class="section-padding" id="about">
+  <div class="container grid-2">
+    <div>
+      <div class="section-eyebrow">Clinical Philosophy</div>
+      <h2 class="section-header">Artistry guided by <em>rigorous science</em>.</h2>
+      <p class="text-muted">
+        Under the clinical direction of Tara Dozier, Spa Indigo elevates the standard of care in Augusta. We believe true aesthetics and lasting vitality cannot be separated. They are interconnected expressions of physiological balance.
+      </p>
+      <p class="text-muted">
+        We do not chase transient trends. Our protocols are rooted in evidence-based medicine, utilizing state-of-the-art modalities to restore cellular health, optimize hormonal function, and refine your natural structural beauty. The result is an undeniable, radiant resilience.
+      </p>
+      <div style="margin-top: 3rem;">
+        <a href="#consultation" class="btn-secondary">Meet Our Director</a>
+      </div>
+    </div>
+    
+    <div class="philosophy-visual">
+      <div class="philosophy-accent"></div>
+      <div class="philosophy-accent-2"></div>
+      <svg width="200" height="200" viewBox="0 0 200 200" fill="none" stroke="rgba(214, 199, 179, 0.4)" stroke-width="0.5">
+        <circle cx="100" cy="100" r="80"/>
+        <path d="M100 0 L100 200 M0 100 L200 100"/>
+        <circle cx="100" cy="100" r="40" stroke-width="1"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- MODALITIES SECTION -->
+<section class="section-padding" id="treatments" style="background-color: var(--indigo-base);">
+  <div class="container">
+    <div class="section-eyebrow centered">Core Competencies</div>
+    <h2 class="section-header centered" style="margin-bottom: 5rem;">Comprehensive <em>Modalities</em></h2>
+    
+    <div class="grid-3">
+      <!-- Modality 1 -->
+      <div class="modality-card">
+        <div class="modality-num">I.</div>
+        <h3 class="modality-title">Structural<br>Aesthetics</h3>
+        <p class="text-muted" style="font-size: 0.95rem;">
+          Restoring facial harmony and dermal integrity through advanced collagen remodeling and precise volume placement.
+        </p>
+        <ul class="modality-list">
+          <li>Neuromodulators (Botox)</li>
+          <li>Dermal Fillers</li>
+          <li>Morpheus8 Microneedling</li>
+          <li>Laser Skin Resurfacing</li>
+        </ul>
+      </div>
+
+      <!-- Modality 2 -->
+      <div class="modality-card">
+        <div class="modality-num">II.</div>
+        <h3 class="modality-title">Hormonal<br>Optimization</h3>
+        <p class="text-muted" style="font-size: 0.95rem;">
+          Correcting endocrine imbalances to restore energy, mental clarity, and metabolic function from the inside out.
+        </p>
+        <ul class="modality-list">
+          <li>Bio-Identical Hormones</li>
+          <li>Testosterone Replacement</li>
+          <li>Thyroid Management</li>
+          <li>Metabolic Testing</li>
+        </ul>
+      </div>
+
+      <!-- Modality 3 -->
+      <div class="modality-card">
+        <div class="modality-num">III.</div>
+        <h3 class="modality-title">Physiological<br>Wellness</h3>
+        <p class="text-muted" style="font-size: 0.95rem;">
+          Direct cellular nourishment and weight management protocols to support systemic recovery and longevity.
+        </p>
+        <ul class="modality-list">
+          <li>IV Hydration Therapy</li>
+          <li>Vitamin & Lipotropic Shots</li>
+          <li>Medical Weight Loss</li>
+          <li>Peptide Therapy</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS SECTION -->
+<section class="section-padding">
+  <div class="container grid-2">
+    <div>
+      <div class="section-eyebrow">The Indigo Pathway</div>
+      <h2 class="section-header">A curated approach to <em>longevity</em>.</h2>
+      <p class="text-muted">
+        Your physiological footprint is entirely unique. We do not offer templated solutions. Every treatment plan is meticulously designed around your specific lab results, aesthetic goals, and lifestyle requirements.
+      </p>
+    </div>
+    
+    <div class="process-wrapper">
+      <div class="process-step">
+        <div class="step-number">01</div>
+        <div class="step-content">
+          <h3>Clinical Discovery</h3>
+          <p>An exhaustive consultation including comprehensive lab panels, structural facial analysis, and a deep dive into your medical history and goals.</p>
+        </div>
+      </div>
+      
+      <div class="process-step">
+        <div class="step-number">02</div>
+        <div class="step-content">
+          <h3>Protocol Architecture</h3>
+          <p>Tara Dozier and our medical team design a bespoke blueprint, combining cellular therapies, hormonal adjustments, and aesthetic interventions.</p>
+        </div>
+      </div>
+      
+      <div class="process-step">
+        <div class="step-number">03</div>
+        <div class="step-content">
+          <h3>Refined Execution</h3>
+          <p>Implementation of your protocol within our luxury clinical space, followed by meticulous monitoring and refinement to ensure optimal, lasting outcomes.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIAL QUOTE -->
+<section class="section-padding quote-section">
+  <div class="container">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="var(--silver-gold)" style="opacity: 0.3; margin-bottom: 2rem;">
+      <path d="M14.017 18L14.017 10.609C14.017 4.905 17.748 1.039 23 0L23.995 2.151C21.563 3.068 20 5.789 20 8H24V18H14.017ZM0 18V10.609C0 4.905 3.748 1.038 9 0L9.996 2.151C7.563 3.068 6 5.789 6 8H9.983L9.983 18L0 18Z"/>
+    </svg>
+    <p class="quote-text">
+      "Spa Indigo redefined my understanding of wellness. Tara’s approach isn’t just about looking rested; it’s about physically feeling optimal. The convergence of hormone balancing and subtle aesthetic work has been completely transformative."
+    </p>
+    <span class="quote-author">— Augusta Clinic Patient</span>
+  </div>
+</section>
+
+<!-- CTA SECTION -->
+<section class="section-padding cta-section" id="consultation">
+  <div class="cta-ambient"></div>
+  <div class="container cta-content">
+    <div class="section-eyebrow centered">Begin Your Journey</div>
+    <h2 class="section-header centered">Secure your <em>consultation</em>.</h2>
+    <p class="text-muted" style="text-align: center; max-width: 600px; margin: 0 auto 3rem auto;">
+      Take the first step toward refined aesthetics and optimized cellular health. Connect with our medical team to design your bespoke treatment architecture.
+    </p>
+    <div style="display: flex; gap: 1.5rem; justify-content: center; align-items: center;">
+      <a href="tel:7063059096" class="btn-primary">Call (706) 305-9096</a>
+      <a href="#booking" class="btn-secondary">Request Appointment</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      
+      <div class="footer-brand">
+        <a href="https://spaindigo.com" class="logo">
+          <svg viewBox="0 0 40 40">
+            <path d="M20 2L24.5 15.5L38 20L24.5 24.5L20 38L15.5 24.5L2 20L15.5 15.5L20 2Z"/>
+          </svg>
+          Spa Indigo
+        </a>
+        <p class="footer-desc">
+          Augusta’s premier destination for advanced medical aesthetics, hormone optimization, and restorative wellness. Clinical precision meets elevated luxury.
+        </p>
+      </div>
+
+      <div>
+        <h4 class="footer-heading">Treatments</h4>
+        <ul class="footer-links">
+          <li><a href="#morpheus8">Morpheus8</a></li>
+          <li><a href="#injectables">Injectables & Fillers</a></li>
+          <li><a href="#hormones">Hormone Therapy (BHRT)</a></li>
+          <li><a href="#iv-therapy">IV Wellness Therapy</a></li>
+          <li><a href="#weight-loss">Medical Weight Loss</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="footer-heading">Practice</h4>
+        <ul class="footer-links">
+          <li><a href="#about">About Tara Dozier</a></li>
+          <li><a href="#philosophy">Our Philosophy</a></li>
+          <li><a href="#patient-portal">Patient Portal</a></li>
+          <li><a href="#careers">Careers</a></li>
+          <li><a href="#contact">Contact Us</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-contact">
+        <h4 class="footer-heading">Connect</h4>
+        <div class="address">
+          <p><strong>Spa Indigo</strong></p>
+          <p>Augusta, Georgia</p>
+          <p><em>(By Appointment Only)</em></p>
+        </div>
+        <p><a href="tel:7063059096">(706) 305-9096</a></p>
+        <p><a href="mailto:info@spaindigo.com">info@spaindigo.com</a></p>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2026 Spa Indigo. All rights reserved.</p>
+      <p>
+        <a href="#privacy" style="color: inherit; text-decoration: none; margin-right: 1.5rem;">Privacy Policy</a>
+        <a href="#terms" style="color: inherit; text-decoration: none;">Terms of Service</a>
+      </p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

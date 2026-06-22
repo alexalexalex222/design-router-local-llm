@@ -1,0 +1,66 @@
+{
+  "pack_id": "markets_terminal_blue_dashboard_v1",
+  "role": "anchor",
+  "family": "website.fintech_terminal",
+  "source_paths": [
+    "source_snapshot/index.html",
+    "source_snapshot/styles.css",
+    "source_snapshot/extracted_patterns.md"
+  ],
+  "origin_example_ids": [
+    "markets-terminal-capabilities"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "website"
+  ],
+  "tones": [
+    "dark",
+    "technical",
+    "data-dense",
+    "professional",
+    "blue",
+    "precise",
+    "premium"
+  ],
+  "surfaces": [
+    "homepage",
+    "hero",
+    "landing",
+    "section",
+    "full_site"
+  ],
+  "motif_tags": [
+    "command_surface",
+    "dashboard_panel",
+    "data_terminal",
+    "ticker_strip",
+    "market_table",
+    "proof_cards",
+    "stats_strip",
+    "tabs_panel",
+    "hero_shell"
+  ],
+  "supports_tasks": [
+    "fintech_terminal_landing",
+    "trading_platform_homepage",
+    "analytics_dashboard_landing",
+    "market_data_product_page",
+    "observability_console_landing",
+    "data_dense_saas_homepage"
+  ],
+  "anti_patterns": [
+    "fake live prices or market claims",
+    "decorative dashboards with no readable hierarchy",
+    "consumer banking warmth",
+    "copied chart data or exact instrument rows",
+    "invented compliance claims"
+  ],
+  "screenshot_paths": [
+    "screenshots/desktop-1512x812.png",
+    "screenshots/mobile-390x844.png"
+  ],
+  "token_budget_hint": 6200,
+  "confidence_score": 5
+}

@@ -1,0 +1,344 @@
+/* === DESIGN SYSTEM: Action Shot Mist (Robin's Body & Paint) === */
+:root {
+    --bg-base: #030303;
+    /* Absolute OLED Black */
+    --text-primary: #FFFFFF;
+    --text-muted: rgba(255, 255, 255, 0.4);
+
+    --accent-red: #D91A2A;
+    /* Cherry metallic red */
+    --accent-glow: rgba(217, 26, 42, 0.3);
+
+    --frame-border: rgba(255, 255, 255, 0.08);
+
+    /* Typography */
+    --font-heading: 'Outfit', sans-serif;
+    --font-sans: 'Inter', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+}
+
+.site-wrapper {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* === CINEMATIC BACKGROUND LAYER === */
+.hero-bg-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.spray-mist {
+    width: 100%;
+    height: 100vh;
+    background-image: url('spray_bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    /* Create depth by scaling it slightly */
+    transform: scale(1.02);
+    animation: slow-drift 30s ease-in-out infinite alternate;
+}
+
+/* Deep organic vignettes to blend the image into true black */
+.spray-mist::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 70% 50%, transparent 20%, #030303 80%);
+}
+
+.spray-mist::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, #030303 0%, transparent 40%, transparent 60%, rgba(3, 3, 3, 0.8) 100%);
+}
+
+/* Add a very subtle film grain/noise for texture */
+.hero-bg-layer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+    opacity: 0.04;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+}
+
+/* === HEADER === */
+.header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    padding: 40px 6vw;
+}
+
+.header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.brand-lockup {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-text {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+    line-height: 1;
+    color: var(--text-primary);
+}
+
+.brand-subtext {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 2px;
+    color: var(--accent-red);
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 40px;
+}
+
+.nav-links a {
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+    color: var(--text-primary);
+}
+
+/* === HERO CONTENT === */
+.hero {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    min-height: 800px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    /* Align left */
+    padding-left: 10vw;
+    z-index: 10;
+}
+
+.hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 600px;
+    margin-top: 50px;
+}
+
+/* Delicate Structural Frame */
+.hero-frame {
+    position: relative;
+    padding: 0 0 40px 40px;
+    border-left: 1px solid var(--frame-border);
+    margin-bottom: 50px;
+}
+
+.frame-content {
+    position: relative;
+    z-index: 2;
+}
+
+.icon-wrapper {
+    color: var(--accent-red);
+    margin-bottom: 30px;
+    animation: subtle-pulse 4s ease-in-out infinite alternate;
+}
+
+.hero-title {
+    font-family: var(--font-heading);
+    font-weight: 300;
+    font-size: clamp(3rem, 5vw, 4.5rem);
+    line-height: 1.1;
+    letter-spacing: -1px;
+    margin-bottom: 30px;
+}
+
+.hero-title .since-text {
+    display: block;
+    font-weight: 800;
+    font-size: clamp(3.5rem, 6vw, 5.5rem);
+    background: linear-gradient(135deg, #FFFFFF 0%, rgba(255, 255, 255, 0.4) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Trust Badges Inline */
+.trust-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.trust-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 8px 16px;
+    border: 1px solid var(--frame-border);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.trust-badge svg {
+    color: var(--accent-red);
+}
+
+/* Primary Button */
+.btn-primary {
+    position: relative;
+    display: inline-flex;
+    padding: 18px 48px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+    text-decoration: none;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    margin-left: 40px;
+    /* Align with frame content */
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent-red);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 0;
+}
+
+.btn-primary:hover {
+    border-color: var(--accent-red);
+    box-shadow: 0 0 30px var(--accent-glow);
+}
+
+.btn-primary:hover::before {
+    transform: scaleX(1);
+}
+
+.btn-text {
+    position: relative;
+    z-index: 1;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 3px;
+    color: var(--text-primary);
+    transition: transform 0.4s ease;
+    display: inline-block;
+}
+
+.btn-primary:hover .btn-text {
+    transform: translateX(5px);
+}
+
+/* === ANIMATIONS === */
+@keyframes slow-drift {
+    0% {
+        transform: scale(1.02) translate(0, 0);
+    }
+
+    100% {
+        transform: scale(1.05) translate(-1%, 1%);
+    }
+}
+
+@keyframes subtle-pulse {
+    0% {
+        filter: drop-shadow(0 0 10px rgba(217, 26, 42, 0.2));
+    }
+
+    100% {
+        filter: drop-shadow(0 0 20px rgba(217, 26, 42, 0.6));
+    }
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 900px) {
+    .header {
+        padding: 30px;
+    }
+
+    .nav-links {
+        display: none;
+    }
+
+    .hero {
+        padding-left: 6vw;
+    }
+
+    .hero-bg-layer .spray-mist {
+        background-position: right 30% center;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    .hero-title .since-text {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-frame {
+        padding: 0 0 30px 20px;
+        margin-bottom: 40px;
+    }
+
+    .btn-primary {
+        margin-left: 20px;
+        padding: 16px 32px;
+    }
+}
