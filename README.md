@@ -6,7 +6,9 @@ library, and returns a compact build packet with layout direction, source-backed
 patterns, implementation constraints, and anti-copy rules.
 
 It is built for coding agents that can write code but need sharper design
-context before they start. The output is not a theme, template, or screenshot
+context before they start. The packets are model-agnostic: use them with GPT-5.5
+class agents, Codex-style coding agents, or strong open/local coding models in
+the Qwen 3.6 27B class. The output is not a theme, template, or screenshot
 clone. It is a structured brief that tells the model what pattern family to use,
 what details to adapt, and what it must not copy.
 
@@ -22,6 +24,20 @@ what details to adapt, and what it must not copy.
   `src/design_router_mcp/goldensets/`.
 - Validation, donor hygiene, source excerpt, route alternative, and density
   tools.
+
+## Model Targets
+
+Design Router GPT-5.5 MCP does not depend on one proprietary model. It is a
+front-end context layer for any model that can follow a build packet and write
+usable code.
+
+Good fits include:
+
+- GPT-5.5 class coding agents;
+- Codex-style repo agents;
+- local or open coding models such as Qwen 3.6 27B;
+- smaller-context models using `token_mode: "micro"` or `token_mode: "compact"`;
+- stronger agents using `code_profile: "code_first"` and larger source excerpts.
 
 ## Why It Exists
 
