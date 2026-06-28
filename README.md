@@ -1,99 +1,116 @@
 # Lookbook
 
-> **Design taste for any LLM** — turn any model (even a small local one) into a senior frontend designer.
+> **Design taste for any LLM** — turn any model (even a small one you run locally) into a senior frontend engineer.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-111111.svg)](LICENSE)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-1f6feb.svg)
 ![MCP Server](https://img.shields.io/badge/MCP-server-111111.svg)
 ![Local-first](https://img.shields.io/badge/local--first-coding_agents-0f766e.svg)
+![Anti-copy](https://img.shields.io/badge/anti--copy-enforced-7c3aed.svg)
 
-Lookbook is an open-source MCP server and packet compiler for
-frontend generation. It takes a product brief, routes it through a curated design
-library, and returns a compact build packet with layout direction, source-backed
-patterns, implementation constraints, and anti-copy rules.
+<div align="center">
 
-It is built for coding agents that can write code but need sharper design
-context before they start. The packets are model-agnostic: use them with GPT-5.5
-class agents, Codex-style coding agents, or strong open/local coding models in
-the Qwen 3.6 27B class. The output is not a theme, template, or screenshot
-clone. It is a structured brief that tells the model what pattern family to use,
-what details to adapt, and what it must not copy.
+<a href="https://github.com/alexalexalex222/lookbook/raw/main/docs/assets/lookbook-demo.mp4">
+  <img src="docs/assets/lookbook-demo.gif" alt="A live, cross-filtering analytics console built in one shot by Qwen 3.6 27B (dense) using Lookbook" width="860">
+</a>
 
-## What Ships
+<sub><b>Built in one shot by Qwen&nbsp;3.6&nbsp;27B&nbsp;(dense)</b> — a model that runs on your own machine — using Lookbook. No frontier API, no design system handed to it, one prompt. &nbsp;▶&nbsp;<a href="https://github.com/alexalexalex222/lookbook/raw/main/docs/assets/lookbook-demo.mp4">Watch full quality</a></sub>
 
-- MCP stdio server for LM Studio, OpenCode, Codex-compatible clients, and other
-  agent runtimes.
-- CLI packet compiler for offline or scripted use.
-- Routing engine that scores frontend briefs against anchor packs and support
-  banks.
-- Packet renderer with token modes from `micro` through larger source excerpts.
-- Full public golden-set library in `goldensets/` plus packaged copies under
-  `src/design_router_mcp/goldensets/`.
-- Validation, donor hygiene, source excerpt, route alternative, and density
-  tools.
+</div>
 
-## Model Targets
+---
 
-Lookbook does not depend on one proprietary model. It is a
-front-end context layer for any model that can follow a build packet and write
-usable code.
+That console — coordinated cross-filtering across a donut, a brushable timeline, a
+latency histogram, a region bar chart, a live event log, and an activity heatmap,
+with honest synthetic data and zero invented metrics — was **not** built by a
+frontier model. It was built by a 27B dense model you can run on a single machine.
+The difference was Lookbook.
 
-Good fits include:
-
-- GPT-5.5 class coding agents;
-- Codex-style repo agents;
-- local or open coding models such as Qwen 3.6 27B;
-- smaller-context models using `token_mode: "micro"` or `token_mode: "compact"`;
-- stronger agents using `code_profile: "code_first"` and larger source excerpts.
+Lookbook is an open-source **MCP server and packet compiler** for frontend
+generation. It takes a product brief, routes it through a curated, browser-verified
+design library, and returns a compact build packet: layout direction, source-backed
+pattern snippets composed from the closest-matching references, hard implementation
+constraints, and an enforced anti-copy contract. The model doesn't get a theme or a
+template — it gets the structured design judgment it was missing.
 
 ## Why It Exists
 
-General-purpose models tend to flatten frontend work into the same few moves:
-soft gradients, oversized heroes, equal card grids, invented social proof, weak
-forms, and mobile layouts nobody checked. Lookbook fixes the
-starting context. It gives the model a stronger design system before code is
-written.
+General-purpose models flatten frontend work into the same few moves: soft
+gradients, oversized heroes, equal card grids, invented "10,000+ users" social
+proof, weak forms, and mobile layouts nobody checked. The model can write the code;
+it just starts from weak design context. Lookbook fixes the *starting context* so
+the first pass already looks like a product studio shipped it — and it does that for
+**any** model, not one proprietary endpoint.
 
-The server is especially useful when you want generated UI to inherit real
-structure from strong examples without stealing a donor site's identity, copy,
-assets, testimonials, or claims.
+## What Ships
 
-## Golden Sets, Not Copy Sets
+- **MCP stdio server** for OpenCode, Codex, Claude, Hermes, Grok, LM Studio, and any
+  MCP-compatible runtime.
+- **CLI packet compiler** for offline or scripted use.
+- **Data-driven routing engine** that scores a brief against anchor packs and
+  support banks and composes donor snippets from the matching patterns.
+- **Packet renderer** with token modes from `micro` to full source excerpts, so the
+  same library serves a 16k-context local model and a 1M-context agent.
+- **A curated, browser-verified design library** (`goldensets/`) — landing-page
+  anchors plus 72 non-landing interactive patterns.
+- **Validation, source-hygiene, anti-copy, route-alternative, and density tools.**
 
-The golden sets are pattern sources. They are not pages to clone.
+## Anti-Copy Enforcement
 
-A packet can include source excerpts, component structure, density cues, section
-ordering, typography patterns, interaction states, and visual rules. The packet
-also carries guardrails that tell the model to write new page copy for the target
-brief and to avoid copying donor identity.
+Reference libraries are dangerous: the easy failure mode is a model that photocopies
+a donor site — its name, phone number, testimonials, and awards included. Lookbook
+treats every donor as a **pattern source, never a page to clone**, and enforces it in
+code, not in a disclaimer:
 
-The anti-copy layer exists for this exact reason:
+- **Donor identity is contraband.** Business names, phone numbers, emails, domains,
+  reviews, awards, and stats are classified as unsafe target-page material. The
+  sanitizer (`sanitizer.py` / `scan_source_hygiene`) scans every source excerpt for
+  identity / proof / raster leakage before it can enter a packet.
+- **Every packet carries an Anti-Copy Contract** instructing the model to write fresh
+  target-specific copy, use neutral labeled placeholders for missing proof, and
+  compose its own layout — using the donor only for tone, hierarchy, and density.
+- **No fabricated trust.** Generated pages get labeled placeholders (`[STAT_VALUE]`,
+  `[TESTIMONIAL_QUOTE]`) instead of invented numbers and customers.
+- **Raster and external-asset URLs are blocked** unless you supply assets for the
+  target build.
+- **Path-traversal containment** (`schemas.py`): a manifest cannot reference an
+  absolute path or escape its pack directory with `..`, so a poisoned pack can't read
+  arbitrary files. This is a validated schema invariant, regression-tested.
 
-- donor business names, phone numbers, emails, domains, reviews, awards, and
-  claims are treated as unsafe target-page material;
-- source copy is used for tone, hierarchy, and density, not as raw text to paste;
-- raster images and external asset URLs are blocked unless the user supplies
-  assets for the target build;
-- generated pages should use fresh target-specific copy, neutral placeholders
-  for missing proof, and their own visual composition;
-- support-bank examples are used to triangulate layout patterns, not to recreate
-  one donor page.
+The library is a swatchbook, not a clipboard.
 
-## Zero-Shot Visual Proof
+## Verification Rigor
 
-These frames come from local screen recordings of the same speaker-company
-prompt run zero-shot. The two comparison clips are the first and second attempts
-without the Lookbook packet. The selected run uses the packet-guided MCP
-flow. This is visual evidence for first-pass direction, not a formal benchmark.
+Nothing enters the library — or a packet — on vibes.
 
-| First try, no packet | Second try, no packet | Packet-guided run |
-|---|---|---|
-| <img src="docs/assets/zero-shot-proofs/baseline-try-1.jpg" alt="First zero-shot speaker-company attempt without the Lookbook packet" width="260"> | <img src="docs/assets/zero-shot-proofs/baseline-try-2.jpg" alt="Second zero-shot speaker-company attempt without the Lookbook packet" width="260"> | <img src="docs/assets/zero-shot-proofs/mcp-good-01.jpg" alt="Packet-guided zero-shot speaker-company homepage generated with Lookbook" width="260"> |
+- **Every pattern is browser-verified.** The 72 interactive patterns were rendered in
+  a real headless browser (Playwright) across desktop and mobile widths and pass with
+  **zero console errors and zero horizontal overflow** before being banked.
+- **`validate_design_router`** checks the whole library on demand: every manifest
+  loads against a Pydantic schema, every source path and donor directory resolves
+  (no silent gaps), no path is absolute, support banks have UX-role coverage, and the
+  source-hygiene scan is clean.
+- **Routing is deterministic.** Pack and example selection use explicit secondary
+  sort keys — the same brief always yields the same packet, so behavior is testable
+  and reproducible.
+- **Token budgets are enforced, not documented.** The renderer holds each packet
+  under the `token_mode` ceiling so a small local model never gets a packet it can't
+  fit.
+- **A public test suite** asserts route selection, packet rendering, budget limits,
+  and the anti-copy containment guards — run it yourself below.
+- **Donor-starvation auditing** surfaces exactly which references were selected,
+  rejected, or unavailable for any request, so routing is inspectable instead of a
+  black box.
 
-The packet-guided run carried the speaker-company direction past the hero into
-deeper product sections and inquiry flow:
+## Model Targets
 
-<img src="docs/assets/zero-shot-proofs/mcp-good-02.jpg" alt="Interior section from the packet-guided speaker-company homepage" width="720">
+Lookbook does not depend on one proprietary model. It's a frontend context layer for
+anything that can follow a build packet and write code:
+
+- frontier coding agents (GPT-5.x, Codex-style repo agents);
+- strong open / local models — the demo above is **Qwen 3.6 27B (dense)**;
+- smaller-context models via `token_mode: "micro"` / `"compact"`;
+- stronger agents via `code_profile: "code_first"` and larger source excerpts.
 
 ## Install
 
@@ -112,74 +129,54 @@ Export a packet:
 
 ```bash
 PYTHONPATH=src python -m design_router_mcp.cli --repo-root . export \
-  --surface website.local_service \
-  --task "Build a serious martial arts gym homepage" \
-  --output-dir /tmp/design-router-gpt-5.5-mcp-packet \
-  --token-mode compact \
+  --surface app.tool \
+  --task "A live analytics dashboard: KPI cards, a brushable timeline, a sortable table, and a sidebar" \
+  --output-dir /tmp/lookbook-packet \
+  --token-mode expanded \
   --stack html_css \
   --code-profile code_first
 ```
 
-The export writes:
+The export writes `PACKET.md` and `SOURCES.json`. Hand `PACKET.md` to the coding
+agent that will build the page.
 
-```text
-/tmp/design-router-gpt-5.5-mcp-packet/PACKET.md
-/tmp/design-router-gpt-5.5-mcp-packet/SOURCES.json
-```
-
-Give `PACKET.md` to the coding agent that will build the page.
-
-Useful CLI commands:
+Useful commands:
 
 ```bash
-PYTHONPATH=src python -m design_router_mcp.cli --repo-root . list
-PYTHONPATH=src python -m design_router_mcp.cli --repo-root . validate
-PYTHONPATH=src python -m design_router_mcp.cli --repo-root . hygiene --pack-id localhost_fullsite_pattern_bank_20260622_v1
+PYTHONPATH=src python -m design_router_mcp.cli --repo-root . list --examples   # browse the library
+PYTHONPATH=src python -m design_router_mcp.cli --repo-root . validate          # verify everything resolves
+PYTHONPATH=src python -m design_router_mcp.cli --repo-root . hygiene --pack-id frontier_pattern_bank_20260628_v1
 ```
 
 ## MCP Usage
 
-Install the package in a virtual environment, then point your MCP client at the
-stdio entry point:
+Point your MCP client at the stdio entry point (works in OpenCode, Codex, Claude,
+Hermes, Grok, LM Studio):
 
 ```json
 {
   "mcpServers": {
-    "design-router-gpt-5.5-mcp": {
+    "lookbook": {
       "command": "/absolute/path/to/.venv/bin/design-router-gpt-5.5-mcp",
-      "args": ["--repo-root", "/absolute/path/to/design-router-gpt-5.5-mcp"]
+      "args": ["--repo-root", "/absolute/path/to/lookbook"]
     }
   }
 }
 ```
 
-Main tool:
-
-```text
-resolve_design_context
-```
-
-Additional tools:
-
-```text
-inspect_design_library
-get_source_excerpt
-export_opencode_bundle
-route_alternatives
-donor_starvation_audit
-code_density_metrics
-audit_source_hygiene
-validate_design_router
-```
+Primary tool: `resolve_design_context`. Also available: `inspect_design_library`,
+`get_source_excerpt`, `export_opencode_bundle`, `route_alternatives`,
+`donor_starvation_audit`, `code_density_metrics`, `audit_source_hygiene`,
+`validate_design_router`.
 
 Recommended request shape:
 
 ```json
 {
-  "surface": "website.local_service",
-  "task": "Build a premium homepage for a speaker company",
+  "surface": "app.tool",
+  "task": "Build a live analytics console with cross-filtering charts and a data table",
   "stack": "html_css",
-  "token_mode": "compact",
+  "token_mode": "expanded",
   "code_profile": "code_first",
   "packet_intent": "implementation_blueprint"
 }
@@ -189,37 +186,24 @@ Recommended request shape:
 
 The public library currently includes 23 routed packs:
 
-- anchor packs for SaaS dashboards, combat sports, water service, live commerce,
+- **anchor packs** for SaaS dashboards, combat sports, water service, live commerce,
   developer docs, luxury/editorial pages, product/spec pages, interactive
   instruments, finance terminals, garden care, legal/business pages, cabinetry,
   flooring, and other local-service surfaces;
-- the **frontier pattern bank** (`frontier_pattern_bank_20260628_v1`): 72
+- the **frontier pattern bank** (`frontier_pattern_bank_20260628_v1`): **72**
   browser-verified, non-landing-page UI patterns — dashboards, data-viz, editors,
   app shells, games, and real-time 3D/canvas scenes — so Lookbook routes for *all*
   design work, not just marketing pages;
-- support banks for GA SMB page structures and the localhost full-site pattern
-  bank captured on 2026-06-22;
-- shared atoms for navigation, heroes, cards, forms, tabs, FAQs, pricing,
-  stats, galleries, footers, and interaction states.
+- **support banks** for GA SMB page structures and the localhost full-site pattern
+  bank;
+- **shared atoms** for navigation, heroes, cards, forms, tabs, FAQs, pricing, stats,
+  galleries, footers, and interaction states.
 
 ## Verification
 
-Run the public smoke tests:
-
 ```bash
-PYTHONPATH=src python -m pytest tests -q
-```
-
-Validate the design library:
-
-```bash
-PYTHONPATH=src python -m design_router_mcp.cli --repo-root . validate
-```
-
-Build a wheel when changing package metadata or entry points:
-
-```bash
-python -m pip wheel . --no-deps -w /tmp/design-router-gpt-5.5-mcp-wheel
+PYTHONPATH=src python -m pytest tests -q                                 # route + render + anti-copy guards
+PYTHONPATH=src python -m design_router_mcp.cli --repo-root . validate    # validate the whole library
 ```
 
 ## Project Layout
@@ -227,11 +211,9 @@ python -m pip wheel . --no-deps -w /tmp/design-router-gpt-5.5-mcp-wheel
 ```text
 src/design_router_mcp/        canonical Python package
 goldensets/                   public routed design library
-tests/                        public smoke tests
-docs/eval-quality.md          quality and evaluation notes
+tests/                        public smoke + hardening tests
+docs/                         assets, evaluation notes
 server.json                   MCP/server manifest
-CANONICAL_SOURCE.md           source-tree boundary notes
-MIGRATION.md                  cleanup and migration notes
 ```
 
 ## License
