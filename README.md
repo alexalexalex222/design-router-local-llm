@@ -28,10 +28,14 @@ The difference was Lookbook.
 
 Lookbook is an open-source **MCP server and packet compiler** for frontend
 generation. It takes a product brief, routes it through a curated, browser-verified
-design library, and returns a compact build packet: layout direction, source-backed
+**hand-authored** design library (synthetic reference verticals and UI patterns — not
+scraped sites), and returns a compact build packet: layout direction, source-backed
 pattern snippets composed from the closest-matching references, hard implementation
 constraints, and an enforced anti-copy contract. The model doesn't get a theme or a
 template — it gets the structured design judgment it was missing.
+
+> **Note:** The Python package is `lookbook` (`pip install lookbook`). CLI entry points
+> are `lookbook` and `lookbook-mcp`. Older `design-router-*` names remain as aliases.
 
 ## Why It Exists
 
@@ -48,7 +52,7 @@ the first pass already looks like a product studio shipped it — and it does th
   MCP-compatible runtime.
 - **CLI packet compiler** for offline or scripted use.
 - **Data-driven routing engine** that scores a brief against anchor packs and
-  support banks and composes donor snippets from the matching patterns.
+  support banks and composes reference snippets from the matching patterns.
 - **Packet renderer** with token modes from `micro` to full source excerpts, so the
   same library serves a 16k-context local model and a 1M-context agent.
 - **A curated, browser-verified design library** (`goldensets/`) — landing-page
@@ -58,17 +62,19 @@ the first pass already looks like a product studio shipped it — and it does th
 ## Anti-Copy Enforcement
 
 Reference libraries are dangerous: the easy failure mode is a model that photocopies
-a donor site — its name, phone number, testimonials, and awards included. Lookbook
-treats every donor as a **pattern source, never a page to clone**, and enforces it in
-code, not in a disclaimer:
+a reference pack — reusing its placeholder business names, phone numbers,
+testimonials, and awards on the target page. Lookbook treats every pack as a
+**pattern source, never a page to clone**, and enforces that in code, not in a
+disclaimer:
 
-- **Donor identity is contraband.** Business names, phone numbers, emails, domains,
-  reviews, awards, and stats are classified as unsafe target-page material. The
-  sanitizer (`sanitizer.py` / `scan_source_hygiene`) scans every source excerpt for
-  identity / proof / raster leakage before it can enter a packet.
+- **Reference identity is contraband on the target page.** Business names, phone
+  numbers, emails, domains, reviews, awards, and stats in library source are
+  classified as unsafe target-page material. The sanitizer (`sanitizer.py` /
+  `scan_source_hygiene`) neutralizes identity / proof / raster leakage in excerpts
+  before they enter a packet.
 - **Every packet carries an Anti-Copy Contract** instructing the model to write fresh
   target-specific copy, use neutral labeled placeholders for missing proof, and
-  compose its own layout — using the donor only for tone, hierarchy, and density.
+  compose its own layout — using the reference only for tone, hierarchy, and density.
 - **No fabricated trust.** Generated pages get labeled placeholders (`[STAT_VALUE]`,
   `[TESTIMONIAL_QUOTE]`) instead of invented numbers and customers.
 - **Raster and external-asset URLs are blocked** unless you supply assets for the
@@ -87,9 +93,10 @@ Nothing enters the library — or a packet — on vibes.
   a real headless browser (Playwright) across desktop and mobile widths and pass with
   **zero console errors and zero horizontal overflow** before being banked.
 - **`validate_design_router`** checks the whole library on demand: every manifest
-  loads against a Pydantic schema, every source path and donor directory resolves
-  (no silent gaps), no path is absolute, support banks have UX-role coverage, and the
-  source-hygiene scan is clean.
+  loads against a Pydantic schema, every source path and example directory resolves
+  (no silent gaps), no path is absolute, and support banks have UX-role coverage.
+  A separate **`hygiene`** audit reports identity/proof/raster hits in raw library
+  source (expected in reference HTML); packets are sanitized before emit.
 - **Routing is deterministic.** Pack and example selection use explicit secondary
   sort keys — the same brief always yields the same packet, so behavior is testable
   and reproducible.
@@ -98,9 +105,11 @@ Nothing enters the library — or a packet — on vibes.
   fit.
 - **A public test suite** asserts route selection, packet rendering, budget limits,
   and the anti-copy containment guards — run it yourself below.
-- **Donor-starvation auditing** surfaces exactly which references were selected,
-  rejected, or unavailable for any request, so routing is inspectable instead of a
-  black box.
+- **Reference-starvation auditing** (`donor_starvation_audit`) surfaces exactly
+  which references were selected, rejected, or unavailable for any request, so routing
+  is inspectable instead of a black box.
+- **Zero-shot comparison frames** in `docs/assets/zero-shot-proofs/` (same brief,
+  unrouted baseline vs Lookbook-routed output).
 
 ## Model Targets
 
@@ -120,7 +129,7 @@ cd lookbook
 python -m venv .venv
 . .venv/bin/activate
 pip install -e ".[dev,mcp]"
-PYTHONPATH=src python -m design_router_mcp.cli --repo-root . validate
+lookbook --repo-root . validate
 ```
 
 ## CLI Usage
@@ -128,7 +137,7 @@ PYTHONPATH=src python -m design_router_mcp.cli --repo-root . validate
 Export a packet:
 
 ```bash
-PYTHONPATH=src python -m design_router_mcp.cli --repo-root . export \
+lookbook --repo-root . export \
   --surface app.tool \
   --task "A live analytics dashboard: KPI cards, a brushable timeline, a sortable table, and a sidebar" \
   --output-dir /tmp/lookbook-packet \
@@ -143,9 +152,9 @@ agent that will build the page.
 Useful commands:
 
 ```bash
-PYTHONPATH=src python -m design_router_mcp.cli --repo-root . list --examples   # browse the library
-PYTHONPATH=src python -m design_router_mcp.cli --repo-root . validate          # verify everything resolves
-PYTHONPATH=src python -m design_router_mcp.cli --repo-root . hygiene --pack-id frontier_pattern_bank_20260628_v1
+lookbook --repo-root . list --examples   # browse the library
+lookbook --repo-root . validate          # verify manifests, paths, and indexes
+lookbook --repo-root . hygiene --pack-id frontier_pattern_bank_20260628_v1
 ```
 
 ## MCP Usage
@@ -157,7 +166,7 @@ Hermes, Grok, LM Studio):
 {
   "mcpServers": {
     "lookbook": {
-      "command": "/absolute/path/to/.venv/bin/design-router-gpt-5.5-mcp",
+      "command": "/absolute/path/to/.venv/bin/lookbook-mcp",
       "args": ["--repo-root", "/absolute/path/to/lookbook"]
     }
   }
@@ -194,16 +203,16 @@ The public library currently includes 23 routed packs:
   browser-verified, non-landing-page UI patterns — dashboards, data-viz, editors,
   app shells, games, and real-time 3D/canvas scenes — so Lookbook routes for *all*
   design work, not just marketing pages;
-- **support banks** for GA SMB page structures and the localhost full-site pattern
-  bank;
+- **support banks** for synthetic local-service page structures and the localhost
+  full-site pattern bank;
 - **shared atoms** for navigation, heroes, cards, forms, tabs, FAQs, pricing, stats,
   galleries, footers, and interaction states.
 
 ## Verification
 
 ```bash
-PYTHONPATH=src python -m pytest tests -q                                 # route + render + anti-copy guards
-PYTHONPATH=src python -m design_router_mcp.cli --repo-root . validate    # validate the whole library
+pytest tests -q                    # route + render + anti-copy guards
+lookbook --repo-root . validate    # validate the whole library
 ```
 
 ## Project Layout

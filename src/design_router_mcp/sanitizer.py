@@ -30,8 +30,8 @@ TESTIMONIAL_RE = re.compile(r"\b(?:testimonial|testimonials|review\s+quote|revie
 REVIEW_AUTHOR_RE = re.compile(r"(?:--|—)\s*[A-Z][A-Za-z .'-]{1,40},\s*[A-Z][A-Za-z .'-]{1,40}")
 
 KNOWN_BRAND_TOKENS = (
-    # Anchor-pack brands (real-business-derived). Longest forms first so the
-    # alternation neutralizes the full name before any shorter overlapping token.
+    # Fictional reference-vertical brand tokens from the hand-authored library.
+    # Longest forms first so the alternation neutralizes the full name before any shorter overlapping token.
     "Sweet Peach Wax & Sugaring Studio",
     "Allison Landscape and Design",
     "TNT Custom Built Cabinets",

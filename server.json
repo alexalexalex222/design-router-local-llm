@@ -1,7 +1,7 @@
 {
-  "name": "design-router-gpt-5.5-mcp",
+  "name": "lookbook-mcp",
   "display_name": "Lookbook",
-  "description": "Lookbook — design taste for any LLM. An MCP server + packet compiler that routes a frontend brief through a curated design library (landing pages plus 72 non-landing interactive patterns) and returns a build packet with layout direction, source-backed pattern snippets, constraints, and anti-copy rules.",
+  "description": "Lookbook — design taste for any LLM. An MCP server + packet compiler that routes a frontend brief through a curated, hand-authored design library (landing pages plus 72 non-landing interactive patterns) and returns a build packet with layout direction, source-backed pattern snippets, constraints, and anti-copy rules.",
   "status": "mcp-server-implemented",
   "canonical_source": "src/design_router_mcp",
   "canonical_source_note": "See CANONICAL_SOURCE.md. src_rebuild/ and rebuild_package/ are deprecated legacy mirrors.",
@@ -30,7 +30,9 @@
     "get_preview_images"
   ],
   "cli": {
-    "packet_cli": "design-router-gpt-5.5-packet",
-    "mcp_cli": "design-router-gpt-5.5-mcp"
+    "packet_cli": "lookbook",
+    "mcp_cli": "lookbook-mcp",
+    "legacy_packet_cli": "design-router-gpt-5.5-packet",
+    "legacy_mcp_cli": "design-router-gpt-5.5-mcp"
   }
 }

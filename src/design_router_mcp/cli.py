@@ -48,8 +48,8 @@ def _load_request(request_file: str | None, request_json: str | None) -> DesignC
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="design-router-gpt-5.5-packet",
-        description="Render or inspect Design Router GPT-5.5 MCP packets.",
+        prog="lookbook",
+        description="Lookbook packet compiler — render and inspect frontend build packets.",
     )
     parser.add_argument("--repo-root", help="Repository containing goldensets/. Defaults to DESIGN_ROUTER_MCP_REPO_ROOT or cwd.")
     sub = parser.add_subparsers(dest="command")

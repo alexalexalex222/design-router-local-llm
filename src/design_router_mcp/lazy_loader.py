@@ -12,8 +12,8 @@ from .schemas import AtomSnippet, CodeFile, ExampleSummary, LoadedPack, PackMani
 
 CODE_SUFFIXES = {".html", ".htm", ".css", ".tsx", ".ts", ".jsx", ".js", ".md"}
 
-# First-party reference atoms are CLEAN authored code: they must NOT be passed through
-# the donor `sanitize_source_text` (that sanitizer is for scraped donor source only).
+# First-party reference atoms are clean authored code: they must NOT be passed through
+# `sanitize_source_text` (that sanitizer is for reference-pack source excerpts only).
 # Generous per-file cap so complete components are available in memory; the renderer
 # trims per token mode at emit time.
 SHARED_ATOM_FILE_CHARS = 8000
@@ -203,7 +203,7 @@ def _load_atoms(pack_dir: Path, *, max_snippets: int = 3, max_chars: int = 1200)
         return []
     atoms: list[AtomSnippet] = []
     for atom_dir in sorted(p for p in atoms_dir.iterdir() if p.is_dir()):
-        # Pack-local atoms are extracted from donor source, so sanitize like all other excerpts.
+        # Pack-local atoms are extracted from reference-pack source, so sanitize like other excerpts.
         notes = sanitize_source_text(_read_text(atom_dir / "notes.md", max_chars=900))
         snippet_files = sorted(p for p in atom_dir.iterdir() if p.name.startswith("snippet."))
         if not snippet_files:
@@ -252,8 +252,8 @@ def _load_anchor_reference(pack_dir: Path, manifest: PackManifest, *, include_fu
     if not css and manifest.source_paths:
         path = pack_dir / manifest.source_paths[0]
         css = _read_source_css(path, max_chars=max_code_chars)
-    # Anchor source is run through the same donor sanitizer as support examples so
-    # real-business identity/PII/raster/proof never reaches packets or bundles.
+    # Anchor source is run through the same sanitizer as support examples so reference
+    # identity/PII/raster/proof placeholders never leak into emitted packets or bundles.
     return sanitize_source_text(markup), markup_lang, sanitize_source_text(css), css_lang, files
 
 

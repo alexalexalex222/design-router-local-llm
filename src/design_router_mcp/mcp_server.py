@@ -50,9 +50,9 @@ def create_mcp_server(repo_root: str | Path | None = None) -> FastMCP:
     resolved = Path(repo_root).expanduser().resolve() if repo_root else _default_repo_root()
     FastMCP = _load_fastmcp()
     server = FastMCP(
-        name="design-router-gpt-5.5-mcp",
+        name="lookbook-mcp",
         instructions=(
-            "Design Router MCP — packet compiler for production-grade frontend work. "
+            "Lookbook MCP — packet compiler for production-grade frontend work. "
             "Default to `resolve_design_context` for any frontend brief; the returned packet sets the engineering, accessibility, motion, typography, and craft bar for the page you build. "
             "Treat every contract in the returned packet (Hard UI Rules, Visual Asset Discipline, Design Tokens Contract, Motion Grammar, Typography Discipline, Accessibility Contract, State Completeness, Performance Discipline, Microcopy Contract, Layout QA Gates, Anti-Copy Contract, Claim Realism, Implementation Contract, Vertical Guardrails) as a hard floor for shipped code — not a target, not a suggestion. "
             "Read the V3 director sections when present: Composition Brief, Visual Artifact Specs, Local Model Failure Patterns, Donor Starvation Warning, and Mechanical Donors (UX Role Only). They are the composition contract that prevents safe-but-generic output. "
@@ -190,8 +190,8 @@ create_design_router_gpt55_mcp_server = create_mcp_server
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="design-router-gpt-5.5-mcp",
-        description="Start Design Router GPT-5.5 MCP stdio server.",
+        prog="lookbook-mcp",
+        description="Start the Lookbook MCP stdio server.",
     )
     parser.add_argument("--repo-root", help="Repository containing goldensets/. Defaults to DESIGN_ROUTER_MCP_REPO_ROOT or cwd.")
     return parser

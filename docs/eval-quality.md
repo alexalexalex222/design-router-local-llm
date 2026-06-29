@@ -1,6 +1,9 @@
 # Page Quality Eval
 
-The router and its `tests_rebuild/` suite verify *routing and packet contracts* — that a brief
+> **Note:** The Node/Playwright eval harness described below is not included in this
+> public repository snapshot yet. Routing and packet contracts are covered by `tests/`.
+
+The router and its `tests/` suite verify *routing and packet contracts* — that a brief
 resolves to a sensible anchor and the packet carries the right rules. Nothing scored the thing
 that actually ships: the **generated page**. This harness closes that gap.
 
