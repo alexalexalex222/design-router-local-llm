@@ -1,0 +1,13 @@
+{
+  "atom_id": "foundation_design_tokens_v1",
+  "category": "foundation",
+  "summary": "Complete reusable :root design-token starter: semantic color roles + neutral ramp, fluid clamp type scale, 4px spacing, named radii, 3 elevation tiers, motion tokens, and Google-Fonts wiring.",
+  "surfaces": ["website.*", "website.local_service"],
+  "ux_roles": [],
+  "tags": ["tokens", "foundation", "design-system", "theme", "css-variables", "typography", "spacing", "elevation", "motion", "dark-mode"],
+  "tone": ["premium", "editorial", "neutral"],
+  "files": ["snippet.css", "snippet.html"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

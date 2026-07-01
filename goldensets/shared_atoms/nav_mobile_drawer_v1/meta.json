@@ -1,0 +1,13 @@
+{
+  "atom_id": "nav_mobile_drawer_v1",
+  "category": "nav",
+  "summary": "Accessible mobile slide-in nav: scrim + right panel, role=dialog/aria-modal, focus trap, Escape to close, body-scroll lock, focus restore, reduced-motion fade fallback.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": ["header_sticky"],
+  "tags": ["nav", "drawer", "mobile", "dialog", "focus-trap", "scroll-lock", "aria-modal", "off-canvas"],
+  "tone": ["modern", "dark", "confident"],
+  "files": ["snippet.html", "snippet.css", "snippet.js"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

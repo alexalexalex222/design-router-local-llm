@@ -1,0 +1,13 @@
+{
+  "atom_id": "cta_conversion_band_v1",
+  "category": "cta",
+  "summary": "Asymmetric conversion band: strong value headline + supporting line left, primary + secondary action right, token-driven panel with one tasteful sheen sweep.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": ["consultation_flow", "phone_priority_layout"],
+  "tags": ["cta", "conversion", "band", "asymmetric", "primary-secondary", "tel", "above-footer"],
+  "tone": ["confident", "premium", "warm"],
+  "files": ["snippet.html", "snippet.css"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

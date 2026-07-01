@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Raymarched SDF Metaballs</title>
+<meta name="description" content="An interactive raymarched signed-distance-field metaball scene rendered in a single WebGL2 fragment shader — no mesh, just SDFs blended with a smooth minimum." />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#07090d" />
+<style>
+  /* ============================================================
+     DESIGN TOKENS
+     ============================================================ */
+  :root {
+    /* neutral ramp (cool gray, 9 steps + extremes) */
+    --n-50:  #f5f7fa;
+    --n-100: #e6e9f0;
+    --n-200: #c9cedb;
+    --n-300: #a6adbd;
+    --n-400: #7f8799;
+    --n-500: #5b6273;
+    --n-600: #3e4452;
+    --n-700: #2a2f3a;
+    --n-800: #1a1e26;
+    --n-900: #11141b;
+
+    /* semantic color roles */
+    --bg:           #07090d;
+    --panel:        rgba(13, 16, 22, 0.82);
+    --panel-border: rgba(255, 255, 255, 0.09);
+    --text:         var(--n-100);
+    --text-muted:   var(--n-300);
+    --accent:       #2fdcc4;
+    --accent-hi:    #46ecd4;
+    --accent-ink:   #042722;
+    --focus:        #8ab4ff;
+    --danger:       #ff7a7a;
+    --track:        rgba(255, 255, 255, 0.13);
+
+    /* fluid type scale — ratio-locked (~1.2 minor third), body >= 16px */
+    --fs-xs:   clamp(0.75rem, 0.72rem + 0.15vw, 0.82rem);
+    --fs-sm:   clamp(0.84rem, 0.80rem + 0.20vw, 0.92rem);
+    --fs-base: clamp(1.00rem, 0.96rem + 0.20vw, 1.06rem);
+    --fs-lg:   clamp(1.20rem, 1.10rem + 0.50vw, 1.42rem);
+    --fs-xl:   clamp(1.65rem, 1.30rem + 1.55vw, 2.45rem);
+
+    /* 4px spacing scale */
+    --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+    --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-10: 40px;
+
+    /* radii */
+    --r-sm: 8px; --r-md: 12px; --r-lg: 18px; --r-full: 999px;
+
+    /* elevation (3 tiers) */
+    --e-1: 0 1px 2px rgba(0,0,0,.4);
+    --e-2: 0 8px 30px rgba(0,0,0,.45);
+    --e-3: 0 24px 60px rgba(0,0,0,.55);
+
+    /* motion */
+    --dur-fast: 150ms;
+    --dur-med:  220ms;
+    --ease-out: cubic-bezier(.2,.7,.2,1);
+    --ease-io:  cubic-bezier(.6,.05,.3,.95);
+
+    --font-ui:   -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  /* ============================================================
+     BASE
+     ============================================================ */
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: var(--fs-base);
+    line-height: 1.5;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a { color: var(--accent); }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+
+  /* visible focus for everything keyboard-reachable except range (handled on thumb) */
+  a:focus-visible,
+  button:focus-visible,
+  input[type="color"]:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .skip {
+    position: fixed; top: var(--sp-3); left: var(--sp-3); z-index: 100;
+    background: var(--accent); color: var(--accent-ink);
+    padding: var(--sp-2) var(--sp-4); border-radius: var(--r-md);
+    font-size: var(--fs-sm); font-weight: 600; text-decoration: none;
+    transform: translateY(-160%);
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .skip:focus { transform: translateY(0); }
+
+  /* ============================================================
+     STAGE + CANVAS
+     ============================================================ */
+  #stage { position: fixed; inset: 0; }
+
+  #scene {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none; /* let pointer drag push the liquid on touch */
+  }
+
+  /* ============================================================
+     BRAND / TITLE OVERLAY
+     ============================================================ */
+  .brand {
+    position: absolute; top: var(--sp-6); left: var(--sp-6); z-index: 10;
+    max-width: min(46ch, 56vw);
+    pointer-events: none; /* never blocks the scene */
+  }
+  .brand h1 {
+    margin: 0;
+    font-size: var(--fs-xl);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.04;
+    text-shadow: 0 2px 24px rgba(0,0,0,.55);
+  }
+  .brand h1 .accent { color: var(--accent); } /* fallback if background-clip:text unsupported */
+  @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+    .brand h1 .accent {
+      background: linear-gradient(92deg, var(--accent), #8ab4ff);
+      -webkit-background-clip: text; background-clip: text;
+      color: transparent;
+    }
+  }
+  .brand p {
+    margin: var(--sp-3) 0 0;
+    max-width: 42ch;
+    font-size: var(--fs-sm);
+    color: var(--text-muted);
+    text-shadow: 0 1px 14px rgba(0,0,0,.6);
+  }
+
+  /* ============================================================
+     CONTROL PANEL
+     ============================================================ */
+  .panel {
+    position: absolute; top: var(--sp-6); right: var(--sp-6); z-index: 10;
+    width: min(340px, calc(100vw - var(--sp-8)));
+    background: var(--panel);
+    -webkit-backdrop-filter: blur(18px) saturate(1.25);
+    backdrop-filter: blur(18px) saturate(1.25);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--e-3);
+    overflow: hidden;
+  }
+  .panel__head {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2);
+    padding: var(--sp-4) var(--sp-4) var(--sp-3);
+    border-bottom: 1px solid var(--panel-border);
+  }
+  .panel__head h2 {
+    margin: 0; font-size: var(--fs-base); font-weight: 600; letter-spacing: -0.01em;
+    display: flex; align-items: center; gap: var(--sp-2);
+  }
+  .panel__head h2 .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px rgba(47,220,196,.18);
+  }
+
+  .panel__body {
+    display: flex; flex-direction: column; gap: var(--sp-5);
+    padding: var(--sp-4);
+    max-height: min(74vh, 660px);
+    overflow-y: auto;
+    transition: max-height var(--dur-med) var(--ease-out),
+                opacity var(--dur-med) var(--ease-out),
+                padding var(--dur-med) var(--ease-out);
+  }
+  .panel.is-collapsed .panel__body {
+    max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0;
+  }
+  .panel__hint {
+    margin: 0; font-size: var(--fs-xs); color: var(--text-muted); line-height: 1.45;
+  }
+  /* skip-link lands here; suppress container focus ring (next Tab reveals control focus) */
+  #panel-body:focus { outline: none; }
+
+  /* collapse toggle */
+  .icon-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px; padding: 0;
+    background: transparent; color: var(--text-muted);
+    border: 1px solid transparent; border-radius: var(--r-md);
+    cursor: pointer;
+    transition: background var(--dur-fast), color var(--dur-fast);
+  }
+  .icon-btn:hover { background: rgba(255,255,255,.07); color: var(--text); }
+  .icon-btn:active { background: rgba(255,255,255,.04); }
+  .icon-btn svg { width: 18px; height: 18px; transition: transform var(--dur-med) var(--ease-out); }
+  .panel.is-collapsed .icon-btn svg { transform: rotate(180deg); }
+
+  /* ============================================================
+     CONTROLS (sliders, labels, outputs)
+     ============================================================ */
+  .ctrl { display: flex; flex-direction: column; gap: var(--sp-2); }
+  .ctrl__top {
+    display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-3);
+  }
+  .ctrl label, .ctrl .lbl { font-size: var(--fs-sm); font-weight: 500; color: var(--text); }
+  .ctrl output {
+    font-family: var(--font-mono); font-size: var(--fs-xs);
+    color: var(--accent); font-variant-numeric: tabular-nums;
+  }
+  .ctrl.ctrl--row { flex-direction: row; align-items: center; justify-content: space-between; }
+  .ctrl.is-disabled { opacity: .45; }
+
+  fieldset.ctrl-group { border: 0; margin: 0; padding: 0; }
+  fieldset.ctrl-group legend {
+    padding: 0; margin: 0 0 var(--sp-3);
+    font-size: var(--fs-sm); font-weight: 600; color: var(--text);
+  }
+  .ctrl-group__items { display: flex; flex-direction: column; gap: var(--sp-4); }
+
+  /* range slider — bespoke, cross-browser, 44px hit area */
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 44px; margin: 0;
+    background: transparent; cursor: pointer;
+  }
+  input[type="range"]:focus { outline: none; }
+  input[type="range"]:disabled { cursor: not-allowed; }
+
+  /* WebKit track + fill via --fill (set in JS) */
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px; border-radius: var(--r-full);
+    background: linear-gradient(90deg, var(--accent) var(--fill, 50%), var(--track) var(--fill, 50%));
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 20px; height: 20px; margin-top: -7px; border-radius: 50%;
+    background: var(--n-50); border: 2px solid var(--accent);
+    box-shadow: var(--e-1);
+    transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast);
+  }
+  input[type="range"]:hover::-webkit-slider-thumb { transform: scale(1.14); }
+  input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.05); background: var(--accent); }
+  input[type="range"]:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 5px rgba(138,180,255,.45);
+  }
+  input[type="range"]:disabled::-webkit-slider-thumb { border-color: var(--n-500); background: var(--n-300); }
+
+  /* Firefox */
+  input[type="range"]::-moz-range-track { height: 6px; border-radius: var(--r-full); background: var(--track); }
+  input[type="range"]::-moz-range-progress { height: 6px; border-radius: var(--r-full); background: var(--accent); }
+  input[type="range"]::-moz-range-thumb {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--n-50); border: 2px solid var(--accent); box-shadow: var(--e-1);
+    transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast);
+  }
+  input[type="range"]:hover::-moz-range-thumb { transform: scale(1.14); }
+  input[type="range"]:active::-moz-range-thumb { transform: scale(1.05); background: var(--accent); }
+  input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 5px rgba(138,180,255,.45); }
+  input[type="range"]:disabled::-moz-range-thumb { border-color: var(--n-500); background: var(--n-300); }
+
+  /* ============================================================
+     BUTTONS
+     ============================================================ */
+  .btn {
+    font: inherit; font-size: var(--fs-sm); font-weight: 600;
+    min-height: 44px; padding: 0 var(--sp-4);
+    display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
+    border: 1px solid var(--panel-border); border-radius: var(--r-md);
+    background: var(--n-800); color: var(--text);
+    cursor: pointer;
+    transition: background var(--dur-fast), border-color var(--dur-fast), transform var(--dur-fast);
+  }
+  .btn:hover { background: var(--n-700); }
+  .btn:active { transform: translateY(1px); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn svg { width: 16px; height: 16px; }
+
+  .btn--primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+  .btn--primary:hover { background: var(--accent-hi); }
+  .btn--ghost { background: transparent; }
+  .btn--ghost:hover { background: rgba(255,255,255,.07); }
+
+  /* play/pause icon swap driven by aria-pressed */
+  .play[aria-pressed="true"]  .icon--play  { display: none; }
+  .play[aria-pressed="false"] .icon--pause { display: none; }
+
+  /* ============================================================
+     COLOR CONTROL (swatches + custom)
+     ============================================================ */
+  .swatches { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+  .swatch {
+    width: 44px; height: 44px; padding: 0;
+    border: 2px solid transparent; border-radius: var(--r-md);
+    cursor: pointer; position: relative;
+    transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast);
+  }
+  .swatch:hover { transform: translateY(-2px); }
+  .swatch:active { transform: translateY(0); }
+  .swatch[aria-pressed="true"] {
+    border-color: var(--n-50);
+    box-shadow: 0 0 0 3px rgba(255,255,255,.16);
+  }
+  .swatch[aria-pressed="true"]::after {
+    content: ""; position: absolute; inset: 0; margin: auto;
+    width: 9px; height: 16px; transform: translateY(-1px) rotate(45deg);
+    border: solid #fff; border-width: 0 2.5px 2.5px 0;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,.5));
+  }
+
+  .color-custom {
+    display: inline-flex; align-items: center; gap: var(--sp-2);
+    height: 44px; padding: 0 var(--sp-3) 0 6px;
+    border: 1px dashed var(--panel-border); border-radius: var(--r-md);
+    cursor: pointer; font-size: var(--fs-xs); color: var(--text-muted);
+    transition: border-color var(--dur-fast), color var(--dur-fast);
+  }
+  .color-custom:hover { border-color: var(--n-400); color: var(--text); }
+  .color-custom input[type="color"] {
+    width: 32px; height: 32px; padding: 0; border: none; background: none;
+    border-radius: var(--r-sm); cursor: pointer;
+  }
+  .color-custom input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+  .color-custom input[type="color"]::-webkit-color-swatch { border: 1px solid var(--panel-border); border-radius: var(--r-sm); }
+  .color-custom input[type="color"]::-moz-color-swatch { border: 1px solid var(--panel-border); border-radius: var(--r-sm); }
+
+  /* ============================================================
+     PANEL FOOTER
+     ============================================================ */
+  .panel__foot {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3);
+    padding-top: var(--sp-2);
+    border-top: 1px solid var(--panel-border);
+  }
+  .status {
+    margin: 0; font-family: var(--font-mono); font-size: var(--fs-xs);
+    color: var(--text-muted); font-variant-numeric: tabular-nums;
+  }
+
+  /* ============================================================
+     CANVAS OVERLAYS — loading / error
+     ============================================================ */
+  .overlay {
+    position: absolute; inset: 0; z-index: 30;
+    display: grid; place-items: center; padding: var(--sp-6);
+  }
+  .loading {
+    background: radial-gradient(circle at 50% 42%, rgba(11,14,19,.55), rgba(7,9,13,.92));
+    transition: opacity var(--dur-med) var(--ease-out), visibility var(--dur-med);
+  }
+  .error {
+    display: none;
+    background: rgba(7,9,13,.93);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  }
+  #stage[data-state="ready"] .loading { opacity: 0; visibility: hidden; pointer-events: none; }
+  #stage[data-state="error"] .loading { display: none; }
+  #stage[data-state="error"] .error  { display: grid; }
+  #stage[data-state="error"] #scene  { visibility: hidden; }
+
+  .overlay__card {
+    max-width: 44ch; text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: var(--sp-4);
+  }
+  .overlay__card h2 { margin: 0; font-size: var(--fs-lg); font-weight: 600; letter-spacing: -0.01em; }
+  .overlay__card p { margin: 0; font-size: var(--fs-sm); color: var(--text-muted); line-height: 1.55; }
+  .overlay__icon { width: 48px; height: 48px; color: var(--danger); }
+
+  .spinner {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,.14); border-top-color: var(--accent);
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  @media (max-width: 640px) {
+    .brand { top: var(--sp-4); left: var(--sp-4); right: var(--sp-4); max-width: none; }
+    .brand h1 { font-size: var(--fs-lg); }
+    .brand p { display: none; } /* declutter; descriptor is non-essential on small screens */
+    .panel { top: auto; bottom: var(--sp-3); left: var(--sp-3); right: var(--sp-3); width: auto; }
+    .panel__body { max-height: 50vh; }
+  }
+
+  /* ============================================================
+     REDUCED MOTION
+     ============================================================ */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+</style>
+</head>
+<body>
+  <a class="skip" href="#panel-body">Skip to controls</a>
+
+  <div id="stage" data-state="loading">
+    <canvas id="scene" role="img"
+            aria-label="Animated 3D scene of glossy liquid metaballs that merge and separate, rendered with raymarched signed-distance fields in a single fragment shader."></canvas>
+
+    <!-- LOADING STATE -->
+    <div class="overlay loading" role="status" aria-live="polite">
+      <div class="overlay__card">
+        <span class="spinner" aria-hidden="true"></span>
+        <p>Initializing WebGL2 renderer&hellip;</p>
+      </div>
+    </div>
+
+    <!-- ERROR STATE -->
+    <div class="overlay error" role="alert" aria-live="assertive">
+      <div class="overlay__card">
+        <svg class="overlay__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3.6 21.5 20H2.5L12 3.6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M12 9.5v4.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="12" cy="17.1" r="1.05" fill="currentColor"/>
+        </svg>
+        <h2>Can&rsquo;t render the scene</h2>
+        <p data-msg>WebGL2 is unavailable in this browser.</p>
+        <button class="btn btn--primary" id="btn-reload" type="button">Reload</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TITLE -->
+  <header class="brand">
+    <h1>Raymarched <span class="accent">SDF Metaballs</span></h1>
+    <p>A lit liquid scene drawn entirely in one fragment shader &mdash; signed-distance spheres blended with a smooth minimum, normals from the gradient, no mesh geometry.</p>
+  </header>
+
+  <!-- CONTROLS -->
+  <aside class="panel" id="panel" aria-labelledby="panel-title">
+    <div class="panel__head">
+      <h2 id="panel-title"><span class="dot" aria-hidden="true"></span>Controls</h2>
+      <button class="icon-btn" id="btn-collapse" type="button" aria-expanded="true" aria-controls="panel-body">
+        <span class="sr-only">Collapse controls</span>
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 9.5 12 15.5 18 9.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="panel__body" id="panel-body" tabindex="-1">
+      <p class="panel__hint">Drag across the scene to push the liquid. One blob tracks your pointer.</p>
+
+      <!-- BLEND -->
+      <div class="ctrl">
+        <div class="ctrl__top">
+          <label for="ctrl-blend">Blend&nbsp;(smooth-min&nbsp;k)</label>
+          <output for="ctrl-blend" id="out-blend">0.50</output>
+        </div>
+        <input id="ctrl-blend" type="range" min="0.05" max="1.2" step="0.01" value="0.5" />
+      </div>
+
+      <!-- LIGHT -->
+      <fieldset class="ctrl-group">
+        <legend>Light direction</legend>
+        <div class="ctrl-group__items">
+          <div class="ctrl">
+            <div class="ctrl__top">
+              <label for="ctrl-az">Azimuth</label>
+              <output for="ctrl-az" id="out-az">-35&deg;</output>
+            </div>
+            <input id="ctrl-az" type="range" min="-180" max="180" step="1" value="-35" />
+          </div>
+          <div class="ctrl">
+            <div class="ctrl__top">
+              <label for="ctrl-el">Elevation</label>
+              <output for="ctrl-el" id="out-el">48&deg;</output>
+            </div>
+            <input id="ctrl-el" type="range" min="-20" max="85" step="1" value="48" />
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- COLOR -->
+      <div class="ctrl">
+        <span class="lbl" id="lbl-color">Surface color</span>
+        <div class="swatches" role="group" aria-labelledby="lbl-color">
+          <button type="button" class="swatch" data-color="#1fd1b8" aria-label="Teal"    aria-pressed="true"  style="background:#1fd1b8"></button>
+          <button type="button" class="swatch" data-color="#4cc2ff" aria-label="Sky"     aria-pressed="false" style="background:#4cc2ff"></button>
+          <button type="button" class="swatch" data-color="#8b7bff" aria-label="Violet"  aria-pressed="false" style="background:#8b7bff"></button>
+          <button type="button" class="swatch" data-color="#ff5fa2" aria-label="Magenta" aria-pressed="false" style="background:#ff5fa2"></button>
+          <button type="button" class="swatch" data-color="#ffb23e" aria-label="Amber"   aria-pressed="false" style="background:#ffb23e"></button>
+          <button type="button" class="swatch" data-color="#a6e84a" aria-label="Lime"    aria-pressed="false" style="background:#a6e84a"></button>
+          <label class="color-custom">
+            <input type="color" id="ctrl-color" value="#1fd1b8" />
+            <span>Custom</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- ANIMATION -->
+      <div class="ctrl ctrl--row">
+        <span class="lbl" id="lbl-anim">Animation</span>
+        <button class="btn btn--primary play" id="btn-play" type="button" aria-pressed="true" aria-labelledby="lbl-anim btn-play">
+          <svg class="icon--pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg>
+          <svg class="icon--play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.2v13.6c0 .9 1 1.5 1.8 1L20 13.1a1.2 1.2 0 0 0 0-2.1L9.8 4.2C9 3.7 8 4.3 8 5.2Z"/></svg>
+          <span class="play__label" data-label>Pause</span>
+        </button>
+      </div>
+
+      <!-- SPEED -->
+      <div class="ctrl" id="row-speed">
+        <div class="ctrl__top">
+          <label for="ctrl-speed">Speed</label>
+          <output for="ctrl-speed" id="out-speed">1.00&times;</output>
+        </div>
+        <input id="ctrl-speed" type="range" min="0" max="2" step="0.05" value="1" />
+      </div>
+
+      <!-- FOOTER -->
+      <div class="panel__foot">
+        <p class="status" id="status">WebGL2 &middot; 5 metaballs &middot; &mdash; fps</p>
+        <button class="btn btn--ghost" id="btn-reset" type="button">Reset</button>
+      </div>
+    </div>
+  </aside>
+
+  <script>
+  (function () {
+    "use strict";
+
+    /* ---------- camera constants (shared with shader via uniforms) ---------- */
+    var CAM_Z = 4.5;
+    var FOCAL = 1.6;
+    var BLOB_COUNT = 5; // 4 animated + 1 pointer
+
+    /* ---------- element refs ---------- */
+    var stage      = document.getElementById("stage");
+    var canvas     = document.getElementById("scene");
+    var statusEl   = document.getElementById("status");
+    var errMsg     = stage.querySelector("[data-msg]");
+    var panel      = document.getElementById("panel");
+    var collapseBtn= document.getElementById("btn-collapse");
+    var blendInput = document.getElementById("ctrl-blend");
+    var outBlend   = document.getElementById("out-blend");
+    var azInput    = document.getElementById("ctrl-az");
+    var outAz      = document.getElementById("out-az");
+    var elInput    = document.getElementById("ctrl-el");
+    var outEl      = document.getElementById("out-el");
+    var speedInput = document.getElementById("ctrl-speed");
+    var outSpeed   = document.getElementById("out-speed");
+    var rowSpeed   = document.getElementById("row-speed");
+    var colorInput = document.getElementById("ctrl-color");
+    var swatches   = Array.prototype.slice.call(panel.querySelectorAll(".swatch"));
+    var playBtn    = document.getElementById("btn-play");
+    var playLabel  = playBtn.querySelector("[data-label]");
+    var resetBtn   = document.getElementById("btn-reset");
+    var reloadBtn  = document.getElementById("btn-reload");
+
+    reloadBtn.addEventListener("click", function () { location.reload(); });
+
+    /* ---------- helpers ---------- */
+    function hexToRgb(h) {
+      var n = parseInt(h.slice(1), 16);
+      return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+    }
+    function setFill(input) {
+      var min = parseFloat(input.min), max = parseFloat(input.max), v = parseFloat(input.value);
+      input.style.setProperty("--fill", ((v - min) / (max - min)) * 100 + "%");
+    }
+    function showError(msg) {
+      errMsg.textContent = msg;
+      stage.setAttribute("data-state", "error");
+    }
+    function disableControls() {
+      panel.querySelectorAll("input, button").forEach(function (el) { el.disabled = true; });
+    }
+
+    /* ---------- collapse (works at any width; primarily for small screens) ---------- */
+    collapseBtn.addEventListener("click", function () {
+      var collapsed = panel.classList.toggle("is-collapsed");
+      collapseBtn.setAttribute("aria-expanded", String(!collapsed));
+    });
+
+    /* ============================================================
+       WEBGL2 INIT  (explicit availability + compile/link error states)
+       ============================================================ */
+    var gl = null;
+    try {
+      gl = canvas.getContext("webgl2", { alpha: false, antialias: false, powerPreference: "high-performance" });
+    } catch (e) { gl = null; }
+
+    if (!gl) {
+      showError("WebGL2 is unavailable in this browser. Try a recent version of Chrome, Firefox, Edge, or Safari, and confirm hardware acceleration is enabled.");
+      disableControls();
+      return;
+    }
+
+    var VERT_SRC =
+      "#version 300 es\n" +
+      "void main(){\n" +
+      "  vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));\n" +
+      "  gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0);\n" +
+      "}\n";
+
+    var FRAG_SRC =
+      "#version 300 es\n" +
+      "precision highp float;\n" +
+      "uniform vec2  uResolution;\n" +
+      "uniform float uTime;\n" +
+      "uniform vec2  uMouse;\n" +          // uv-space: x in [-aspect,aspect], y in [-1,1]
+      "uniform float uBlendK;\n" +
+      "uniform vec3  uColor;\n" +
+      "uniform vec3  uLightDir;\n" +
+      "uniform float uCamZ;\n" +
+      "uniform float uFocal;\n" +
+      "out vec4 fragColor;\n" +
+      "const int   MAX_STEPS = 96;\n" +
+      "const float MAX_DIST  = 14.0;\n" +
+      "const float SURF_EPS  = 0.001;\n" +
+      "float sdSphere(vec3 p, float r){ return length(p) - r; }\n" +
+      // polynomial smooth minimum -> continuous neck driven by k
+      "float smin(float a, float b, float k){\n" +
+      "  float h = clamp(0.5 + 0.5*(b-a)/k, 0.0, 1.0);\n" +
+      "  return mix(b, a, h) - k*h*(1.0-h);\n" +
+      "}\n" +
+      "float map(vec3 p){\n" +
+      "  float k = max(uBlendK, 1e-3);\n" +
+      "  float t = uTime;\n" +
+      "  vec3 b0 = vec3(sin(t*0.90)*0.95, cos(t*0.70)*0.62, sin(t*0.55)*0.55);\n" +
+      "  vec3 b1 = vec3(cos(t*0.62)*0.85, sin(t*1.05)*0.72, cos(t*0.48)*0.45);\n" +
+      "  vec3 b2 = vec3(sin(t*0.50+2.0)*0.72, cos(t*0.88+1.0)*0.82, sin(t*0.77+0.5)*0.60);\n" +
+      "  vec3 b3 = vec3(cos(t*0.80+1.5)*0.60, sin(t*0.52+0.5)*0.50, cos(t*0.98+2.0)*0.50);\n" +
+      "  vec3 bm = vec3(uMouse * (uCamZ/uFocal), 0.0);\n" +
+      "  float d = sdSphere(p - b0, 0.62);\n" +
+      "  d = smin(d, sdSphere(p - b1, 0.58), k);\n" +
+      "  d = smin(d, sdSphere(p - b2, 0.52), k);\n" +
+      "  d = smin(d, sdSphere(p - b3, 0.50), k);\n" +
+      "  d = smin(d, sdSphere(p - bm, 0.60), k);\n" +
+      "  return d;\n" +
+      "}\n" +
+      // normal from SDF gradient via central differences
+      "vec3 calcNormal(vec3 p){\n" +
+      "  float e = 0.0009;\n" +
+      "  return normalize(vec3(\n" +
+      "    map(p + vec3(e,0.0,0.0)) - map(p - vec3(e,0.0,0.0)),\n" +
+      "    map(p + vec3(0.0,e,0.0)) - map(p - vec3(0.0,e,0.0)),\n" +
+      "    map(p + vec3(0.0,0.0,e)) - map(p - vec3(0.0,0.0,e))\n" +
+      "  ));\n" +
+      "}\n" +
+      "void main(){\n" +
+      "  vec2 uv = (gl_FragCoord.xy * 2.0 - uResolution) / uResolution.y;\n" +
+      "  vec3 ro = vec3(0.0, 0.0, uCamZ);\n" +
+      "  vec3 rd = normalize(vec3(uv, -uFocal));\n" +
+      "  float t = 0.0; float d = 0.0; bool hit = false;\n" +
+      "  for(int i=0; i<MAX_STEPS; i++){\n" +
+      "    vec3 p = ro + rd*t;\n" +
+      "    d = map(p);\n" +
+      "    if(d < SURF_EPS){ hit = true; break; }\n" +
+      "    t += d;\n" +
+      "    if(t > MAX_DIST) break;\n" +
+      "  }\n" +
+      // background gradient + vignette
+      "  vec3 top = vec3(0.05, 0.07, 0.10);\n" +
+      "  vec3 bot = vec3(0.018, 0.022, 0.035);\n" +
+      "  vec3 bg = mix(bot, top, clamp(uv.y*0.5 + 0.5, 0.0, 1.0));\n" +
+      "  bg *= mix(0.7, 1.0, smoothstep(1.6, 0.2, length(uv)));\n" +
+      "  vec3 col = bg;\n" +
+      "  if(hit){\n" +
+      "    vec3 p = ro + rd*t;\n" +
+      "    vec3 N = calcNormal(p);\n" +
+      "    vec3 L = normalize(uLightDir);\n" +
+      "    vec3 V = normalize(ro - p);\n" +
+      "    vec3 H = normalize(L + V);\n" +
+      "    float diff = max(dot(N, L), 0.0);\n" +
+      "    float spec = pow(max(dot(N, H), 0.0), 56.0);\n" +
+      "    float fres = pow(1.0 - max(dot(N, V), 0.0), 5.0);\n" +
+      "    vec3 sky = vec3(0.16, 0.22, 0.30);\n" +
+      "    vec3 gnd = vec3(0.04, 0.03, 0.05);\n" +
+      "    vec3 hemi = mix(gnd, sky, clamp(N.y*0.5 + 0.5, 0.0, 1.0));\n" +
+      "    vec3 base = uColor;\n" +
+      "    col  = base * (0.16 + 0.85*diff);\n" +     // ambient + diffuse
+      "    col += hemi * 0.35;\n" +                   // environment fill
+      "    col += vec3(1.0) * spec * 0.7;\n" +        // specular
+      "    col += mix(base, vec3(1.0), 0.4) * fres * 0.6;\n" + // fresnel rim
+      "    float fog = 1.0 - exp(-0.02 * t * t);\n" +
+      "    col = mix(col, bg, clamp(fog, 0.0, 0.6));\n" +
+      "  }\n" +
+      "  col = col / (1.0 + col*0.22);\n" +           // soft highlight rolloff
+      "  fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);\n" +
+      "}\n";
+
+    function makeShader(type, src) {
+      var sh = gl.createShader(type);
+      gl.shaderSource(sh, src);
+      gl.compileShader(sh);
+      if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+        console.error("Shader compile error:\n" + gl.getShaderInfoLog(sh));
+        gl.deleteShader(sh);
+        return null;
+      }
+      return sh;
+    }
+
+    var vs = makeShader(gl.VERTEX_SHADER, VERT_SRC);
+    var fs = makeShader(gl.FRAGMENT_SHADER, FRAG_SRC);
+    if (!vs || !fs) {
+      showError("The scene shader failed to compile on this device's GPU.");
+      disableControls();
+      return;
+    }
+
+    var prog = gl.createProgram();
+    gl.attachShader(prog, vs);
+    gl.attachShader(prog, fs);
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+      console.error("Program link error:\n" + gl.getProgramInfoLog(prog));
+      showError("The scene shader failed to link on this device.");
+      disableControls();
+      return;
+    }
+    gl.useProgram(prog);
+
+    // VAO bound for attribute-less fullscreen-triangle draw
+    gl.bindVertexArray(gl.createVertexArray());
+
+    var U = {
+      res:   gl.getUniformLocation(prog, "uResolution"),
+      time:  gl.getUniformLocation(prog, "uTime"),
+      mouse: gl.getUniformLocation(prog, "uMouse"),
+      k:     gl.getUniformLocation(prog, "uBlendK"),
+      color: gl.getUniformLocation(prog, "uColor"),
+      light: gl.getUniformLocation(prog, "uLightDir"),
+      camz:  gl.getUniformLocation(prog, "uCamZ"),
+      focal: gl.getUniformLocation(prog, "uFocal")
+    };
+    gl.uniform1f(U.camz, CAM_Z);
+    gl.uniform1f(U.focal, FOCAL);
+
+    /* ============================================================
+       STATE
+       ============================================================ */
+    var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    var blendK = 0.5, azimuth = -35, elevation = 48, speed = 1.0;
+    var color = hexToRgb("#1fd1b8");
+    var animating = !reduceMotion;
+
+    var time = 0;
+    var tx = 0, ty = 0, mx = 0, my = 0; // pointer target / eased current (uv-space)
+    var needsRender = true;
+    var firstFrame = false;
+    var lastT = (typeof performance !== "undefined" ? performance.now() : Date.now());
+    var rafId = 0;
+
+    var DEFAULTS = { k: 0.5, az: -35, el: 48, speed: 1.0, color: "#1fd1b8", animating: !reduceMotion };
+
+    function lightDir() {
+      var a = azimuth * Math.PI / 180, e = elevation * Math.PI / 180;
+      return [Math.cos(e) * Math.sin(a), Math.sin(e), Math.cos(e) * Math.cos(a)];
+    }
+
+    /* ---------- sizing (DPR-aware, called from observer not per-frame) ---------- */
+    function resize() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var w = Math.max(1, Math.round(canvas.clientWidth * dpr));
+      var h = Math.max(1, Math.round(canvas.clientHeight * dpr));
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w; canvas.height = h;
+        gl.viewport(0, 0, w, h);
+        gl.uniform2f(U.res, w, h);
+        needsRender = true;
+      }
+    }
+
+    /* ---------- render one frame ---------- */
+    function render() {
+      gl.uniform1f(U.time, time);
+      gl.uniform2f(U.mouse, mx, my);
+      gl.uniform1f(U.k, blendK);
+      gl.uniform3f(U.color, color[0], color[1], color[2]);
+      var L = lightDir();
+      gl.uniform3f(U.light, L[0], L[1], L[2]);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      if (!firstFrame) {
+        firstFrame = true;
+        stage.setAttribute("data-state", "ready");
+      }
+    }
+
+    /* ---------- fps (real, measured over a 500ms window) ---------- */
+    var frames = 0, fpsT0 = lastT, fpsShown = 0;
+    function tickFps(now) {
+      frames++;
+      var dt = now - fpsT0;
+      if (dt >= 500) {
+        fpsShown = Math.round(frames * 1000 / dt);
+        frames = 0; fpsT0 = now;
+        updateStatus();
+      }
+    }
+    function updateStatus() {
+      statusEl.textContent = animating
+        ? "WebGL2 · " + BLOB_COUNT + " metaballs · " + (fpsShown || "—") + " fps"
+        : "WebGL2 · " + BLOB_COUNT + " metaballs · paused";
+    }
+
+    /* ============================================================
+       LOOP
+       ============================================================ */
+    function frame(now) {
+      rafId = requestAnimationFrame(frame);
+      var dt = Math.min(0.05, (now - lastT) / 1000);
+      lastT = now;
+
+      mx += (tx - mx) * 0.18;
+      my += (ty - my) * 0.18;
+      if (Math.abs(tx - mx) + Math.abs(ty - my) > 1e-4) needsRender = true;
+
+      if (animating) { time += dt * speed; needsRender = true; }
+
+      if (!needsRender) return;
+      needsRender = false;
+      render();
+      if (animating) tickFps(now);
+    }
+
+    /* ============================================================
+       CONTROL WIRING
+       ============================================================ */
+    function bindSlider(input, output, fmt, onset) {
+      function apply(v) { output.textContent = fmt(v); setFill(input); onset(v); }
+      apply(parseFloat(input.value)); // silent init
+      input.addEventListener("input", function () {
+        var v = parseFloat(input.value);
+        apply(v);
+        needsRender = true;
+        if (!animating) render(); // immediate feedback while paused
+      });
+    }
+
+    bindSlider(blendInput, outBlend, function (v) { return v.toFixed(2); }, function (v) { blendK = v; });
+    bindSlider(azInput,    outAz,    function (v) { return v + "°"; },  function (v) { azimuth = v; });
+    bindSlider(elInput,    outEl,    function (v) { return v + "°"; },  function (v) { elevation = v; });
+    bindSlider(speedInput, outSpeed, function (v) { return v.toFixed(2) + "×"; }, function (v) { speed = v; });
+
+    /* ---------- color ---------- */
+    function setColor(hex) { color = hexToRgb(hex); }
+    function selectSwatch(target) {
+      swatches.forEach(function (s) { s.setAttribute("aria-pressed", String(s === target)); });
+    }
+    function matchSwatch(hex) {
+      return swatches.filter(function (s) {
+        return s.dataset.color.toLowerCase() === hex.toLowerCase();
+      })[0] || null;
+    }
+    swatches.forEach(function (sw) {
+      sw.addEventListener("click", function () {
+        selectSwatch(sw);
+        colorInput.value = sw.dataset.color;
+        setColor(sw.dataset.color);
+        needsRender = true;
+        if (!animating) render();
+      });
+    });
+    colorInput.addEventListener("input", function () {
+      setColor(colorInput.value);
+      selectSwatch(matchSwatch(colorInput.value)); // null clears all when custom
+      needsRender = true;
+      if (!animating) render();
+    });
+    // init color from markup
+    setColor(colorInput.value);
+    selectSwatch(matchSwatch(colorInput.value));
+
+    /* ---------- animation play/pause (doubles as reduced-motion fallback) ---------- */
+    function setAnimating(on, draw) {
+      animating = on;
+      playBtn.setAttribute("aria-pressed", String(on));
+      playLabel.textContent = on ? "Pause" : "Play";
+      speedInput.disabled = !on;
+      rowSpeed.classList.toggle("is-disabled", !on);
+      if (on) { lastT = (performance && performance.now ? performance.now() : Date.now()); }
+      needsRender = true;
+      updateStatus();
+      if (!on && draw) render(); // freeze on the current frame immediately
+    }
+    playBtn.addEventListener("click", function () { setAnimating(!animating, true); });
+
+    /* ---------- reset ---------- */
+    resetBtn.addEventListener("click", function () {
+      blendInput.value = DEFAULTS.k;     blendInput.dispatchEvent(new Event("input"));
+      azInput.value    = DEFAULTS.az;    azInput.dispatchEvent(new Event("input"));
+      elInput.value    = DEFAULTS.el;    elInput.dispatchEvent(new Event("input"));
+      speedInput.value = DEFAULTS.speed; speedInput.dispatchEvent(new Event("input"));
+      colorInput.value = DEFAULTS.color; colorInput.dispatchEvent(new Event("input"));
+      setAnimating(DEFAULTS.animating, true);
+    });
+
+    /* ---------- pointer interaction (pushes one blob) ---------- */
+    function setTargetFromEvent(e) {
+      var r = canvas.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) return;
+      var nx = ((e.clientX - r.left) / r.width) * 2 - 1;
+      var ny = -(((e.clientY - r.top) / r.height) * 2 - 1);
+      tx = nx * (r.width / r.height); // uv-space x spans [-aspect, aspect]
+      ty = ny;
+      needsRender = true;
+    }
+    canvas.addEventListener("pointermove", setTargetFromEvent);
+    canvas.addEventListener("pointerdown", setTargetFromEvent);
+    canvas.addEventListener("pointerleave", function () { tx = 0; ty = 0; needsRender = true; });
+
+    /* ---------- context loss ---------- */
+    canvas.addEventListener("webglcontextlost", function (e) {
+      e.preventDefault();
+      if (rafId) cancelAnimationFrame(rafId);
+      showError("The graphics context was lost. Reload to restart the scene.");
+      disableControls();
+    }, false);
+
+    /* ---------- resize observers ---------- */
+    if (typeof ResizeObserver !== "undefined") {
+      new ResizeObserver(function () { resize(); if (!animating) render(); }).observe(canvas);
+    }
+    window.addEventListener("resize", function () { resize(); if (!animating) render(); });
+
+    /* ============================================================
+       BOOT
+       ============================================================ */
+    setAnimating(DEFAULTS.animating, false); // sync UI without drawing (GL not sized yet)
+    resize();                                 // size to DPR
+    render();                                 // first paint -> hides loading overlay
+    lastT = (performance && performance.now ? performance.now() : Date.now());
+    fpsT0 = lastT;
+    rafId = requestAnimationFrame(frame);
+  })();
+  </script>
+</body>
+</html>

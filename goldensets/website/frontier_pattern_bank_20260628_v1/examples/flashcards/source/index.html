@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Lantern — a calm place to remember</title>
+<meta name="description" content="A warm spaced-repetition study companion. Review with FSRS scheduling, gently." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" />
+<style>
+/* ============================================================= TOKENS */
+:root{
+  /* warm paper neutrals */
+  --paper-0:#FBF7EE;   /* app field */
+  --paper-1:#F5ECDA;   /* raised paper */
+  --paper-2:#EFE3CC;   /* sunk / rail */
+  --paper-3:#E7D8BB;   /* hairline-strong */
+  --card:#FFFDF6;      /* card face */
+  --line:#E4D7BD;      /* hairline */
+  --line-soft:#EFE6D2;
+
+  /* warm ink ramp */
+  --ink-900:#2B2521;
+  --ink-800:#3C342D;
+  --ink-700:#574c41;
+  --ink-600:#6E6153;
+  --ink-500:#8A7C6B;
+  --ink-400:#A99B86;
+
+  /* warm brand + accents */
+  --clay:#C26A3C;
+  --clay-deep:#A4502A;
+  --clay-soft:#F2DEC9;
+  --sage:#6F8A66;
+  --sage-soft:#E2E9D7;
+
+  /* rating roles (muted, warm) */
+  --again:#B2503B;  --again-soft:#F3DAD0;
+  --hard:#B68536;   --hard-soft:#F1E2C2;
+  --good:#5E8557;   --good-soft:#DEE9D5;
+  --easy:#4E7E96;   --easy-soft:#D6E4EA;
+
+  --focus:#3E6E86;
+
+  /* fluid type — 1.20 ratio, body >=16px */
+  --fs-xs:clamp(.75rem,.72rem + .12vw,.82rem);
+  --fs-sm:clamp(.86rem,.83rem + .18vw,.95rem);
+  --fs-base:clamp(1rem,.965rem + .22vw,1.08rem);
+  --fs-md:clamp(1.12rem,1.04rem + .42vw,1.34rem);
+  --fs-lg:clamp(1.45rem,1.28rem + .9vw,2rem);
+  --fs-xl:clamp(1.9rem,1.5rem + 1.9vw,2.9rem);
+  --fs-card:clamp(1.5rem,1.18rem + 2.2vw,2.35rem);
+
+  /* spacing 4px scale */
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:20px;--s6:24px;--s7:32px;--s8:40px;--s9:56px;--s10:72px;
+
+  /* radii */
+  --r-sm:8px;--r-md:14px;--r-lg:22px;--r-xl:30px;--r-pill:999px;
+
+  /* elevation (warm) */
+  --e1:0 1px 2px rgba(73,54,32,.07), 0 1px 1px rgba(73,54,32,.05);
+  --e2:0 8px 20px -10px rgba(78,55,28,.20), 0 2px 6px -2px rgba(78,55,28,.10);
+  --e3:0 30px 60px -22px rgba(78,55,28,.34), 0 10px 24px -12px rgba(78,55,28,.18);
+
+  /* motion */
+  --dur-1:140ms;--dur-2:220ms;--dur-flip:520ms;
+  --ease:cubic-bezier(.22,.7,.24,1);
+  --ease-out:cubic-bezier(.16,1,.3,1);
+
+  --rail-w:268px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;overflow-x:clip}
+body{overflow-x:clip}
+body{
+  margin:0; min-height:100dvh;
+  background:
+    radial-gradient(1200px 700px at 88% -8%, #FCEFDC 0%, transparent 60%),
+    radial-gradient(900px 600px at -6% 105%, #EFE7D4 0%, transparent 55%),
+    var(--paper-0);
+  color:var(--ink-800);
+  font-family:"Newsreader",ui-serif,Georgia,"Times New Roman",serif;
+  font-size:var(--fs-base);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+h1,h2,h3,.font-display{font-family:"Fraunces",ui-serif,Georgia,serif;letter-spacing:-.01em}
+button,input,select,textarea{font-family:"Newsreader",ui-serif,Georgia,serif;font-size:inherit;color:inherit}
+.ui{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+a{color:inherit}
+:focus-visible{outline:none}
+.focusable:focus-visible,button:focus-visible,a:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid color-mix(in srgb,var(--focus) 70%,white);
+  outline-offset:2px; border-radius:var(--r-sm);
+}
+::selection{background:var(--clay-soft);color:var(--ink-900)}
+
+.skip{position:absolute;left:var(--s4);top:-60px;background:var(--ink-900);color:var(--paper-0);
+  padding:10px 16px;border-radius:var(--r-pill);z-index:60;transition:top var(--dur-2)}
+.skip:focus{top:var(--s4)}
+
+.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ============================================================= LAYOUT */
+.app{display:grid;grid-template-columns:var(--rail-w) 1fr;min-height:100dvh}
+.scrim{display:none}
+@media (max-width:920px){ .app{grid-template-columns:1fr} }
+
+/* ---- sidebar / rail ---- */
+.rail{
+  position:sticky;top:0;align-self:start;height:100dvh;
+  background:linear-gradient(180deg,var(--paper-1),var(--paper-2));
+  border-right:1px solid var(--line);
+  display:flex;flex-direction:column;gap:var(--s2);
+  padding:var(--s6) var(--s4) var(--s4);
+  overflow-y:auto;
+}
+.brand{display:flex;align-items:center;gap:var(--s3);padding:0 var(--s2) var(--s2)}
+.brand .mark{flex:0 0 auto;width:38px;height:38px;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 35%,#FFE7C2,#F4CE97);border-radius:12px;box-shadow:var(--e1),inset 0 0 0 1px #F0D6A8}
+.brand .name{font-family:"Fraunces";font-weight:600;font-size:1.32rem;color:var(--ink-900);line-height:1}
+.brand .tag{font-size:var(--fs-xs);color:var(--ink-500);font-style:italic;margin-top:2px}
+
+.rail-section{margin-top:var(--s4)}
+.rail-label{font-family:ui-sans-serif,system-ui,sans-serif;text-transform:uppercase;letter-spacing:.12em;
+  font-size:.66rem;font-weight:600;color:var(--ink-400);padding:0 var(--s3) var(--s2)}
+
+.nav-btn{
+  width:100%;display:flex;align-items:center;gap:var(--s3);
+  padding:var(--s3) var(--s3);border:1px solid transparent;border-radius:var(--r-md);
+  background:transparent;color:var(--ink-700);cursor:pointer;text-align:left;
+  font-size:var(--fs-base);transition:background var(--dur-1),color var(--dur-1),border-color var(--dur-1);
+}
+.nav-btn .ico{flex:0 0 auto;color:var(--ink-500);transition:color var(--dur-1)}
+.nav-btn:hover{background:#FFFFFFcc}
+.nav-btn.is-active{background:var(--card);border-color:var(--line);color:var(--ink-900);box-shadow:var(--e1)}
+.nav-btn.is-active .ico{color:var(--clay)}
+.nav-btn .count{margin-left:auto;font-family:ui-sans-serif,system-ui,sans-serif;font-size:.78rem;font-weight:600;
+  min-width:24px;height:22px;padding:0 7px;border-radius:var(--r-pill);display:grid;place-items:center;
+  background:var(--clay);color:#fff;box-shadow:var(--e1)}
+.nav-btn .count.zero{background:var(--paper-3);color:var(--ink-500)}
+
+.deck-list{display:flex;flex-direction:column;gap:2px;margin-top:var(--s1)}
+.deck-row{display:flex;align-items:center;gap:var(--s3);width:100%;padding:var(--s2) var(--s3);
+  border-radius:var(--r-md);background:transparent;border:1px solid transparent;cursor:pointer;text-align:left;color:var(--ink-700);transition:background var(--dur-1),border-color var(--dur-1)}
+.deck-row:hover{background:#FFFFFFb0}
+.deck-row.is-active{background:var(--card);border-color:var(--line);box-shadow:var(--e1)}
+.deck-dot{flex:0 0 auto;width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.deck-row .dname{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--fs-sm)}
+.deck-row .dcount{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.74rem;font-weight:600;color:var(--clay-deep)}
+.deck-row .dcount.zero{color:var(--ink-400)}
+
+.rail-foot{margin-top:auto;padding-top:var(--s4);display:flex;flex-direction:column;gap:var(--s2)}
+.text-btn{display:inline-flex;align-items:center;gap:var(--s2);background:none;border:none;color:var(--ink-600);
+  cursor:pointer;font-size:var(--fs-sm);padding:var(--s2) var(--s3);border-radius:var(--r-sm);transition:color var(--dur-1),background var(--dur-1)}
+.text-btn:hover{color:var(--clay-deep);background:#FFFFFF99}
+
+/* ---- mobile topbar ---- */
+.topbar{display:none}
+@media (max-width:920px){
+  .rail{position:fixed;inset:0 auto 0 0;width:min(86vw,320px);z-index:50;transform:translateX(-103%);
+    transition:transform var(--dur-2) var(--ease);box-shadow:var(--e3)}
+  .app.drawer-open .rail{transform:translateX(0)}
+  .scrim{display:block;position:fixed;inset:0;background:rgba(43,32,18,.34);opacity:0;visibility:hidden;z-index:45;
+    transition:opacity var(--dur-2);backdrop-filter:blur(1px)}
+  .app.drawer-open .scrim{opacity:1;visibility:visible}
+  .topbar{display:flex;align-items:center;gap:var(--s3);position:sticky;top:0;z-index:30;
+    padding:var(--s3) var(--s4);background:color-mix(in srgb,var(--paper-1) 88%,transparent);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .topbar .name{font-family:"Fraunces";font-weight:600;font-size:1.18rem;color:var(--ink-900)}
+  .topbar .spacer{flex:1}
+}
+
+/* ---- main ---- */
+.main{min-width:0;display:flex;flex-direction:column}
+.view{flex:1;display:none;animation:fade var(--dur-2) var(--ease-out)}
+.view.is-active{display:flex;flex-direction:column}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.wrap{width:100%;max-width:780px;margin:0 auto;padding:var(--s7) var(--s5) var(--s9)}
+@media (max-width:920px){ .wrap{padding:var(--s6) var(--s4) var(--s9)} }
+
+/* ============================================================= STUDY */
+#study-region{margin-block:auto}
+.study-head{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s4);margin-bottom:var(--s5)}
+@media (max-width:560px){
+  .study-head{flex-direction:column;align-items:stretch;gap:var(--s3)}
+  .queue-meta{align-items:flex-start}
+  .pillrow{justify-content:flex-start}
+}
+.pill.is-zero{opacity:.5}
+.study-head .eyebrow{font-family:ui-sans-serif,system-ui,sans-serif;text-transform:uppercase;letter-spacing:.14em;
+  font-size:.68rem;font-weight:600;color:var(--clay-deep);margin-bottom:6px}
+.study-head h1{font-size:var(--fs-lg);color:var(--ink-900);margin:0;font-weight:600}
+.study-head .micro{color:var(--ink-500);font-style:italic;font-size:var(--fs-sm);margin-top:4px}
+
+.queue-meta{display:flex;flex-direction:column;align-items:flex-end;gap:var(--s2);flex:0 0 auto}
+.pillrow{display:flex;gap:var(--s2);flex-wrap:wrap;justify-content:flex-end}
+.pill{display:inline-flex;align-items:center;gap:6px;font-family:ui-sans-serif,system-ui,sans-serif;
+  font-size:.72rem;font-weight:600;padding:5px 10px;border-radius:var(--r-pill);background:var(--card);
+  border:1px solid var(--line);color:var(--ink-600);box-shadow:var(--e1)}
+.pill .swatch{width:8px;height:8px;border-radius:50%}
+.pill.new .swatch{background:var(--easy)}
+.pill.learn .swatch{background:var(--clay)}
+.pill.due .swatch{background:var(--sage)}
+
+.progress-track{height:6px;border-radius:var(--r-pill);background:var(--paper-2);overflow:hidden;box-shadow:inset 0 1px 2px rgba(80,55,25,.12)}
+.progress-fill{height:100%;border-radius:var(--r-pill);background:linear-gradient(90deg,var(--clay),#D98C53);
+  width:0;transition:width var(--dur-2) var(--ease)}
+
+/* card */
+.card-scene{perspective:1800px;margin-top:var(--s6)}
+.card{
+  position:relative;width:100%;min-height:clamp(280px,42vh,440px);
+  transform-style:preserve-3d;transition:transform var(--dur-flip) var(--ease);cursor:pointer;
+  border-radius:var(--r-xl);
+}
+.card.is-flipped{transform:rotateY(180deg)}
+.face{
+  position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  display:flex;flex-direction:column;border-radius:var(--r-xl);
+  background:radial-gradient(150% 130% at 50% -8%, #FFFFFF 0%, var(--card) 34%, #FAF2E0 100%);
+  border:1px solid var(--line);box-shadow:var(--e3), inset 0 1px 0 rgba(255,255,255,.7), inset 0 -22px 44px -30px rgba(120,86,40,.22);
+  padding:clamp(20px,4vw,40px);overflow:hidden;
+}
+.face--back{transform:rotateY(180deg)}
+.face::before{ /* fibrous paper grain */
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:.5;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.045'/></svg>");}
+.face::after{ /* stitched edge */
+  content:"";position:absolute;inset:10px;border-radius:calc(var(--r-xl) - 9px);
+  border:1px dashed var(--line);opacity:.5;pointer-events:none}
+.card-band{position:absolute;top:0;left:0;right:0;height:5px;z-index:3;
+  border-radius:var(--r-xl) var(--r-xl) 0 0;background:var(--deck,var(--clay));opacity:.9;
+  box-shadow:0 1px 3px -1px color-mix(in srgb,var(--deck,var(--clay)) 60%,transparent)}
+
+.card-corner{position:absolute;top:16px;left:18px;display:flex;align-items:center;gap:8px;z-index:2;
+  font-family:ui-sans-serif,system-ui,sans-serif;font-size:.66rem;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-400)}
+.card-corner .tg{padding:3px 9px;border-radius:var(--r-pill);background:var(--paper-1);color:var(--ink-500)}
+.card-corner .tg.again{background:var(--again-soft);color:var(--again)}
+
+.card-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  gap:var(--s4);z-index:1;width:100%;overflow:auto}
+.card-prompt{font-family:"Fraunces";font-weight:500;font-size:var(--fs-card);line-height:1.18;color:var(--ink-900);
+  max-width:24ch;text-wrap:balance}
+.card-answer{font-family:"Newsreader";font-size:var(--fs-md);line-height:1.45;color:var(--ink-800);max-width:34ch}
+.card-answer strong{color:var(--ink-900)}
+.card-answer code,.card-prompt code{font-family:ui-monospace,Menlo,monospace;font-size:.86em;background:var(--paper-1);
+  padding:1px 6px;border-radius:6px;border:1px solid var(--line)}
+.divider-leaf{display:flex;align-items:center;gap:10px;color:var(--clay);opacity:.7}
+.divider-leaf .ln{width:34px;height:1px;background:var(--line)}
+
+.flip-hint{position:absolute;left:0;right:0;bottom:18px;text-align:center;z-index:2;
+  font-family:ui-sans-serif,system-ui,sans-serif;font-size:.74rem;color:var(--ink-400);
+  display:flex;align-items:center;justify-content:center;gap:7px}
+.kbd{font-family:ui-monospace,Menlo,monospace;font-size:.7rem;background:var(--paper-1);border:1px solid var(--line);
+  border-bottom-width:2px;border-radius:6px;padding:1px 6px;color:var(--ink-600)}
+
+/* rating bar */
+.rate-bar{margin-top:var(--s5);display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s3)}
+@media (max-width:480px){ .rate-bar{gap:var(--s2)} }
+.rate{
+  --c:var(--ink-600);--cs:var(--paper-1);
+  position:relative;min-width:0;min-height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;padding:var(--s3) var(--s2);cursor:pointer;color:var(--ink-800);
+  background:var(--card);border:1.5px solid var(--line);border-radius:var(--r-md);box-shadow:var(--e1);
+  transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1),border-color var(--dur-1),background var(--dur-1)}
+.rate:hover{transform:translateY(-2px);box-shadow:var(--e2);border-color:var(--c);background:var(--cs)}
+.rate:active{transform:translateY(0);box-shadow:var(--e1)}
+.rate[disabled]{opacity:.42;cursor:not-allowed;transform:none;box-shadow:none}
+.rate .rk{position:absolute;top:7px;left:8px;font-family:ui-monospace,Menlo,monospace;font-size:.66rem;font-weight:700;color:var(--c);opacity:.8}
+.rate .rl{font-family:ui-sans-serif,system-ui,sans-serif;font-weight:600;font-size:var(--fs-sm);color:var(--c)}
+.rate .ri{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.72rem;font-weight:600;color:var(--ink-500);
+  font-variant-numeric:tabular-nums}
+.rate.again{--c:var(--again);--cs:var(--again-soft)}
+.rate.hard{--c:var(--hard);--cs:var(--hard-soft)}
+.rate.good{--c:var(--good);--cs:var(--good-soft)}
+.rate.easy{--c:var(--easy);--cs:var(--easy-soft)}
+
+.study-foot{margin-top:var(--s5);display:flex;align-items:center;justify-content:center;gap:var(--s5);
+  font-family:ui-sans-serif,system-ui,sans-serif;font-size:.8rem;color:var(--ink-500)}
+.study-foot button{display:inline-flex;align-items:center;gap:6px}
+
+/* ============================================================= EMPTY / DONE states */
+.stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding:var(--s8) var(--s5);min-height:60vh}
+.stage .art{width:120px;height:120px;margin-bottom:var(--s5)}
+.stage h2{font-size:var(--fs-lg);color:var(--ink-900);margin:0 0 var(--s2);font-weight:600}
+.stage p{color:var(--ink-500);max-width:40ch;margin:0 0 var(--s5)}
+.stage .stat-strip{display:flex;gap:var(--s6);margin:var(--s2) 0 var(--s6);flex-wrap:wrap;justify-content:center}
+.stage .stat-strip .n{font-family:"Fraunces";font-size:1.7rem;font-weight:600;color:var(--clay-deep);line-height:1}
+.stage .stat-strip .l{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.7rem;text-transform:uppercase;
+  letter-spacing:.1em;color:var(--ink-400);margin-top:4px}
+
+/* ============================================================= BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);
+  font-family:ui-sans-serif,system-ui,sans-serif;font-weight:600;font-size:var(--fs-sm);
+  padding:11px 20px;min-height:44px;border-radius:var(--r-pill);cursor:pointer;border:1.5px solid transparent;
+  transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1),background var(--dur-1),border-color var(--dur-1)}
+.btn:active{transform:translateY(1px)}
+.btn--primary{background:var(--clay);color:#fff;box-shadow:var(--e2)}
+.btn--primary:hover{background:var(--clay-deep)}
+.btn--ghost{background:var(--card);border-color:var(--line);color:var(--ink-800);box-shadow:var(--e1)}
+.btn--ghost:hover{border-color:var(--clay);color:var(--clay-deep)}
+.btn--soft{background:var(--paper-1);color:var(--ink-700)}
+.btn--soft:hover{background:var(--paper-2)}
+.btn--danger{background:var(--card);border-color:var(--again-soft);color:var(--again)}
+.btn--danger:hover{background:var(--again-soft)}
+.icon-btn{display:inline-grid;place-items:center;width:42px;height:42px;border-radius:var(--r-md);
+  background:transparent;border:1px solid transparent;color:var(--ink-600);cursor:pointer;
+  transition:background var(--dur-1),color var(--dur-1),border-color var(--dur-1)}
+.icon-btn:hover{background:#FFFFFFb0;color:var(--clay-deep);border-color:var(--line)}
+
+/* ============================================================= BROWSE */
+.view-head{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s4);margin-bottom:var(--s5);flex-wrap:wrap}
+.view-head h1{font-size:var(--fs-lg);color:var(--ink-900);margin:0;font-weight:600}
+.view-head .sub{color:var(--ink-500);font-size:var(--fs-sm);font-style:italic;margin-top:4px}
+.head-actions{display:flex;gap:var(--s2);flex-wrap:wrap}
+
+.card-table{display:flex;flex-direction:column;gap:var(--s2);margin-top:var(--s2)}
+.crow{display:grid;grid-template-columns:1fr 1fr auto;gap:var(--s4);align-items:center;
+  padding:var(--s4);background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--e1);
+  transition:box-shadow var(--dur-1),border-color var(--dur-1)}
+.crow:hover{box-shadow:var(--e2);border-color:var(--paper-3)}
+.crow .cf{font-family:"Fraunces";font-weight:500;color:var(--ink-900);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crow .cb{color:var(--ink-600);font-size:var(--fs-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crow .meta{display:flex;align-items:center;gap:var(--s3)}
+.state-chip{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.66rem;font-weight:600;text-transform:uppercase;
+  letter-spacing:.06em;padding:3px 9px;border-radius:var(--r-pill);white-space:nowrap}
+.state-chip.new{background:var(--easy-soft);color:var(--easy)}
+.state-chip.learning,.state-chip.relearning{background:var(--clay-soft);color:var(--clay-deep)}
+.state-chip.review{background:var(--good-soft);color:var(--good)}
+.crow .due{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.72rem;color:var(--ink-400);white-space:nowrap}
+.crow .acts{display:flex;gap:2px}
+@media (max-width:680px){
+  .crow{grid-template-columns:1fr auto}
+  .crow .cb{display:none}
+}
+
+/* ============================================================= STATS */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s4);margin-bottom:var(--s7)}
+@media (max-width:680px){ .stat-grid{grid-template-columns:repeat(2,1fr)} }
+.stat-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--s5);box-shadow:var(--e1);
+  display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden}
+.stat-card .ic{position:absolute;top:var(--s4);right:var(--s4);color:var(--paper-3)}
+.stat-card .v{font-family:"Fraunces";font-size:clamp(1.7rem,1.3rem+1.4vw,2.3rem);font-weight:600;color:var(--ink-900);line-height:1;
+  font-variant-numeric:tabular-nums}
+.stat-card .k{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-400)}
+.stat-card .hint{font-size:var(--fs-sm);color:var(--ink-500);font-style:italic}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--s6);box-shadow:var(--e1)}
+.panel h3{margin:0 0 var(--s2);font-size:var(--fs-md);color:var(--ink-900);font-weight:600}
+.panel .psub{color:var(--ink-500);font-size:var(--fs-sm);margin:0 0 var(--s5)}
+.forecast{display:flex;align-items:flex-end;gap:clamp(4px,1.4vw,10px);height:170px;padding-top:var(--s4)}
+.fbar{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end}
+.fbar .bar{width:100%;max-width:34px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,#E1A56F,var(--clay));
+  box-shadow:var(--e1);transition:height var(--dur-2) var(--ease);position:relative}
+.fbar .bar.zero{background:var(--paper-2);box-shadow:inset 0 1px 2px rgba(80,55,25,.1)}
+.fbar .bar.today{background:linear-gradient(180deg,#8FAe86,var(--sage))}
+.fbar .bn{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.66rem;font-weight:700;color:var(--ink-600);font-variant-numeric:tabular-nums}
+.fbar .bl{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.6rem;color:var(--ink-400);text-align:center;line-height:1.1}
+
+/* ============================================================= MODAL */
+.modal-scrim{position:fixed;inset:0;background:rgba(43,32,18,.4);z-index:80;display:flex;align-items:center;justify-content:center;
+  padding:var(--s4);opacity:0;visibility:hidden;transition:opacity var(--dur-2);backdrop-filter:blur(3px)}
+.modal-scrim.open{opacity:1;visibility:visible}
+.modal{width:min(560px,100%);max-height:90dvh;overflow:auto;background:var(--paper-0);border:1px solid var(--line);
+  border-radius:var(--r-lg);box-shadow:var(--e3);padding:var(--s6);transform:translateY(12px) scale(.98);
+  transition:transform var(--dur-2) var(--ease-out)}
+.modal-scrim.open .modal{transform:none}
+.modal h2{font-size:var(--fs-md);color:var(--ink-900);margin:0 0 var(--s5);font-weight:600;display:flex;align-items:center;gap:var(--s3)}
+.field{margin-bottom:var(--s4)}
+.field > label{display:block;font-family:ui-sans-serif,system-ui,sans-serif;font-size:.78rem;font-weight:600;
+  color:var(--ink-600);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}
+.field .req{color:var(--again);margin-left:3px}
+.input,textarea.input,select.input{width:100%;padding:11px 13px;background:var(--card);border:1.5px solid var(--line);
+  border-radius:var(--r-sm);color:var(--ink-900);transition:border-color var(--dur-1),box-shadow var(--dur-1)}
+textarea.input{min-height:88px;resize:vertical;line-height:1.5}
+.input:focus{border-color:var(--focus);box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 22%,transparent)}
+.input.err{border-color:var(--again)}
+.field .hint{font-size:.74rem;color:var(--ink-400);margin-top:5px;font-style:italic}
+.field .errmsg{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.74rem;color:var(--again);margin-top:5px;display:none}
+.field.invalid .errmsg{display:block}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:var(--s4)}
+.modal-actions{display:flex;gap:var(--s3);justify-content:flex-end;margin-top:var(--s6);flex-wrap:wrap}
+.modal-actions .spacer{flex:1}
+.swatch-pick{display:flex;gap:var(--s2);flex-wrap:wrap}
+.swatch-pick label{width:30px;height:30px;border-radius:50%;cursor:pointer;position:relative;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.swatch-pick input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.swatch-pick label.sel{box-shadow:0 0 0 2px var(--paper-0),0 0 0 4px var(--ink-700)}
+.rng{display:flex;align-items:center;gap:var(--s4)}
+.rng input[type=range]{flex:1;accent-color:var(--clay)}
+.rng output{font-family:ui-sans-serif,system-ui,sans-serif;font-weight:600;min-width:60px;text-align:right;color:var(--ink-800)}
+
+/* toast */
+.toast-zone{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:100;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{display:flex;align-items:center;gap:var(--s3);background:var(--ink-900);color:var(--paper-0);
+  padding:11px 16px;border-radius:var(--r-pill);box-shadow:var(--e3);font-family:ui-sans-serif,system-ui,sans-serif;
+  font-size:var(--fs-sm);pointer-events:auto;animation:toastIn var(--dur-2) var(--ease-out)}
+.toast button{background:none;border:none;color:#F4C58E;font-weight:700;cursor:pointer;font-family:inherit}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ============================================================= MOTION PREF */
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}
+  .card{transition:none}
+  .card .face{transition:opacity var(--dur-2) ease}
+  .card .face--front{transform:none;backface-visibility:visible}
+  .card .face--back{transform:none;backface-visibility:visible;opacity:0;pointer-events:none}
+  .card.is-flipped{transform:none}
+  .card.is-flipped .face--front{opacity:0;pointer-events:none}
+  .card.is-flipped .face--back{opacity:1;pointer-events:auto}
+}
+</style>
+</head>
+<body>
+<a href="#study-region" class="skip ui">Skip to study</a>
+
+<div class="app" id="app">
+  <div class="scrim" id="scrim" aria-hidden="true"></div>
+
+  <!-- ============================ SIDEBAR ============================ -->
+  <aside class="rail" id="rail" aria-label="Decks and navigation">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3c2.6 2.7 4 5 4 7.4A4 4 0 0 1 12 14a4 4 0 0 1-4-3.6C8 8 9.4 5.7 12 3Z" fill="#C26A3C"/><path d="M12 14c1.7 0 3 1.2 3 3 0 1.9-1.4 3.4-3 3.4S9 18.9 9 17c0-1.8 1.3-3 3-3Z" fill="#E89A4F"/><circle cx="12" cy="17.4" r="1.1" fill="#FFF1DC"/></svg>
+      </span>
+      <span>
+        <span class="name font-display">Lantern</span>
+        <span class="tag">a calm place to remember</span>
+      </span>
+    </div>
+
+    <div class="rail-section">
+      <button class="nav-btn is-active" data-nav="study" id="nav-study">
+        <span class="ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2 2 0 0 1 6 4h5v15H6a2 2 0 0 0-2 1.2Z"/><path d="M20 5.5A2 2 0 0 0 18 4h-5v15h5a2 2 0 0 1 2 1.2Z"/></svg></span>
+        <span>Today</span>
+        <span class="count zero" id="study-count">0</span>
+      </button>
+      <button class="nav-btn" data-nav="browse">
+        <span class="ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M8 5v14"/></svg></span>
+        <span>Browse cards</span>
+      </button>
+      <button class="nav-btn" data-nav="stats">
+        <span class="ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16"/><rect x="7" y="11" width="3" height="5" rx="1"/><rect x="12" y="8" width="3" height="8" rx="1"/><rect x="17" y="13" width="3" height="3" rx="1"/></svg></span>
+        <span>Progress</span>
+      </button>
+    </div>
+
+    <div class="rail-section">
+      <div class="rail-label ui">Your decks</div>
+      <div class="deck-list" id="deck-list" role="list"></div>
+    </div>
+
+    <div class="rail-foot">
+      <button class="text-btn" id="btn-new-deck"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> New deck</button>
+      <button class="text-btn" id="btn-import"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg> Import deck (JSON)</button>
+      <button class="text-btn" id="btn-deck-settings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg> Deck settings</button>
+    </div>
+  </aside>
+
+  <!-- ============================ MAIN ============================ -->
+  <div class="main">
+    <div class="topbar ui">
+      <button class="icon-btn" id="btn-menu" aria-label="Open menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <span class="name font-display">Lantern</span>
+      <span class="spacer"></span>
+      <button class="icon-btn" data-nav="stats" aria-label="Progress"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16"/><rect x="7" y="11" width="3" height="5" rx="1"/><rect x="12" y="8" width="3" height="8" rx="1"/></svg></button>
+    </div>
+
+    <!-- STUDY -->
+    <main class="view is-active" id="view-study" tabindex="-1">
+      <div class="wrap" id="study-region">
+        <div id="study-live" class="visually-hidden" aria-live="polite"></div>
+        <div id="study-inner"></div>
+      </div>
+    </main>
+
+    <!-- BROWSE -->
+    <section class="view" id="view-browse" aria-label="Browse cards">
+      <div class="wrap" id="browse-inner"></div>
+    </section>
+
+    <!-- STATS -->
+    <section class="view" id="view-stats" aria-label="Progress">
+      <div class="wrap" id="stats-inner"></div>
+    </section>
+  </div>
+</div>
+
+<!-- modal host -->
+<div class="modal-scrim" id="modal-scrim" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal" id="modal" role="document"></div>
+</div>
+
+<div class="toast-zone" id="toast-zone" aria-live="polite"></div>
+
+<script>
+"use strict";
+/* =====================================================================
+   Lantern — warm spaced-repetition study app
+   Scheduler: faithful FSRS-5 (open-spaced-repetition/ts-fsrs default weights),
+   deterministic (no fuzz) so predicted intervals == applied intervals.
+   ===================================================================== */
+(function(){
+const DAY = 86400000;
+const $ = (s,r)=> (r||document).querySelector(s);
+const $$ = (s,r)=> Array.from((r||document).querySelectorAll(s));
+
+/* ----------------------------- FSRS-5 ----------------------------- */
+const FSRS = (function(){
+  const w = [0.40255,1.18385,3.173,15.69105,7.1949,0.5345,1.4604,0.0046,1.54575,
+             0.1192,1.01925,1.9395,0.11,0.29605,2.2698,0.2315,2.9898,0.51655,0.6621];
+  const DECAY = -0.5;
+  const FACTOR = Math.pow(0.9, 1/DECAY) - 1;  // 0.234567...
+  const S_MIN = 0.01, S_MAX = 36500;
+  const clampD = d => Math.min(Math.max(d,1),10);
+  const clampS = s => Math.min(Math.max(s,S_MIN),S_MAX);
+
+  const retrievability = (t,S)=> Math.pow(1 + FACTOR * t / S, DECAY);
+  const intervalFromS = (S, retention)=> (S/FACTOR) * (Math.pow(retention,1/DECAY) - 1);
+
+  const initS = G => clampS(w[G-1]);
+  const initD = G => clampD(w[4] - Math.exp(w[5]*(G-1)) + 1);
+
+  function nextD(D,G){
+    const delta = -w[6]*(G-3);
+    const dp = D + delta*(10-D)/9;                 // linear damping
+    const dpp = w[7]*initD(4) + (1-w[7])*dp;        // mean reversion to D0(Easy)
+    return clampD(dpp);
+  }
+  function nextS_recall(D,S,R,G){
+    const hard = G===2 ? w[15] : 1;
+    const easy = G===4 ? w[16] : 1;
+    const inc = Math.exp(w[8]) * (11-D) * Math.pow(S,-w[9])
+              * (Math.exp(w[10]*(1-R)) - 1) * hard * easy;
+    return clampS(S * (1 + inc));
+  }
+  function nextS_forget(D,S,R){
+    const sf = w[11] * Math.pow(D,-w[12]) * (Math.pow(S+1,w[13]) - 1) * Math.exp(w[14]*(1-R));
+    return clampS(Math.min(sf, S));                // post-lapse never exceeds prior stability
+  }
+
+  /* Pure: returns the next memory state + interval (days) for a rating.
+     card: {state, stability, difficulty, lastReview, reps, lapses}
+     G: 1=Again 2=Hard 3=Good 4=Easy ; now: ms ; retention: 0..1 */
+  function preview(card, G, now, retention){
+    const isNew = card.state==='new' || card.stability==null;
+    if(isNew){
+      const S = initS(G), D = initD(G);
+      const ivl = Math.max(intervalFromS(S, retention), 0);
+      return {
+        stability:S, difficulty:D, interval:ivl,
+        due: now + ivl*DAY,
+        state: G===1 ? 'learning' : 'review',
+        reps:1, lapses:0, lastReview:now, retrievability:1
+      };
+    }
+    const t = Math.max(0, (now - (card.lastReview||now)) / DAY);
+    const R = retrievability(t, card.stability);
+    const D = nextD(card.difficulty, G);
+    let S, lapses = card.lapses||0, state;
+    if(G===1){ S = nextS_forget(card.difficulty, card.stability, R); lapses++; state='relearning'; }
+    else { S = nextS_recall(card.difficulty, card.stability, R, G); state='review'; }
+    const ivl = Math.max(intervalFromS(S, retention), 0);
+    return {
+      stability:S, difficulty:D, interval:ivl,
+      due: now + ivl*DAY, state, reps:(card.reps||0)+1, lapses,
+      lastReview:now, retrievability:R
+    };
+  }
+  return { preview, intervalFromS, retrievability, initS, initD, DECAY, FACTOR, w };
+})();
+
+/* ------------------------- interval formatting ------------------------- */
+function fmtInterval(days){
+  if(!isFinite(days) || days<=0) return '<1m';
+  const mins = days*1440;
+  if(mins < 45) return Math.max(1,Math.round(mins))+'m';
+  if(days < 1)  return Math.round(days*24)+'h';
+  if(days < 21) return Math.round(days)+'d';
+  if(days < 60) return Math.round(days/7)+'w';
+  if(days < 360) return Math.round(days/30)+'mo';
+  const y = days/365;
+  return (y<10 ? y.toFixed(1) : Math.round(y))+'y';
+}
+function fmtDue(due, now){
+  const d = due - now;
+  if(d <= 0) return 'due now';
+  return 'in '+fmtInterval(d/DAY);
+}
+
+/* ----------------------------- storage ----------------------------- */
+const KEY = 'lantern.v1';
+function uid(p){ return (p||'')+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function todayKey(ts){ const d=new Date(ts||Date.now()); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+
+const DECK_COLORS = ['#C26A3C','#6F8A66','#4E7E96','#9A6FB0','#B68536','#B2503B'];
+
+function seedState(){
+  const now = Date.now();
+  const mkCard = (deckId, front, back, extra)=> Object.assign({
+    id:uid('c'), deckId, front, back,
+    state:'new', stability:null, difficulty:null,
+    due: now, lastReview:null, reps:0, lapses:0, created: now
+  }, extra||{});
+
+  const d1=uid('d'), d2=uid('d'), d3=uid('d');
+  const decks=[
+    {id:d1,name:'Spanish — everyday words',color:'#C26A3C',newPerDay:12,maxReviews:120,retention:0.9,introduced:{date:'',count:0}},
+    {id:d2,name:'World capitals',color:'#4E7E96',newPerDay:10,maxReviews:120,retention:0.9,introduced:{date:'',count:0}},
+    {id:d3,name:'How memory works',color:'#6F8A66',newPerDay:8,maxReviews:120,retention:0.9,introduced:{date:'',count:0}},
+  ];
+  const cards=[
+    mkCard(d1,'la **mañana**','the morning'),
+    mkCard(d1,'agradecido','grateful · thankful'),
+    mkCard(d1,'el **paraguas**','the umbrella'),
+    mkCard(d1,'despacio','slowly · take it slow'),
+    mkCard(d1,'la biblioteca','the library'),
+    mkCard(d1,'sonreír','to smile'),
+    mkCard(d1,'el atardecer','the dusk · sunset'),
+    // a couple already scheduled (real future due dates → realistic forecast)
+    mkCard(d1,'la **luz**','the light',{state:'review',stability:4.1,difficulty:5.2,reps:2,lapses:0,lastReview:now-3*DAY,due:now+1*DAY}),
+    mkCard(d1,'el corazón','the heart',{state:'review',stability:9.0,difficulty:4.6,reps:3,lapses:0,lastReview:now-2*DAY,due:now+6*DAY}),
+
+    mkCard(d2,'France','Paris'),
+    mkCard(d2,'Japan','Tokyo'),
+    mkCard(d2,'Kenya','Nairobi'),
+    mkCard(d2,'Norway','Oslo'),
+    mkCard(d2,'Peru','Lima'),
+    mkCard(d2,'Australia','Canberra\n*(not Sydney — a common trip-up)*'),
+    mkCard(d2,'Canada','Ottawa',{state:'review',stability:6.5,difficulty:4.8,reps:2,lapses:0,lastReview:now-2*DAY,due:now+3*DAY}),
+
+    mkCard(d3,'What does *spaced repetition* exploit?','The **spacing effect** — memories last longer when reviews are spread out over time rather than crammed.'),
+    mkCard(d3,'When is the *best* moment to review a card?','Right as you are about to forget it. Reviewing too early wastes effort; too late means relearning.'),
+    mkCard(d3,'What is a *forgetting curve*?','A model of how recall probability (retrievability) decays over time since the last review.'),
+    mkCard(d3,'What does FSRS track for each card?','Two numbers: **stability** (how long memory lasts) and **difficulty** (how hard the card is for you).'),
+    mkCard(d3,'Why does rating *Again* bring a card back sooner?','A lapse lowers stability, so the next interval shrinks and you see the card again quickly.'),
+    mkCard(d3,'What is *desired retention*?','The recall probability you target (e.g. 90%). Higher retention means shorter, more frequent reviews.'),
+  ];
+  return { version:1, decks, cards, log:[], activeDeck:d1, ui:{} };
+}
+
+let S; // app state
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw){ const p=JSON.parse(raw); if(p&&p.decks&&p.cards){ return p; } }
+  }catch(e){ /* corrupted store → reseed */ }
+  const s = seedState();
+  try{ localStorage.setItem(KEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+/* ----------------------------- queue logic ----------------------------- */
+function deckById(id){ return S.decks.find(d=>d.id===id); }
+function cardsOf(id){ return S.cards.filter(c=>c.deckId===id); }
+function introducedToday(deck){
+  if(!deck.introduced || deck.introduced.date!==todayKey()) return 0;
+  return deck.introduced.count||0;
+}
+function bumpIntroduced(deck){
+  const tk=todayKey();
+  if(!deck.introduced || deck.introduced.date!==tk) deck.introduced={date:tk,count:0};
+  deck.introduced.count++;
+}
+function dueBreakdown(deckId, now){
+  now = now||Date.now();
+  const deck = deckById(deckId);
+  const cs = cardsOf(deckId);
+  const newAvail = Math.max(0, (deck.newPerDay||0) - introducedToday(deck));
+  let newCards = cs.filter(c=>c.state==='new').sort((a,b)=>a.created-b.created).slice(0,newAvail);
+  let learn = cs.filter(c=>c.state!=='new' && c.due<=now && (c.state==='learning'||c.state==='relearning'));
+  let rev   = cs.filter(c=>c.state==='review' && c.due<=now);
+  const cap = deck.maxReviews||9999;
+  const reviewSlice = [...learn,...rev].sort((a,b)=>a.due-b.due).slice(0,cap);
+  return { new:newCards.length, learning:learn.length, due:rev.length,
+           total: newCards.length+reviewSlice.length };
+}
+function buildQueue(deckId, now){
+  now = now||Date.now();
+  const deck = deckById(deckId);
+  const cs = cardsOf(deckId);
+  const newAvail = Math.max(0, (deck.newPerDay||0) - introducedToday(deck));
+  const newCards = cs.filter(c=>c.state==='new').sort((a,b)=>a.created-b.created).slice(0,newAvail);
+  const dueCards = cs.filter(c=>c.state!=='new' && c.due<=now).sort((a,b)=>a.due-b.due);
+  const cap = deck.maxReviews||9999;
+  const reviews = dueCards.slice(0,cap);
+  // due reviews first (memory-critical), then introduce new
+  return [...reviews, ...newCards].map(c=>c.id);
+}
+function totalDueAcross(now){
+  now=now||Date.now();
+  return S.decks.reduce((n,d)=>n+dueBreakdown(d.id,now).total,0);
+}
+
+/* ----------------------------- markdown-lite ----------------------------- */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function mdRender(s){
+  return esc(s)
+    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/\n/g,'<br>');
+}
+
+/* ================================================================
+   APP STATE (transient session)
+   ================================================================ */
+let view='study';
+let queue=[];          // card ids
+let qIndex=0;
+let revealed=false;
+let sessionReviewed=0; // count this session
+let sessionStarted=0;  // queue length when session began
+let undoStack=[];      // {card snapshot, logIndex, qIndex, prevReveal}
+
+/* ----------------------------- render dispatch ----------------------------- */
+function setView(v){
+  view=v;
+  $$('.view').forEach(el=>el.classList.remove('is-active'));
+  $('#view-'+v).classList.add('is-active');
+  $$('.nav-btn[data-nav]').forEach(b=>b.classList.toggle('is-active', b.dataset.nav===v));
+  closeDrawer();
+  if(v==='study') renderStudy();
+  if(v==='browse') renderBrowse();
+  if(v==='stats') renderStats();
+}
+function renderAll(){ renderRail(); if(view==='study')renderStudy(); else if(view==='browse')renderBrowse(); else renderStats(); }
+
+/* ----------------------------- rail ----------------------------- */
+function renderRail(){
+  const list=$('#deck-list'); list.innerHTML='';
+  const now=Date.now();
+  S.decks.forEach(d=>{
+    const bd=dueBreakdown(d.id,now);
+    const row=document.createElement('button');
+    row.className='deck-row'+(d.id===S.activeDeck?' is-active':'');
+    row.setAttribute('role','listitem');
+    row.innerHTML=`<span class="deck-dot" style="background:${d.color}"></span>
+      <span class="dname font-display">${esc(d.name)}</span>
+      <span class="dcount ui ${bd.total?'':'zero'}">${bd.total||'·'}</span>`;
+    row.addEventListener('click',()=>{ S.activeDeck=d.id; save(); newSession(); setView('study'); renderRail(); });
+    list.appendChild(row);
+  });
+  const tot=totalDueAcross(now);
+  const sc=$('#study-count');
+  sc.textContent=tot; sc.classList.toggle('zero',!tot);
+}
+
+/* ----------------------------- study ----------------------------- */
+function newSession(){
+  queue=buildQueue(S.activeDeck);
+  qIndex=0; revealed=false; sessionReviewed=0; sessionStarted=queue.length;
+  undoStack=[];
+}
+function currentCard(){ return S.cards.find(c=>c.id===queue[qIndex]); }
+
+function renderStudy(){
+  const inner=$('#study-inner');
+  const deck=deckById(S.activeDeck);
+  const card=currentCard();
+  const now=Date.now();
+
+  // empty deck
+  if(cardsOf(S.activeDeck).length===0){
+    inner.innerHTML = stage('empty-deck', deck);
+    bindStageActions();
+    return;
+  }
+  // queue exhausted
+  if(qIndex>=queue.length || !card){
+    if(sessionReviewed>0){ inner.innerHTML = stage('session-done', deck); }
+    else { inner.innerHTML = stage('caught-up', deck); }
+    bindStageActions();
+    return;
+  }
+
+  const bd=dueBreakdown(S.activeDeck,now);
+  const remaining=queue.length-qIndex;
+  const doneFrac = sessionStarted? (sessionStarted-remaining)/sessionStarted : 0;
+  const isNew = card.state==='new';
+  const stateLabel = isNew?'New card':(card.state==='review'?'Review':(card.state==='relearning'?'Relearning':'Learning'));
+
+  // predicted intervals for each rating (preview, no mutation)
+  const preds=[1,2,3,4].map(g=>fmtInterval(FSRS.preview(card,g,now,deck.retention).interval));
+
+  inner.innerHTML = `
+    <div class="study-head">
+      <div>
+        <div class="eyebrow ui">${esc(deck.name)}</div>
+        <h1 class="font-display">Today’s review</h1>
+        <div class="micro">${encourage(remaining)}</div>
+      </div>
+      <div class="queue-meta">
+        <div class="pillrow ui">
+          <span class="pill new${bd.new?'':' is-zero'}"><span class="swatch"></span>${bd.new} new</span>
+          <span class="pill learn${bd.learning?'':' is-zero'}"><span class="swatch"></span>${bd.learning} learning</span>
+          <span class="pill due${bd.due?'':' is-zero'}"><span class="swatch"></span>${bd.due} due</span>
+        </div>
+      </div>
+    </div>
+    <div class="progress-track" role="progressbar" aria-label="Session progress" aria-valuemin="0" aria-valuemax="${sessionStarted}" aria-valuenow="${sessionStarted-remaining}">
+      <div class="progress-fill" style="width:${Math.round(doneFrac*100)}%"></div>
+    </div>
+
+    <div class="card-scene">
+      <div class="card${revealed?' is-flipped':''}" id="card" tabindex="0" role="button" style="--deck:${deck.color}"
+           aria-label="Flashcard. ${revealed?'Showing answer.':'Showing question. Activate to reveal the answer.'}">
+        <div class="face face--front">
+          <span class="card-band" aria-hidden="true"></span>
+          <div class="card-corner ui"><span class="tg ${card.lapses>0?'again':''}">${stateLabel}</span></div>
+          <div class="card-body"><div class="card-prompt">${mdRender(card.front)}</div></div>
+          <div class="flip-hint ui">Press <span class="kbd">Space</span> or tap to reveal</div>
+        </div>
+        <div class="face face--back">
+          <span class="card-band" aria-hidden="true"></span>
+          <div class="card-corner ui"><span class="tg">Answer</span></div>
+          <div class="card-body">
+            <div class="card-prompt" style="font-size:var(--fs-md);color:var(--ink-600)">${mdRender(card.front)}</div>
+            <div class="divider-leaf" aria-hidden="true"><span class="ln"></span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c1.7 2.4 5 3.2 5 7a5 5 0 0 1-10 0c0-3.8 3.3-4.6 5-7Z"/></svg>
+              <span class="ln"></span></div>
+            <div class="card-answer">${mdRender(card.back)}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rate-bar ui" id="rate-bar" aria-hidden="${revealed?'false':'true'}">
+      <button class="rate again" data-g="1" ${revealed?'':'disabled'}><span class="rk">1</span><span class="rl">Again</span><span class="ri">${preds[0]}</span></button>
+      <button class="rate hard"  data-g="2" ${revealed?'':'disabled'}><span class="rk">2</span><span class="rl">Hard</span><span class="ri">${preds[1]}</span></button>
+      <button class="rate good"  data-g="3" ${revealed?'':'disabled'}><span class="rk">3</span><span class="rl">Good</span><span class="ri">${preds[2]}</span></button>
+      <button class="rate easy"  data-g="4" ${revealed?'':'disabled'}><span class="rk">4</span><span class="rl">Easy</span><span class="ri">${preds[3]}</span></button>
+    </div>
+
+    <div class="study-foot ui">
+      <button class="text-btn" id="btn-undo" ${undoStack.length?'':'disabled style="opacity:.4;cursor:not-allowed"'}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg> Undo</button>
+      <button class="text-btn" id="btn-edit-current">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Edit card <span class="kbd" style="margin-left:4px">E</span></button>
+    </div>`;
+
+  const cardEl=$('#card');
+  cardEl.addEventListener('click', flip);
+  cardEl.addEventListener('keydown', e=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); flip(); }});
+  $$('#rate-bar .rate').forEach(b=> b.addEventListener('click',()=> rate(parseInt(b.dataset.g,10))));
+  $('#btn-undo').addEventListener('click', undo);
+  $('#btn-edit-current').addEventListener('click',()=> card && openCardModal(card.deckId, card.id));
+}
+
+function encourage(remaining){
+  if(remaining===1) return 'One card left. Finish gently.';
+  const opts=[
+    `${remaining} cards to revisit. Take your time.`,
+    `${remaining} cards ahead — no rush.`,
+    `Just ${remaining} cards. Breathe, then begin.`,
+  ];
+  return opts[remaining % opts.length];
+}
+
+function flip(){
+  if(!revealed){
+    revealed=true;
+    const c=$('#card'); if(c) c.classList.add('is-flipped');
+    const rb=$('#rate-bar'); if(rb){ rb.setAttribute('aria-hidden','false'); $$('.rate',rb).forEach(b=>b.disabled=false); }
+    announce('Answer revealed. Rate your recall: 1 Again, 2 Hard, 3 Good, 4 Easy.');
+  }
+}
+
+function rate(g){
+  if(!revealed) { flip(); return; }
+  const card=currentCard(); if(!card) return;
+  const deck=deckById(card.deckId);
+  const now=Date.now();
+  const wasNew = card.state==='new';
+  const next=FSRS.preview(card,g,now,deck.retention);
+
+  // snapshot for undo
+  const snap=JSON.parse(JSON.stringify(card));
+  if(wasNew) bumpIntroduced(deck);
+
+  // commit
+  card.stability=next.stability; card.difficulty=next.difficulty;
+  card.due=next.due; card.lastReview=now; card.state=next.state;
+  card.reps=next.reps; card.lapses=next.lapses;
+
+  const logEntry={t:now,deckId:card.deckId,cardId:card.id,rating:g,wasNew,graded:!wasNew};
+  S.log.push(logEntry);
+  undoStack.push({snap, logIndex:S.log.length-1, qIndex, deckIntro: wasNew?deck.id:null});
+
+  sessionReviewed++;
+  qIndex++; revealed=false;
+  save();
+  announce(`Scheduled ${fmtInterval(next.interval)} from now.`);
+  renderStudy(); renderRail();
+}
+
+function undo(){
+  if(!undoStack.length) return;
+  const u=undoStack.pop();
+  const card=S.cards.find(c=>c.id===u.snap.id);
+  if(card) Object.assign(card, u.snap);
+  // remove the matching log entry
+  if(S.log[u.logIndex]) S.log.splice(u.logIndex,1);
+  if(u.deckIntro){ const d=deckById(u.deckIntro); if(d&&d.introduced) d.introduced.count=Math.max(0,d.introduced.count-1); }
+  qIndex=u.qIndex; revealed=true; sessionReviewed=Math.max(0,sessionReviewed-1);
+  save();
+  toast('Rating undone', null);
+  renderStudy(); renderRail();
+}
+
+/* ----------------------------- stages (empty/done) ----------------------------- */
+function stage(kind, deck){
+  const sunArt=`<svg class="art" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+    <circle cx="60" cy="58" r="24" fill="#F4CE97"/><circle cx="60" cy="58" r="24" fill="none" stroke="#E0A35E" stroke-width="2"/>
+    ${[...Array(8)].map((_,i)=>{const a=i/8*Math.PI*2;const x1=60+Math.cos(a)*32,y1=58+Math.sin(a)*32,x2=60+Math.cos(a)*42,y2=58+Math.sin(a)*42;return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#E0A35E" stroke-width="3" stroke-linecap="round"/>`}).join('')}
+    <path d="M44 60c5 5 27 5 32 0" stroke="#A4502A" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+    <circle cx="51" cy="54" r="1.8" fill="#A4502A"/><circle cx="69" cy="54" r="1.8" fill="#A4502A"/></svg>`;
+  const cupArt=`<svg class="art" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+    <path d="M34 50h44v18a22 22 0 0 1-44 0Z" fill="#F4CE97" stroke="#E0A35E" stroke-width="2"/>
+    <path d="M78 54h8a8 8 0 0 1 0 16h-8" stroke="#E0A35E" stroke-width="3" fill="none"/>
+    <path d="M46 38c-2-4 2-7 0-11M58 38c-2-4 2-7 0-11M70 38c-2-4 2-7 0-11" stroke="#C26A3C" stroke-width="2.4" stroke-linecap="round" fill="none" opacity=".7"/>
+    <rect x="30" y="84" width="60" height="5" rx="2.5" fill="#E0A35E"/></svg>`;
+  const seedArt=`<svg class="art" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+    <path d="M60 86V50" stroke="#6F8A66" stroke-width="3" stroke-linecap="round"/>
+    <path d="M60 58c-10 0-18-6-18-16 10 0 18 6 18 16Z" fill="#9BB48E"/>
+    <path d="M60 66c10 0 18-6 18-16-10 0-18 6-18 16Z" fill="#6F8A66"/>
+    <ellipse cx="60" cy="90" rx="20" ry="5" fill="#E7D8BB"/></svg>`;
+
+  if(kind==='empty-deck'){
+    return `<div class="stage">${seedArt}
+      <h2 class="font-display">This deck is empty</h2>
+      <p>“${esc(deck.name)}” has no cards yet. Add your first one to start a gentle habit.</p>
+      <button class="btn btn--primary" data-act="new-card"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Add a card</button></div>`;
+  }
+  const bd=dueBreakdown(S.activeDeck,Date.now());
+  const next=nextDueInDeck(S.activeDeck);
+  if(kind==='session-done'){
+    const st=computeStats();
+    return `<div class="stage">${sunArt}
+      <h2 class="font-display">Session complete</h2>
+      <p>You reviewed <strong>${sessionReviewed}</strong> ${sessionReviewed===1?'card':'cards'} in “${esc(deck.name)}”. Memory, tended.</p>
+      <div class="stat-strip">
+        <div><div class="n font-display">${sessionReviewed}</div><div class="l ui">reviewed</div></div>
+        <div><div class="n font-display">${st.reviewsToday}</div><div class="l ui">today total</div></div>
+        <div><div class="n font-display">${st.streak}</div><div class="l ui">day streak</div></div>
+      </div>
+      <p style="font-size:var(--fs-sm)">${next!=null?('Next card here is due '+fmtDue(next,Date.now())+'.'):'Nothing else scheduled here.'}</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+        <button class="btn btn--ghost" data-act="goto-progress">See progress</button>
+        ${otherDueDeck()?`<button class="btn btn--primary" data-act="next-deck">Study another deck</button>`:''}
+      </div></div>`;
+  }
+  // caught-up
+  return `<div class="stage">${cupArt}
+    <h2 class="font-display">All caught up</h2>
+    <p>Nothing is due in “${esc(deck.name)}” right now. Rest is part of remembering.</p>
+    <p style="font-size:var(--fs-sm)">${next!=null?('Your next card here returns '+fmtDue(next,Date.now())+'.'):'Add more cards whenever you like.'}</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+      <button class="btn btn--ghost" data-act="new-card">Add a card</button>
+      ${otherDueDeck()?`<button class="btn btn--primary" data-act="next-deck">Study a deck that’s due</button>`:`<button class="btn btn--ghost" data-act="goto-progress">See progress</button>`}
+    </div></div>`;
+}
+function bindStageActions(){
+  $$('[data-act]').forEach(b=> b.addEventListener('click',()=>{
+    const a=b.dataset.act;
+    if(a==='new-card') openCardModal(S.activeDeck,null);
+    if(a==='goto-progress') setView('stats');
+    if(a==='next-deck'){ const d=otherDueDeck(); if(d){ S.activeDeck=d; save(); newSession(); renderRail(); renderStudy(); } }
+  }));
+}
+function nextDueInDeck(deckId){
+  const cs=cardsOf(deckId).filter(c=>c.state!=='new').map(c=>c.due).sort((a,b)=>a-b);
+  return cs.length?cs[0]:null;
+}
+function otherDueDeck(){
+  const now=Date.now();
+  const d=S.decks.find(d=>d.id!==S.activeDeck && dueBreakdown(d.id,now).total>0);
+  return d?d.id:null;
+}
+
+/* ----------------------------- browse ----------------------------- */
+function renderBrowse(){
+  const inner=$('#browse-inner');
+  const deck=deckById(S.activeDeck);
+  const cs=cardsOf(S.activeDeck);
+  const now=Date.now();
+  inner.innerHTML=`
+    <div class="view-head">
+      <div>
+        <h1 class="font-display">${esc(deck.name)}</h1>
+        <div class="sub">${cs.length} ${cs.length===1?'card':'cards'} · curating a deck is its own kind of study</div>
+      </div>
+      <div class="head-actions ui">
+        <button class="btn btn--ghost" id="b-export"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 12-4-4m4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg> Export</button>
+        <button class="btn btn--ghost" id="b-settings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> Settings</button>
+        <button class="btn btn--primary" id="b-add"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Add card</button>
+      </div>
+    </div>
+    ${cs.length===0?`<div class="panel" style="text-align:center;padding:48px 24px">
+        <p style="color:var(--ink-500);margin:0 0 16px">No cards in this deck yet.</p>
+        <button class="btn btn--primary" id="b-add2">Add your first card</button></div>`
+    :`<div class="card-table" id="ctable"></div>`}
+  `;
+  $('#b-add').addEventListener('click',()=>openCardModal(S.activeDeck,null));
+  const a2=$('#b-add2'); if(a2)a2.addEventListener('click',()=>openCardModal(S.activeDeck,null));
+  $('#b-export').addEventListener('click',()=>exportDeck(S.activeDeck));
+  $('#b-settings').addEventListener('click',()=>openDeckSettings(S.activeDeck));
+  const tbl=$('#ctable');
+  if(tbl){
+    cs.slice().sort((a,b)=>a.created-b.created).forEach(c=>{
+      const row=document.createElement('div'); row.className='crow';
+      const stateCls=c.state;
+      const due=c.state==='new'?'unseen':fmtDue(c.due,now);
+      row.innerHTML=`
+        <div class="cf">${mdRender(c.front)}</div>
+        <div class="cb">${mdRender(c.back)}</div>
+        <div class="meta">
+          <span class="state-chip ${stateCls} ui">${c.state}</span>
+          <span class="due ui">${due}</span>
+          <div class="acts">
+            <button class="icon-btn" title="Edit" aria-label="Edit card"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+            <button class="icon-btn" title="Delete" aria-label="Delete card"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg></button>
+          </div>
+        </div>`;
+      const [editB,delB]=$$('.icon-btn',row);
+      editB.addEventListener('click',()=>openCardModal(c.deckId,c.id));
+      delB.addEventListener('click',()=>deleteCard(c.id));
+      tbl.appendChild(row);
+    });
+  }
+}
+
+/* ----------------------------- stats ----------------------------- */
+function computeStats(){
+  const now=Date.now();
+  const today=todayKey(now);
+  const reviewsToday=S.log.filter(l=>todayKey(l.t)===today).length;
+  // streak: consecutive days with >=1 review, ending today (or yesterday tolerated)
+  const days=new Set(S.log.map(l=>todayKey(l.t)));
+  let streak=0; let cur=new Date(now);
+  // if nothing today but something yesterday, streak still counts up to yesterday
+  if(!days.has(todayKey(now))) cur=new Date(now-DAY);
+  while(days.has(todayKey(cur.getTime()))){ streak++; cur=new Date(cur.getTime()-DAY); }
+  // retention: graded reviews remembered (rating>=2) / graded reviews
+  const graded=S.log.filter(l=>l.graded);
+  const remembered=graded.filter(l=>l.rating>=2).length;
+  const retention=graded.length? Math.round(remembered/graded.length*100):null;
+  return {reviewsToday,streak,retention,gradedCount:graded.length,totalReviews:S.log.length};
+}
+function forecast(daysAhead){
+  const now=Date.now();
+  const buckets=new Array(daysAhead).fill(0);
+  S.cards.forEach(c=>{
+    if(c.state==='new') return;
+    const d=Math.floor((c.due-now)/DAY);
+    if(d<0) buckets[0]++;        // overdue counts toward today
+    else if(d<daysAhead) buckets[d]++;
+  });
+  return buckets;
+}
+function renderStats(){
+  const inner=$('#stats-inner');
+  const st=computeStats();
+  const fc=forecast(14);
+  const max=Math.max(1,...fc);
+  const dueNow=totalDueAcross();
+  const totalCards=S.cards.length;
+
+  const labels=fc.map((_,i)=>{
+    if(i===0) return 'Today';
+    const d=new Date(Date.now()+i*DAY);
+    return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+  });
+
+  inner.innerHTML=`
+    <div class="view-head">
+      <div>
+        <h1 class="font-display">Your progress</h1>
+        <div class="sub">Small, steady reviews. That’s the whole craft.</div>
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <svg class="ic" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 11l3 3 8-8"/><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg>
+        <div class="v">${st.reviewsToday}</div><div class="k ui">Reviews today</div>
+        <div class="hint">${st.reviewsToday?'Nicely done.':'A few minutes is enough.'}</div>
+      </div>
+      <div class="stat-card">
+        <svg class="ic" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3c1.7 2.4 5 3.2 5 7a5 5 0 0 1-10 0c0-3.8 3.3-4.6 5-7Z"/></svg>
+        <div class="v">${st.streak}<span style="font-size:.5em;color:var(--ink-400)"> ${st.streak===1?'day':'days'}</span></div><div class="k ui">Current streak</div>
+        <div class="hint">${st.streak>1?'Kept the flame lit.':'Begin a streak today.'}</div>
+      </div>
+      <div class="stat-card">
+        <svg class="ic" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 18c4-9 12-9 16 0"/><circle cx="12" cy="9" r="2.4"/></svg>
+        <div class="v">${st.retention!=null?st.retention+'%':'—'}</div><div class="k ui">Recall rate</div>
+        <div class="hint">${st.retention!=null?('over '+st.gradedCount+' graded review'+(st.gradedCount===1?'':'s')):'Appears after a few reviews.'}</div>
+      </div>
+      <div class="stat-card">
+        <svg class="ic" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M8 5v14"/></svg>
+        <div class="v">${dueNow}</div><div class="k ui">Due right now</div>
+        <div class="hint">${totalCards} cards across ${S.decks.length} decks</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 class="font-display">Upcoming reviews</h3>
+      <p class="psub">How many scheduled cards return over the next 14 days — so nothing piles up unseen.</p>
+      <div class="forecast" role="img" aria-label="Forecast of scheduled reviews for the next 14 days">
+        ${fc.map((n,i)=>`<div class="fbar">
+            <span class="bn ui">${n||''}</span>
+            <div class="bar ${n?'':'zero'} ${i===0?'today':''}" style="height:${Math.max(n? (n/max*100):2, n?6:2)}%" title="${labels[i]}: ${n} due"></div>
+            <span class="bl ui">${labels[i]}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/* ----------------------------- card modal ----------------------------- */
+let modalCleanup=null;
+function openModal(html){
+  const m=$('#modal'); m.innerHTML=html;
+  $('#modal-scrim').classList.add('open');
+  const first=m.querySelector('input,textarea,select,button'); if(first) setTimeout(()=>first.focus(),60);
+  document.addEventListener('keydown',escClose);
+}
+function escClose(e){ if(e.key==='Escape') closeModal(); }
+function closeModal(){
+  $('#modal-scrim').classList.remove('open');
+  document.removeEventListener('keydown',escClose);
+  if(modalCleanup){modalCleanup();modalCleanup=null;}
+}
+$('#modal-scrim').addEventListener('click',e=>{ if(e.target.id==='modal-scrim') closeModal(); });
+
+function openCardModal(deckId, cardId){
+  const editing = cardId!=null;
+  const card = editing ? S.cards.find(c=>c.id===cardId) : {front:'',back:''};
+  openModal(`
+    <h2 class="font-display"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--clay)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> ${editing?'Edit card':'New card'}</h2>
+    <form id="card-form" novalidate>
+      <div class="field" id="f-front">
+        <label for="i-front" class="ui">Front (question)<span class="req">*</span></label>
+        <textarea class="input" id="i-front" rows="3" aria-describedby="h-front">${esc(card.front)}</textarea>
+        <div class="hint" id="h-front">Line breaks kept. Use **bold**, *italic*, \`code\`.</div>
+        <div class="errmsg ui">Please write the front of the card.</div>
+      </div>
+      <div class="field" id="f-back">
+        <label for="i-back" class="ui">Back (answer)<span class="req">*</span></label>
+        <textarea class="input" id="i-back" rows="3">${esc(card.back)}</textarea>
+        <div class="errmsg ui">Please write the answer.</div>
+      </div>
+      <div class="field">
+        <label for="i-deck" class="ui">Deck</label>
+        <select class="input" id="i-deck">${S.decks.map(d=>`<option value="${d.id}" ${d.id===deckId?'selected':''}>${esc(d.name)}</option>`).join('')}</select>
+      </div>
+      <div class="modal-actions">
+        ${editing?`<button type="button" class="btn btn--danger" id="c-del">Delete</button>`:''}
+        <span class="spacer"></span>
+        <button type="button" class="btn btn--soft" id="c-cancel">Cancel</button>
+        <button type="submit" class="btn btn--primary">${editing?'Save card':'Add card'}</button>
+      </div>
+    </form>`);
+  const form=$('#card-form');
+  $('#c-cancel').addEventListener('click',closeModal);
+  const delB=$('#c-del'); if(delB) delB.addEventListener('click',()=>{closeModal();deleteCard(cardId);});
+  form.addEventListener('submit',e=>{
+    e.preventDefault();
+    const front=$('#i-front').value.trim(), back=$('#i-back').value.trim();
+    let ok=true;
+    $('#f-front').classList.toggle('invalid', !front); $('#i-front').classList.toggle('err',!front);
+    $('#f-back').classList.toggle('invalid', !back); $('#i-back').classList.toggle('err',!back);
+    if(!front){ $('#i-front').focus(); ok=false; }
+    else if(!back){ $('#i-back').focus(); ok=false; }
+    if(!ok) return;
+    const targetDeck=$('#i-deck').value;
+    if(editing){
+      card.front=front; card.back=back;
+      if(card.deckId!==targetDeck) card.deckId=targetDeck;
+      toast('Card saved');
+    }else{
+      const now=Date.now();
+      S.cards.push({id:uid('c'),deckId:targetDeck,front,back,state:'new',stability:null,difficulty:null,due:now,lastReview:null,reps:0,lapses:0,created:now});
+      toast('Card added');
+    }
+    save(); closeModal();
+    if(view==='study'){ newSession(); renderStudy(); }
+    if(view==='browse') renderBrowse();
+    renderRail();
+  });
+}
+function deleteCard(cardId){
+  const c=S.cards.find(x=>x.id===cardId); if(!c) return;
+  confirmModal('Delete this card?', `“${c.front.slice(0,60)}” will be removed from the deck. This can’t be undone.`,'Delete card',()=>{
+    S.cards=S.cards.filter(x=>x.id!==cardId);
+    save();
+    toast('Card deleted');
+    queue=queue.filter(id=>id!==cardId);
+    if(view==='browse') renderBrowse();
+    if(view==='study'){ if(qIndex>=queue.length) {/*stage*/} renderStudy(); }
+    renderRail();
+  });
+}
+
+/* ----------------------------- deck modal/settings ----------------------------- */
+function openNewDeck(){
+  openModal(`
+    <h2 class="font-display"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--clay)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> New deck</h2>
+    <form id="deck-form" novalidate>
+      <div class="field" id="f-name">
+        <label for="i-name" class="ui">Deck name<span class="req">*</span></label>
+        <input class="input" id="i-name" type="text" placeholder="e.g. French verbs" />
+        <div class="errmsg ui">Please name the deck.</div>
+      </div>
+      <div class="field">
+        <label class="ui">Colour</label>
+        <div class="swatch-pick" id="swatches">
+          ${DECK_COLORS.map((c,i)=>`<label class="${i===0?'sel':''}" style="background:${c}"><input type="radio" name="col" value="${c}" ${i===0?'checked':''} aria-label="colour ${i+1}"></label>`).join('')}
+        </div>
+      </div>
+      <div class="modal-actions">
+        <span class="spacer"></span>
+        <button type="button" class="btn btn--soft" id="d-cancel">Cancel</button>
+        <button type="submit" class="btn btn--primary">Create deck</button>
+      </div>
+    </form>`);
+  $('#d-cancel').addEventListener('click',closeModal);
+  $$('#swatches label').forEach(l=>l.addEventListener('click',()=>{$$('#swatches label').forEach(x=>x.classList.remove('sel'));l.classList.add('sel');}));
+  $('#deck-form').addEventListener('submit',e=>{
+    e.preventDefault();
+    const name=$('#i-name').value.trim();
+    $('#f-name').classList.toggle('invalid',!name);
+    if(!name){$('#i-name').focus();return;}
+    const col=(document.querySelector('input[name=col]:checked')||{}).value||DECK_COLORS[0];
+    const id=uid('d');
+    S.decks.push({id,name,color:col,newPerDay:12,maxReviews:120,retention:0.9,introduced:{date:'',count:0}});
+    S.activeDeck=id; save(); closeModal(); toast('Deck created');
+    newSession(); renderRail(); setView('study');
+  });
+}
+function openDeckSettings(deckId){
+  const deck=deckById(deckId||S.activeDeck); if(!deck) return;
+  openModal(`
+    <h2 class="font-display"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--clay)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> Deck settings</h2>
+    <form id="set-form" novalidate>
+      <div class="field" id="f-dn">
+        <label for="s-name" class="ui">Deck name<span class="req">*</span></label>
+        <input class="input" id="s-name" type="text" value="${esc(deck.name)}" />
+        <div class="errmsg ui">Please name the deck.</div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="s-new" class="ui">New cards / day</label>
+          <input class="input" id="s-new" type="number" min="0" max="200" value="${deck.newPerDay}" />
+        </div>
+        <div class="field">
+          <label for="s-max" class="ui">Max reviews / day</label>
+          <input class="input" id="s-max" type="number" min="0" max="999" value="${deck.maxReviews}" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="s-ret" class="ui">Desired retention</label>
+        <div class="rng">
+          <input type="range" id="s-ret" min="80" max="97" step="1" value="${Math.round(deck.retention*100)}" />
+          <output id="s-ret-out">${Math.round(deck.retention*100)}%</output>
+        </div>
+        <div class="hint">Higher = remember more, but review more often. 90% is a calm default.</div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn--danger" id="s-del">Delete deck</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn btn--soft" id="s-cancel">Cancel</button>
+        <button type="submit" class="btn btn--primary">Save settings</button>
+      </div>
+    </form>`);
+  const ret=$('#s-ret'); ret.addEventListener('input',()=>$('#s-ret-out').textContent=ret.value+'%');
+  $('#s-cancel').addEventListener('click',closeModal);
+  $('#s-del').addEventListener('click',()=>{
+    closeModal();
+    confirmModal('Delete this deck?', `“${deck.name}” and its ${cardsOf(deck.id).length} cards will be removed.`,'Delete deck',()=>{
+      if(S.decks.length<=1){ toast('Keep at least one deck'); return; }
+      S.cards=S.cards.filter(c=>c.deckId!==deck.id);
+      S.decks=S.decks.filter(d=>d.id!==deck.id);
+      if(S.activeDeck===deck.id) S.activeDeck=S.decks[0].id;
+      save(); toast('Deck deleted'); newSession(); renderRail(); setView('study');
+    });
+  });
+  $('#set-form').addEventListener('submit',e=>{
+    e.preventDefault();
+    const name=$('#s-name').value.trim();
+    $('#f-dn').classList.toggle('invalid',!name);
+    if(!name){$('#s-name').focus();return;}
+    deck.name=name;
+    deck.newPerDay=Math.max(0,Math.min(200,parseInt($('#s-new').value)||0));
+    deck.maxReviews=Math.max(0,Math.min(999,parseInt($('#s-max').value)||0));
+    deck.retention=Math.max(.8,Math.min(.97,(parseInt(ret.value)||90)/100));
+    save(); closeModal(); toast('Settings saved');
+    newSession(); renderRail();
+    if(view==='study') renderStudy(); if(view==='browse') renderBrowse();
+  });
+}
+
+/* confirm */
+function confirmModal(title,msg,confirmLabel,onYes){
+  openModal(`
+    <h2 class="font-display">${esc(title)}</h2>
+    <p style="color:var(--ink-600);margin:0 0 8px">${esc(msg)}</p>
+    <div class="modal-actions">
+      <span class="spacer"></span>
+      <button type="button" class="btn btn--soft" id="cf-no">Cancel</button>
+      <button type="button" class="btn btn--danger" id="cf-yes">${esc(confirmLabel)}</button>
+    </div>`);
+  $('#cf-no').addEventListener('click',closeModal);
+  $('#cf-yes').addEventListener('click',()=>{closeModal();onYes();});
+}
+
+/* ----------------------------- import / export ----------------------------- */
+function exportDeck(deckId){
+  const deck=deckById(deckId);
+  const payload={
+    lantern:'deck',version:1,exportedAt:new Date().toISOString(),
+    deck:{name:deck.name,color:deck.color,newPerDay:deck.newPerDay,maxReviews:deck.maxReviews,retention:deck.retention},
+    cards:cardsOf(deckId).map(c=>({front:c.front,back:c.back,state:c.state,stability:c.stability,difficulty:c.difficulty,due:c.due,lastReview:c.lastReview,reps:c.reps,lapses:c.lapses}))
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=deck.name.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'.lantern.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  toast('Deck exported');
+}
+function importDeck(){
+  const inp=document.createElement('input');
+  inp.type='file'; inp.accept='.json,application/json';
+  inp.addEventListener('change',()=>{
+    const file=inp.files[0]; if(!file) return;
+    const rd=new FileReader();
+    rd.onload=()=>{
+      try{
+        const data=JSON.parse(rd.result);
+        if(!data || !Array.isArray(data.cards)) throw new Error('No cards array');
+        const now=Date.now();
+        const d=data.deck||{};
+        const id=uid('d');
+        S.decks.push({id,name:(d.name||'Imported deck'),color:d.color||DECK_COLORS[2],
+          newPerDay:d.newPerDay||12,maxReviews:d.maxReviews||120,retention:d.retention||0.9,introduced:{date:'',count:0}});
+        data.cards.forEach(c=>{
+          if(typeof c.front!=='string'||typeof c.back!=='string') return;
+          S.cards.push({id:uid('c'),deckId:id,front:c.front,back:c.back,
+            state:c.state||'new',stability:(c.stability??null),difficulty:(c.difficulty??null),
+            due:(c.due||now),lastReview:(c.lastReview??null),reps:c.reps||0,lapses:c.lapses||0,created:now});
+        });
+        S.activeDeck=id; save(); toast('Imported '+data.cards.length+' cards'); newSession(); renderRail(); setView('study');
+      }catch(err){
+        toast('Could not read that file — is it a Lantern deck?');
+      }
+    };
+    rd.readAsText(file);
+  });
+  inp.click();
+}
+
+/* ----------------------------- toast / a11y ----------------------------- */
+let toastTimer=null;
+function toast(msg, actionLabel, onAction){
+  const zone=$('#toast-zone'); zone.innerHTML='';
+  const t=document.createElement('div'); t.className='toast';
+  t.innerHTML=`<span>${esc(msg)}</span>`;
+  if(actionLabel){ const b=document.createElement('button'); b.textContent=actionLabel; b.addEventListener('click',()=>{onAction&&onAction();zone.innerHTML='';}); t.appendChild(b); }
+  zone.appendChild(t);
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{zone.innerHTML='';},2600);
+}
+function announce(msg){ const l=$('#study-live'); if(l){ l.textContent=''; setTimeout(()=>l.textContent=msg,30); } }
+
+/* ----------------------------- drawer ----------------------------- */
+function openDrawer(){ $('#app').classList.add('drawer-open'); }
+function closeDrawer(){ $('#app').classList.remove('drawer-open'); }
+$('#btn-menu').addEventListener('click',openDrawer);
+$('#scrim').addEventListener('click',closeDrawer);
+
+/* ----------------------------- global keys ----------------------------- */
+document.addEventListener('keydown',e=>{
+  if($('#modal-scrim').classList.contains('open')) return;
+  const tag=(e.target.tagName||'').toLowerCase();
+  if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if(view!=='study') return;
+  const card=currentCard();
+  if(e.key===' '||e.key==='Enter'){
+    if(card && !revealed){ e.preventDefault(); flip(); }
+  } else if(['1','2','3','4'].includes(e.key)){
+    if(card && revealed){ e.preventDefault(); rate(parseInt(e.key,10)); }
+  } else if(e.key==='u'||e.key==='U'){ if(undoStack.length){e.preventDefault();undo();} }
+  else if(e.key==='e'||e.key==='E'){ if(card){e.preventDefault();openCardModal(card.deckId,card.id);} }
+});
+
+/* ----------------------------- wire nav ----------------------------- */
+$$('[data-nav]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.nav)));
+$('#btn-new-deck').addEventListener('click',openNewDeck);
+$('#btn-import').addEventListener('click',importDeck);
+$('#btn-deck-settings').addEventListener('click',()=>openDeckSettings(S.activeDeck));
+
+/* ----------------------------- boot ----------------------------- */
+S=load();
+if(!deckById(S.activeDeck) && S.decks[0]) S.activeDeck=S.decks[0].id;
+newSession();
+renderRail();
+setView('study');
+
+/* expose pure scheduler + helpers for verification */
+window.Lantern = {
+  FSRS, fmtInterval, buildQueue, dueBreakdown, computeStats,
+  preview:(card,g,retention)=>FSRS.preview(card,g,Date.now(),retention??0.9),
+  state:()=>S, KEY
+};
+})();
+</script>
+</body>
+</html>

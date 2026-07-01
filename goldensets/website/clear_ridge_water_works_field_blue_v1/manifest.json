@@ -1,0 +1,114 @@
+{
+  "pack_id": "clear_ridge_water_works_field_blue_v1",
+  "role": "anchor",
+  "family": "website.local_service",
+  "origin_type": "synthetic",
+  "source_paths": [
+    "source_snapshot/index.html",
+    "source_snapshot/styles.css",
+    "source_snapshot/script.js"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "website"
+  ],
+  "tones": [
+    "premium",
+    "technical",
+    "trustworthy",
+    "calm",
+    "field-service",
+    "light-with-dark-panels",
+    "practical"
+  ],
+  "surfaces": [
+    "homepage",
+    "hero",
+    "landing",
+    "section",
+    "diagnostic-panel",
+    "quote-form",
+    "comparison",
+    "faq"
+  ],
+  "motif_tags": [
+    "diagnostic_panel",
+    "issue_selector",
+    "water_flow_line",
+    "contour_map",
+    "equipment_diagram",
+    "system_cutaway",
+    "emergency_vs_planned_split",
+    "field_service_quote_flow",
+    "service_area_shell",
+    "asymmetric_plan_comparison",
+    "proof_safe_record",
+    "field_note_detail",
+    "sticky_nav",
+    "dark_diagnostic_surface"
+  ],
+  "supports_tasks": [
+    "rural_service_landing",
+    "well_pump_water_service_website",
+    "field_service_diagnostic_page",
+    "trade_service_quote_flow",
+    "local_service_homepage_polish",
+    "technical_light_layout_with_dark_panels",
+    "service_area_without_fake_locations",
+    "plan_comparison_with_real_hierarchy"
+  ],
+  "anti_patterns": [
+    "fake license or bonded/insured claim",
+    "fake response time or guarantee",
+    "fake service towns or coverage map pins",
+    "fabricated reviews, ratings, or years in business",
+    "stock truck or equipment photography",
+    "generic three-equal-card row",
+    "soft SaaS gradient hero",
+    "marketing-agency vibe",
+    "emoji used as icons",
+    "unfinished placeholder sections"
+  ],
+  "screenshot_paths": [
+    "screenshots/desktop-1512.png",
+    "screenshots/desktop-1440.png",
+    "screenshots/desktop-1280.png",
+    "screenshots/tablet-1024.png",
+    "screenshots/tablet-768.png",
+    "screenshots/mobile-390.png",
+    "screenshots/mobile-360.png"
+  ],
+  "token_budget_hint": 6200,
+  "confidence_score": 5,
+  "reusable_atoms": [
+    "diagnostic_issue_selector_v1",
+    "field_service_quote_flow_v1",
+    "service_area_map_shell_v1",
+    "equipment_diagram_svg_v1",
+    "emergency_vs_planned_panel_v1",
+    "maintenance_plan_comparison_v1",
+    "proof_safe_service_record_v1"
+  ],
+  "routing_tokens": [
+    "well pump",
+    "water filtration",
+    "rural water",
+    "water treatment",
+    "well service",
+    "pump repair",
+    "field service",
+    "diagnostic",
+    "trade service",
+    "low pressure",
+    "no water",
+    "pump cycling",
+    "service quote",
+    "field blue",
+    "spring water cyan",
+    "limestone",
+    "technical-but-friendly"
+  ],
+  "proof_policy": "no invented claims; proof placeholders only unless operator provides verified evidence",
+  "qa_status": "static-pass; visual-pass"
+}

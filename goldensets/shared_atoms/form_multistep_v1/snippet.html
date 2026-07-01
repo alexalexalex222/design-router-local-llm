@@ -1,0 +1,147 @@
+<!-- form_multistep_v1 — multi-step intake with accessible progress indicator,
+     Back/Next, per-step validation, a final review step, and aria-current on
+     the active step. Fonts (Space Grotesk + Inter) are the REQUIRED load.
+     Pair with snippet.css and snippet.js. Without JS, all steps are visible and
+     the form posts as one normal form (progressive enhancement). -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
+  rel="stylesheet"
+/>
+
+<section class="wizard" aria-labelledby="wizard-title">
+  <div class="wizard__shell">
+    <header class="wizard__head">
+      <span class="wizard__kicker">Project intake</span>
+      <h2 id="wizard-title" class="wizard__title">A few quick steps</h2>
+    </header>
+
+    <!-- Progress indicator: an ordered list so it reads as steps in sequence.
+         aria-current="step" marks the active one; data-state drives the dot. -->
+    <nav class="steps" aria-label="Progress">
+      <ol class="steps__list">
+        <li class="step" data-state="current" id="ind-1" aria-current="step">
+          <span class="step__dot" aria-hidden="true">1</span>
+          <span class="step__name">Contact</span>
+        </li>
+        <li class="step" data-state="upcoming" id="ind-2">
+          <span class="step__dot" aria-hidden="true">2</span>
+          <span class="step__name">Project</span>
+        </li>
+        <li class="step" data-state="upcoming" id="ind-3">
+          <span class="step__dot" aria-hidden="true">3</span>
+          <span class="step__name">Review</span>
+        </li>
+      </ol>
+    </nav>
+
+    <form class="wizard__form" id="wizard-form" novalidate>
+      <p class="wizard__progress-text" id="progress-text" role="status" aria-live="polite">
+        Step 1 of 3 — Contact
+      </p>
+
+      <!-- STEP 1 -->
+      <fieldset class="wizard__step" data-step="1">
+        <legend class="wizard__legend">Who should we reach?</legend>
+        <div class="field">
+          <label class="field__label" for="w-name">Full name <span class="field__req" aria-hidden="true">*</span></label>
+          <input class="field__input" id="w-name" name="name" type="text" autocomplete="name"
+                 required aria-required="true" placeholder="e.g. Jordan Avery" />
+          <p class="field__help" id="w-name-help">First and last is plenty.</p>
+        </div>
+        <div class="field">
+          <label class="field__label" for="w-email">Email <span class="field__req" aria-hidden="true">*</span></label>
+          <input class="field__input" id="w-email" name="email" type="email" autocomplete="email"
+                 inputmode="email" required aria-required="true" placeholder="you@company.com" />
+          <p class="field__help" id="w-email-help">We only use this to reply.</p>
+        </div>
+      </fieldset>
+
+      <!-- STEP 2 -->
+      <fieldset class="wizard__step" data-step="2" hidden>
+        <legend class="wizard__legend">What's the project?</legend>
+        <div class="field">
+          <label class="field__label" for="w-type">Project type <span class="field__req" aria-hidden="true">*</span></label>
+          <div class="field__select-wrap">
+            <select class="field__input field__input--select" id="w-type" name="type"
+                    required aria-required="true" aria-describedby="w-type-help">
+              <option value="">Select one</option>
+              <option value="new">New build</option>
+              <option value="redesign">Redesign / refresh</option>
+              <option value="ongoing">Ongoing support</option>
+            </select>
+            <svg class="field__chevron" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path d="M3.5 6 8 10.5 12.5 6" fill="none" stroke="currentColor"
+                    stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <p class="field__help" id="w-type-help">Pick the closest match.</p>
+        </div>
+        <div class="field">
+          <label class="field__label" for="w-detail">Details <span class="field__req" aria-hidden="true">*</span></label>
+          <textarea class="field__input field__input--area" id="w-detail" name="detail" rows="4"
+                    required aria-required="true" placeholder="Goals, scope, and any deadline."></textarea>
+          <p class="field__help" id="w-detail-help">A sentence or two is fine.</p>
+        </div>
+      </fieldset>
+
+      <!-- STEP 3: REVIEW -->
+      <fieldset class="wizard__step" data-step="3" hidden>
+        <legend class="wizard__legend">Look right?</legend>
+        <dl class="review" id="review-list">
+          <div class="review__row">
+            <dt class="review__key">Name</dt>
+            <dd class="review__val" data-review="name">—</dd>
+          </div>
+          <div class="review__row">
+            <dt class="review__key">Email</dt>
+            <dd class="review__val" data-review="email">—</dd>
+          </div>
+          <div class="review__row">
+            <dt class="review__key">Project type</dt>
+            <dd class="review__val" data-review="type">—</dd>
+          </div>
+          <div class="review__row">
+            <dt class="review__key">Details</dt>
+            <dd class="review__val" data-review="detail">—</dd>
+          </div>
+        </dl>
+        <p class="review__note">Use Back to change anything before sending.</p>
+      </fieldset>
+
+      <!-- Live region for per-step validation errors -->
+      <p class="wizard__error" id="wizard-error" role="alert" aria-live="assertive"></p>
+
+      <div class="wizard__nav">
+        <button class="btn btn--ghost" type="button" id="wizard-back" hidden>
+          <svg class="btn__arrow btn__arrow--left" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          Back
+        </button>
+        <button class="btn btn--primary" type="button" id="wizard-next">
+          Next
+          <svg class="btn__arrow" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <button class="btn btn--primary" type="submit" id="wizard-submit" hidden>Send request</button>
+      </div>
+    </form>
+
+    <!-- Success panel -->
+    <div class="wizard__success" id="wizard-success" hidden role="status" aria-live="polite">
+      <span class="success__badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path d="m5 12.5 4.5 4.5L19 7" fill="none" stroke="currentColor"
+                stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+      <h3 class="success__title">All set</h3>
+      <p class="success__body">Thanks — we'll be in touch within [RESPONSE_WINDOW].</p>
+    </div>
+  </div>
+</section>

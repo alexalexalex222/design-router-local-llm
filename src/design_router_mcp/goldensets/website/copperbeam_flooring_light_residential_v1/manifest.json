@@ -1,0 +1,56 @@
+{
+  "pack_id": "copperbeam_flooring_light_residential_v1",
+  "role": "anchor",
+  "family": "website.local_service",
+  "source_paths": [
+    "source_snapshot/index.html",
+    "source_snapshot/styles.css"
+  ],
+  "origin_example_ids": [
+    "13-copperbeam-flooring-atlanta"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "website"
+  ],
+  "tones": [
+    "premium",
+    "light",
+    "warm",
+    "residential",
+    "restrained",
+    "craftsmanship"
+  ],
+  "surfaces": [
+    "homepage",
+    "hero",
+    "landing",
+    "section"
+  ],
+  "motif_tags": [
+    "hero_shell",
+    "sticky_nav",
+    "cta_treatment",
+    "light_precision",
+    "headline_hierarchy",
+    "trust_rail",
+    "phone_pill",
+    "split_hero"
+  ],
+  "supports_tasks": [
+    "hero_redesign",
+    "homepage_polish",
+    "light_residential_service_website",
+    "warm_residential_premium_theme",
+    "craftsmanship_service_layout"
+  ],
+  "anti_patterns": [
+    "template feel",
+    "hard industrial framing",
+    "generic luxury mush",
+    "dashboard-like ops panels"
+  ],
+  "token_budget_hint": 4300,
+  "confidence_score": 5
+}

@@ -1,0 +1,119 @@
+{
+  "pack_id": "freezebreeze_live_lab_ice_blue_v1",
+  "role": "anchor",
+  "family": "website.ecommerce",
+  "origin_type": "synthetic",
+  "source_paths": [
+    "source_snapshot/index.html",
+    "source_snapshot/styles.css",
+    "source_snapshot/script.js"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "website"
+  ],
+  "tones": [
+    "tech-commerce",
+    "ice-blue",
+    "cool",
+    "crisp",
+    "broadcast",
+    "instructional",
+    "premium",
+    "dark"
+  ],
+  "surfaces": [
+    "homepage",
+    "hero",
+    "landing",
+    "section",
+    "live_commerce",
+    "product_education"
+  ],
+  "motif_tags": [
+    "product_schematic_svg",
+    "airflow_diagram",
+    "heat_map_accent",
+    "live_cue_cards",
+    "broadcast_pulse",
+    "segment_timeline",
+    "shoppable_video_queue",
+    "offer_bundle_matrix",
+    "objection_faq",
+    "platform_tagging_checklist",
+    "script_rail",
+    "sticky_nav",
+    "glassmorphism_panel"
+  ],
+  "supports_tasks": [
+    "live_commerce_landing",
+    "product_education_page",
+    "shoppable_video_layout",
+    "cooling_comfort_product_demo",
+    "live_shopping_broadcast_shell",
+    "offer_bundle_comparison_section",
+    "objection_handling_faq_section",
+    "tiktok_youtube_shopify_live_page"
+  ],
+  "anti_patterns": [
+    "fake reviews or ratings",
+    "fake sales counters or units sold",
+    "fake percentage discounts or was/now pricing",
+    "fake performance or temperature claims",
+    "stock or rendered product photos",
+    "influencer or celebrity social proof",
+    "media outlet logo wall",
+    "countdown-timer false urgency",
+    "generic three-equal-card hero",
+    "warm wellness-spa softness"
+  ],
+  "reusable_atoms": [
+    "live_demo_sequence_v1",
+    "product_schematic_svg_v1",
+    "shoppable_video_queue_v1",
+    "offer_bundle_matrix_v1",
+    "objection_faq_panel_v1",
+    "live_segment_script_rail_v1",
+    "platform_tagging_checklist_v1",
+    "product_education_callout_v1"
+  ],
+  "routing_tokens": [
+    "live commerce",
+    "live shopping",
+    "shoppable video",
+    "product demo",
+    "product education",
+    "cooling product",
+    "comfort product",
+    "tiktok shop",
+    "youtube live",
+    "shopify live",
+    "ice blue",
+    "airflow",
+    "schematic",
+    "offer bundle",
+    "objection faq",
+    "segment script"
+  ],
+  "anti_patterns_routing": [
+    "fight gym",
+    "law firm",
+    "garden care",
+    "medspa",
+    "saas dashboard"
+  ],
+  "proof_policy": "no invented claims; proof placeholders only unless operator provides verified evidence",
+  "screenshot_paths": [
+    "screenshots/desktop-1512.png",
+    "screenshots/desktop-1440.png",
+    "screenshots/desktop-1280.png",
+    "screenshots/tablet-1024.png",
+    "screenshots/tablet-768.png",
+    "screenshots/mobile-390.png",
+    "screenshots/mobile-360.png"
+  ],
+  "token_budget_hint": 6200,
+  "confidence_score": 5,
+  "qa_status": "static-pass; visual-pass"
+}

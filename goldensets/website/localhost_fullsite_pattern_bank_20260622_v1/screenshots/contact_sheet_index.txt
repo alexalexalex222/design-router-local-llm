@@ -1,0 +1,6 @@
+orbital-launch-manifest: screenshots/orbital-launch-manifest_desktop-1512x812.png / screenshots/orbital-launch-manifest_mobile-390x844.png
+markets-terminal-capabilities: screenshots/markets-terminal-capabilities_desktop-1512x812.png / screenshots/markets-terminal-capabilities_mobile-390x844.png
+developer-docs-quickstart: screenshots/developer-docs-quickstart_desktop-1512x812.png / screenshots/developer-docs-quickstart_mobile-390x844.png
+luxury-maison-editorial: screenshots/luxury-maison-editorial_desktop-1512x812.png / screenshots/luxury-maison-editorial_mobile-390x844.png
+reference-product-spec: screenshots/reference-product-spec_desktop-1512x812.png / screenshots/reference-product-spec_mobile-390x844.png
+instrument-studio-interactive: screenshots/instrument-studio-interactive_desktop-1512x812.png / screenshots/instrument-studio-interactive_mobile-390x844.png

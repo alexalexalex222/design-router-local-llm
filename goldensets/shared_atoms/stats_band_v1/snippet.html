@@ -1,0 +1,44 @@
+<!--
+  stats_band_v1
+  Pair with snippet.css and snippet.js. Fonts: Fraunces (display) + Inter (body).
+  A proof/stat ribbon. VALUES ARE PLACEHOLDERS: [STAT_VALUE] + [STAT_LABEL] —
+  never fabricate real numbers. The count-up is progressive enhancement driven
+  by IntersectionObserver and is FROZEN under prefers-reduced-motion.
+
+  Count-up contract: put the real number in data-count-to (digits only),
+  optional data-prefix / data-suffix for symbols. Until JS runs, the visible
+  text is the [STAT_VALUE] placeholder, so the band is honest with JS disabled.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<section class="stats" aria-labelledby="stats-title">
+  <div class="stats__inner">
+    <h2 class="stats__title" id="stats-title">[STATS_BAND_HEADLINE]</h2>
+
+    <dl class="stats__grid">
+      <div class="stat" role="group" aria-labelledby="stat-1-l">
+        <dt class="stat__label" id="stat-1-l">[STAT_LABEL]</dt>
+        <dd class="stat__value" data-count-to="" data-suffix="">[STAT_VALUE]</dd>
+      </div>
+
+      <div class="stat" role="group" aria-labelledby="stat-2-l">
+        <dt class="stat__label" id="stat-2-l">[STAT_LABEL]</dt>
+        <dd class="stat__value" data-count-to="" data-suffix="">[STAT_VALUE]</dd>
+      </div>
+
+      <div class="stat" role="group" aria-labelledby="stat-3-l">
+        <dt class="stat__label" id="stat-3-l">[STAT_LABEL]</dt>
+        <dd class="stat__value" data-count-to="" data-prefix="">[STAT_VALUE]</dd>
+      </div>
+
+      <div class="stat" role="group" aria-labelledby="stat-4-l">
+        <dt class="stat__label" id="stat-4-l">[STAT_LABEL]</dt>
+        <dd class="stat__value" data-count-to="" data-suffix="">[STAT_VALUE]</dd>
+      </div>
+    </dl>
+
+    <p class="stats__foot">[STATS_SOURCE_NOTE — cite the source of these figures]</p>
+  </div>
+</section>

@@ -1,0 +1,5 @@
+- Lead with one graceful headline block and one obvious consultation action.
+- Use light surfaces and warm neutrals to create confidence without drifting into generic luxury emptiness.
+- Let the right-side visual support materiality, finish direction, or room-scale calm instead of reading like an ops dashboard.
+- Keep the phone action and trust signal immediately visible, but quieter and more integrated than in the industrial lane.
+- Premium here should come from spacing, discipline, and tactile cues rather than dark contrast or bravado.

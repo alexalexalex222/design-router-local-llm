@@ -1,0 +1,323 @@
+/* === DESIGN SYSTEM: Engineered Precision (Voltway Electric) === */
+:root {
+    --bg-base: #0a0a0c;
+    --text-primary: #ffffff;
+    --text-muted: rgba(255, 255, 255, 0.5);
+
+    --cyan-glow: #00F0FF;
+    --cyan-dim: rgba(0, 240, 255, 0.2);
+
+    /* Space Grotesk for strict brutalist geometric feel */
+    --font-display: 'Space Grotesk', -apple-system, sans-serif;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+}
+
+.site-wrapper {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* === HEADER === */
+.header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    padding: 3vw 5vw;
+}
+
+.header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: var(--text-primary);
+}
+
+.nav-links {
+    display: flex;
+    gap: 40px;
+}
+
+.nav-links a {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+    color: var(--cyan-glow);
+}
+
+/* === HERO SECTION === */
+.hero {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    min-height: 800px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('voltway_bg.png');
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+    opacity: 0.6;
+    /* Darken the pure metal slightly to pop the cyan */
+}
+
+/* Base Gradient Overlay to push depth */
+.hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, transparent 0%, rgba(10, 10, 12, 0.8) 100%);
+    z-index: 2;
+}
+
+/* THE CYAN LASER CUT */
+.laser-split {
+    position: absolute;
+    top: 50%;
+    left: -10vw;
+    width: 120vw;
+    height: 2px;
+    background: var(--cyan-glow);
+    z-index: 3;
+    transform: translateY(-50%);
+    box-shadow:
+        0 0 10px var(--cyan-glow),
+        0 0 20px var(--cyan-glow),
+        0 0 40px var(--cyan-dim),
+        0 40px 150px rgba(0, 240, 255, 0.15),
+        0 -40px 150px rgba(0, 240, 255, 0.15);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 1400px;
+    padding: 0 5vw;
+    text-align: left;
+
+    /* Offset the text slightly top-left relative to the laser center */
+    margin-top: -6vh;
+}
+
+.hero-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(4rem, 9vw, 9rem);
+    line-height: 0.85;
+    letter-spacing: -3px;
+    margin-bottom: 2rem;
+    color: var(--text-primary);
+    text-transform: uppercase;
+}
+
+.hero-subtitle {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: clamp(1rem, 1.5vw, 1.25rem);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 3rem;
+    padding-left: 4px;
+    /* Optical alignment with the tight tracking of title */
+}
+
+/* === BUTTON INTERACTION === */
+.hero-action {
+    padding-left: 4px;
+}
+
+.btn-primary {
+    position: relative;
+    display: inline-flex;
+    padding: 18px 40px;
+    background: transparent;
+    border: 1px solid var(--text-muted);
+    text-decoration: none;
+    overflow: hidden;
+    transition: all 0.4s ease;
+}
+
+.btn-text {
+    position: relative;
+    z-index: 2;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--text-primary);
+    transition: color 0.4s ease;
+}
+
+.btn-glow {
+    position: absolute;
+    inset: 0;
+    background: var(--cyan-glow);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+    z-index: 1;
+}
+
+.btn-primary:hover {
+    border-color: var(--cyan-glow);
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+}
+
+.btn-primary:hover .btn-glow {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+.btn-primary:hover .btn-text {
+    color: var(--bg-base);
+}
+
+/* === TECH DIAGRAM ELEMENTS === */
+.tech-overlay {
+    position: absolute;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-family: var(--font-display);
+    font-size: 10px;
+    letter-spacing: 2px;
+}
+
+.tech-overlay.top-left {
+    top: 15vh;
+    left: 5vw;
+}
+
+.tech-overlay.bottom-right {
+    bottom: 5vh;
+    right: 5vw;
+    text-align: right;
+}
+
+.tech-label {
+    color: var(--text-muted);
+}
+
+.tech-value {
+    color: var(--cyan-glow);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1024px) {
+    .header {
+        padding: 30px 4vw;
+    }
+
+    .hero-content {
+        padding: 0 4vw;
+        margin-top: -4vh;
+    }
+
+    .nav-links {
+        gap: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-inner {
+        flex-direction: column;
+        gap: 24px;
+        align-items: flex-start;
+    }
+
+    .nav-links {
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .logo svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .logo span {
+        font-size: 16px;
+    }
+
+    .hero {
+        min-height: 100vh;
+    }
+
+    .laser-split {
+        /* On mobile, shift the laser down slightly to leave room for stacked text */
+        top: 60%;
+    }
+
+    .hero-content {
+        margin-top: -15vh;
+    }
+
+    .hero-title {
+        letter-spacing: -1px;
+        margin-bottom: 24px;
+    }
+
+    .hero-subtitle {
+        letter-spacing: 2px;
+        line-height: 1.5;
+        margin-bottom: 40px;
+    }
+
+    .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .tech-overlay {
+        display: none;
+    }
+
+    /* Hide technical decorators on mobile to keep it extremely clean */
+}

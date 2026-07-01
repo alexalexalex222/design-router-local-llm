@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignalStack | Operational Analytics for B2B Teams</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="page-shell">
+    <header class="site-header">
+      <nav class="nav" aria-label="Primary navigation">
+        <a class="brand" href="#top" aria-label="SignalStack home">
+          <span class="brand-mark" aria-hidden="true">SS</span>
+          <span>SignalStack</span>
+        </a>
+        <div class="nav-links" aria-label="Page sections">
+          <a href="#product">Product</a>
+          <a href="#workflow">Workflow</a>
+          <a href="#integrations">Integrations</a>
+          <a href="#pricing">Pricing</a>
+        </div>
+        <div class="nav-actions">
+          <a class="ghost-link" href="#signin">Sign in</a>
+          <a class="primary-link" href="#demo">Request demo</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero section" id="top" aria-labelledby="hero-title">
+        <div class="hero-inner">
+          <div class="hero-copy">
+            <p class="eyebrow">Operational analytics / Alerting / Triage</p>
+            <h1 id="hero-title">See every signal before it becomes an incident.</h1>
+            <p class="hero-lede">
+              SignalStack turns event streams from across your stack into one dense, sortable operating
+              view — live queues, threshold alerts, and an audit trail your whole team can read.
+            </p>
+            <div class="hero-actions" aria-label="Primary calls to action">
+              <a class="primary-link" href="#demo">Request a demo</a>
+              <a class="secondary-link" href="#workflow">See the workflow</a>
+            </div>
+            <p class="hero-note">No card required for the guided walkthrough. Bring one real workflow and we map it live.</p>
+          </div>
+
+          <figure class="hero-visual" aria-labelledby="board-cap">
+            <div class="console" role="img" aria-labelledby="board-title board-desc">
+              <div class="console-bar" aria-hidden="true">
+                <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                <span class="console-path">app.signalstack.example / queues / incident-triage</span>
+              </div>
+              <svg class="console-view" viewBox="0 0 760 560" preserveAspectRatio="xMidYMid meet">
+                <title id="board-title">SignalStack triage console</title>
+                <desc id="board-desc">A dense operations dashboard with a KPI summary strip, a filter toolbar, and a sortable triage queue table with status chips.</desc>
+                <!-- KPI summary strip -->
+                <g font-family="ui-sans-serif, system-ui" >
+                  <rect x="24" y="20" width="216" height="84" rx="9" fill="#1d2838" stroke="#2b3a4f"/>
+                  <text x="42" y="50" fill="#9aa7ba" font-size="13">Open queues</text>
+                  <text x="42" y="84" fill="#e8edf5" font-size="30" font-weight="800">[ACTIVE_QUEUES]</text>
+                  <rect x="256" y="20" width="216" height="84" rx="9" fill="#1d2838" stroke="#2b3a4f"/>
+                  <text x="274" y="50" fill="#9aa7ba" font-size="13">P95 ack time</text>
+                  <text x="274" y="84" fill="#e8edf5" font-size="30" font-weight="800">[P95_ACK]</text>
+                  <rect x="488" y="20" width="248" height="84" rx="9" fill="#16241d" stroke="#2c5a45"/>
+                  <text x="506" y="50" fill="#7fcfa6" font-size="13">SLA on track</text>
+                  <text x="506" y="84" fill="#3fb27f" font-size="30" font-weight="800">[SLA_ON_TRACK]</text>
+                </g>
+                <!-- Filter toolbar -->
+                <g>
+                  <rect x="24" y="124" width="712" height="44" rx="8" fill="#131c2a" stroke="#243248"/>
+                  <rect x="40" y="138" width="120" height="16" rx="8" fill="#5b8cff" opacity="0.85"/>
+                  <rect x="176" y="138" width="92" height="16" rx="8" fill="#26344a"/>
+                  <rect x="284" y="138" width="92" height="16" rx="8" fill="#26344a"/>
+                  <rect x="600" y="136" width="120" height="20" rx="6" fill="#26344a"/>
+                </g>
+                <!-- Queue table header -->
+                <g font-family="ui-monospace, monospace" font-size="12" fill="#66758c">
+                  <text x="40" y="204">SIGNAL</text>
+                  <text x="330" y="204">OWNER</text>
+                  <text x="470" y="204">UPDATED</text>
+                  <text x="600" y="204">STATUS</text>
+                  <line x1="24" y1="216" x2="736" y2="216" stroke="#243248"/>
+                </g>
+                <!-- Queue rows -->
+                <g font-family="ui-sans-serif, system-ui" font-size="14">
+                  <g>
+                    <rect x="24" y="228" width="712" height="52" rx="7" fill="#16202e"/>
+                    <rect x="40" y="246" width="220" height="9" rx="4" fill="#cdd6e4"/>
+                    <rect x="40" y="262" width="150" height="7" rx="4" fill="#46556b"/>
+                    <circle cx="338" cy="254" r="9" fill="#2b3a4f"/>
+                    <rect x="356" y="250" width="70" height="9" rx="4" fill="#7e8da2"/>
+                    <rect x="470" y="250" width="64" height="9" rx="4" fill="#46556b"/>
+                    <rect x="600" y="242" width="104" height="24" rx="12" fill="#3a2520"/>
+                    <text x="618" y="259" fill="#e0654f" font-size="12" font-weight="700">At risk</text>
+                  </g>
+                  <g>
+                    <rect x="24" y="288" width="712" height="52" rx="7" fill="#131c2a"/>
+                    <rect x="40" y="306" width="262" height="9" rx="4" fill="#cdd6e4"/>
+                    <rect x="40" y="322" width="120" height="7" rx="4" fill="#46556b"/>
+                    <circle cx="338" cy="314" r="9" fill="#2b3a4f"/>
+                    <rect x="356" y="310" width="58" height="9" rx="4" fill="#7e8da2"/>
+                    <rect x="470" y="310" width="80" height="9" rx="4" fill="#46556b"/>
+                    <rect x="600" y="302" width="104" height="24" rx="12" fill="#352c16"/>
+                    <text x="618" y="319" fill="#d6a445" font-size="12" font-weight="700">Review</text>
+                  </g>
+                  <g>
+                    <rect x="24" y="348" width="712" height="52" rx="7" fill="#16202e"/>
+                    <rect x="40" y="366" width="198" height="9" rx="4" fill="#cdd6e4"/>
+                    <rect x="40" y="382" width="138" height="7" rx="4" fill="#46556b"/>
+                    <circle cx="338" cy="374" r="9" fill="#2b3a4f"/>
+                    <rect x="356" y="370" width="66" height="9" rx="4" fill="#7e8da2"/>
+                    <rect x="470" y="370" width="56" height="9" rx="4" fill="#46556b"/>
+                    <rect x="600" y="362" width="104" height="24" rx="12" fill="#163024"/>
+                    <text x="618" y="379" fill="#3fb27f" font-size="12" font-weight="700">On track</text>
+                  </g>
+                </g>
+                <!-- Sparkline footer -->
+                <g>
+                  <rect x="24" y="420" width="712" height="116" rx="9" fill="#131c2a" stroke="#243248"/>
+                  <text x="42" y="448" fill="#9aa7ba" font-family="ui-sans-serif, system-ui" font-size="13">Signal volume / 24h</text>
+                  <polyline points="42,512 122,498 202,506 282,470 362,484 442,440 522,462 602,432 700,452"
+                    fill="none" stroke="#5b8cff" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+                  <polyline points="42,520 122,514 202,516 282,500 362,508 442,486 522,498 602,480 700,492"
+                    fill="none" stroke="#3fb27f" stroke-width="2" stroke-opacity="0.6" stroke-linejoin="round"/>
+                </g>
+              </svg>
+            </div>
+            <figcaption id="board-cap" class="visual-cap">Reference console — all figures are placeholders, not live data.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="signal-strip" aria-label="Capability signals">
+        <div class="signal-inner">
+          <div class="signal-item"><strong>Stream-native</strong><span>Ingest events from your existing services — no rip-and-replace.</span></div>
+          <div class="signal-item"><strong>Read-only by default</strong><span>Scoped, role-based access with a full audit trail on every action.</span></div>
+          <div class="signal-item"><strong>Self-host or cloud</strong><span>Run it in your VPC or ours; the data model is identical.</span></div>
+          <div class="signal-item"><strong>No vanity metrics</strong><span>Every number traces to an event you can open and verify.</span></div>
+        </div>
+      </section>
+
+      <section class="section" id="product" aria-labelledby="product-title">
+        <div class="section-inner">
+          <div class="section-heading">
+            <h2 id="product-title">A single operating view, built for density.</h2>
+            <p>Four capabilities that keep a busy on-call team oriented without a wall of dashboards to babysit.</p>
+          </div>
+          <div class="feature-grid">
+            <article class="feature-card">
+              <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48"><rect x="7" y="10" width="34" height="7" rx="3.5" fill="currentColor"/><rect x="7" y="21" width="26" height="7" rx="3.5" fill="currentColor" opacity="0.55"/><rect x="7" y="32" width="30" height="7" rx="3.5" fill="currentColor" opacity="0.3"/></svg>
+              </span>
+              <h3>Live triage queues</h3>
+              <p>Sortable, filterable work queues that update in place. Claim, snooze, and reassign without leaving the table.</p>
+            </article>
+            <article class="feature-card">
+              <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48"><path d="M24 8l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/></svg>
+              </span>
+              <h3>Threshold alerting</h3>
+              <p>Set conditions in plain language. Route to the right owner with escalation paths and quiet hours.</p>
+            </article>
+            <article class="feature-card">
+              <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48"><circle cx="24" cy="17" r="8" fill="none" stroke="currentColor" stroke-width="3"/><path d="M10 40c0-8 6-13 14-13s14 5 14 13" fill="none" stroke="currentColor" stroke-width="3"/></svg>
+              </span>
+              <h3>Role-based views</h3>
+              <p>Operators, leads, and auditors each see a scoped surface. Permissions are explicit and reviewable.</p>
+            </article>
+            <article class="feature-card">
+              <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48"><rect x="11" y="8" width="26" height="32" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M17 18h14M17 24h14M17 30h9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+              </span>
+              <h3>Immutable audit trail</h3>
+              <p>Every status change, comment, and override is recorded with actor and time. Export it whenever you need it.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="workflow-section section" id="workflow" aria-labelledby="workflow-title">
+        <div class="section-inner workflow-layout">
+          <div class="workflow-copy">
+            <p class="eyebrow">Workflow</p>
+            <h2 id="workflow-title">From raw stream to resolved, on one screen.</h2>
+            <p>The path is deliberately short: connect a source, shape it into a queue, and hand the team a view they can act on.</p>
+          </div>
+          <ol class="workflow-steps">
+            <li><span class="step-no" aria-hidden="true">01</span><div><strong>Connect</strong><p>Point a source at SignalStack — webhook, log drain, or polling job. Events land in seconds.</p></div></li>
+            <li><span class="step-no" aria-hidden="true">02</span><div><strong>Shape</strong><p>Map fields to a queue, set status states, and define the thresholds that matter to you.</p></div></li>
+            <li><span class="step-no" aria-hidden="true">03</span><div><strong>Operate</strong><p>The team works the queue. Alerts fire, ownership is clear, and the audit trail writes itself.</p></div></li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="integrations-section section" id="integrations" aria-labelledby="int-title">
+        <div class="section-inner">
+          <div class="section-heading">
+            <h2 id="int-title">Connects to the stack you already run.</h2>
+            <p>Source connectors and destinations are configured per workspace. Logos shown are placeholders for the tools you choose.</p>
+          </div>
+          <div class="integration-grid" role="list">
+            <div class="integration-slot" role="listitem"><span class="int-glyph" aria-hidden="true"></span>[INTEGRATION_NAME]</div>
+            <div class="integration-slot" role="listitem"><span class="int-glyph" aria-hidden="true"></span>[INTEGRATION_NAME]</div>
+            <div class="integration-slot" role="listitem"><span class="int-glyph" aria-hidden="true"></span>[INTEGRATION_NAME]</div>
+            <div class="integration-slot" role="listitem"><span class="int-glyph" aria-hidden="true"></span>[INTEGRATION_NAME]</div>
+            <div class="integration-slot" role="listitem"><span class="int-glyph" aria-hidden="true"></span>[INTEGRATION_NAME]</div>
+            <div class="integration-slot" role="listitem"><span class="int-glyph" aria-hidden="true"></span>[INTEGRATION_NAME]</div>
+          </div>
+          <p class="integration-note">Need a source we don't list? The generic webhook + REST ingest covers most custom systems.</p>
+        </div>
+      </section>
+
+      <section class="section" id="pricing" aria-labelledby="pricing-title">
+        <div class="section-inner">
+          <div class="section-heading">
+            <h2 id="pricing-title">Pricing that scales with seats, not surprises.</h2>
+            <p>All prices are placeholders for the published rate card. Annual and non-profit terms are available on request.</p>
+          </div>
+          <div class="pricing-grid">
+            <article class="price-card">
+              <h3>Team</h3>
+              <p class="price"><span class="amount">[PRICE]</span><span class="per">/ seat / mo</span></p>
+              <p class="price-for">For a single on-call team getting started.</p>
+              <ul class="price-list">
+                <li>Up to [SEAT_LIMIT] seats</li>
+                <li>Live queues &amp; alerting</li>
+                <li>[RETENTION] event retention</li>
+                <li>Community support</li>
+              </ul>
+              <a class="secondary-link block" href="#demo">Start a trial</a>
+            </article>
+            <article class="price-card featured">
+              <p class="price-flag">Most teams start here</p>
+              <h3>Growth</h3>
+              <p class="price"><span class="amount">[PRICE]</span><span class="per">/ seat / mo</span></p>
+              <p class="price-for">For multiple teams sharing sources and escalation.</p>
+              <ul class="price-list">
+                <li>Everything in Team</li>
+                <li>Role-based views &amp; SSO</li>
+                <li>Escalation policies</li>
+                <li>[RETENTION] event retention</li>
+              </ul>
+              <a class="primary-link block" href="#demo">Request a demo</a>
+            </article>
+            <article class="price-card">
+              <h3>Enterprise</h3>
+              <p class="price"><span class="amount">Custom</span></p>
+              <p class="price-for">For regulated or self-hosted environments.</p>
+              <ul class="price-list">
+                <li>Self-host in your VPC</li>
+                <li>Audit export &amp; retention controls</li>
+                <li>SAML / SCIM provisioning</li>
+                <li>[SUPPORT_TERM] support</li>
+              </ul>
+              <a class="secondary-link block" href="#demo">Talk to us</a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="states-section section" aria-labelledby="states-title">
+        <div class="section-inner">
+          <div class="section-heading">
+            <h2 id="states-title">Designed for the empty and broken moments too.</h2>
+            <p>A real operations tool spends time with no data, partial data, and failures. Each state is intentional.</p>
+          </div>
+          <div class="state-grid">
+            <article class="state-card" aria-label="Loading state">
+              <span class="state-tag">Loading</span>
+              <div class="skeleton" aria-hidden="true"><span></span><span></span><span></span></div>
+              <p>Skeleton rows hold layout so the table never jumps when data arrives.</p>
+            </article>
+            <article class="state-card" aria-label="Empty state">
+              <span class="state-tag">Empty</span>
+              <p class="state-empty">No open signals in this view.</p>
+              <p>An empty queue is a good outcome — guidance points to the next useful filter, not a dead end.</p>
+            </article>
+            <article class="state-card" aria-label="Error state">
+              <span class="state-tag error">Error</span>
+              <p class="state-error">Source connection lost — retry or inspect the connector.</p>
+              <p>Errors name the failing source and the recovery action; they never blank the whole screen.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="final-cta section" id="demo" aria-labelledby="demo-title">
+        <div class="cta-panel">
+          <div class="cta-copy">
+            <p class="eyebrow">Request a demo</p>
+            <h2 id="demo-title">Bring one workflow. We'll wire it up live.</h2>
+            <p>Tell us the source and the decision your team is trying to make. The walkthrough uses your real shape — no slideware.</p>
+            <p class="cta-quote">&ldquo;[TESTIMONIAL_QUOTE]&rdquo; <span class="cta-attr">— [CUSTOMER_NAME], [CUSTOMER_ROLE]</span></p>
+          </div>
+          <form class="demo-form" aria-label="Request a demo" novalidate>
+            <div class="field">
+              <label for="email">Work email</label>
+              <input id="email" name="email" type="email" inputmode="email" autocomplete="email" required placeholder="you@company.com">
+            </div>
+            <div class="field">
+              <label for="team">Team size</label>
+              <select id="team" name="team">
+                <option value="">Select a range</option>
+                <option>1–5</option>
+                <option>6–25</option>
+                <option>26–100</option>
+                <option>100+</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="use">Primary use</label>
+              <input id="use" name="use" type="text" placeholder="e.g. incident triage, fraud review, ops queue">
+            </div>
+            <button class="primary-link block" type="submit">Request walkthrough</button>
+            <p class="form-fine">We use this only to schedule the walkthrough. No newsletter, no resale.</p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-inner">
+        <div><strong>SignalStack</strong><br>Synthetic B2B operational-analytics dashboard concept.</div>
+        <nav class="footer-links" aria-label="Footer">
+          <a href="#product">Product</a>
+          <a href="#integrations">Integrations</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#demo">Request demo</a>
+        </nav>
+        <div class="footer-fine">This mockup uses no real customers, logos, metrics, reviews, or imagery. All figures are bracketed placeholders.</div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

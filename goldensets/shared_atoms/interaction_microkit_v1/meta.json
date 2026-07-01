@@ -1,0 +1,13 @@
+{
+  "atom_id": "interaction_microkit_v1",
+  "category": "motion",
+  "summary": "Curated micro-interaction kit: button press/hover/focus, link underline-draw, input focus ring, icon-button press, and IntersectionObserver scroll-reveal with stagger. All 150-250ms (reveals capped ~520ms), behind prefers-reduced-motion; content fully visible without JS.",
+  "surfaces": ["website.*", "website.local_service"],
+  "ux_roles": [],
+  "tags": ["motion", "micro-interactions", "hover", "focus", "press", "underline", "scroll-reveal", "stagger", "intersection-observer", "progressive-enhancement", "reduced-motion"],
+  "tone": ["modern", "premium", "considered"],
+  "files": ["snippet.html", "snippet.css", "snippet.js"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

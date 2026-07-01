@@ -1,0 +1,1250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Lumen — glTF / GLB Inspector</title>
+<meta name="description" content="A browser-native, DCC-grade glTF / GLB inspector. Drop an exported asset to light it with IBL, frame it, play its clips, switch render modes, and read triangle / draw-call stats — QA your export without opening a DCC tool." />
+<style>
+  /* ============================================================ TOKENS */
+  :root{
+    /* neutral ramp (deepest → lightest) */
+    --bg-0:#090b0e; --bg-1:#0e1115; --bg-2:#14181d; --bg-3:#1b2026; --bg-4:#232a31;
+    --line:#262d36; --line-2:#333c47; --line-3:#414c59;
+    --txt-0:#eef3f8; --txt-1:#a9b4c0; --txt-2:#717d8b; --txt-3:#535d69;
+    /* semantic */
+    --accent:#52d8ff; --accent-2:#2bbdee; --accent-press:#1aa2d6;
+    --accent-soft:rgba(82,216,255,.13); --accent-line:rgba(82,216,255,.40);
+    --ok:#54e0a6; --warn:#ffcc66; --danger:#ff6b76; --danger-soft:rgba(255,107,118,.13);
+    --ax-x:#ff5d6c; --ax-y:#74e06b; --ax-z:#4f9dff;
+    /* type */
+    --f-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --f-mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+    --t-xs:clamp(11px,.70rem + .05vw,12px);
+    --t-sm:clamp(12px,.78rem + .05vw,13px);
+    --t-bd:clamp(13px,.82rem + .08vw,14px);
+    --t-md:clamp(15px,.92rem + .12vw,16px);
+    --t-lg:clamp(18px,1.05rem + .3vw,21px);
+    --t-xl:clamp(22px,1.3rem + 1vw,30px);
+    /* spacing (4px) */
+    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s8:32px; --s10:40px;
+    /* radii */
+    --r-sm:6px; --r-md:9px; --r-lg:13px; --r-xl:18px; --r-pill:999px;
+    /* elevation */
+    --e1:0 1px 2px rgba(0,0,0,.4);
+    --e2:0 6px 22px -8px rgba(0,0,0,.6),0 2px 6px rgba(0,0,0,.4);
+    --e3:0 24px 60px -16px rgba(0,0,0,.72),0 8px 22px rgba(0,0,0,.5);
+    /* motion */
+    --dur-1:140ms; --dur-2:230ms; --dur-3:420ms;
+    --ease:cubic-bezier(.4,0,.2,1); --ease-out:cubic-bezier(.16,1,.3,1);
+    --sidebar-w:336px;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  [hidden]{display:none!important}
+  html,body{height:100%}
+  body{
+    font-family:var(--f-sans); color:var(--txt-0); background:var(--bg-0);
+    font-size:var(--t-bd); line-height:1.5; -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility; overflow:hidden;
+  }
+  ::selection{background:var(--accent-soft)}
+  button{font:inherit;color:inherit;cursor:pointer;background:none;border:none}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+  .skip{position:absolute;left:-999px;top:0;z-index:100;background:var(--accent);color:#04222c;
+    padding:var(--s2) var(--s4);border-radius:var(--r-sm);font-weight:600}
+  .skip:focus{left:var(--s3);top:var(--s3)}
+  .sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  /* ============================================================ SHELL */
+  .app{
+    display:grid; height:100dvh;
+    grid-template-columns:1fr var(--sidebar-w);
+    grid-template-rows:auto 1fr;
+    grid-template-areas:"head head" "view side";
+  }
+
+  /* ---- header ---- */
+  header{
+    grid-area:head; display:flex; align-items:center; gap:var(--s4);
+    padding:var(--s3) var(--s4); background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
+    border-bottom:1px solid var(--line); z-index:6;
+  }
+  .brand{display:flex;align-items:center;gap:var(--s3);min-width:0;overflow:hidden}
+  .brand .mark{width:30px;height:30px;flex:0 0 auto;filter:drop-shadow(0 0 8px rgba(82,216,255,.35))}
+  .brand h1{font-size:var(--t-md);font-weight:650;letter-spacing:-.01em;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .brand h1 b{color:var(--accent);font-weight:650}
+  .brand .tag{font-size:var(--t-xs);color:var(--txt-2);letter-spacing:.06em;text-transform:uppercase;
+    border-left:1px solid var(--line-2);padding-left:var(--s3);margin-left:var(--s1)}
+  .asset-chip{
+    display:flex;align-items:center;gap:var(--s2);margin-left:auto;min-width:0;
+    background:var(--bg-3);border:1px solid var(--line);border-radius:var(--r-pill);
+    padding:6px var(--s3) 6px 10px;font-size:var(--t-sm);color:var(--txt-1);max-width:46vw;
+  }
+  .asset-chip .fmt{font:600 10px/1 var(--f-mono);letter-spacing:.08em;color:var(--accent);
+    background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:var(--r-sm);
+    padding:3px 6px;text-transform:uppercase;flex:0 0 auto}
+  .asset-chip .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--txt-0)}
+  .h-actions{display:flex;align-items:center;gap:var(--s2);flex:0 0 auto}
+  .btn.drawer-btn{display:none}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);
+    height:36px;padding:0 var(--s3);border-radius:var(--r-md);
+    background:var(--bg-3);border:1px solid var(--line-2);color:var(--txt-0);
+    font-size:var(--t-sm);font-weight:550;transition:background var(--dur-1) var(--ease),
+      border-color var(--dur-1) var(--ease),transform var(--dur-1) var(--ease);
+  }
+  .btn svg{width:16px;height:16px;flex:0 0 auto}
+  .btn:hover{background:var(--bg-4);border-color:var(--line-3)}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:linear-gradient(180deg,var(--accent),var(--accent-2));
+    color:#042430;border-color:transparent;font-weight:650;box-shadow:var(--e1)}
+  .btn.primary:hover{background:linear-gradient(180deg,#6fe0ff,var(--accent))}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+  /* ---- viewport ---- */
+  .viewport{grid-area:view;position:relative;overflow:hidden;
+    background:radial-gradient(120% 100% at 50% 0%,#171c22 0%,#0c0f13 60%,#080a0d 100%)}
+  canvas.stage{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  .vfade{transition:opacity var(--dur-2) var(--ease)} /* render-mode cross-dissolve */
+
+  /* viewport top toolbar */
+  .vtools{
+    position:absolute;top:var(--s3);left:var(--s3);right:var(--s3);z-index:4;
+    display:flex;align-items:center;gap:var(--s3);pointer-events:none;flex-wrap:wrap;
+  }
+  .vtools>*{pointer-events:auto}
+  .seg{display:inline-flex;background:rgba(14,17,21,.78);backdrop-filter:blur(10px);
+    border:1px solid var(--line-2);border-radius:var(--r-md);padding:3px;box-shadow:var(--e2)}
+  .seg button{height:30px;padding:0 11px;border-radius:7px;font-size:var(--t-sm);color:var(--txt-1);
+    font-weight:550;display:inline-flex;align-items:center;gap:6px;
+    transition:background var(--dur-1),color var(--dur-1)}
+  .seg button svg{width:15px;height:15px}
+  .seg button:hover{color:var(--txt-0)}
+  .seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);
+    box-shadow:inset 0 0 0 1px var(--accent-line)}
+  .vtool-spacer{flex:1 1 auto;min-width:8px}
+  .iconbtn{width:34px;height:34px;border-radius:var(--r-md);background:rgba(14,17,21,.78);
+    backdrop-filter:blur(10px);border:1px solid var(--line-2);color:var(--txt-1);
+    display:inline-flex;align-items:center;justify-content:center;box-shadow:var(--e2);
+    transition:color var(--dur-1),border-color var(--dur-1),background var(--dur-1)}
+  .iconbtn svg{width:17px;height:17px}
+  .iconbtn:hover{color:var(--txt-0);border-color:var(--line-3)}
+  .iconbtn[aria-pressed="true"]{color:var(--accent);border-color:var(--accent-line);background:var(--accent-soft)}
+
+  /* axis gizmo */
+  .gizmo{position:absolute;right:var(--s4);bottom:var(--s4);width:78px;height:78px;z-index:4;
+    pointer-events:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
+
+  /* stats HUD */
+  .hud{position:absolute;left:var(--s3);bottom:var(--s3);z-index:4;
+    display:grid;grid-template-columns:repeat(3,auto);gap:1px;
+    background:var(--line);border:1px solid var(--line-2);border-radius:var(--r-md);
+    overflow:hidden;box-shadow:var(--e2);font-variant-numeric:tabular-nums}
+  .hud .cell{background:rgba(14,17,21,.86);backdrop-filter:blur(10px);padding:7px 12px;min-width:74px}
+  .hud .k{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--txt-2)}
+  .hud .v{font:600 14px/1.2 var(--f-mono);color:var(--txt-0);margin-top:2px}
+  .hud .v.accent{color:var(--accent)}
+
+  /* drop / load overlay */
+  .overlay{position:absolute;inset:0;z-index:5;display:none;align-items:center;justify-content:center;
+    padding:var(--s5);text-align:center}
+  .overlay[data-show="1"]{display:flex}
+  .overlay .scrim{position:absolute;inset:0;background:rgba(8,10,13,.72);backdrop-filter:blur(3px)}
+  .overlay .card{position:relative;max-width:420px}
+  .drop-ring{width:92px;height:92px;margin:0 auto var(--s4);border-radius:var(--r-xl);
+    display:grid;place-items:center;border:2px dashed var(--line-3);color:var(--txt-1);
+    transition:border-color var(--dur-2),color var(--dur-2),transform var(--dur-2) var(--ease-out)}
+  .drop-ring svg{width:40px;height:40px}
+  .overlay h2{font-size:var(--t-lg);font-weight:600;letter-spacing:-.01em;margin-bottom:var(--s2)}
+  .overlay p{color:var(--txt-1);font-size:var(--t-sm);max-width:34ch;margin:0 auto}
+  .overlay .err-detail{margin-top:var(--s3);font:500 12px/1.5 var(--f-mono);color:var(--danger);
+    background:var(--danger-soft);border:1px solid rgba(255,107,118,.3);border-radius:var(--r-sm);
+    padding:var(--s2) var(--s3);max-width:40ch;word-break:break-word;text-align:left}
+  .overlay .acts{margin-top:var(--s4);display:flex;gap:var(--s2);justify-content:center}
+
+  /* dragover state */
+  .viewport.dragging .overlay[data-state="drag"]{display:flex}
+  .viewport.dragging::after{content:"";position:absolute;inset:10px;z-index:5;pointer-events:none;
+    border:2px solid var(--accent);border-radius:var(--r-xl);box-shadow:0 0 0 100vmax rgba(82,216,255,.06) inset}
+  .overlay[data-state="drag"] .drop-ring{border-color:var(--accent);color:var(--accent);transform:scale(1.06)}
+
+  /* loading state */
+  .prog{width:240px;height:5px;border-radius:var(--r-pill);background:var(--bg-3);
+    overflow:hidden;margin:var(--s4) auto 0;border:1px solid var(--line)}
+  .prog i{display:block;height:100%;width:30%;background:linear-gradient(90deg,var(--accent-2),var(--accent));
+    border-radius:inherit;transition:width var(--dur-2) var(--ease)}
+  .spin{animation:spin 1s linear infinite;transform-origin:center}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* a11y live boot toast */
+  .boot{position:absolute;inset:0;z-index:8;display:grid;place-items:center;
+    background:var(--bg-0);transition:opacity var(--dur-3) var(--ease)}
+  .boot.hide{opacity:0;pointer-events:none}
+  .boot .b-inner{text-align:center;color:var(--txt-2);font-size:var(--t-sm)}
+  .boot .mark{width:46px;height:46px;margin:0 auto var(--s3)}
+
+  /* ============================================================ SIDEBAR */
+  .sidebar{grid-area:side;background:var(--bg-1);border-left:1px solid var(--line);
+    display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .backdrop{display:none}
+  .s-scroll{overflow-y:auto;overflow-x:hidden;min-height:0;flex:1;scrollbar-width:thin;
+    scrollbar-color:var(--line-3) transparent}
+  .s-scroll::-webkit-scrollbar{width:10px}
+  .s-scroll::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:var(--r-pill);
+    border:3px solid var(--bg-1)}
+
+  .panel{border-bottom:1px solid var(--line)}
+  .panel>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:var(--s2);
+    padding:var(--s3) var(--s4);user-select:none;transition:background var(--dur-1)}
+  .panel>summary::-webkit-details-marker{display:none}
+  .panel>summary:hover{background:var(--bg-2)}
+  .panel>summary .chev{margin-left:auto;color:var(--txt-2);transition:transform var(--dur-2) var(--ease)}
+  .panel[open]>summary .chev{transform:rotate(90deg)}
+  .panel>summary .ico{color:var(--txt-2)}
+  .panel>summary svg{width:16px;height:16px}
+  .panel .ttl{font-size:var(--t-sm);font-weight:600;letter-spacing:.02em}
+  .panel .count{font:600 11px/1 var(--f-mono);color:var(--txt-2);background:var(--bg-3);
+    border-radius:var(--r-pill);padding:3px 7px;margin-left:2px}
+  .panel .body{padding:0 var(--s4) var(--s4)}
+
+  /* scene graph tree */
+  .tree{font-size:var(--t-sm)}
+  .node{display:flex;align-items:center;gap:var(--s2);width:100%;text-align:left;
+    padding:7px var(--s2);border-radius:var(--r-sm);color:var(--txt-1);
+    transition:background var(--dur-1),color var(--dur-1);min-height:34px}
+  .node:hover{background:var(--bg-2);color:var(--txt-0)}
+  .node[aria-selected="true"]{background:var(--accent-soft);color:var(--accent);
+    box-shadow:inset 0 0 0 1px var(--accent-line)}
+  .node .ni{flex:0 0 auto;color:var(--txt-3)}
+  .node[aria-selected="true"] .ni{color:var(--accent)}
+  .node svg{width:14px;height:14px}
+  .node .nname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+  .node .ntris{font:500 11px/1 var(--f-mono);color:var(--txt-2);flex:0 0 auto}
+  .node .depth{flex:0 0 auto}
+  .iso-bar{display:flex;gap:var(--s2);margin-top:var(--s3)}
+  .iso-bar .btn{flex:1;height:32px}
+
+  /* materials */
+  .mat{display:flex;gap:var(--s3);align-items:center;padding:var(--s2) 0;border-top:1px solid var(--line)}
+  .mat:first-child{border-top:none}
+  .mat .sw{width:34px;height:34px;border-radius:var(--r-sm);flex:0 0 auto;border:1px solid rgba(255,255,255,.1);
+    position:relative;overflow:hidden;box-shadow:var(--e1)}
+  .mat .minfo{min-width:0;flex:1}
+  .mat .mname{font-size:var(--t-sm);font-weight:550;color:var(--txt-0);overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  .mat .mmeta{display:flex;gap:var(--s3);margin-top:5px}
+  .pbr{flex:1}
+  .pbr .pl{display:flex;justify-content:space-between;font-size:10px;color:var(--txt-2);
+    letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px;font-variant-numeric:tabular-nums}
+  .pbr .bar{height:4px;border-radius:var(--r-pill);background:var(--bg-3);overflow:hidden}
+  .pbr .bar i{display:block;height:100%;border-radius:inherit}
+  .pbr.metal .bar i{background:linear-gradient(90deg,#7a8794,#cdd7e2)}
+  .pbr.rough .bar i{background:linear-gradient(90deg,var(--accent-2),var(--accent))}
+  .map-badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+  .map-badge{font:600 9px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;
+    color:var(--txt-1);background:var(--bg-3);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:4px 6px}
+
+  /* animation deck */
+  .clip-list{display:flex;flex-direction:column;gap:var(--s1)}
+  .clip{display:flex;align-items:center;gap:var(--s2);width:100%;text-align:left;padding:8px var(--s2);
+    border-radius:var(--r-sm);color:var(--txt-1);transition:background var(--dur-1),color var(--dur-1)}
+  .clip:hover{background:var(--bg-2);color:var(--txt-0)}
+  .clip[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent-line)}
+  .clip .cdot{width:8px;height:8px;border-radius:50%;background:var(--line-3);flex:0 0 auto;transition:background var(--dur-1)}
+  .clip[aria-pressed="true"] .cdot{background:var(--accent);box-shadow:0 0 7px var(--accent)}
+  .clip .cname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--t-sm)}
+  .clip .cdur{font:500 11px/1 var(--f-mono);color:var(--txt-2)}
+  .transport{display:flex;align-items:center;gap:var(--s3);margin-top:var(--s3)}
+  .transport .iconbtn{position:static;box-shadow:none;background:var(--bg-3)}
+  .seek{flex:1;height:6px;border-radius:var(--r-pill);background:var(--bg-3);overflow:hidden;
+    border:1px solid var(--line)}
+  .seek i{display:block;height:100%;background:linear-gradient(90deg,var(--accent-2),var(--accent));width:0}
+  .empty-note{color:var(--txt-2);font-size:var(--t-sm);padding:var(--s2) 0;font-style:italic}
+
+  /* environment controls */
+  .ctl{padding:var(--s3) 0;border-top:1px solid var(--line)}
+  .ctl:first-child{border-top:none}
+  .ctl .row{display:flex;align-items:center;justify-content:space-between;gap:var(--s3)}
+  .ctl label{font-size:var(--t-sm);color:var(--txt-1);font-weight:500}
+  .ctl .hint{font-size:var(--t-xs);color:var(--txt-3);margin-top:3px}
+  .preset-seg{display:flex;gap:var(--s1);margin-top:var(--s2);background:var(--bg-2);
+    border:1px solid var(--line);border-radius:var(--r-md);padding:3px}
+  .preset-seg button{flex:1;height:32px;border-radius:7px;font-size:var(--t-xs);font-weight:600;
+    color:var(--txt-1);transition:background var(--dur-1),color var(--dur-1);letter-spacing:.02em}
+  .preset-seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);
+    box-shadow:inset 0 0 0 1px var(--accent-line)}
+  .preset-seg button:hover{color:var(--txt-0)}
+
+  /* switch */
+  .sw-toggle{position:relative;width:40px;height:24px;border-radius:var(--r-pill);
+    background:var(--bg-4);border:1px solid var(--line-2);flex:0 0 auto;transition:background var(--dur-1)}
+  .sw-toggle::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+    background:var(--txt-2);transition:transform var(--dur-2) var(--ease-out),background var(--dur-1)}
+  .sw-toggle[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent-line)}
+  .sw-toggle[aria-pressed="true"]::after{transform:translateX(16px);background:var(--accent)}
+
+  /* range */
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:var(--r-pill);
+    background:var(--bg-3);margin-top:var(--s2);cursor:pointer;border:1px solid var(--line)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--accent);border:2px solid var(--bg-1);box-shadow:var(--e1);transition:transform var(--dur-1)}
+  input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.15)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent);
+    border:2px solid var(--bg-1)}
+  .val{font:600 12px/1 var(--f-mono);color:var(--accent);min-width:38px;text-align:right}
+
+  /* footer health row */
+  .health{padding:var(--s3) var(--s4);border-top:1px solid var(--line);background:var(--bg-1)}
+  .health .hrow{display:flex;align-items:center;gap:var(--s2);font-size:var(--t-xs);color:var(--txt-1);
+    padding:4px 0}
+  .health .dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto}
+  .health .dot.ok{background:var(--ok)} .health .dot.warn{background:var(--warn)} .health .dot.bad{background:var(--danger)}
+  .health .ht{margin-left:auto;font:500 11px/1 var(--f-mono);color:var(--txt-2)}
+
+  /* ============================================================ RESPONSIVE */
+  @media (max-width:920px){
+    :root{--sidebar-w:300px}
+  }
+  @media (max-width:760px){
+    .app{grid-template-columns:1fr;grid-template-areas:"head" "view"}
+    .brand .tag{display:none}
+    .btn.drawer-btn{display:inline-flex;width:40px;padding:0}
+    .sidebar{position:fixed;top:0;right:0;height:100dvh;width:min(340px,86vw);z-index:30;
+      transform:translateX(100%);transition:transform var(--dur-3) var(--ease-out);box-shadow:var(--e3)}
+    .sidebar.open{transform:translateX(0)}
+    .backdrop{display:block;position:fixed;inset:0;z-index:20;background:rgba(6,8,10,.6);
+      opacity:0;pointer-events:none;transition:opacity var(--dur-2)}
+    .backdrop.show{opacity:1;pointer-events:auto}
+    .asset-chip{max-width:38vw}
+    .hud{grid-template-columns:repeat(2,auto)}
+    .hud .cell:nth-child(n+5){display:none}
+  }
+  @media (max-width:400px){
+    header{padding:var(--s2) var(--s3);gap:var(--s2)}
+    .brand h1{font-size:var(--t-sm)}
+    .asset-chip{display:none}
+    .vtools{gap:var(--s2)}
+    .hud .cell{padding:6px 9px;min-width:60px}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#sidebar">Skip to inspector controls</a>
+<div class="app">
+
+  <!-- ================= HEADER ================= -->
+  <header>
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M16 2 4 9v14l12 7 12-7V9L16 2Z" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M16 2v28M4 9l12 7 12-7M16 16 4 23M16 16l12 7" stroke="var(--accent)" stroke-width="1.1" opacity=".55" stroke-linejoin="round"/>
+        <circle cx="16" cy="16" r="2.4" fill="var(--accent)"/>
+      </svg>
+      <h1>Lumen <b>·</b> glTF Inspector</h1>
+      <span class="tag">QA bench</span>
+    </div>
+
+    <div class="asset-chip" id="assetChip" title="Loaded asset">
+      <span class="fmt" id="assetFmt">GLB</span>
+      <span class="nm" id="assetName">sample · inspection-arm</span>
+    </div>
+
+    <div class="h-actions">
+      <button class="btn primary" id="loadBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+        Load
+      </button>
+      <button class="btn drawer-btn" id="drawerBtn" aria-controls="sidebar" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <span class="sr">Controls</span>
+      </button>
+    </div>
+    <input type="file" id="fileInput" accept=".glb,.gltf,.bin,image/*" multiple hidden />
+  </header>
+
+  <!-- ================= VIEWPORT ================= -->
+  <main class="viewport" id="viewport" aria-label="3D viewport — drag a .glb or .gltf file here to inspect">
+    <canvas class="stage vfade" id="stage"></canvas>
+
+    <!-- top toolbar -->
+    <div class="vtools" role="toolbar" aria-label="Viewport tools">
+      <div class="seg" role="group" aria-label="Render mode">
+        <button id="modeShaded" aria-pressed="true" title="Shaded (PBR)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18" fill="currentColor" opacity=".25"/></svg>
+          Shaded
+        </button>
+        <button id="modeWire" aria-pressed="false" title="Wireframe">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M4 8l8-4 8 4v8l-8 4-8-4V8Z"/><path d="M4 8l8 4 8-4M12 12v8"/></svg>
+          Wire
+        </button>
+        <button id="modeNormals" aria-pressed="false" title="Normals">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21V8"/><path d="M7 12l5-5 5 5"/><path d="M5 21h14"/></svg>
+          Normals
+        </button>
+      </div>
+
+      <span class="vtool-spacer"></span>
+
+      <button class="iconbtn" id="frameBtn" title="Frame model (F)" aria-label="Frame model">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+      </button>
+      <button class="iconbtn" id="autorotBtn" title="Auto-rotate" aria-label="Toggle auto-rotate" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v4h-4"/></svg>
+      </button>
+      <button class="iconbtn" id="gridBtn" title="Ground grid" aria-label="Toggle ground grid" aria-pressed="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 9h18M3 15h18M9 3v18M15 3v18" opacity=".9"/><rect x="3" y="3" width="18" height="18" rx="1.5"/></svg>
+      </button>
+    </div>
+
+    <!-- axis gizmo -->
+    <svg class="gizmo" id="gizmo" viewBox="-40 -40 80 80" aria-hidden="true"></svg>
+
+    <!-- stats HUD -->
+    <div class="hud" id="hud" aria-hidden="true">
+      <div class="cell"><div class="k">Triangles</div><div class="v accent" id="statTris">0</div></div>
+      <div class="cell"><div class="k">Draw calls</div><div class="v" id="statCalls">0</div></div>
+      <div class="cell"><div class="k">Vertices</div><div class="v" id="statVerts">0</div></div>
+      <div class="cell"><div class="k">Meshes</div><div class="v" id="statMeshes">0</div></div>
+      <div class="cell"><div class="k">Materials</div><div class="v" id="statMats">0</div></div>
+      <div class="cell"><div class="k">Textures</div><div class="v" id="statTex">0</div></div>
+    </div>
+
+    <!-- load / drop overlay -->
+    <div class="overlay" id="overlay" data-state="idle" role="status" aria-live="polite">
+      <div class="scrim"></div>
+      <div class="card">
+        <div class="drop-ring" id="dropRing">
+          <svg id="ringIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 21h14a2 2 0 0 0 2-2v-3"/><path d="M3 16v3a2 2 0 0 0 2 2"/></svg>
+        </div>
+        <h2 id="overlayTitle">Drop a .glb / .gltf to inspect</h2>
+        <p id="overlayMsg">Release anywhere over the viewport. Multi-file .gltf + .bin + textures are supported.</p>
+        <div class="prog" id="prog" hidden><i id="progBar"></i></div>
+        <div class="err-detail" id="errDetail" hidden></div>
+        <div class="acts" id="overlayActs" hidden>
+          <button class="btn primary" id="errRetry">Choose a file</button>
+          <button class="btn" id="errDismiss">Keep current model</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- boot cover -->
+    <div class="boot" id="boot">
+      <div class="b-inner">
+        <svg class="mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M16 2 4 9v14l12 7 12-7V9L16 2Z" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round" class="spin" style="transform-origin:16px 16px"/>
+        </svg>
+        <div>Compiling viewport &amp; building sample asset…</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar" id="sidebar" aria-label="Inspector">
+    <div class="s-scroll">
+
+      <details class="panel" id="panelScene" open>
+        <summary>
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 16l9 5 9-5M3 12l9 5 9-5"/></svg></span>
+          <span class="ttl">Scene graph</span>
+          <span class="count" id="sceneCount">0</span>
+          <span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
+        </summary>
+        <div class="body">
+          <div class="tree" id="tree" role="tree" aria-label="Node hierarchy"></div>
+          <div class="iso-bar">
+            <button class="btn" id="isolateBtn" disabled>Isolate selected</button>
+            <button class="btn" id="showAllBtn" disabled>Show all</button>
+          </div>
+        </div>
+      </details>
+
+      <details class="panel" id="panelMat" open>
+        <summary>
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="9" cy="9" r="5"/><circle cx="15" cy="15" r="5" opacity=".55"/></svg></span>
+          <span class="ttl">Materials</span>
+          <span class="count" id="matCount">0</span>
+          <span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
+        </summary>
+        <div class="body" id="matBody"></div>
+      </details>
+
+      <details class="panel" id="panelAnim" open>
+        <summary>
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M6 4v16M18 4v16"/><path d="M6 9l12-3M6 15l12 3"/></svg></span>
+          <span class="ttl">Animation</span>
+          <span class="count" id="animCount">0</span>
+          <span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
+        </summary>
+        <div class="body">
+          <div class="clip-list" id="clipList"></div>
+          <div class="transport" id="transport" hidden>
+            <button class="iconbtn" id="playBtn" aria-label="Play / pause clip" aria-pressed="true">
+              <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+            </button>
+            <div class="seek" aria-hidden="true"><i id="seekBar"></i></div>
+          </div>
+        </div>
+      </details>
+
+      <details class="panel" id="panelEnv" open>
+        <summary>
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span>
+          <span class="ttl">Environment &amp; lighting</span>
+          <span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
+        </summary>
+        <div class="body">
+          <div class="ctl" style="border-top:none">
+            <label id="presetLabel">IBL environment</label>
+            <div class="preset-seg" role="group" aria-labelledby="presetLabel">
+              <button id="envStudio" aria-pressed="true">Studio</button>
+              <button id="envCity" aria-pressed="false">City</button>
+              <button id="envSunset" aria-pressed="false">Sunset</button>
+            </div>
+            <div class="hint">Image-based lighting drives reflections on metal/rough PBR surfaces.</div>
+          </div>
+          <div class="ctl">
+            <div class="row">
+              <div><label for="envToggle">Environment lighting</label><div class="hint">Toggle IBL off to see flat shading.</div></div>
+              <button class="sw-toggle" id="envToggle" role="switch" aria-checked="true" aria-pressed="true" aria-label="Environment lighting"></button>
+            </div>
+          </div>
+          <div class="ctl">
+            <div class="row"><label for="expRange">Exposure</label><span class="val" id="expVal">1.00</span></div>
+            <input type="range" id="expRange" min="0.1" max="2.5" step="0.05" value="1" />
+            <div class="hint">ACES filmic tone-mapping.</div>
+          </div>
+          <div class="ctl">
+            <div class="row">
+              <div><label for="bgToggle">Show environment as backdrop</label><div class="hint">Otherwise a neutral studio gradient.</div></div>
+              <button class="sw-toggle" id="bgToggle" role="switch" aria-checked="false" aria-pressed="false" aria-label="Show environment backdrop"></button>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- export-health footer -->
+    <div class="health" id="health" aria-label="Export health checks">
+      <div class="hrow"><span class="dot ok" id="hUvDot"></span><span>UV channels present</span><span class="ht" id="hUv">—</span></div>
+      <div class="hrow"><span class="dot ok" id="hNrmDot"></span><span>Vertex normals</span><span class="ht" id="hNrm">—</span></div>
+      <div class="hrow"><span class="dot ok" id="hTriDot"></span><span>Triangle budget</span><span class="ht" id="hTri">—</span></div>
+    </div>
+  </aside>
+
+  <div class="backdrop" id="backdrop"></div>
+</div>
+
+<script type="importmap">
+{
+  "imports":{
+    "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+
+const $ = (s,el=document)=>el.querySelector(s);
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fmt = n => n.toLocaleString('en-US');
+
+/* ---------------- renderer / scene / camera ---------------- */
+const canvas = $('#stage');
+const viewport = $('#viewport');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:false, powerPreference:'high-performance' });
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+const GRADIENT_BG = new THREE.Color(0x0d1014);
+scene.background = GRADIENT_BG;
+
+const camera = new THREE.PerspectiveCamera(42, 1, 0.01, 5000);
+camera.position.set(4, 3, 6);
+
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.dampingFactor = 0.07;
+controls.minDistance = 0.05;
+controls.maxDistance = 2000;
+controls.maxPolarAngle = Math.PI * 0.98;
+
+/* key/fill/rim + shadow caster */
+const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
+keyLight.position.set(5, 9, 6);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.set(2048, 2048);
+keyLight.shadow.bias = -0.0004;
+const sc = keyLight.shadow.camera; sc.near = 0.1; sc.far = 60; sc.left=-12; sc.right=12; sc.top=12; sc.bottom=-12;
+scene.add(keyLight);
+scene.add(new THREE.HemisphereLight(0xbcd2ff, 0x14181d, 0.25));
+
+/* ground: shadow-catcher + grid */
+const groundGroup = new THREE.Group();
+const shadowMat = new THREE.ShadowMaterial({ opacity:0.34 });
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(200,200), shadowMat);
+ground.rotation.x = -Math.PI/2; ground.receiveShadow = true; ground.position.y = 0;
+groundGroup.add(ground);
+const grid = new THREE.GridHelper(40, 40, 0x3a4450, 0x222a32);
+grid.material.transparent = true; grid.material.opacity = 0.5;
+groundGroup.add(grid);
+scene.add(groundGroup);
+
+/* ---------------- environment maps (IBL) ---------------- */
+const pmrem = new THREE.PMREMGenerator(renderer);
+pmrem.compileEquirectangularShader();
+const envMaps = {};
+function buildEnvironments(){
+  // Studio: neutral soft-box room
+  envMaps.studio = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+  // City: cool gradient with bright horizon band
+  envMaps.city = gradientEnv([['#aebfd6',0],['#5d6b80',0.46],['#9fb4c9',0.52],['#1d242e',1]]);
+  // Sunset: warm low sun
+  envMaps.sunset = gradientEnv([['#2a2740',0],['#7a4d63',0.4],['#ffb066',0.52],['#ff8a3c',0.58],['#241a26',1]]);
+}
+function gradientEnv(stops){
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 512;
+  const ctx = c.getContext('2d');
+  const g = ctx.createLinearGradient(0,0,0,512);
+  stops.forEach(([col,p])=>g.addColorStop(p,col));
+  ctx.fillStyle = g; ctx.fillRect(0,0,1024,512);
+  const tex = new THREE.CanvasTexture(c);
+  tex.mapping = THREE.EquirectangularReflectionMapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const rt = pmrem.fromEquirectangular(tex);
+  tex.dispose();
+  return rt.texture;
+}
+
+/* ---------------- GLTF loader + decoders ---------------- */
+const CDN = 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs';
+const manager = new THREE.LoadingManager();
+const draco = new DRACOLoader(manager).setDecoderPath(`${CDN}/draco/gltf/`);
+const ktx2 = new KTX2Loader(manager).setTranscoderPath(`${CDN}/basis/`).detectSupport(renderer);
+const gltfLoader = new GLTFLoader(manager);
+gltfLoader.setDRACOLoader(draco);
+gltfLoader.setKTX2Loader(ktx2);
+gltfLoader.setMeshoptDecoder(MeshoptDecoder);
+
+/* ---------------- app state ---------------- */
+const state = {
+  root:null, mixer:null, action:null, clips:[], meshes:[], materials:new Set(),
+  mode:'shaded', envOn:true, envPreset:'studio', bgOn:false, gridOn:true,
+  selected:null, isolated:false, blobUrls:[], stats:{tris:0,verts:0,meshes:0,mats:0,tex:0}, time:0,
+};
+const clock = new THREE.Clock();
+
+/* ---------------- procedural sample: articulated inspection arm ---------------- */
+function makeMat(opts){ return new THREE.MeshStandardMaterial(opts); }
+function buildSampleModel(){
+  const root = new THREE.Group(); root.name = 'InspectionArm';
+  const matBody  = makeMat({ name:'ArmBody.Steel',  color:0x4a525c, metalness:0.95, roughness:0.34 });
+  const matJoint = makeMat({ name:'Joint.Polished', color:0xc8d2dc, metalness:1.0,  roughness:0.16 });
+  const matAccent= makeMat({ name:'Signal.Anodized',color:0x18b6e0, metalness:0.4,  roughness:0.45 });
+  const matChrome= makeMat({ name:'Probe.Chrome',   color:0xf2f6fa, metalness:1.0,  roughness:0.03 });
+  const mk = (geo,mat,name)=>{ const m=new THREE.Mesh(geo,mat); m.name=name; m.castShadow=true; m.receiveShadow=true; return m; };
+
+  // Base
+  const base = new THREE.Group(); base.name='Base'; base.position.y=0;
+  base.add(mk(new THREE.CylinderGeometry(1.05,1.25,0.3,48), matBody, 'BasePlate'));
+  const collar = mk(new THREE.CylinderGeometry(0.55,0.62,0.34,40), matAccent, 'BaseCollar'); collar.position.y=0.3;
+  base.add(collar);
+  root.add(base);
+
+  // Column (spins on base)
+  const column = new THREE.Group(); column.name='Column'; column.position.y=0.47;
+  column.add(mk(new THREE.CylinderGeometry(0.42,0.46,0.9,36), matBody, 'ColumnShaft'));
+  base.add(column);
+
+  // Shoulder
+  const shoulder = new THREE.Group(); shoulder.name='Shoulder'; shoulder.position.y=0.5;
+  shoulder.add(mk(new THREE.SphereGeometry(0.4,32,24), matJoint, 'ShoulderHub'));
+  column.add(shoulder);
+
+  // Upper arm
+  const upper = new THREE.Group(); upper.name='UpperArm'; upper.position.set(0,0.12,0);
+  const upperMesh = mk(new THREE.BoxGeometry(0.34,1.5,0.42), matBody, 'UpperArmBeam');
+  upperMesh.position.y=0.75; upper.add(upperMesh);
+  const upStripe = mk(new THREE.BoxGeometry(0.36,0.18,0.44), matAccent, 'UpperArmBand'); upStripe.position.y=1.2; upper.add(upStripe);
+  shoulder.add(upper);
+
+  // Elbow
+  const elbow = new THREE.Group(); elbow.name='Elbow'; elbow.position.y=1.5;
+  elbow.add(mk(new THREE.SphereGeometry(0.32,32,24), matJoint, 'ElbowHub'));
+  upper.add(elbow);
+
+  // Forearm
+  const fore = new THREE.Group(); fore.name='Forearm'; fore.position.y=0.1;
+  const foreMesh = mk(new THREE.BoxGeometry(0.28,1.25,0.34), matBody, 'ForearmBeam'); foreMesh.position.y=0.62; fore.add(foreMesh);
+  elbow.add(fore);
+
+  // Wrist + gripper
+  const wrist = new THREE.Group(); wrist.name='Wrist'; wrist.position.y=1.24;
+  wrist.add(mk(new THREE.CylinderGeometry(0.24,0.24,0.22,28), matJoint, 'WristHub'));
+  fore.add(wrist);
+  const gripL = new THREE.Group(); gripL.name='GripperL'; gripL.position.set(-0.12,0.12,0);
+  gripL.add(mk(new THREE.BoxGeometry(0.08,0.4,0.22), matBody, 'GripperLFinger'));
+  const gripR = new THREE.Group(); gripR.name='GripperR'; gripR.position.set(0.12,0.12,0);
+  gripR.add(mk(new THREE.BoxGeometry(0.08,0.4,0.22), matBody, 'GripperRFinger'));
+  wrist.add(gripL); wrist.add(gripR);
+
+  // Chrome probe sphere held between grippers (reflective → shows IBL)
+  const probe = mk(new THREE.SphereGeometry(0.26,48,36), matChrome, 'ChromeProbe');
+  probe.position.y=0.34; wrist.add(probe);
+
+  root.updateMatrixWorld(true);
+
+  // ---- animation clip (QuaternionKeyframeTracks on named joints) ----
+  const e = (x,y,z)=> new THREE.Quaternion().setFromEuler(new THREE.Euler(x,y,z));
+  const qTrack = (name, times, eulers) => {
+    const v = [];
+    eulers.forEach(([x,y,z])=>{ const q=e(x,y,z); v.push(q.x,q.y,q.z,q.w); });
+    return new THREE.QuaternionKeyframeTrack(`${name}.quaternion`, times, v);
+  };
+  const D = 4.0;
+  const t5 = [0, 1, 2, 3, 4];
+  const tracks = [
+    qTrack('Column',   t5, [[0,0,0],[0,1.1,0],[0,2.0,0],[0,1.1,0],[0,0,0]]),
+    qTrack('Shoulder', t5, [[0,0,0.18],[0,0,-0.5],[0,0,-0.2],[0,0,-0.55],[0,0,0.18]]),
+    qTrack('Elbow',    t5, [[0,0,-0.2],[0,0,0.9],[0,0,1.3],[0,0,0.7],[0,0,-0.2]]),
+    qTrack('Wrist',    t5, [[0,0,0],[0,0.6,0],[0,-0.4,0],[0,0.5,0],[0,0,0]]),
+    qTrack('GripperL', t5, [[0,0,0.15],[0,0,0.05],[0,0,0.5],[0,0,0.05],[0,0,0.15]]),
+    qTrack('GripperR', t5, [[0,0,-0.15],[0,0,-0.05],[0,0,-0.5],[0,0,-0.05],[0,0,-0.15]]),
+  ];
+  const clip = new THREE.AnimationClip('Inspect.Cycle', D, tracks);
+  // a second, simpler clip so the clip list reads as a real deck
+  const spin = new THREE.AnimationClip('Turntable', 6, [
+    qTrack('Column', [0,3,6], [[0,0,0],[0,Math.PI,0],[0,Math.PI*2,0]]),
+  ]);
+  return { scene: root, animations: [clip, spin] };
+}
+
+/* ---------------- ingest (shared by sample + dropped files) ---------------- */
+function clearCurrent(){
+  if (state.mixer){ state.mixer.stopAllAction(); state.mixer.uncacheRoot(state.mixer.getRoot()); state.mixer=null; }
+  if (state.root){ scene.remove(state.root); disposeTree(state.root); state.root=null; }
+  state.blobUrls.forEach(u=>URL.revokeObjectURL(u)); state.blobUrls=[];
+  state.action=null; state.clips=[]; state.meshes=[]; state.materials=new Set(); state.selected=null; state.isolated=false;
+}
+function disposeTree(obj){
+  obj.traverse(o=>{
+    if (o.isMesh){ o.geometry?.dispose(); const m=o.material; (Array.isArray(m)?m:[m]).forEach(x=>x?.dispose?.()); }
+  });
+}
+function ingest(gltf, name, fmtLabel){
+  clearCurrent();
+  const model = gltf.scene || gltf.scenes?.[0];
+  if (!model) throw new Error('glTF contained no scene node.');
+  state.root = model;
+  scene.add(model);
+
+  // collect meshes / materials / textures
+  const texSet = new Set();
+  model.traverse(o=>{
+    if (o.isMesh){
+      o.castShadow = true; o.receiveShadow = true;
+      state.meshes.push(o);
+      const mats = Array.isArray(o.material)?o.material:[o.material];
+      mats.forEach(m=>{ if(m){ state.materials.add(m);
+        ['map','normalMap','roughnessMap','metalnessMap','aoMap','emissiveMap'].forEach(k=>{ if(m[k]) texSet.add(m[k]); });
+      }});
+      o.userData._origMat = o.material; // for normals-mode restore
+    }
+  });
+
+  // animation
+  state.clips = gltf.animations || [];
+  if (state.clips.length){
+    state.mixer = new THREE.AnimationMixer(model);
+  }
+
+  // stats
+  let tris=0, verts=0;
+  state.meshes.forEach(m=>{
+    const g=m.geometry; const idx=g.index;
+    const pos=g.attributes.position; if(!pos) return;
+    verts += pos.count;
+    tris += idx ? idx.count/3 : pos.count/3;
+  });
+  state.stats = { tris:Math.round(tris), verts, meshes:state.meshes.length, mats:state.materials.size, tex:texSet.size };
+
+  // apply current view settings to fresh model
+  applyEnv(); applyMode(state.mode, false);
+
+  // ui
+  $('#assetName').textContent = name;
+  $('#assetFmt').textContent = fmtLabel;
+  buildTree(); buildMaterials(); buildClips(); updateHud(); updateHealth();
+  $('#hud').setAttribute('aria-hidden','false');
+
+  // auto-play first clip
+  if (state.clips.length){ selectClip(0); }
+
+  frameObject(model, true);
+}
+
+/* ---------------- camera framing (animated) ---------------- */
+let camTween = null;
+function frameObject(obj, animate){
+  const box = new THREE.Box3().setFromObject(obj);
+  if (box.isEmpty()) return;
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z) || 1;
+  const fitDist = (maxDim/2) / Math.tan(THREE.MathUtils.degToRad(camera.fov)/2);
+  const dist = fitDist * 1.6 + maxDim*0.1;
+  const dir = new THREE.Vector3(0.85, 0.55, 1).normalize();
+  const endPos = center.clone().add(dir.multiplyScalar(dist));
+  controls.minDistance = maxDim*0.08;
+  controls.maxDistance = dist*6;
+  // place grid at model base
+  groundGroup.position.y = box.min.y;
+  if (!animate || reduceMotion){
+    camera.position.copy(endPos); controls.target.copy(center); controls.update(); camTween=null; return;
+  }
+  camTween = { t:0, dur:0.72, fromP:camera.position.clone(), toP:endPos,
+    fromT:controls.target.clone(), toT:center };
+}
+const easeIO = t => t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+
+/* ---------------- environment ---------------- */
+function applyEnv(){
+  const tex = state.envOn ? envMaps[state.envPreset] : null;
+  scene.environment = tex;
+  scene.background = (state.bgOn && state.envOn && tex) ? tex : GRADIENT_BG;
+}
+
+/* ---------------- render modes ---------------- */
+const normalMat = new THREE.MeshNormalMaterial();
+function applyMode(mode, fade=true){
+  state.mode = mode;
+  $('#modeShaded').setAttribute('aria-pressed', mode==='shaded');
+  $('#modeWire').setAttribute('aria-pressed', mode==='wire');
+  $('#modeNormals').setAttribute('aria-pressed', mode==='normals');
+  const run = ()=>{
+    state.meshes.forEach(m=>{
+      if (mode==='normals'){ m.material = normalMat; }
+      else {
+        m.material = m.userData._origMat;
+        const mats = Array.isArray(m.material)?m.material:[m.material];
+        mats.forEach(x=>{ if(x){ x.wireframe = (mode==='wire'); } });
+      }
+    });
+  };
+  if (fade && !reduceMotion){
+    canvas.style.opacity = '0.25';
+    setTimeout(()=>{ run(); canvas.style.opacity='1'; }, 130);
+  } else run();
+}
+
+/* ---------------- scene-graph tree ---------------- */
+function nodeIcon(o){
+  if (o.isMesh) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3 4 7v10l8 4 8-4V7l-8-4Z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>';
+  if (o.isBone) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/><path d="M9 9l6 6"/></svg>';
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16"/></svg>';
+}
+function buildTree(){
+  const tree = $('#tree'); tree.innerHTML='';
+  let count=0;
+  const walk = (obj, depth)=>{
+    if (obj !== state.root){
+      if (obj.isMesh || obj.isGroup || obj.isObject3D){
+        const nm = obj.name || `(${obj.type})`;
+        let tris = 0;
+        if (obj.isMesh){ const g=obj.geometry, idx=g.index, pos=g.attributes.position;
+          tris = pos ? Math.round(idx?idx.count/3:pos.count/3) : 0; }
+        const btn = document.createElement('button');
+        btn.className='node'; btn.setAttribute('role','treeitem'); btn.setAttribute('aria-selected','false');
+        btn.dataset.uuid = obj.uuid;
+        btn.style.paddingLeft = (8 + depth*14) + 'px';
+        btn.innerHTML = `<span class="ni">${nodeIcon(obj)}</span>
+          <span class="nname">${escapeHtml(nm)}</span>
+          ${obj.isMesh?`<span class="ntris">${fmt(tris)}△</span>`:''}`;
+        btn.addEventListener('click', ()=>selectNode(obj, btn));
+        tree.appendChild(btn);
+        count++;
+      }
+    }
+    obj.children.forEach(c=>walk(c, obj===state.root?0:depth+1));
+  };
+  walk(state.root, 0);
+  $('#sceneCount').textContent = count;
+}
+function selectNode(obj, btn){
+  document.querySelectorAll('.node').forEach(n=>n.setAttribute('aria-selected','false'));
+  // clear prior highlight
+  if (state.selected) setHighlight(state.selected, false);
+  if (state.selected === obj){ state.selected=null; $('#isolateBtn').disabled=true; return; }
+  state.selected = obj; btn.setAttribute('aria-selected','true');
+  setHighlight(obj, true);
+  $('#isolateBtn').disabled = false;
+}
+function setHighlight(obj, on){
+  obj.traverse(o=>{
+    if (o.isMesh){
+      const mats = Array.isArray(o.material)?o.material:[o.material];
+      mats.forEach(m=>{ if(m && 'emissive' in m){
+        if (on){ m.userData._emis = m.emissive.getHex(); m.userData._ei = m.emissiveIntensity;
+          m.emissive.setHex(0x52d8ff); m.emissiveIntensity = 0.55; }
+        else if ('_emis' in m.userData){ m.emissive.setHex(m.userData._emis); m.emissiveIntensity = m.userData._ei??1; }
+      }});
+    }
+  });
+}
+function setIsolate(on){
+  state.isolated = on;
+  if (!state.root) return;
+  if (on && state.selected){
+    const keep = new Set(); state.selected.traverse(o=>keep.add(o));
+    state.meshes.forEach(m=>{ m.visible = keep.has(m); });
+  } else {
+    state.meshes.forEach(m=>m.visible=true);
+  }
+  $('#showAllBtn').disabled = !on;
+}
+
+/* ---------------- materials panel ---------------- */
+function buildMaterials(){
+  const body = $('#matBody'); body.innerHTML='';
+  const arr = [...state.materials];
+  $('#matCount').textContent = arr.length;
+  if (!arr.length){ body.innerHTML='<div class="empty-note">No materials in this asset.</div>'; return; }
+  arr.forEach(m=>{
+    const metal = (m.metalness ?? 0), rough = (m.roughness ?? 1);
+    const col = m.color ? '#'+m.color.getHexString() : '#888888';
+    const maps = [];
+    if (m.map) maps.push('albedo'); if (m.normalMap) maps.push('normal');
+    if (m.roughnessMap) maps.push('rough'); if (m.metalnessMap) maps.push('metal');
+    if (m.aoMap) maps.push('ao'); if (m.emissiveMap) maps.push('emissive');
+    const el = document.createElement('div'); el.className='mat';
+    el.innerHTML = `
+      <span class="sw" style="background:${col}"></span>
+      <div class="minfo">
+        <div class="mname">${escapeHtml(m.name || '(unnamed material)')}</div>
+        <div class="mmeta">
+          <div class="pbr metal"><div class="pl"><span>Metalness</span><span>${metal.toFixed(2)}</span></div><div class="bar"><i style="width:${metal*100}%"></i></div></div>
+          <div class="pbr rough"><div class="pl"><span>Roughness</span><span>${rough.toFixed(2)}</span></div><div class="bar"><i style="width:${rough*100}%"></i></div></div>
+        </div>
+        ${maps.length?`<div class="map-badges">${maps.map(t=>`<span class="map-badge">${t}</span>`).join('')}</div>`:''}
+      </div>`;
+    body.appendChild(el);
+  });
+}
+
+/* ---------------- animation deck ---------------- */
+function buildClips(){
+  const list = $('#clipList'); list.innerHTML='';
+  $('#animCount').textContent = state.clips.length;
+  const transport = $('#transport');
+  if (!state.clips.length){
+    list.innerHTML = '<div class="empty-note">This asset has no animation clips.</div>';
+    transport.hidden = true; return;
+  }
+  transport.hidden = false;
+  state.clips.forEach((clip,i)=>{
+    const btn=document.createElement('button'); btn.className='clip'; btn.setAttribute('aria-pressed','false');
+    btn.dataset.i = i;
+    btn.innerHTML = `<span class="cdot"></span><span class="cname">${escapeHtml(clip.name||('Clip '+(i+1)))}</span><span class="cdur">${clip.duration.toFixed(1)}s</span>`;
+    btn.addEventListener('click', ()=>selectClip(i));
+    list.appendChild(btn);
+  });
+}
+function selectClip(i){
+  if (!state.mixer || !state.clips[i]) return;
+  if (state.action) state.action.stop();
+  state.action = state.mixer.clipAction(state.clips[i]);
+  state.action.reset(); state.action.setLoop(THREE.LoopRepeat, Infinity); state.action.play();
+  state.paused = false; setPlayIcon(true);
+  document.querySelectorAll('.clip').forEach(c=>c.setAttribute('aria-pressed', c.dataset.i==i));
+}
+function setPlayIcon(playing){
+  $('#playIcon').innerHTML = playing
+    ? '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>'
+    : '<path d="M7 5l12 7-12 7V5Z"/>';
+  $('#playBtn').setAttribute('aria-pressed', playing);
+}
+
+/* ---------------- stats + health ---------------- */
+function updateHud(){
+  const s=state.stats;
+  $('#statTris').textContent = fmt(s.tris);
+  $('#statVerts').textContent = fmt(s.verts);
+  $('#statMeshes').textContent = fmt(s.meshes);
+  $('#statMats').textContent = fmt(s.mats);
+  $('#statTex').textContent = fmt(s.tex);
+}
+function updateHealth(){
+  // UV channels
+  let hasUv=true, hasNrm=true;
+  state.meshes.forEach(m=>{ const a=m.geometry.attributes; if(!a.uv) hasUv=false; if(!a.normal) hasNrm=false; });
+  setHealth('hUv', hasUv?'ok':'warn', hasUv?'all':'missing');
+  setHealth('hNrm', hasNrm?'ok':'bad', hasNrm?'all':'absent');
+  const tris=state.stats.tris;
+  const triState = tris>1_500_000?'bad':tris>500_000?'warn':'ok';
+  setHealth('hTri', triState, fmt(tris));
+}
+function setHealth(id, level, text){
+  const dot=$('#'+id+'Dot'); dot.className='dot '+(level==='ok'?'ok':level==='warn'?'warn':'bad');
+  $('#'+id).textContent = text;
+}
+
+/* ---------------- axis gizmo (SVG, camera-tracked) ---------------- */
+const gizmo = $('#gizmo');
+const gz = { x:mkAxis('--ax-x','X'), y:mkAxis('--ax-y','Y'), z:mkAxis('--ax-z','Z') };
+function mkAxis(varName,label){
+  const ns='http://www.w3.org/2000/svg';
+  const line=document.createElementNS(ns,'line'); line.setAttribute('x1',0); line.setAttribute('y1',0);
+  line.setAttribute('stroke',`var(${varName})`); line.setAttribute('stroke-width',2.4); line.setAttribute('stroke-linecap','round');
+  const dot=document.createElementNS(ns,'circle'); dot.setAttribute('r',6.5); dot.setAttribute('fill',`var(${varName})`);
+  const txt=document.createElementNS(ns,'text'); txt.textContent=label; txt.setAttribute('fill','#06222b');
+  txt.setAttribute('font-size','8'); txt.setAttribute('font-weight','700'); txt.setAttribute('text-anchor','middle');
+  txt.setAttribute('dominant-baseline','central'); txt.setAttribute('font-family','var(--f-mono)');
+  gizmo.append(line,dot,txt);
+  return {line,dot,txt};
+}
+const _v = new THREE.Vector3();
+function updateGizmo(){
+  const q = camera.quaternion.clone().invert();
+  const axes = [
+    {k:'x', v:_v.set(1,0,0)}, {k:'y', v:new THREE.Vector3(0,1,0)}, {k:'z', v:new THREE.Vector3(0,0,1)}
+  ].map(a=>{ const d=a.v.clone().applyQuaternion(q); return {k:a.k, x:d.x*26, y:-d.y*26, z:d.z}; });
+  axes.sort((a,b)=>a.z-b.z); // far first
+  axes.forEach(a=>{ const g=gz[a.k];
+    g.line.setAttribute('x2',a.x); g.line.setAttribute('y2',a.y);
+    g.dot.setAttribute('cx',a.x); g.dot.setAttribute('cy',a.y);
+    g.txt.setAttribute('x',a.x); g.txt.setAttribute('y',a.y);
+    const op = a.z<0?0.45:1; g.line.setAttribute('opacity',op); g.dot.setAttribute('opacity',op); g.txt.setAttribute('opacity',op);
+    gizmo.append(g.line,g.dot,g.txt); // re-append to reorder z
+  });
+}
+
+/* ---------------- resize + render loop ---------------- */
+function resize(){
+  const r = viewport.getBoundingClientRect();
+  const w = Math.max(1, r.width), h = Math.max(1, r.height);
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setSize(w,h,false);
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+}
+const ro = new ResizeObserver(resize); ro.observe(viewport);
+
+let frame=0;
+function tick(){
+  requestAnimationFrame(tick);
+  const dt = clock.getDelta();
+  if (state.mixer && !state.paused) state.mixer.update(dt);
+  // seek bar
+  if (state.action && state.clips.length){
+    const dur = state.action.getClip().duration || 1;
+    const tNorm = (state.action.time % dur)/dur;
+    $('#seekBar').style.width = (tNorm*100)+'%';
+  }
+  // camera tween
+  if (camTween){
+    camTween.t += dt/camTween.dur;
+    const k = Math.min(1, camTween.t); const e = easeIO(k);
+    camera.position.lerpVectors(camTween.fromP, camTween.toP, e);
+    controls.target.lerpVectors(camTween.fromT, camTween.toT, e);
+    if (k>=1) camTween=null;
+  }
+  controls.update();
+  renderer.render(scene,camera);
+  updateGizmo();
+  // draw calls (throttle)
+  if ((frame++ & 7)===0){ $('#statCalls').textContent = fmt(renderer.info.render.calls); }
+}
+
+/* ---------------- file loading ---------------- */
+function setOverlay(stateName, opts={}){
+  const ov=$('#overlay');
+  ov.dataset.state = stateName;
+  const show = stateName!=='idle';
+  ov.dataset.show = show?'1':'0';
+  const title=$('#overlayTitle'), msg=$('#overlayMsg'), prog=$('#prog'), err=$('#errDetail'), acts=$('#overlayActs'), ring=$('#dropRing');
+  prog.hidden=true; err.hidden=true; acts.hidden=true; ring.style.display='grid';
+  if (stateName==='loading'){
+    title.textContent = opts.title||'Loading asset…';
+    msg.textContent = opts.msg||'Parsing glTF, decoding geometry & textures.';
+    prog.hidden=false; $('#progBar').style.width=(opts.pct||12)+'%';
+    $('#ringIcon').classList.add('spin'); $('#dropRing').style.borderStyle='solid';
+  } else if (stateName==='error'){
+    title.textContent = 'Could not load that file';
+    msg.textContent = opts.msg || 'The file could not be parsed as glTF/GLB.';
+    err.hidden=false; err.textContent = opts.detail || 'Unknown error';
+    acts.hidden=false; $('#ringIcon').classList.remove('spin'); $('#dropRing').style.borderStyle='dashed';
+  } else if (stateName==='drag'){
+    title.textContent='Release to inspect';
+    msg.textContent='Drop your .glb / .gltf (with .bin & textures if separate).';
+    $('#ringIcon').classList.remove('spin');
+  }
+}
+function hideOverlay(){ $('#overlay').dataset.show='0'; $('#overlay').dataset.state='idle'; $('#ringIcon').classList.remove('spin'); }
+
+async function loadFromFiles(fileList){
+  const files = [...fileList];
+  if (!files.length) return;
+  const main = files.find(f=>/\.(glb|gltf)$/i.test(f.name));
+  if (!main){
+    setOverlay('error', { msg:'No .glb or .gltf file found in the dropped items.', detail:'Expected a .glb or .gltf. Got: '+files.map(f=>f.name).join(', ') });
+    return;
+  }
+  // map every file → blob URL so GLTFLoader can resolve .bin / textures
+  const urlMap = new Map(); const blobUrls=[];
+  files.forEach(f=>{ const u=URL.createObjectURL(f); urlMap.set(f.name, u); urlMap.set(f.name.split('/').pop(), u); blobUrls.push(u); });
+  const localManager = gltfLoader.manager;
+  const prevModifier = localManager.urlModifier;
+  localManager.setURLModifier(url=>{
+    const clean = decodeURI(url).split('/').pop().split('?')[0];
+    if (urlMap.has(clean)) return urlMap.get(clean);
+    return url;
+  });
+  setOverlay('loading', { title:`Loading ${main.name}`, pct:14 });
+  const mainUrl = urlMap.get(main.name);
+  const fmtLabel = /\.glb$/i.test(main.name) ? 'GLB' : 'GLTF';
+  try {
+    const gltf = await new Promise((res,rej)=>{
+      gltfLoader.load(mainUrl, res, ev=>{
+        if (ev.lengthComputable){ const pct=14+Math.round(ev.loaded/ev.total*72); setOverlay('loading',{title:`Loading ${main.name}`, pct}); }
+      }, rej);
+    });
+    setOverlay('loading', { title:'Building scene…', pct:96 });
+    ingest(gltf, main.name, fmtLabel);
+    hideOverlay();
+  } catch(err){
+    const detail = (err && (err.message||err.toString())) || 'Parse failed';
+    let msg = 'The file could not be parsed as a valid glTF/GLB asset.';
+    if (/draco/i.test(detail)) msg='This model uses Draco compression — decoder is wired but failed to fetch/run.';
+    else if (/ktx2|basis/i.test(detail)) msg='This model uses KTX2/Basis textures — transcoder is wired but failed.';
+    else if (/meshopt/i.test(detail)) msg='This model uses Meshopt compression — decoder is wired but failed.';
+    setOverlay('error', { msg, detail: String(detail).slice(0,240) });
+  } finally {
+    localManager.urlModifier = prevModifier;
+    // blob urls kept on state for cleanup at next clearCurrent (ingest stores them)
+    state.blobUrls.push(...blobUrls);
+  }
+}
+
+/* ---------------- DnD wiring ---------------- */
+let dragDepth=0;
+['dragenter','dragover'].forEach(ev=>viewport.addEventListener(ev, e=>{
+  e.preventDefault();
+  if (ev==='dragenter') dragDepth++;
+  if (!viewport.classList.contains('dragging')){ viewport.classList.add('dragging'); setOverlay('drag'); }
+}));
+viewport.addEventListener('dragleave', e=>{ dragDepth--; if(dragDepth<=0){ dragDepth=0; viewport.classList.remove('dragging'); hideOverlay(); } });
+viewport.addEventListener('drop', e=>{
+  e.preventDefault(); dragDepth=0; viewport.classList.remove('dragging');
+  const dt=e.dataTransfer; if(!dt) return;
+  loadFromFiles(dt.files);
+});
+window.addEventListener('dragover', e=>e.preventDefault());
+window.addEventListener('drop', e=>{ if(e.target!==canvas) e.preventDefault(); });
+
+/* ---------------- controls wiring ---------------- */
+$('#loadBtn').addEventListener('click', ()=>$('#fileInput').click());
+$('#errRetry').addEventListener('click', ()=>$('#fileInput').click());
+$('#errDismiss').addEventListener('click', hideOverlay);
+$('#fileInput').addEventListener('change', e=>{ if(e.target.files.length) loadFromFiles(e.target.files); e.target.value=''; });
+
+$('#modeShaded').addEventListener('click', ()=>applyMode('shaded'));
+$('#modeWire').addEventListener('click', ()=>applyMode('wire'));
+$('#modeNormals').addEventListener('click', ()=>applyMode('normals'));
+
+$('#frameBtn').addEventListener('click', ()=>{ if(state.root) frameObject(state.root,true); });
+const autorotBtn=$('#autorotBtn');
+autorotBtn.addEventListener('click', ()=>{ controls.autoRotate=!controls.autoRotate; controls.autoRotateSpeed=1.4;
+  autorotBtn.setAttribute('aria-pressed', controls.autoRotate); });
+const gridBtn=$('#gridBtn');
+gridBtn.addEventListener('click', ()=>{ state.gridOn=!state.gridOn; groundGroup.visible=state.gridOn;
+  gridBtn.setAttribute('aria-pressed', state.gridOn); });
+
+$('#isolateBtn').addEventListener('click', ()=>setIsolate(true));
+$('#showAllBtn').addEventListener('click', ()=>setIsolate(false));
+
+$('#playBtn').addEventListener('click', ()=>{ if(!state.action) return;
+  state.paused=!state.paused; setPlayIcon(!state.paused); });
+
+function setEnvPreset(p){
+  state.envPreset=p;
+  ['Studio','City','Sunset'].forEach(n=>$('#env'+n).setAttribute('aria-pressed', n.toLowerCase()===p));
+  applyEnv();
+}
+$('#envStudio').addEventListener('click', ()=>setEnvPreset('studio'));
+$('#envCity').addEventListener('click', ()=>setEnvPreset('city'));
+$('#envSunset').addEventListener('click', ()=>setEnvPreset('sunset'));
+
+const envToggle=$('#envToggle');
+envToggle.addEventListener('click', ()=>{ state.envOn=!state.envOn;
+  envToggle.setAttribute('aria-pressed', state.envOn); envToggle.setAttribute('aria-checked', state.envOn); applyEnv(); });
+const bgToggle=$('#bgToggle');
+bgToggle.addEventListener('click', ()=>{ state.bgOn=!state.bgOn;
+  bgToggle.setAttribute('aria-pressed', state.bgOn); bgToggle.setAttribute('aria-checked', state.bgOn); applyEnv(); });
+
+const expRange=$('#expRange');
+expRange.addEventListener('input', ()=>{ const v=parseFloat(expRange.value);
+  renderer.toneMappingExposure=v; $('#expVal').textContent=v.toFixed(2); });
+
+/* keyboard shortcut: F = frame */
+window.addEventListener('keydown', e=>{ if(e.key==='f'||e.key==='F'){ if(state.root) frameObject(state.root,true); } });
+
+/* mobile drawer */
+const drawerBtn=$('#drawerBtn'), sidebar=$('#sidebar'), backdrop=$('#backdrop');
+function setDrawer(open){ sidebar.classList.toggle('open',open); backdrop.classList.toggle('show',open);
+  drawerBtn.setAttribute('aria-expanded',open); }
+drawerBtn.addEventListener('click', ()=>setDrawer(!sidebar.classList.contains('open')));
+backdrop.addEventListener('click', ()=>setDrawer(false));
+
+/* ---------------- util ---------------- */
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------------- boot ---------------- */
+function boot(){
+  resize();
+  buildEnvironments();
+  const sample = buildSampleModel();
+  ingest(sample, 'sample · inspection-arm', 'GLB');
+  tick();
+  setTimeout(()=>$('#boot').classList.add('hide'), 280);
+}
+boot();
+
+/* ---------------- headless test API ---------------- */
+window.__INSPECTOR = {
+  THREE, scene, renderer, camera, controls,
+  get state(){ return state; },
+  get mixer(){ return state.mixer; },
+  get meshes(){ return state.meshes; },
+  get clips(){ return state.clips; },
+  stats(){ return {...state.stats}; },
+  drawCalls(){ return renderer.info.render.calls; },
+  setMode(m){ applyMode(m,false); },
+  toggleEnv(on){ state.envOn = on!==undefined?on:!state.envOn; applyEnv(); return scene.environment; },
+  hasEnv(){ return !!scene.environment; },
+  selectClip(i){ selectClip(i); },
+  mixerTime(){ return state.action?state.action.time:0; },
+  advance(dt){ if(state.mixer){ state.mixer.update(dt); } return state.action?state.action.time:0; },
+  loadFiles(list){ return loadFromFiles(list); },
+  overlayState(){ return $('#overlay').dataset.state; },
+  ready:true,
+};
+</script>
+</body>
+</html>

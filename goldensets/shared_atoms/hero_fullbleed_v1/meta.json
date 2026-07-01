@@ -1,0 +1,13 @@
+{
+  "atom_id": "hero_fullbleed_v1",
+  "category": "hero",
+  "summary": "Full-bleed hero with a layered all-CSS/SVG background (grid + radial glow + arcs), contrast scrim, offset headline, dual CTA, and a meta row.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": ["phone_priority_layout", "coverage_signal"],
+  "tags": ["hero", "full-bleed", "background", "svg-grid", "gradient", "dual-cta", "above-the-fold", "dark"],
+  "tone": ["modern", "bold", "technical", "confident"],
+  "files": ["snippet.html", "snippet.css"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

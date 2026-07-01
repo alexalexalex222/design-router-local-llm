@@ -1,0 +1,1429 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#f7f3ec">
+<link rel="icon" href="data:,">
+<title>CHOROS · County Atlas — A Choropleth Explorer (synthetic sample data)</title>
+<meta name="description" content="CHOROS — clean data-journalism cartography. Real US county geometry (public-domain Census atlas) shaded by three SAMPLE indicators generated from a seeded model. Hover for exact values, switch metrics, search, pin a county, and read a ranked list. All metric values are synthetic and clearly labeled.">
+
+<!-- Type: Newsreader (display serif) + Inter (data sans, tabular figures). font-display:swap; system fallbacks if offline. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+
+<style>
+/* ============================================================================
+   DESIGN TOKENS — build only from these
+   ========================================================================== */
+:root{
+  /* Warm paper neutral ramp — 11 steps, ink→paper */
+  --p0:#1c1813; --p1:#2a2419; --p2:#43392b; --p3:#5d5240; --p4:#786b56;
+  --p5:#988a72; --p6:#b6a98f; --p7:#d3c8b0; --p8:#e7ddc8; --p9:#f1ead9; --p10:#faf6ec;
+
+  --bg:#f4efe4;            /* page paper */
+  --canvas:#faf7ef;        /* map canvas — slightly lighter paper */
+  --panel:#fffdf7;         /* cards */
+  --ink:var(--p0);
+  --ink-2:var(--p2);
+  --muted:var(--p4);
+  --faint:var(--p5);
+  --line:color-mix(in srgb, var(--p3) 22%, transparent);
+  --line-2:color-mix(in srgb, var(--p3) 13%, transparent);
+
+  --accent:#0f6e64;        /* deep teal — editorial accent */
+  --accent-2:#0b524a;
+  --accent-soft:color-mix(in srgb, var(--accent) 12%, transparent);
+  --accent-ink:#ffffff;
+  --danger:#b3401f;
+  --warn:#9a6a12;
+
+  /* Geometry strokes */
+  --hairline:#fffdf7;      /* white-ish county hairline */
+  --mesh:color-mix(in srgb, var(--p1) 62%, transparent); /* state mesh ink */
+  --nodata:#ddd4c2;        /* no-data base */
+
+  /* Spacing — 4px scale */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px;
+  /* Radii */
+  --r1:6px; --r2:10px; --r3:14px; --r4:20px; --rp:999px;
+  /* Fluid type — ratio-locked, body >=16px */
+  --fs-2xs:11px; --fs-xs:12px; --fs-sm:13px; --fs-base:clamp(15px,.4vw + 14px,16px);
+  --fs-md:clamp(16px,.6vw + 15px,18px);
+  --fs-lg:clamp(20px,1.4vw + 16px,26px);
+  --fs-xl:clamp(26px,3.4vw + 14px,44px);
+  --fs-num:clamp(30px,4vw + 16px,52px);
+  /* Elevation — 3 tiers */
+  --e1:0 1px 2px rgba(40,30,15,.07), 0 1px 1px rgba(40,30,15,.05);
+  --e2:0 6px 22px rgba(50,38,20,.10), 0 2px 6px rgba(50,38,20,.06);
+  --e3:0 20px 56px rgba(46,34,17,.18), 0 6px 18px rgba(46,34,17,.10);
+  /* Motion */
+  --dur:.16s; --dur-2:.22s; --ease:cubic-bezier(.4,0,.2,1); --ease-out:cubic-bezier(.16,1,.3,1);
+
+  --serif:'Newsreader',Georgia,'Times New Roman',serif;
+  --sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--sans); font-size:var(--fs-base); line-height:1.5;
+  font-feature-settings:"tnum" 0;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  overflow-x:hidden; overscroll-behavior-y:none;
+}
+.tnum{font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1}
+h1,h2,h3,h4,p{margin:0}
+button{font:inherit; color:inherit; cursor:pointer; background:none; border:none; padding:0}
+input{font:inherit}
+a{color:var(--accent)}
+:focus{outline:none}
+:focus-visible{outline:2.5px solid var(--accent); outline-offset:2px; border-radius:var(--r1)}
+::selection{background:color-mix(in srgb,var(--accent) 22%, transparent)}
+svg{display:block}
+
+.skip{position:fixed; left:var(--s4); top:-100px; z-index:300; background:var(--accent);
+  color:var(--accent-ink); padding:12px 18px; border-radius:var(--r2); font-weight:600;
+  box-shadow:var(--e2); transition:top var(--dur) var(--ease)}
+.skip:focus-visible{top:var(--s4)}
+.vh{position:absolute!important; width:1px;height:1px; padding:0;margin:-1px; overflow:hidden;
+  clip:rect(0 0 0 0); white-space:nowrap; border:0}
+
+/* ============================================================================
+   APP SHELL
+   ========================================================================== */
+.app{max-width:1320px; margin:0 auto; padding:clamp(16px,3vw,40px) clamp(14px,3vw,40px) 80px;
+  display:flex; flex-direction:column; gap:var(--s5)}
+
+/* ---- Masthead ---- */
+.mast{display:flex; flex-wrap:wrap; gap:var(--s5) var(--s6); align-items:flex-end;
+  justify-content:space-between; padding-bottom:var(--s4);
+  border-bottom:1.5px solid var(--line)}
+.mast__brand{display:flex; flex-direction:column; gap:6px; max-width:62ch}
+.kicker{display:inline-flex; align-items:center; gap:8px; font-family:var(--sans);
+  font-size:var(--fs-2xs); font-weight:600; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--accent-2)}
+.kicker .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.mast h1{font-family:var(--serif); font-weight:500; font-size:var(--fs-xl);
+  line-height:1.03; letter-spacing:-.01em; color:var(--ink)}
+.mast h1 em{font-style:italic; color:var(--accent-2)}
+.mast .dek{font-family:var(--serif); font-size:var(--fs-md); color:var(--ink-2);
+  line-height:1.4; max-width:54ch}
+.mast__meta{display:flex; flex-direction:column; gap:8px; align-items:flex-end; text-align:right}
+.sample-badge{display:inline-flex; align-items:center; gap:8px; padding:7px 12px;
+  border:1px solid color-mix(in srgb,var(--warn) 40%, var(--line)); border-radius:var(--rp);
+  background:color-mix(in srgb,var(--warn) 9%, var(--panel)); color:var(--warn);
+  font-size:var(--fs-xs); font-weight:600; letter-spacing:.02em; white-space:nowrap}
+.sample-badge svg{flex:none}
+.mast__meta .src{font-size:var(--fs-2xs); color:var(--muted); max-width:30ch; line-height:1.45}
+
+/* ---- Toolbar ---- */
+.toolbar{display:flex; flex-wrap:wrap; gap:var(--s4); align-items:center; justify-content:space-between}
+.metricwrap{display:flex; flex-direction:column; gap:8px}
+.toollabel{font-size:var(--fs-2xs); font-weight:600; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--muted)}
+.segmented{display:inline-flex; background:var(--panel); border:1px solid var(--line);
+  border-radius:var(--rp); padding:4px; box-shadow:var(--e1); position:relative}
+.seg{position:relative; z-index:1; display:inline-flex; align-items:center; gap:8px;
+  min-height:40px; padding:0 16px; border-radius:var(--rp); font-size:var(--fs-sm); font-weight:600;
+  color:var(--muted); transition:color var(--dur) var(--ease); white-space:nowrap}
+.seg svg{width:15px;height:15px; flex:none; opacity:.85}
+.seg[aria-pressed="true"]{color:var(--accent-ink)}
+.seg:hover:not([aria-pressed="true"]){color:var(--ink-2)}
+.seg__pill{position:absolute; top:4px; left:4px; height:calc(100% - 8px); border-radius:var(--rp);
+  background:var(--accent); box-shadow:0 2px 6px color-mix(in srgb,var(--accent) 40%, transparent);
+  transition:transform var(--dur-2) var(--ease-out), width var(--dur-2) var(--ease-out); z-index:0}
+
+.searchwrap{display:flex; flex-direction:column; gap:8px; min-width:min(280px,100%)}
+.searchbox{position:relative; display:flex; align-items:center}
+.searchbox svg.mag{position:absolute; left:14px; width:16px;height:16px; color:var(--faint);
+  pointer-events:none}
+#search{width:100%; min-height:44px; padding:0 40px 0 40px; border:1px solid var(--line);
+  border-radius:var(--rp); background:var(--panel); color:var(--ink); box-shadow:var(--e1);
+  transition:border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease)}
+#search::placeholder{color:var(--faint)}
+#search:focus-visible{border-color:var(--accent); outline:none;
+  box-shadow:0 0 0 3px var(--accent-soft)}
+.searchbox .clear{position:absolute; right:8px; width:30px;height:30px; border-radius:50%;
+  display:none; align-items:center; justify-content:center; color:var(--muted)}
+.searchbox .clear:hover{background:var(--line-2); color:var(--ink)}
+.searchbox.has-val .clear{display:inline-flex}
+
+/* ============================================================================
+   LAYOUT — map (focal) + side rail
+   ========================================================================== */
+.stage{display:grid; grid-template-columns:minmax(0,1fr) 348px; gap:var(--s5); align-items:start}
+
+/* ---- Map card ---- */
+.mapcard{position:relative; background:var(--canvas); border:1px solid var(--line);
+  border-radius:var(--r4); box-shadow:var(--e2); overflow:hidden; isolation:isolate}
+.mapcard__head{display:flex; align-items:center; justify-content:space-between; gap:var(--s4);
+  padding:var(--s4) var(--s5); border-bottom:1px solid var(--line-2);
+  background:linear-gradient(var(--panel),color-mix(in srgb,var(--panel) 0%,transparent))}
+.mapcard__title{display:flex; flex-direction:column; gap:2px; min-width:0}
+.mapcard__title .t{font-family:var(--serif); font-size:var(--fs-md); font-weight:600; color:var(--ink)}
+.mapcard__title .s{font-size:var(--fs-xs); color:var(--muted)}
+.zoomctl{display:inline-flex; gap:6px; flex:none}
+.zbtn{width:40px;height:40px; min-width:40px; display:inline-flex; align-items:center; justify-content:center;
+  border:1px solid var(--line); border-radius:var(--r1); background:var(--panel); color:var(--ink-2);
+  box-shadow:var(--e1); transition:background var(--dur) var(--ease), color var(--dur) var(--ease),
+  transform var(--dur) var(--ease)}
+.zbtn:hover{background:var(--accent-soft); color:var(--accent-2)}
+.zbtn:active{transform:translateY(1px)}
+.zbtn svg{width:18px;height:18px}
+
+.mapview{position:relative; width:100%; aspect-ratio:975 / 610; background:var(--canvas);
+  touch-action:none; cursor:grab}
+.mapview.dragging{cursor:grabbing}
+.mapview svg.map{position:absolute; inset:0; width:100%; height:100%}
+#geo path{stroke-linejoin:round; stroke-linecap:round}
+.county{stroke:var(--hairline); stroke-width:.3px; vector-effect:non-scaling-stroke;
+  transition:opacity var(--dur) var(--ease); cursor:pointer}
+.statemesh{fill:none; stroke:var(--mesh); stroke-width:1px; vector-effect:non-scaling-stroke;
+  pointer-events:none}
+.nationmesh{fill:none; stroke:color-mix(in srgb,var(--p0) 70%,transparent); stroke-width:1.1px;
+  vector-effect:non-scaling-stroke; pointer-events:none}
+/* outline layer drawn above all fills so it never gets covered */
+#hl path{fill:none; stroke:var(--ink); stroke-width:2px; vector-effect:non-scaling-stroke;
+  pointer-events:none; stroke-linejoin:round}
+#pin path{fill:none; stroke:var(--accent); stroke-width:2.4px; vector-effect:non-scaling-stroke;
+  pointer-events:none; stroke-linejoin:round}
+
+/* dim states for search + legend filter — pure CSS via data-attrs on the layer */
+#geo[data-dim="search"] .county:not(.match){opacity:.16}
+#geo[data-bandlock] .county{opacity:.14}
+#geo[data-bandlock="0"] .county[data-bin="0"],
+#geo[data-bandlock="1"] .county[data-bin="1"],
+#geo[data-bandlock="2"] .county[data-bin="2"],
+#geo[data-bandlock="3"] .county[data-bin="3"],
+#geo[data-bandlock="4"] .county[data-bin="4"],
+#geo[data-bandlock="5"] .county[data-bin="5"],
+#geo[data-bandlock="6"] .county[data-bin="6"],
+#geo[data-bandlock="nd"] .county[data-bin="nd"]{opacity:1}
+
+/* loading / error / overlays */
+.mapstate{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:var(--s4); text-align:center; padding:var(--s5);
+  background:var(--canvas); z-index:6}
+.mapstate[hidden]{display:none}
+.spinner{width:38px;height:38px}
+.spinner circle{fill:none; stroke:var(--line); stroke-width:3}
+.spinner .arc{stroke:var(--accent); stroke-linecap:round; stroke-dasharray:60 200;
+  transform-origin:center; animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.mapstate .msg{font-family:var(--serif); font-size:var(--fs-md); color:var(--ink-2)}
+.mapstate .sub{font-size:var(--fs-sm); color:var(--muted); max-width:36ch}
+.skel-shimmer{position:absolute; inset:0; background:
+  linear-gradient(100deg,transparent 30%,color-mix(in srgb,var(--p7) 22%,transparent) 50%,transparent 70%);
+  background-size:220% 100%; animation:shim 1.4s var(--ease) infinite; opacity:.5}
+@keyframes shim{to{background-position:-120% 0}}
+.btn{display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:0 18px;
+  border-radius:var(--rp); font-weight:600; font-size:var(--fs-sm); border:1px solid transparent}
+.btn--primary{background:var(--accent); color:var(--accent-ink); box-shadow:var(--e1)}
+.btn--primary:hover{background:var(--accent-2)}
+.btn--primary:active{transform:translateY(1px)}
+
+/* ---- Tooltip ---- */
+.tip{position:absolute; z-index:20; pointer-events:none; min-width:180px; max-width:260px;
+  background:var(--p0); color:var(--p10); border-radius:var(--r2); padding:12px 14px;
+  box-shadow:var(--e3); font-size:var(--fs-xs); line-height:1.5; opacity:0;
+  transform:translateY(4px) scale(.98); transition:opacity .12s var(--ease), transform .12s var(--ease)}
+.tip.show{opacity:1; transform:translateY(0) scale(1)}
+.tip .name{font-family:var(--serif); font-size:var(--fs-sm); font-weight:600; color:#fff;
+  line-height:1.2; margin-bottom:1px}
+.tip .state{color:var(--p7); font-size:var(--fs-2xs); margin-bottom:8px}
+.tip .row{display:flex; align-items:baseline; justify-content:space-between; gap:14px}
+.tip .row .lbl{color:var(--p7)}
+.tip .val{font-weight:700; font-variant-numeric:tabular-nums; color:#fff}
+.tip .swatch{display:inline-block; width:9px;height:9px; border-radius:2px; margin-right:6px;
+  vertical-align:baseline; border:1px solid rgba(255,255,255,.25)}
+.tip .rank{margin-top:6px; padding-top:7px; border-top:1px solid rgba(255,255,255,.14);
+  color:var(--p8); font-size:var(--fs-2xs)}
+.tip .nd{color:var(--warn); font-weight:600}
+
+/* ---- Legend (within map card foot) ---- */
+.legend{padding:var(--s4) var(--s5) var(--s5); border-top:1px solid var(--line-2); background:var(--panel)}
+.legend__head{display:flex; align-items:baseline; justify-content:space-between; gap:var(--s4);
+  margin-bottom:10px}
+.legend__t{font-size:var(--fs-2xs); font-weight:600; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--muted)}
+.legend__unit{font-size:var(--fs-xs); color:var(--faint)}
+.ramp{display:flex; gap:0; height:16px; border-radius:5px; overflow:hidden;
+  border:1px solid var(--line); width:100%}
+.ramp button{flex:1; height:100%; border:none; position:relative; cursor:pointer;
+  transition:filter var(--dur) var(--ease)}
+.ramp button:hover,.ramp button[aria-pressed="true"]{filter:brightness(.92) saturate(1.1)}
+.ramp button[aria-pressed="true"]::after{content:""; position:absolute; inset:0;
+  box-shadow:inset 0 0 0 2px var(--ink)}
+.ramp .nd-swatch{flex:0 0 30px; margin-left:8px; border-left:1px solid var(--line)}
+.ticks{display:flex; justify-content:space-between; margin-top:6px; padding:0 1px}
+.ticks span{font-size:var(--fs-2xs); color:var(--muted); font-variant-numeric:tabular-nums}
+.legend__foot{display:flex; align-items:center; justify-content:space-between; gap:var(--s4);
+  margin-top:10px; flex-wrap:wrap}
+.legend__hint{font-size:var(--fs-2xs); color:var(--faint)}
+.legend__lock{display:none; align-items:center; gap:6px; font-size:var(--fs-2xs); font-weight:600;
+  color:var(--accent-2); background:var(--accent-soft); border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);
+  border-radius:var(--rp); padding:4px 10px; min-height:28px}
+.legend__lock.show{display:inline-flex}
+.legend__lock svg{width:12px;height:12px}
+
+/* ============================================================================
+   SIDE RAIL — detail panel + ranked list
+   ========================================================================== */
+.rail{display:flex; flex-direction:column; gap:var(--s5); position:sticky; top:var(--s4)}
+
+/* ---- Detail panel ---- */
+.detail{background:var(--panel); border:1px solid var(--line); border-radius:var(--r3);
+  box-shadow:var(--e1); overflow:hidden}
+.detail__empty{padding:var(--s5); display:flex; flex-direction:column; gap:10px; align-items:flex-start}
+.detail__empty .ic{width:34px;height:34px; color:var(--p6)}
+.detail__empty h3{font-family:var(--serif); font-size:var(--fs-md); font-weight:600; color:var(--ink-2)}
+.detail__empty p{font-size:var(--fs-sm); color:var(--muted); line-height:1.5}
+.detail__body{display:none; flex-direction:column}
+.detail.is-pinned .detail__empty{display:none}
+.detail.is-pinned .detail__body{display:flex}
+.detail__top{padding:var(--s4) var(--s5) var(--s4); display:flex; align-items:flex-start;
+  justify-content:space-between; gap:var(--s3); border-bottom:1px solid var(--line-2)}
+.detail__top h3{font-family:var(--serif); font-size:var(--fs-lg); font-weight:600; line-height:1.05;
+  letter-spacing:-.01em}
+.detail__top .st{font-size:var(--fs-xs); color:var(--muted); margin-top:3px}
+.unpin{width:34px;height:34px; min-width:34px; border-radius:50%; display:inline-flex;
+  align-items:center; justify-content:center; color:var(--muted); border:1px solid var(--line)}
+.unpin:hover{background:var(--line-2); color:var(--ink)}
+.detail__hero{padding:var(--s4) var(--s5); display:flex; align-items:flex-end; gap:var(--s4);
+  justify-content:space-between}
+.detail__hero .big{font-family:var(--serif); font-size:var(--fs-num); font-weight:600;
+  line-height:.9; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+.detail__hero .big.nd{font-size:var(--fs-lg); color:var(--warn)}
+.detail__hero .unit{font-size:var(--fs-xs); color:var(--muted); margin-top:6px; display:block}
+.detail__hero .rankchip{text-align:right; flex:none}
+.rankchip .num{font-size:var(--fs-md); font-weight:700; font-variant-numeric:tabular-nums; color:var(--accent-2)}
+.rankchip .of{font-size:var(--fs-2xs); color:var(--muted)}
+/* percentile strip */
+.pctile{padding:0 var(--s5) var(--s4)}
+.pctile__bar{position:relative; height:8px; border-radius:var(--rp); overflow:hidden}
+.pctile__mark{position:absolute; top:-3px; width:3px; height:14px; border-radius:2px;
+  background:var(--ink); box-shadow:0 0 0 2px var(--panel); transition:left var(--dur-2) var(--ease-out)}
+.pctile__lbl{display:flex; justify-content:space-between; margin-top:6px; font-size:var(--fs-2xs); color:var(--muted)}
+/* small multiples */
+.sm{padding:var(--s4) var(--s5) var(--s5); border-top:1px solid var(--line-2)}
+.sm__h{font-size:var(--fs-2xs); font-weight:600; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--muted); margin-bottom:12px}
+.sm__row{display:grid; grid-template-columns:96px 1fr auto; align-items:center; gap:10px; margin-bottom:11px}
+.sm__row:last-child{margin-bottom:0}
+.sm__name{font-size:var(--fs-xs); color:var(--ink-2); display:flex; align-items:center; gap:7px}
+.sm__name .sw{width:9px;height:9px;border-radius:2px;flex:none}
+.sm__track{height:7px; border-radius:var(--rp); background:var(--line-2); position:relative; overflow:hidden}
+.sm__fill{position:absolute; inset:0; transform-origin:left; border-radius:var(--rp);
+  transition:transform var(--dur-2) var(--ease-out)}
+.sm__val{font-size:var(--fs-xs); font-weight:600; font-variant-numeric:tabular-nums; color:var(--ink);
+  min-width:42px; text-align:right}
+.sm__val.nd{color:var(--warn); font-weight:500}
+
+/* ---- Ranked list ---- */
+.ranked{background:var(--panel); border:1px solid var(--line); border-radius:var(--r3);
+  box-shadow:var(--e1); display:flex; flex-direction:column; min-height:0}
+.ranked__head{padding:var(--s4) var(--s5) var(--s3); border-bottom:1px solid var(--line-2);
+  display:flex; flex-direction:column; gap:8px}
+.ranked__title{display:flex; align-items:center; justify-content:space-between; gap:var(--s3)}
+.ranked__title h3{font-family:var(--serif); font-size:var(--fs-md); font-weight:600}
+.ranked__count{font-size:var(--fs-2xs); color:var(--muted); font-variant-numeric:tabular-nums}
+.sortrow{display:flex; gap:6px}
+.sortbtn{display:inline-flex; align-items:center; gap:6px; min-height:32px; padding:0 11px;
+  border:1px solid var(--line); border-radius:var(--rp); font-size:var(--fs-2xs); font-weight:600;
+  color:var(--muted); background:var(--canvas); transition:all var(--dur) var(--ease)}
+.sortbtn:hover{color:var(--ink-2); border-color:var(--p6)}
+.sortbtn[aria-pressed="true"]{background:var(--accent-soft); color:var(--accent-2);
+  border-color:color-mix(in srgb,var(--accent) 32%,transparent)}
+.sortbtn svg{width:12px;height:12px; transition:transform var(--dur) var(--ease)}
+.sortbtn.desc svg{transform:rotate(180deg)}
+.ranklist{list-style:none; margin:0; padding:6px; overflow-y:auto; overflow-x:hidden;
+  max-height:520px; scrollbar-width:thin; scrollbar-color:var(--p6) transparent}
+.ranklist::-webkit-scrollbar{width:8px}
+.ranklist::-webkit-scrollbar-thumb{background:var(--p7); border-radius:8px; border:2px solid var(--panel)}
+.rrow{width:100%; display:grid; grid-template-columns:30px 12px 1fr auto; align-items:center;
+  gap:10px; padding:9px 10px; border-radius:var(--r1); text-align:left;
+  transition:background var(--dur) var(--ease)}
+.rrow:hover,.rrow.hot{background:var(--accent-soft)}
+.rrow.pinned{background:color-mix(in srgb,var(--accent) 16%,transparent);
+  box-shadow:inset 2px 0 0 var(--accent)}
+.rrow .rk{font-size:var(--fs-2xs); font-weight:600; color:var(--muted); font-variant-numeric:tabular-nums;
+  text-align:right}
+.rrow .sw{width:12px;height:12px;border-radius:3px; border:1px solid color-mix(in srgb,var(--p0) 10%,transparent)}
+.rrow .nm{min-width:0; overflow:hidden}
+.rrow .nm .c{font-size:var(--fs-sm); font-weight:500; color:var(--ink); white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis; line-height:1.2}
+.rrow .nm .s{font-size:var(--fs-2xs); color:var(--muted); white-space:nowrap; overflow:hidden;
+  text-overflow:ellipsis}
+.rrow .v{font-size:var(--fs-sm); font-weight:700; font-variant-numeric:tabular-nums; color:var(--ink)}
+.rrow .v.nd{color:var(--warn); font-weight:500; font-size:var(--fs-2xs)}
+.ranklist__empty{padding:var(--s6) var(--s5); text-align:center; color:var(--muted); font-size:var(--fs-sm)}
+.ranklist__empty svg{width:30px;height:30px;color:var(--p6); margin-bottom:10px}
+.ranklist__empty button{margin-top:12px; color:var(--accent-2); font-weight:600; text-decoration:underline;
+  text-underline-offset:3px}
+
+/* ---- Footer / methodology ---- */
+.foot{margin-top:var(--s4); padding-top:var(--s5); border-top:1.5px solid var(--line);
+  display:flex; flex-wrap:wrap; gap:var(--s5) var(--s7); align-items:flex-start;
+  justify-content:space-between; font-size:var(--fs-xs); color:var(--muted); line-height:1.55}
+.foot p{max-width:64ch}
+.foot strong{color:var(--ink-2); font-weight:600}
+.foot .legend-key{display:flex; gap:var(--s5); flex-wrap:wrap}
+.foot .keyitem{display:flex; align-items:center; gap:8px}
+.foot .keyitem svg{width:26px;height:14px; flex:none}
+
+/* ============================================================================
+   RESPONSIVE — tablet then mobile (mobile-first verified at 360)
+   ========================================================================== */
+@media (max-width:980px){
+  .stage{grid-template-columns:1fr}
+  .rail{position:static}
+  .ranklist{max-height:420px}
+}
+@media (max-width:620px){
+  .app{padding:18px 14px 88px; gap:var(--s4)}
+  .mast{align-items:flex-start; gap:var(--s4)}
+  .mast__meta{align-items:flex-start; text-align:left}
+  .toolbar{flex-direction:column; align-items:stretch}
+  .segmented{width:100%; justify-content:stretch}
+  .seg{flex:1; justify-content:center; padding:0 8px}
+  .searchwrap{min-width:0}
+  .mapcard__head{padding:var(--s3) var(--s4)}
+  .legend{padding:var(--s4)}
+
+  /* Detail becomes a bottom SHEET on mobile */
+  .detail.is-pinned{position:fixed; left:0; right:0; bottom:0; z-index:120; border-radius:var(--r4) var(--r4) 0 0;
+    box-shadow:var(--e3); max-height:82vh; overflow-y:auto;
+    animation:sheetIn var(--dur-2) var(--ease-out)}
+  .detail.is-pinned::before{content:""; position:absolute; top:8px; left:50%; transform:translateX(-50%);
+    width:38px; height:4px; border-radius:var(--rp); background:var(--p6)}
+  .detail.is-pinned .detail__top{padding-top:22px}
+  .sheet-scrim{display:none; position:fixed; inset:0; background:rgba(28,24,19,.32); z-index:110;
+    animation:fade var(--dur) var(--ease)}
+  .sheet-scrim.show{display:block}
+}
+@keyframes sheetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important; animation-iteration-count:1!important;
+    transition-duration:.001ms!important; scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#ranked">Skip to ranked county list</a>
+
+<main class="app">
+  <!-- ============ MASTHEAD ============ -->
+  <header class="mast">
+    <div class="mast__brand">
+      <span class="kicker"><span class="dot"></span>CHOROS · County Atlas</span>
+      <h1>The shape of a <em>made-up</em> America</h1>
+      <p class="dek">Real US county geography, shaded by three <strong>sample indicators</strong> built from a seeded model. Hover a county for its exact value, switch the metric to repaint the map, or search and pin a county to read its rank.</p>
+    </div>
+    <div class="mast__meta">
+      <span class="sample-badge" title="All metric values on this map are synthetic.">
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 1.5 14.5 13H1.5L8 1.5Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 6.2v3.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.2" r=".95" fill="currentColor"/></svg>
+        SAMPLE DATA — values are synthetic
+      </span>
+      <span class="src">Geometry: US Census via the public-domain <em>us-atlas</em> TopoJSON. Metrics: seeded model, not real statistics.</span>
+    </div>
+  </header>
+
+  <!-- ============ TOOLBAR ============ -->
+  <section class="toolbar" aria-label="Map controls">
+    <div class="metricwrap">
+      <span class="toollabel" id="metric-label">Indicator (sample)</span>
+      <div class="segmented" role="group" aria-labelledby="metric-label" id="segmented">
+        <span class="seg__pill" id="segpill" aria-hidden="true"></span>
+        <!-- buttons injected -->
+      </div>
+    </div>
+    <div class="searchwrap">
+      <label class="toollabel" for="search">Find a county</label>
+      <div class="searchbox" id="searchbox">
+        <svg class="mag" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m11 11 3.2 3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <input id="search" type="search" placeholder="e.g. Los Angeles, Cook, Harris…" autocomplete="off"
+               role="combobox" aria-expanded="false" aria-controls="ranklist" aria-describedby="search-help">
+        <button class="clear" id="clearSearch" type="button" aria-label="Clear search">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <span id="search-help" class="vh">Type a county name; press Enter to frame the top match on the map.</span>
+    </div>
+  </section>
+
+  <!-- ============ STAGE ============ -->
+  <div class="stage">
+    <!-- ---- MAP ---- -->
+    <section class="mapcard" aria-label="Choropleth map">
+      <div class="mapcard__head">
+        <div class="mapcard__title">
+          <span class="t" id="map-metric-title">Sample Indicator</span>
+          <span class="s" id="map-metric-sub">3,142 US counties · synthetic values</span>
+        </div>
+        <div class="zoomctl" role="group" aria-label="Zoom controls">
+          <button class="zbtn" id="zoomIn" type="button" aria-label="Zoom in">
+            <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M9 4v10M4 9h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+          <button class="zbtn" id="zoomOut" type="button" aria-label="Zoom out">
+            <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 9h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+          <button class="zbtn" id="zoomReset" type="button" aria-label="Reset zoom and pan">
+            <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3.5 8a5 5 0 1 1 .7 3.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M3 4.4V8h3.6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="mapview" id="mapview">
+        <svg class="map" id="mapsvg" viewBox="0 0 975 610" preserveAspectRatio="xMidYMid meet"
+             role="img" aria-labelledby="map-aria-title" aria-describedby="map-aria-desc">
+          <title id="map-aria-title">Choropleth of US counties shaded by a synthetic sample indicator</title>
+          <desc id="map-aria-desc">A map view. A keyboard-navigable ranked list of the same data is provided to the right under "Ranked counties".</desc>
+          <g id="vp">
+            <g id="geo"></g>
+            <path id="statemesh" class="statemesh"></path>
+            <path id="nationmesh" class="nationmesh"></path>
+            <g id="hl"></g>
+            <g id="pin"></g>
+          </g>
+        </svg>
+
+        <!-- live a11y summary -->
+        <p class="vh" id="data-summary" aria-live="polite"></p>
+
+        <!-- loading -->
+        <div class="mapstate" id="state-loading">
+          <div class="skel-shimmer" aria-hidden="true"></div>
+          <svg class="spinner" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="18"/><circle class="arc" cx="22" cy="22" r="18"/></svg>
+          <p class="msg">Loading county geometry…</p>
+          <p class="sub">Fetching the public-domain us-atlas TopoJSON (≈0.8&nbsp;MB).</p>
+        </div>
+        <!-- error -->
+        <div class="mapstate" id="state-error" hidden>
+          <svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true"><path d="M20 4 37 34H3L20 4Z" fill="none" stroke="var(--danger)" stroke-width="2" stroke-linejoin="round"/><path d="M20 15v9" stroke="var(--danger)" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="28.5" r="1.4" fill="var(--danger)"/></svg>
+          <p class="msg">Couldn’t load the map geometry</p>
+          <p class="sub" id="error-detail">The TopoJSON atlas failed to fetch. Check your connection and retry.</p>
+          <button class="btn btn--primary" id="retryBtn" type="button">
+            <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M3 8a5 5 0 1 1 .7 3.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M2.6 4.6V8h3.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Retry
+          </button>
+        </div>
+
+        <div class="tip" id="tip" role="status" aria-hidden="true"></div>
+      </div>
+
+      <!-- ---- LEGEND ---- -->
+      <div class="legend">
+        <div class="legend__head">
+          <span class="legend__t" id="legend-title">Sample Indicator</span>
+          <span class="legend__unit" id="legend-unit"></span>
+        </div>
+        <div class="ramp" id="ramp" role="group" aria-label="Color legend — hover a band to isolate those counties, click to lock"></div>
+        <div class="ticks" id="ticks" aria-hidden="true"></div>
+        <div class="legend__foot">
+          <span class="legend__hint">Hover a band to isolate it · click to lock</span>
+          <button class="legend__lock" id="legendLock" type="button">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 7V5a4 4 0 0 1 8 0v2" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="7" width="10" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            Band locked — clear
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- SIDE RAIL ---- -->
+    <aside class="rail">
+      <!-- detail panel -->
+      <section class="detail" id="detail" aria-label="Pinned county detail">
+        <div class="detail__empty">
+          <svg class="ic" viewBox="0 0 34 34" aria-hidden="true"><path d="M17 3c-5 0-9 3.8-9 9 0 6.3 9 19 9 19s9-12.7 9-19c0-5.2-4-9-9-9Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="17" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+          <h3>Pin a county</h3>
+          <p>Click any county on the map, or any row in the ranked list, to see its value, rank and percentile across all three sample indicators.</p>
+        </div>
+        <div class="detail__body">
+          <div class="detail__top">
+            <div>
+              <h3 id="d-name">—</h3>
+              <p class="st" id="d-state">—</p>
+            </div>
+            <button class="unpin" id="unpin" type="button" aria-label="Unpin county">
+              <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <div class="detail__hero">
+            <div>
+              <span class="big tnum" id="d-value">—</span>
+              <span class="unit" id="d-unit"></span>
+            </div>
+            <div class="rankchip">
+              <div class="num tnum" id="d-rank">—</div>
+              <div class="of" id="d-rank-of">of —</div>
+            </div>
+          </div>
+          <div class="pctile">
+            <div class="pctile__bar" id="d-pctbar"><span class="pctile__mark" id="d-pctmark"></span></div>
+            <div class="pctile__lbl"><span>lowest</span><span id="d-pcttext">—</span><span>highest</span></div>
+          </div>
+          <div class="sm">
+            <div class="sm__h">All three sample indicators</div>
+            <div id="d-sm"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ranked list -->
+      <section class="ranked" id="ranked" aria-label="Ranked counties">
+        <div class="ranked__head">
+          <div class="ranked__title">
+            <h3>Ranked counties</h3>
+            <span class="ranked__count tnum" id="rankcount">—</span>
+          </div>
+          <div class="sortrow" role="group" aria-label="Sort order">
+            <button class="sortbtn desc" id="sortValue" type="button" aria-pressed="true">
+              <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M3 7l3 3 3-3" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Value
+            </button>
+            <button class="sortbtn" id="sortName" type="button" aria-pressed="false">
+              <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v8M3 7l3 3 3-3" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Name
+            </button>
+          </div>
+        </div>
+        <ul class="ranklist" id="ranklist" role="listbox" aria-label="Counties ranked by the selected sample indicator" tabindex="-1"></ul>
+      </section>
+    </aside>
+  </div>
+
+  <!-- ============ FOOTER / METHODOLOGY ============ -->
+  <footer class="foot">
+    <p><strong>Methodology.</strong> County and state boundaries are real, drawn from the public-domain
+      <em>us-atlas</em> TopoJSON (US Census cartographic boundaries), pre-projected with <em>Albers USA</em> so Alaska and Hawaii sit as insets. The three indicators are <strong>synthetic</strong>: each county's value is generated by a deterministic seeded model (a smooth spatial gradient plus seeded per-county noise), normalised 0–100. <strong>These are not real statistics</strong> — they exist only to demonstrate the encoding. Color ramps use a 7-bin quantile scale; counties with no sample value render as a neutral hatch.</p>
+    <div class="legend-key">
+      <div class="keyitem">
+        <svg viewBox="0 0 26 14" aria-hidden="true"><rect width="26" height="14" rx="2" fill="var(--nodata)"/><defs><pattern id="hatchKey" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#fff" stroke-width="1.4"/></pattern></defs><rect width="26" height="14" rx="2" fill="url(#hatchKey)"/></svg>
+        <span>No sample data</span>
+      </div>
+      <div class="keyitem">
+        <svg viewBox="0 0 26 14" aria-hidden="true"><rect x="2" y="6" width="22" height="2" fill="var(--mesh)"/></svg>
+        <span>State boundary (1px mesh)</span>
+      </div>
+    </div>
+  </footer>
+</main>
+
+<div class="sheet-scrim" id="sheetScrim" aria-hidden="true"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "d3-geo": "https://cdn.jsdelivr.net/npm/d3-geo@3/+esm",
+    "topojson-client": "https://cdn.jsdelivr.net/npm/topojson-client@3/+esm"
+  }
+}
+</script>
+
+<script type="module">
+import { geoPath, geoIdentity } from 'd3-geo';
+import { feature, mesh } from 'topojson-client';
+
+/* ===========================================================================
+   CONFIG
+   =========================================================================== */
+const ATLAS_URL = 'https://cdn.jsdelivr.net/npm/us-atlas@3/counties-albers-10m.json';
+const VIEW_W = 975, VIEW_H = 610;           // counties-albers-10m native frame
+const BINS = 7;
+
+/* Three SAMPLE indicators — distinct hue ramp + seeded spatial pattern.
+   Ramps are perceptually-ordered, lightest bin is a visible tint (not paper). */
+const METRICS = [
+  {
+    id:'vitality', name:'Civic Vitality', short:'Vitality',
+    unit:'index · 0–100 (sample)', titleUnit:'sample index, 0–100',
+    icon:'<path d="M2 9h2.5l2-5 3 9 2.5-6 1.5 2H14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>',
+    // teal sequential
+    ramp:['#e3eeec','#c3ddd8','#9bc8c0','#6fb0a6','#43938b','#236f69','#0b4f4a'],
+    seed:1337, fx:1.0, fy:0.55, rot:0.0
+  },
+  {
+    id:'flux', name:'Migration Flux', short:'Flux',
+    unit:'net per 1k · 0–100 (sample)', titleUnit:'sample index, 0–100',
+    icon:'<path d="M2 5h8M7 2l3 3-3 3M14 11H6M9 8l-3 3 3 3" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>',
+    // amber/copper sequential
+    ramp:['#f4ead2','#ecd3a3','#e3b86f','#d69842','#bd7521','#974f13','#6b330c'],
+    seed:8675, fx:0.6, fy:1.0, rot:0.9
+  },
+  {
+    id:'canopy', name:'Tree Canopy', short:'Canopy',
+    unit:'% cover · 0–100 (sample)', titleUnit:'sample percent cover',
+    icon:'<path d="M8 14V8M8 8 5 5M8 9l3-2.5M8 2a3 3 0 0 1 2.4 4.8A2.6 2.6 0 0 1 8 11a2.6 2.6 0 0 1-2.4-4.2A3 3 0 0 1 8 2Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>',
+    // green sequential
+    ramp:['#e9efd9','#d0e0b0','#aecd82','#86b557','#5e9836','#3f7521','#274f12'],
+    seed:4242, fx:0.85, fy:0.85, rot:2.1
+  }
+];
+const METRIC_BY_ID = Object.fromEntries(METRICS.map(m=>[m.id,m]));
+
+/* deterministic hash → [0,1) (mulberry-ish on a string) */
+function hashUnit(str, salt){
+  let h = 2166136261 ^ salt;
+  for(let i=0;i<str.length;i++){ h = Math.imul(h ^ str.charCodeAt(i), 16777619); }
+  h += salt*2654435761;
+  h ^= h>>>15; h = Math.imul(h, 2246822507); h ^= h>>>13;
+  return ((h>>>0) % 100000) / 100000;
+}
+
+/* ===========================================================================
+   STATE
+   =========================================================================== */
+const state = {
+  metric: METRICS[0].id,
+  counties: [],            // {id, name, stateName, stateFips, cx, cy, vals:{metricId:value|null}, d, bin:{}}
+  byId: new Map(),
+  sortKey: 'value',        // 'value' | 'name'
+  sortDir: 'desc',         // for value
+  nameDir: 'asc',
+  pinId: null,
+  hoverId: null,
+  bandLock: null,          // bin index or 'nd' or null
+  query: '',
+  thresholds: {},          // metricId -> [t1..t6] quantile breakpoints
+  ranked: [],              // current filtered+sorted list of county objs
+};
+const path = geoPath(geoIdentity());   // counties-albers-10m is pre-projected; identity path
+
+/* ===========================================================================
+   STATE NAMES (FIPS prefix → name) — for labels
+   =========================================================================== */
+const STATE_NAMES = {
+ '01':'Alabama','02':'Alaska','04':'Arizona','05':'Arkansas','06':'California','08':'Colorado',
+ '09':'Connecticut','10':'Delaware','11':'District of Columbia','12':'Florida','13':'Georgia',
+ '15':'Hawaii','16':'Idaho','17':'Illinois','18':'Indiana','19':'Iowa','20':'Kansas','21':'Kentucky',
+ '22':'Louisiana','23':'Maine','24':'Maryland','25':'Massachusetts','26':'Michigan','27':'Minnesota',
+ '28':'Mississippi','29':'Missouri','30':'Montana','31':'Nebraska','32':'Nevada','33':'New Hampshire',
+ '34':'New Jersey','35':'New Mexico','36':'New York','37':'North Carolina','38':'North Dakota',
+ '39':'Ohio','40':'Oklahoma','41':'Oregon','42':'Pennsylvania','44':'Rhode Island','45':'South Carolina',
+ '46':'South Dakota','47':'Tennessee','48':'Texas','49':'Utah','50':'Vermont','51':'Virginia',
+ '53':'Washington','54':'West Virginia','55':'Wisconsin','56':'Wyoming','72':'Puerto Rico'
+};
+
+/* ===========================================================================
+   DOM refs
+   =========================================================================== */
+const $ = s => document.querySelector(s);
+const geoG = $('#geo'), hlG = $('#hl'), pinG = $('#pin');
+const stateMeshEl = $('#statemesh'), nationMeshEl = $('#nationmesh');
+const tip = $('#tip'), mapview = $('#mapview'), mapsvg = $('#mapsvg'), vp = $('#vp');
+const elLoading = $('#state-loading'), elError = $('#state-error');
+const segmented = $('#segmented'), segpill = $('#segpill');
+const ramp = $('#ramp'), ticks = $('#ticks');
+const ranklist = $('#ranklist'), rankcount = $('#rankcount');
+const detail = $('#detail');
+
+/* ===========================================================================
+   FORMAT
+   =========================================================================== */
+const fmt = v => v==null ? '—' : (Math.round(v*10)/10).toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1});
+const fmt0 = v => v==null ? '—' : Math.round(v).toLocaleString('en-US');
+const ordinal = n => { const s=['th','st','nd','rd'], v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]); };
+
+/* ===========================================================================
+   BOOT
+   =========================================================================== */
+init();
+async function init(){
+  buildSegmented();
+  wireGlobalEvents();
+  try{
+    const topo = await loadAtlas();
+    buildCounties(topo);
+    computeThresholds();
+    drawGeometry();
+    elLoading.hidden = true;
+    setMetric(state.metric, {animate:false});
+    announce();
+  }catch(err){
+    console.warn('[CHOROS] geometry load failed:', err && err.message);
+    showError(err);
+  }
+}
+
+function loadAtlas(){
+  return fetch(ATLAS_URL).then(r=>{
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  });
+}
+
+function showError(err){
+  elLoading.hidden = true;
+  elError.hidden = false;
+  $('#error-detail').textContent =
+    (err && /HTTP/.test(err.message))
+      ? `The atlas server responded with ${err.message}. Retry, or check the CDN is reachable.`
+      : 'The TopoJSON atlas failed to fetch — likely an offline or network issue. Retry when connected.';
+}
+
+/* ===========================================================================
+   BUILD COUNTY MODEL (real geometry + synthetic metrics)
+   =========================================================================== */
+function buildCounties(topo){
+  const fc = feature(topo, topo.objects.counties);
+  for(const f of fc.features){
+    const id = String(f.id);
+    if(id.length < 4) continue;                 // skip malformed
+    const stFips = id.slice(0, id.length-3);    // works for 4 or 5 digit ids
+    const stPad = stFips.padStart(2,'0');
+    const stateName = STATE_NAMES[stPad] || 'United States';
+    const name = (f.properties && f.properties.name) || ('County '+id);
+    const [cx, cy] = path.centroid(f);
+    const d = path(f);
+    if(!d) continue;
+    const obj = {
+      id, name, stateName, stateFips:stPad,
+      cx, cy, d, feature:f,
+      vals:{}, bin:{},
+      searchKey:(name+' '+stateName).toLowerCase()
+    };
+    // synthetic metric values
+    for(const m of METRICS){ obj.vals[m.id] = syntheticValue(m, cx, cy, id); }
+    state.counties.push(obj);
+    state.byId.set(id, obj);
+  }
+  // A small, deterministic slice (~1.4%) marked as no-data to exercise that path honestly.
+  for(const c of state.counties){
+    if(hashUnit(c.id, 99991) < 0.014){ for(const m of METRICS) c.vals[m.id] = null; c.noData = true; }
+  }
+  // state + nation mesh (real boundaries between differing states)
+  try{
+    const sm = mesh(topo, topo.objects.states, (a,b)=>a!==b);
+    state._stateMeshD = path(sm);
+    const nm = mesh(topo, topo.objects.nation);
+    state._nationMeshD = path(nm);
+  }catch(err){ console.warn('[CHOROS] mesh build skipped:', err && err.message); }
+}
+
+/* seeded synthetic model: smooth spatial gradient (rotated) + seeded per-county noise,
+   squashed to 0..100. Distinct per metric via seed/freq/rotation. */
+function syntheticValue(m, cx, cy, id){
+  const nx = (cx - VIEW_W/2) / VIEW_W;   // ~ -0.5..0.5
+  const ny = (cy - VIEW_H/2) / VIEW_H;
+  const a = m.rot;
+  const rx = nx*Math.cos(a) - ny*Math.sin(a);
+  const ry = nx*Math.sin(a) + ny*Math.cos(a);
+  // smooth multi-lobe field
+  let field =
+      Math.sin((rx*m.fx)*6.0 + m.seed*0.001) * 0.5 +
+      Math.cos((ry*m.fy)*5.0 - m.seed*0.0013) * 0.4 +
+      Math.sin((rx+ry)*3.2) * 0.25;
+  field = field*0.5 + 0.5;                       // 0..1-ish
+  const noise = hashUnit(id, m.seed) - 0.5;      // -0.5..0.5
+  let v = field*0.78 + (noise*0.5+0.5)*0.22;     // mix
+  v = Math.max(0, Math.min(1, v));
+  // gentle contrast curve so bins populate
+  v = Math.pow(v, 0.92);
+  return Math.round(v*1000)/10;                  // 0..100, 1dp
+}
+
+/* quantile thresholds per metric (7 bins → 6 cut points) over non-null values */
+function computeThresholds(){
+  for(const m of METRICS){
+    const vals = state.counties.map(c=>c.vals[m.id]).filter(v=>v!=null).sort((a,b)=>a-b);
+    const t=[];
+    for(let i=1;i<BINS;i++){ t.push(quantile(vals, i/BINS)); }
+    state.thresholds[m.id] = t;
+    // assign bin per county for this metric
+    for(const c of state.counties){
+      c.bin[m.id] = c.vals[m.id]==null ? 'nd' : binOf(c.vals[m.id], t);
+    }
+  }
+}
+function quantile(sorted, q){
+  const pos = (sorted.length-1)*q, base = Math.floor(pos), rest = pos-base;
+  return sorted[base+1]!==undefined ? sorted[base]+rest*(sorted[base+1]-sorted[base]) : sorted[base];
+}
+function binOf(v, t){ let b=0; while(b<t.length && v>=t[b]) b++; return b; }   // 0..BINS-1
+
+/* ===========================================================================
+   DRAW GEOMETRY (once) — county paths + state/nation mesh + hatch def
+   =========================================================================== */
+function drawGeometry(){
+  // hatch pattern for no-data
+  const NS='http://www.w3.org/2000/svg';
+  const defs=document.createElementNS(NS,'defs');
+  defs.innerHTML =
+    `<pattern id="ndhatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+       <rect width="6" height="6" fill="${getCss('--nodata')}"/>
+       <line x1="0" y1="0" x2="0" y2="6" stroke="#fff" stroke-width="1.5"/>
+     </pattern>`;
+  mapsvg.insertBefore(defs, mapsvg.firstChild);
+
+  // county paths (single string build for perf, then assign)
+  const frag = document.createDocumentFragment();
+  for(const c of state.counties){
+    const p = document.createElementNS(NS,'path');
+    p.setAttribute('d', c.d);
+    p.setAttribute('class','county');
+    p.dataset.id = c.id;
+    c.el = p;
+    frag.appendChild(p);
+  }
+  geoG.appendChild(frag);
+
+  // state mesh (interior + exterior borders between different states)
+  // use the topo we still have via closures — store it:
+  stateMeshEl.setAttribute('d', state._stateMeshD || '');
+  nationMeshEl.setAttribute('d', state._nationMeshD || '');
+
+  // pointer wiring (event delegation)
+  geoG.addEventListener('pointerover', onCountyOver);
+  geoG.addEventListener('pointermove', onCountyMove);
+  geoG.addEventListener('pointerout', onCountyOut);
+  geoG.addEventListener('click', onCountyClick);
+}
+
+function getCss(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+/* ===========================================================================
+   COLOR / METRIC APPLICATION
+   =========================================================================== */
+function colorFor(c, m){
+  if(c.vals[m.id]==null) return 'url(#ndhatch)';
+  return m.ramp[c.bin[m.id]];
+}
+
+function setMetric(id, {animate=true}={}){
+  state.metric = id;
+  const m = METRIC_BY_ID[id];
+  // segmented control
+  [...segmented.querySelectorAll('.seg')].forEach(b=>{
+    const on = b.dataset.id===id;
+    b.setAttribute('aria-pressed', on?'true':'false');
+  });
+  positionSegPill();
+
+  // recolor every path (200ms tween via CSS on fill is unreliable across UAs → manual rAF tween of brightness)
+  for(const c of state.counties){
+    c.el.setAttribute('fill', colorFor(c, m));
+    c.el.dataset.bin = c.bin[id];
+  }
+  if(animate && !prefersReduced()){
+    geoG.animate([{opacity:.25},{opacity:1}], {duration:200, easing:'cubic-bezier(.16,1,.3,1)'});
+  }
+
+  // titles
+  $('#map-metric-title').textContent = m.name + ' (sample)';
+  $('#map-metric-sub').textContent = `${state.counties.length.toLocaleString()} US counties · ${m.titleUnit}`;
+  $('#legend-title').textContent = m.name;
+  $('#legend-unit').textContent = m.unit;
+
+  buildLegend(m);
+  clearBandLock();
+  buildRanked();
+  if(state.pinId) renderDetail(state.byId.get(state.pinId));
+  if(state.hoverId) outlineHover(state.hoverId);
+  announce();
+}
+
+/* ===========================================================================
+   SEGMENTED CONTROL
+   =========================================================================== */
+function buildSegmented(){
+  for(const m of METRICS){
+    const b=document.createElement('button');
+    b.className='seg'; b.type='button'; b.dataset.id=m.id;
+    b.setAttribute('aria-pressed', m.id===state.metric?'true':'false');
+    b.innerHTML = `<svg viewBox="0 0 16 16" aria-hidden="true">${m.icon}</svg><span>${m.short}</span>`;
+    b.addEventListener('click', ()=>{ if(state.metric!==m.id) setMetric(m.id); });
+    segmented.appendChild(b);
+  }
+  requestAnimationFrame(positionSegPill);
+  window.addEventListener('resize', debounce(positionSegPill, 80));
+}
+function positionSegPill(){
+  const active = segmented.querySelector('.seg[aria-pressed="true"]');
+  if(!active) return;
+  const pr = segmented.getBoundingClientRect(), ar = active.getBoundingClientRect();
+  segpill.style.width = ar.width+'px';
+  segpill.style.transform = `translateX(${ar.left-pr.left-4}px)`;
+}
+
+/* ===========================================================================
+   LEGEND
+   =========================================================================== */
+function buildLegend(m){
+  const t = state.thresholds[m.id];
+  const lo = Math.min(...state.counties.map(c=>c.vals[m.id]).filter(v=>v!=null));
+  const hi = Math.max(...state.counties.map(c=>c.vals[m.id]).filter(v=>v!=null));
+  const edges = [lo, ...t, hi];
+
+  ramp.innerHTML='';
+  for(let i=0;i<BINS;i++){
+    const btn=document.createElement('button');
+    btn.type='button'; btn.style.background=m.ramp[i];
+    btn.dataset.bin=String(i);
+    const a=fmt0(edges[i]), b=fmt0(edges[i+1]);
+    btn.setAttribute('aria-label', `Band ${i+1}: ${a} to ${b}. Hover to isolate, click to lock.`);
+    btn.addEventListener('pointerenter', ()=>{ if(state.bandLock==null) applyBand(i); });
+    btn.addEventListener('pointerleave', ()=>{ if(state.bandLock==null) clearBand(); });
+    btn.addEventListener('click', ()=> toggleBandLock(i));
+    btn.addEventListener('focus', ()=>{ if(state.bandLock==null) applyBand(i); });
+    btn.addEventListener('blur', ()=>{ if(state.bandLock==null) clearBand(); });
+    ramp.appendChild(btn);
+  }
+  // no-data swatch in legend
+  const nd=document.createElement('button');
+  nd.type='button'; nd.className='nd-swatch'; nd.dataset.bin='nd';
+  nd.style.background='url(#ndhatch)'; nd.style.backgroundColor=getCss('--nodata');
+  nd.setAttribute('aria-label','No sample data. Hover to isolate, click to lock.');
+  nd.addEventListener('pointerenter', ()=>{ if(state.bandLock==null) applyBand('nd'); });
+  nd.addEventListener('pointerleave', ()=>{ if(state.bandLock==null) clearBand(); });
+  nd.addEventListener('click', ()=> toggleBandLock('nd'));
+  ramp.appendChild(nd);
+
+  // ticks: show lo, the 6 breakpoints (sparse), hi
+  ticks.innerHTML='';
+  const tickVals=[lo, t[1], t[3], t[5], hi];
+  for(const tv of tickVals){
+    const s=document.createElement('span'); s.textContent=fmt0(tv); ticks.appendChild(s);
+  }
+}
+
+function applyBand(bin){ geoG.setAttribute('data-bandlock', String(bin)); }
+function clearBand(){ if(state.bandLock==null) geoG.removeAttribute('data-bandlock'); }
+function toggleBandLock(bin){
+  if(state.bandLock===bin){ clearBandLock(); return; }
+  state.bandLock=bin; geoG.setAttribute('data-bandlock', String(bin));
+  [...ramp.children].forEach(b=> b.setAttribute('aria-pressed', b.dataset.bin===String(bin)?'true':'false'));
+  $('#legendLock').classList.add('show');
+}
+function clearBandLock(){
+  state.bandLock=null; geoG.removeAttribute('data-bandlock');
+  [...ramp.children].forEach(b=> b.removeAttribute('aria-pressed'));
+  $('#legendLock').classList.remove('show');
+}
+$('#legendLock').addEventListener('click', clearBandLock);
+
+/* ===========================================================================
+   HOVER / TOOLTIP / OUTLINE
+   =========================================================================== */
+function countyFromEvent(e){
+  const el = e.target.closest('.county'); if(!el) return null;
+  return state.byId.get(el.dataset.id);
+}
+function onCountyOver(e){ const c=countyFromEvent(e); if(c){ state.hoverId=c.id; outlineHover(c.id); showTip(c, e); syncRowHot(c.id); } }
+function onCountyMove(e){ const c=countyFromEvent(e); if(c) showTip(c, e); }
+function onCountyOut(e){
+  const c=countyFromEvent(e); const to=e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.county');
+  if(!to){ state.hoverId=null; hlG.innerHTML=''; hideTip(); syncRowHot(null); }
+}
+function outlineHover(id){
+  const c=state.byId.get(id); if(!c){ hlG.innerHTML=''; return; }
+  hlG.innerHTML = `<path d="${c.d}"/>`;
+}
+function showTip(c, e){
+  const m=METRIC_BY_ID[state.metric];
+  const v=c.vals[m.id];
+  const rank = v==null ? null : rankOf(c, m);
+  const sw = v==null ? '' : `<span class="swatch" style="background:${m.ramp[c.bin[m.id]]}"></span>`;
+  tip.innerHTML =
+    `<div class="name">${esc(c.name)}</div>
+     <div class="state">${esc(c.stateName)}</div>
+     <div class="row"><span class="lbl">${esc(m.name)}</span>
+       <span class="val">${v==null?'<span class="nd">No sample data</span>':sw+fmt(v)}</span></div>
+     ${v==null?'':`<div class="rank">Rank <strong>${ordinal(rank)}</strong> of ${state.totalRanked.toLocaleString()} · ${pctileText(rank)}</div>`}`;
+  positionTip(e);
+  tip.classList.add('show'); tip.setAttribute('aria-hidden','false');
+}
+function positionTip(e){
+  const r=mapview.getBoundingClientRect();
+  let x=e.clientX-r.left+14, y=e.clientY-r.top+14;
+  const tw=tip.offsetWidth||200, th=tip.offsetHeight||110;
+  if(x+tw > r.width-8) x=e.clientX-r.left-tw-14;
+  if(y+th > r.height-8) y=e.clientY-r.top-th-14;
+  tip.style.left=Math.max(8,x)+'px'; tip.style.top=Math.max(8,y)+'px';
+}
+function hideTip(){ tip.classList.remove('show'); tip.setAttribute('aria-hidden','true'); }
+
+/* ===========================================================================
+   RANKING
+   =========================================================================== */
+function rankedForMetric(m){
+  return state.counties.filter(c=>c.vals[m.id]!=null)
+    .sort((a,b)=> b.vals[m.id]-a.vals[m.id]);
+}
+function rankOf(c, m){
+  if(!state._rankCache || state._rankCacheMetric!==m.id){
+    const arr=rankedForMetric(m);
+    state._rankCache=new Map(arr.map((cc,i)=>[cc.id,i+1]));
+    state._rankCacheMetric=m.id;
+    state.totalRanked=arr.length;
+  }
+  return state._rankCache.get(c.id);
+}
+function pctileText(rank){
+  const pct = 100*(state.totalRanked-rank)/(state.totalRanked-1);
+  return `${Math.round(pct)}th pctile`;
+}
+
+/* ===========================================================================
+   RANKED LIST (side rail) — keyboard-navigable accessible parallel
+   =========================================================================== */
+function buildRanked(){
+  const m=METRIC_BY_ID[state.metric];
+  rankOf({id:'__warm'}, m);   // warm rank cache + totalRanked
+  let list = state.counties.slice();
+
+  // search filter
+  const q=state.query.trim().toLowerCase();
+  if(q) list = list.filter(c=> c.searchKey.includes(q));
+
+  // sort
+  if(state.sortKey==='value'){
+    const dir = state.sortDir==='desc'?-1:1;
+    list.sort((a,b)=>{
+      const av=a.vals[m.id], bv=b.vals[m.id];
+      if(av==null && bv==null) return a.name.localeCompare(b.name);
+      if(av==null) return 1; if(bv==null) return -1;       // no-data always last
+      return (av-bv)*dir;
+    });
+  }else{
+    const dir = state.nameDir==='asc'?1:-1;
+    list.sort((a,b)=> a.name.localeCompare(b.name)*dir || a.stateName.localeCompare(b.stateName));
+  }
+  state.ranked=list;
+  renderRankedList();
+}
+
+function renderRankedList(){
+  const m=METRIC_BY_ID[state.metric];
+  rankcount.textContent = `${state.ranked.length.toLocaleString()} shown`;
+
+  if(state.ranked.length===0){
+    ranklist.innerHTML =
+      `<li class="ranklist__empty">
+        <svg viewBox="0 0 30 30" aria-hidden="true"><circle cx="13" cy="13" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <div>No county matches “${esc(state.query)}”.</div>
+        <button type="button" id="emptyClear">Clear search</button>
+      </li>`;
+    $('#emptyClear').addEventListener('click', resetSearch);
+    return;
+  }
+
+  // Render at most 400 rows for DOM weight; the full set is searchable/sortable.
+  const CAP=400;
+  const rows=state.ranked.slice(0,CAP);
+  const frag=document.createDocumentFragment();
+  for(const c of rows){
+    const v=c.vals[m.id];
+    const li=document.createElement('li');
+    li.className='rrow';
+    li.setAttribute('role','option');
+    li.tabIndex=-1;
+    li.dataset.id=c.id;
+    if(c.id===state.pinId){ li.classList.add('pinned'); li.setAttribute('aria-selected','true'); }
+    const rk = v==null ? '—' : ordinal(rankOf(c,m));
+    const sw = v==null
+      ? `<span class="sw" style="background:url(#ndhatch);background-color:${getCss('--nodata')}"></span>`
+      : `<span class="sw" style="background:${m.ramp[c.bin[m.id]]}"></span>`;
+    const val = v==null ? `<span class="v nd">no data</span>` : `<span class="v tnum">${fmt(v)}</span>`;
+    li.innerHTML =
+      `<span class="rk tnum">${typeof rk==='string'?rk:rk}</span>
+       ${sw}
+       <span class="nm"><span class="c">${esc(c.name)}</span><span class="s">${esc(c.stateName)}</span></span>
+       ${val}`;
+    frag.appendChild(li);
+  }
+  ranklist.innerHTML='';
+  ranklist.appendChild(frag);
+  if(state.ranked.length>CAP){
+    const more=document.createElement('li');
+    more.className='ranklist__empty'; more.style.padding='14px';
+    more.innerHTML=`<div style="font-size:var(--fs-2xs)">+ ${(state.ranked.length-CAP).toLocaleString()} more — refine with search to see them.</div>`;
+    ranklist.appendChild(more);
+  }
+}
+
+/* keyboard nav over rows */
+ranklist.addEventListener('keydown', e=>{
+  const rows=[...ranklist.querySelectorAll('.rrow')];
+  if(!rows.length) return;
+  const cur=document.activeElement.closest? document.activeElement.closest('.rrow'):null;
+  let i=cur?rows.indexOf(cur):-1;
+  if(e.key==='ArrowDown'){ e.preventDefault(); i=Math.min(rows.length-1,i+1); rows[i].focus(); scrollRowIntoView(rows[i]); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); i=Math.max(0,i-1); rows[i].focus(); scrollRowIntoView(rows[i]); }
+  else if(e.key==='Home'){ e.preventDefault(); rows[0].focus(); scrollRowIntoView(rows[0]); }
+  else if(e.key==='End'){ e.preventDefault(); rows[rows.length-1].focus(); scrollRowIntoView(rows[rows.length-1]); }
+  else if(e.key==='Enter'||e.key===' '){ if(cur){ e.preventDefault(); pinCounty(cur.dataset.id, {frame:true}); } }
+});
+function scrollRowIntoView(el){ el.scrollIntoView({block:'nearest'}); }
+
+ranklist.addEventListener('click', e=>{
+  const row=e.target.closest('.rrow'); if(!row) return;
+  pinCounty(row.dataset.id, {frame:true});
+});
+ranklist.addEventListener('pointerover', e=>{
+  const row=e.target.closest('.rrow'); if(!row) return;
+  state.hoverId=row.dataset.id; outlineHover(row.dataset.id);
+});
+ranklist.addEventListener('pointerout', e=>{
+  const row=e.target.closest('.rrow'); if(row){ hlG.innerHTML=''; state.hoverId=null; }
+});
+
+function syncRowHot(id){
+  ranklist.querySelectorAll('.rrow.hot').forEach(r=>r.classList.remove('hot'));
+  if(id){ const r=ranklist.querySelector(`.rrow[data-id="${id}"]`); if(r) r.classList.add('hot'); }
+}
+
+/* sort buttons */
+$('#sortValue').addEventListener('click', ()=>{
+  if(state.sortKey==='value'){ state.sortDir = state.sortDir==='desc'?'asc':'desc'; }
+  else state.sortKey='value';
+  updateSortUI(); buildRanked();
+});
+$('#sortName').addEventListener('click', ()=>{
+  if(state.sortKey==='name'){ state.nameDir = state.nameDir==='asc'?'desc':'asc'; }
+  else state.sortKey='name';
+  updateSortUI(); buildRanked();
+});
+function updateSortUI(){
+  const sv=$('#sortValue'), sn=$('#sortName');
+  sv.setAttribute('aria-pressed', state.sortKey==='value'?'true':'false');
+  sn.setAttribute('aria-pressed', state.sortKey==='name'?'true':'false');
+  sv.classList.toggle('desc', state.sortKey==='value'&&state.sortDir==='desc');
+  sn.classList.toggle('desc', state.sortKey==='name'&&state.nameDir==='desc');
+}
+
+/* ===========================================================================
+   PIN / DETAIL PANEL
+   =========================================================================== */
+function onCountyClick(e){ const c=countyFromEvent(e); if(c) pinCounty(c.id, {frame:false}); }
+
+function pinCounty(id, {frame=false}={}){
+  const c=state.byId.get(id); if(!c) return;
+  state.pinId=id;
+  pinG.innerHTML = `<path d="${c.d}"/>`;
+  renderDetail(c);
+  detail.classList.add('is-pinned');
+  // sheet scrim on mobile
+  if(window.matchMedia('(max-width:620px)').matches){ $('#sheetScrim').classList.add('show'); }
+  // mark row
+  ranklist.querySelectorAll('.rrow.pinned').forEach(r=>{r.classList.remove('pinned');r.removeAttribute('aria-selected');});
+  const row=ranklist.querySelector(`.rrow[data-id="${id}"]`);
+  if(row){ row.classList.add('pinned'); row.setAttribute('aria-selected','true'); scrollRowIntoView(row); }
+  if(frame) frameCounty(c);
+  announce();
+}
+function renderDetail(c){
+  const m=METRIC_BY_ID[state.metric];
+  const v=c.vals[m.id];
+  $('#d-name').textContent=c.name;
+  $('#d-state').textContent=c.stateName;
+  const big=$('#d-value');
+  if(v==null){ big.textContent='No sample data'; big.classList.add('nd'); $('#d-unit').textContent=''; }
+  else{ big.textContent=fmt(v); big.classList.remove('nd'); $('#d-unit').textContent=m.unit; }
+  // rank
+  if(v==null){ $('#d-rank').textContent='—'; $('#d-rank-of').textContent='no rank'; }
+  else{ const rk=rankOf(c,m); $('#d-rank').textContent='#'+rk.toLocaleString(); $('#d-rank-of').textContent='of '+state.totalRanked.toLocaleString(); }
+  // percentile strip
+  const bar=$('#d-pctbar'), mark=$('#d-pctmark');
+  bar.style.background=`linear-gradient(90deg,${m.ramp[0]},${m.ramp[m.ramp.length-1]})`;
+  if(v==null){ mark.style.display='none'; $('#d-pcttext').textContent='no rank'; }
+  else{
+    mark.style.display='block';
+    const rk=rankOf(c,m); const pct=100*(state.totalRanked-rk)/(state.totalRanked-1);
+    mark.style.left=`calc(${Math.max(0,Math.min(100,pct))}% - 1.5px)`;
+    $('#d-pcttext').textContent=`${ordinal(rk)} highest`;
+  }
+  // small multiples — all three metrics
+  const sm=$('#d-sm'); sm.innerHTML='';
+  for(const mm of METRICS){
+    const mv=c.vals[mm.id];
+    const cur = mm.id===state.metric;
+    const pct = mv==null?0:Math.max(2,mv);
+    const fillColor = mv==null? getCss('--nodata') : mm.ramp[Math.min(BINS-1, c.bin[mm.id]==='nd'?0:c.bin[mm.id])];
+    const swColor = mm.ramp[4];
+    sm.insertAdjacentHTML('beforeend',
+      `<div class="sm__row">
+         <span class="sm__name"><span class="sw" style="background:${swColor}"></span>${esc(mm.short)}${cur?' ·':''}</span>
+         <span class="sm__track"><span class="sm__fill" style="background:${fillColor};transform:scaleX(${pct/100})"></span></span>
+         <span class="sm__val ${mv==null?'nd':'tnum'}">${mv==null?'n/a':fmt(mv)}</span>
+       </div>`);
+  }
+}
+$('#unpin').addEventListener('click', unpin);
+$('#sheetScrim').addEventListener('click', unpin);
+function unpin(){
+  state.pinId=null; pinG.innerHTML='';
+  detail.classList.remove('is-pinned');
+  $('#sheetScrim').classList.remove('show');
+  ranklist.querySelectorAll('.rrow.pinned').forEach(r=>{r.classList.remove('pinned');r.removeAttribute('aria-selected');});
+  announce();
+}
+
+/* ===========================================================================
+   ZOOM / PAN (hand-rolled, clamped) — transforms #vp group
+   =========================================================================== */
+const zoomState={ k:1, x:0, y:0, min:1, max:9 };
+function applyTransform(animate){
+  if(animate && !prefersReduced()){
+    vp.style.transition='transform .2s cubic-bezier(.16,1,.3,1)';
+    clearTimeout(applyTransform._t);
+    applyTransform._t=setTimeout(()=>{vp.style.transition='';},220);
+  }
+  vp.setAttribute('transform', `translate(${zoomState.x} ${zoomState.y}) scale(${zoomState.k})`);
+}
+function clampPan(){
+  // keep scaled content covering the frame: x in [VIEW_W*(1-k), 0]
+  zoomState.x=Math.min(0, Math.max(VIEW_W-VIEW_W*zoomState.k, zoomState.x));
+  zoomState.y=Math.min(0, Math.max(VIEW_H-VIEW_H*zoomState.k, zoomState.y));
+}
+function zoomBy(factor, ox, oy){
+  const k0=zoomState.k;
+  let k=Math.min(zoomState.max, Math.max(zoomState.min, k0*factor));
+  if(k===k0) return;
+  // zoom toward (ox,oy) in view coords
+  if(ox==null){ ox=VIEW_W/2; oy=VIEW_H/2; }
+  zoomState.x = ox - (ox - zoomState.x)*(k/k0);
+  zoomState.y = oy - (oy - zoomState.y)*(k/k0);
+  zoomState.k = k;
+  clampPan(); applyTransform(true);
+}
+function svgPoint(clientX, clientY){
+  const r=mapsvg.getBoundingClientRect();
+  return [ (clientX-r.left)/r.width*VIEW_W, (clientY-r.top)/r.height*VIEW_H ];
+}
+$('#zoomIn').addEventListener('click', ()=>zoomBy(1.6));
+$('#zoomOut').addEventListener('click', ()=>zoomBy(1/1.6));
+$('#zoomReset').addEventListener('click', ()=>{ zoomState.k=1; zoomState.x=0; zoomState.y=0; applyTransform(true); });
+
+mapview.addEventListener('wheel', e=>{
+  e.preventDefault();
+  const [ox,oy]=svgPoint(e.clientX,e.clientY);
+  zoomBy(e.deltaY<0?1.18:1/1.18, ox, oy);
+}, {passive:false});
+
+// drag pan
+let drag=null;
+mapview.addEventListener('pointerdown', e=>{
+  if(e.target.closest('.zbtn')) return;
+  drag={x:e.clientX,y:e.clientY,ox:zoomState.x,oy:zoomState.y,moved:false};
+  mapview.setPointerCapture(e.pointerId);
+  mapview.classList.add('dragging');
+});
+mapview.addEventListener('pointermove', e=>{
+  if(!drag) return;
+  const r=mapsvg.getBoundingClientRect();
+  const dx=(e.clientX-drag.x)/r.width*VIEW_W, dy=(e.clientY-drag.y)/r.height*VIEW_H;
+  if(Math.abs(e.clientX-drag.x)+Math.abs(e.clientY-drag.y)>3) drag.moved=true;
+  zoomState.x=drag.ox+dx; zoomState.y=drag.oy+dy;
+  clampPan(); applyTransform(false);
+});
+mapview.addEventListener('pointerup', e=>{
+  if(drag){ mapview.classList.remove('dragging'); drag=null; }
+});
+mapview.addEventListener('pointercancel', ()=>{ if(drag){mapview.classList.remove('dragging'); drag=null;} });
+
+/* frame a county: zoom to fit its bbox with padding */
+function frameCounty(c){
+  const bb=path.bounds(c.feature);            // [[x0,y0],[x1,y1]]
+  const w=bb[1][0]-bb[0][0], h=bb[1][1]-bb[0][1];
+  const cx=(bb[0][0]+bb[1][0])/2, cy=(bb[0][1]+bb[1][1])/2;
+  const pad=2.2;
+  let k=Math.min(zoomState.max, Math.max(2.2, 0.55*Math.min(VIEW_W/(w*pad), VIEW_H/(h*pad))));
+  if(!isFinite(k)||k<=0) k=4;
+  zoomState.k=k;
+  zoomState.x=VIEW_W/2 - cx*k;
+  zoomState.y=VIEW_H/2 - cy*k;
+  clampPan(); applyTransform(true);
+}
+
+/* ===========================================================================
+   SEARCH
+   =========================================================================== */
+const searchInput=$('#search'), searchbox=$('#searchbox');
+searchInput.addEventListener('input', debounce(()=>{
+  state.query=searchInput.value;
+  searchbox.classList.toggle('has-val', !!searchInput.value);
+  searchInput.setAttribute('aria-expanded', state.query?'true':'false');
+  // dim map non-matches
+  if(state.query.trim()){
+    const q=state.query.trim().toLowerCase();
+    let n=0;
+    for(const c of state.counties){
+      const match=c.searchKey.includes(q);
+      c.el.classList.toggle('match', match);
+      if(match) n++;
+    }
+    geoG.setAttribute('data-dim', n? 'search':'search');
+  }else{
+    state.counties.forEach(c=>c.el.classList.remove('match'));
+    geoG.removeAttribute('data-dim');
+  }
+  buildRanked();
+}, 120));
+
+searchInput.addEventListener('keydown', e=>{
+  if(e.key==='Enter'){
+    e.preventDefault();
+    const top=state.ranked[0];
+    if(top){ pinCounty(top.id,{frame:true}); }
+  }
+  if(e.key==='ArrowDown' && state.ranked.length){
+    e.preventDefault(); const r=ranklist.querySelector('.rrow'); if(r) r.focus();
+  }
+});
+$('#clearSearch').addEventListener('click', resetSearch);
+function resetSearch(){
+  searchInput.value=''; state.query='';
+  searchbox.classList.remove('has-val'); searchInput.setAttribute('aria-expanded','false');
+  state.counties.forEach(c=>c.el.classList.remove('match'));
+  geoG.removeAttribute('data-dim');
+  buildRanked(); searchInput.focus();
+}
+
+/* ===========================================================================
+   A11Y live summary
+   =========================================================================== */
+function announce(){
+  const m=METRIC_BY_ID[state.metric];
+  rankOf({id:'__warm'}, m);
+  const arr=rankedForMetric(m);
+  const top=arr[0], bot=arr[arr.length-1];
+  const nd=state.counties.filter(c=>c.vals[m.id]==null).length;
+  let s=`Showing ${m.name}, a synthetic sample indicator, across ${arr.length.toLocaleString()} counties. `+
+        `Highest: ${top.name}, ${top.stateName}, ${fmt(top.vals[m.id])}. `+
+        `Lowest: ${bot.name}, ${bot.stateName}, ${fmt(bot.vals[m.id])}. `+
+        `${nd} counties have no sample data. `;
+  if(state.pinId){ const c=state.byId.get(state.pinId);
+    s+=`Pinned: ${c.name}, ${c.stateName}, ${c.vals[m.id]==null?'no sample data':fmt(c.vals[m.id])+', rank '+rankOf(c,m)}. `;
+  }
+  $('#data-summary').textContent=s;
+}
+
+/* ===========================================================================
+   UTIL
+   =========================================================================== */
+function esc(s){ return String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch])); }
+function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; }
+function prefersReduced(){ return window.matchMedia('(prefers-reduced-motion:reduce)').matches; }
+
+/* retry */
+$('#retryBtn').addEventListener('click', ()=>{
+  elError.hidden=true; elLoading.hidden=false;
+  init();
+});
+
+/* recompute seg pill + tooltip clamp on resize (map is viewBox so it auto-scales) */
+window.addEventListener('resize', debounce(()=>{ positionSegPill(); }, 100));
+
+function wireGlobalEvents(){
+  updateSortUI();
+}
+</script>
+</body>
+</html>

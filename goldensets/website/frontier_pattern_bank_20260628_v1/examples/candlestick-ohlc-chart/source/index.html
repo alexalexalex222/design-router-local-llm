@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>SAMPLE — Synthetic OHLC Candlestick · Pattern 74</title>
+<meta name="description" content="A candlestick / OHLC financial chart with a volume subplot, MA overlays, dataZoom and a cross-hair tooltip. All data is synthetic (seeded random walk) — not real market data." />
+<style>
+  /* ============================================================
+     DESIGN TOKENS  (define before building — build only from tokens)
+     ============================================================ */
+  :root {
+    /* Neutral ramp (dark) — 4+ steps */
+    --n-950:#080b10;
+    --n-900:#0d1117;
+    --n-850:#11161d;
+    --n-800:#161d26;
+    --n-750:#1b2330;
+    --n-700:#243042;
+    --n-600:#33415a;
+    --n-500:#4a5871;
+    --n-400:#6b788f;
+    --n-300:#9aa6b4;
+    --n-200:#c3ccd8;
+    --n-100:#e6ecf3;
+
+    /* Semantic surface + text roles */
+    --bg:            var(--n-950);
+    --panel:         var(--n-850);
+    --panel-2:       var(--n-800);   /* elevated surface */
+    --border:        var(--n-700);
+    --border-soft:   #1a2230;
+    --text:          var(--n-100);
+    --text-muted:    var(--n-300);
+    --text-faint:    #8b97a8;        /* AA-safe faint */
+
+    /* Brand / focus */
+    --accent:        #4ea1ff;
+    --focus:         #7cc0ff;
+
+    /* Semantic up / down — COLORBLIND-SAFE pair (blue vs amber, Okabe-Ito family).
+       Direction is ALSO conveyed by ▲/▼ glyph + the word "Up"/"Down" everywhere,
+       so meaning never rests on hue alone. */
+    --up:            #4ea1ff;        /* bullish (close >= open) */
+    --down:          #ffa94d;        /* bearish (close <  open) */
+    --up-weak:       rgba(78,161,255,0.16);
+    --down-weak:     rgba(255,169,77,0.16);
+
+    /* Moving-average palette — distinct from up/down and from each other */
+    --ma5:           #cdb4ff;
+    --ma10:          #ff9ed8;
+    --ma20:          #7ee0c8;
+    --ma30:          #ffe08a;
+
+    /* Type scale — ratio-locked (~1.25) fluid clamp(); body >= 16px */
+    --fs-xs:   clamp(0.75rem, 0.72rem + 0.16vw, 0.8125rem);
+    --fs-sm:   clamp(0.8125rem, 0.78rem + 0.18vw, 0.875rem);
+    --fs-base: clamp(1rem, 0.97rem + 0.18vw, 1.0625rem);
+    --fs-md:   clamp(1.0625rem, 1rem + 0.4vw, 1.1875rem);
+    --fs-lg:   clamp(1.3125rem, 1.18rem + 0.65vw, 1.625rem);
+    --fs-xl:   clamp(1.85rem, 1.5rem + 1.7vw, 2.75rem);
+
+    /* Spacing — 4px scale */
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px;
+    --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px; --sp-16:64px;
+
+    /* Radii */
+    --r-sm:7px; --r-md:11px; --r-lg:18px; --r-pill:999px;
+
+    /* Elevation (<=3 tiers) */
+    --e-1: 0 1px 2px rgba(0,0,0,0.4);
+    --e-2: 0 18px 48px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.4);
+
+    /* Motion */
+    --dur-1:150ms; --dur-2:220ms;
+    --ease: cubic-bezier(0.2,0.6,0.2,1);
+
+    /* Typography stacks (tuned system stacks — perf-critical, offline-safe surface) */
+    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body { max-width: 100%; overflow-x: hidden; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background:
+      radial-gradient(1100px 620px at 82% -8%, rgba(78,161,255,0.10), transparent 60%),
+      radial-gradient(900px 560px at 6% 108%, rgba(255,169,77,0.07), transparent 58%),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: var(--fs-base);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1;
+  }
+
+  .num { font-family: var(--font-mono); font-feature-settings: "tnum" 1, "zero" 1; font-variant-numeric: tabular-nums; }
+
+  /* Skip link */
+  .skip {
+    position: absolute; left: var(--sp-3); top: -48px;
+    background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--r-sm);
+    padding: var(--sp-2) var(--sp-4); z-index: 50;
+    transition: top var(--dur-1) var(--ease);
+  }
+  .skip:focus-visible { top: var(--sp-3); }
+
+  /* Focus ring */
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--r-sm); }
+
+  .wrap {
+    max-width: 1180px;
+    margin-inline: auto;
+    padding: clamp(var(--sp-5), 2.5vw, var(--sp-12)) clamp(var(--sp-4), 3vw, var(--sp-8)) var(--sp-12);
+  }
+
+  /* ---- Page header ---- */
+  .pagehead { margin-bottom: clamp(var(--sp-5), 2.5vw, var(--sp-8)); max-width: 64ch; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: var(--sp-2);
+    font-size: var(--fs-xs); letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--text-muted); font-weight: 600;
+    margin: 0 0 var(--sp-3);
+  }
+  .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+  h1 {
+    font-size: var(--fs-xl); line-height: 1.05; letter-spacing: -0.02em;
+    margin: 0 0 var(--sp-3); font-weight: 700;
+  }
+  h1 .accent { color: var(--accent); }
+  .lead { margin: 0; color: var(--text-muted); font-size: var(--fs-md); max-width: 60ch; }
+
+  /* ============================================================
+     CHART PANEL  (the focal point)
+     ============================================================ */
+  .panel {
+    position: relative;
+    background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 140%);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--e-2);
+    overflow: hidden;
+  }
+  .panel::before { /* hairline top highlight */
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent);
+    pointer-events: none;
+  }
+
+  .panel-head {
+    display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between;
+    gap: var(--sp-4);
+    padding: clamp(var(--sp-4), 2.4vw, var(--sp-6)) clamp(var(--sp-4), 2.4vw, var(--sp-6)) var(--sp-4);
+  }
+  .pair { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+  .pair-top { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; }
+  .symbol { font-size: var(--fs-lg); font-weight: 700; letter-spacing: -0.01em; }
+  .pair-sub { font-size: var(--fs-sm); color: var(--text-muted); }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: var(--sp-2);
+    font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: #ffd9a8;
+    background: var(--down-weak);
+    border: 1px solid rgba(255,169,77,0.42);
+    border-radius: var(--r-pill);
+    padding: 5px var(--sp-3);
+    white-space: nowrap;
+  }
+  .badge svg { display: block; }
+
+  .quote { display: flex; flex-direction: column; align-items: flex-end; gap: var(--sp-2); text-align: right; }
+  .last { font-size: var(--fs-lg); font-weight: 700; letter-spacing: -0.01em; }
+  .change {
+    display: inline-flex; align-items: center; gap: var(--sp-2);
+    font-size: var(--fs-sm); font-weight: 600;
+    border-radius: var(--r-pill); padding: 4px var(--sp-3);
+    border: 1px solid transparent;
+  }
+  .change.up   { color: var(--up);   background: var(--up-weak);   border-color: rgba(78,161,255,0.35); }
+  .change.down { color: var(--down); background: var(--down-weak); border-color: rgba(255,169,77,0.35); }
+  .change.flat { color: var(--text-muted); background: rgba(255,255,255,0.05); border-color: var(--border); }
+  .change .arrow { font-size: 0.85em; line-height: 1; }
+  .change .sr { font-weight: 700; }
+
+  /* ---- Toolbar: legend + controls ---- */
+  .toolbar {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: var(--sp-3) var(--sp-4);
+    padding: 0 clamp(var(--sp-4), 2.4vw, var(--sp-6)) var(--sp-4);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .legend { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+  .chip {
+    display: inline-flex; align-items: center; gap: var(--sp-2);
+    font: inherit; font-size: var(--fs-sm); font-weight: 600; color: var(--text);
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-pill);
+    padding: 7px var(--sp-3); min-height: 34px;
+    cursor: pointer;
+    transition: background var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease),
+                color var(--dur-1) var(--ease), opacity var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
+  }
+  .chip:hover { border-color: var(--n-600); background: var(--n-750); }
+  .chip:active { transform: translateY(1px); }
+  .chip .swatch { display: inline-flex; }
+  .chip[aria-pressed="false"] { opacity: 0.46; color: var(--text-muted); }
+  .chip[aria-pressed="false"] .swatch { filter: grayscale(0.85) opacity(0.8); }
+
+  .controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); }
+
+  .seg { display: inline-flex; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--r-pill); padding: 3px; }
+  .seg button {
+    font: inherit; font-size: var(--fs-sm); font-weight: 600; color: var(--text-muted);
+    background: transparent; border: 0; border-radius: var(--r-pill);
+    padding: 6px var(--sp-3); min-height: 32px; cursor: pointer;
+    transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+  }
+  .seg button:hover { color: var(--text); }
+  .seg button[aria-pressed="true"] { background: var(--accent); color: #06121f; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: var(--sp-2);
+    font: inherit; font-size: var(--fs-sm); font-weight: 600; color: var(--text);
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--r-pill);
+    padding: 6px var(--sp-3); min-height: 34px; cursor: pointer;
+    transition: background var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease), opacity var(--dur-1) var(--ease);
+  }
+  .btn:hover:not(:disabled) { border-color: var(--n-600); background: var(--n-750); }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn svg { display: block; }
+  .seed { font-size: var(--fs-xs); color: var(--text-faint); white-space: nowrap; }
+  .seed .num { color: var(--text-muted); }
+
+  /* ---- Chart canvas + overlays ---- */
+  .chart-stage { position: relative; padding: var(--sp-2) var(--sp-2) 0; }
+  #chart {
+    width: 100%;
+    height: 520px;
+    outline: none;
+  }
+  #chart:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; border-radius: var(--r-md); }
+
+  .overlay {
+    position: absolute; inset: 0;
+    display: grid; place-content: center; justify-items: center; gap: var(--sp-3);
+    text-align: center; padding: var(--sp-6);
+    background: linear-gradient(180deg, rgba(13,17,23,0.35), rgba(13,17,23,0.66));
+    backdrop-filter: blur(1px);
+  }
+  .overlay[hidden] { display: none; }
+  .overlay .ov-icon { color: var(--text-faint); }
+  .overlay .ov-title { font-size: var(--fs-md); font-weight: 700; color: var(--text); }
+  .overlay .ov-sub { font-size: var(--fs-sm); color: var(--text-muted); max-width: 38ch; }
+  .overlay.error .ov-icon { color: var(--down); }
+
+  /* ---- Panel footer note ---- */
+  .panel-foot {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-4);
+    padding: var(--sp-4) clamp(var(--sp-4), 2.4vw, var(--sp-6));
+    border-top: 1px solid var(--border-soft);
+    font-size: var(--fs-xs); color: var(--text-faint);
+  }
+  .panel-foot strong { color: var(--text-muted); font-weight: 700; }
+  .panel-foot .sep { width: 4px; height: 4px; border-radius: 50%; background: var(--n-600); }
+
+  /* Page footer */
+  .pagefoot { margin-top: var(--sp-6); color: var(--text-faint); font-size: var(--fs-xs); line-height: 1.6; }
+  .pagefoot a { color: var(--text-muted); }
+
+  .vh { /* visually hidden, available to AT */
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 760px) {
+    .quote { align-items: flex-start; text-align: left; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .controls { justify-content: space-between; }
+  }
+  @media (max-width: 560px) {
+    #chart { height: 460px; }
+    .panel-head { gap: var(--sp-3); }
+  }
+  @media (max-width: 380px) {
+    .controls { gap: var(--sp-2); }
+    .btn .btn-label { display: none; } /* icon-only buttons on very small screens */
+    .btn { padding: 7px; }
+  }
+
+  /* ---- Reduced motion ---- */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+</style>
+</head>
+<body>
+  <a class="skip" href="#chart">Skip to the chart</a>
+
+  <main class="wrap" id="main">
+    <header class="pagehead">
+      <p class="eyebrow"><span class="dot" aria-hidden="true"></span> Dataviz · Pattern 74 / 100</p>
+      <h1>Candlestick&nbsp;<span class="accent">/ OHLC</span> financial chart</h1>
+      <p class="lead">Read any period's open, high, low, close and volume — hover for the cross-hair tooltip, drag the range to zoom. Every value below is <strong>synthetic</strong>, generated by a seeded random walk in your browser.</p>
+    </header>
+
+    <!-- ===================== CHART PANEL ===================== -->
+    <section class="panel" aria-label="Synthetic OHLC candlestick chart">
+      <div class="panel-head">
+        <div class="pair">
+          <div class="pair-top">
+            <span class="symbol num">SYNTH&#8202;/&#8202;USD</span>
+            <span class="badge" title="This series is synthetic, not real market data">
+              <svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 9v4"/><path d="M12 17h.01"/>
+                <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/>
+              </svg>
+              Synthetic data
+            </span>
+          </div>
+          <span class="pair-sub">Sample instrument · seeded random walk · daily bars · not investment advice</span>
+        </div>
+
+        <div class="quote">
+          <span class="last num" id="lastPrice" aria-live="polite">—</span>
+          <span class="change flat" id="changePill">
+            <span class="arrow" aria-hidden="true">•</span>
+            <span class="num" id="changeText">—</span>
+            <span class="sr vh" id="changeSr"></span>
+          </span>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="legend" id="legend" role="group" aria-label="Toggle chart series"></div>
+
+        <div class="controls">
+          <div class="seg" role="group" aria-label="Choose dataset">
+            <button type="button" id="modeSample" aria-pressed="true">Sample data</button>
+            <button type="button" id="modeEmpty" aria-pressed="false">Empty</button>
+          </div>
+          <button type="button" class="btn" id="btnRegen" title="Generate a new synthetic series">
+            <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/>
+              <path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/>
+            </svg>
+            <span class="btn-label">Regenerate</span>
+          </button>
+          <button type="button" class="btn" id="btnReset" title="Reset the zoom range">
+            <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7V4h3"/><path d="M21 7V4h-3"/><path d="M3 17v3h3"/><path d="M21 17v3h-3"/>
+              <rect x="7" y="8" width="10" height="8" rx="1.5"/>
+            </svg>
+            <span class="btn-label">Reset zoom</span>
+          </button>
+          <span class="seed">seed <span class="num" id="seedVal">—</span></span>
+        </div>
+      </div>
+
+      <div class="chart-stage">
+        <!-- ECharts mounts here. role=img + label so screen readers get a summary; tabindex makes it keyboard-focusable. -->
+        <div id="chart" tabindex="0" role="img"
+             aria-label="Candlestick chart of a synthetic OHLC price series with a volume subplot and moving-average overlays. Use the tooltip or the data table for exact values."></div>
+
+        <!-- EMPTY STATE -->
+        <div class="overlay empty" id="ovEmpty" hidden>
+          <svg class="ov-icon" width="42" height="42" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 3v18h18"/><path d="M7 16l3-3 3 2 4-5" stroke-dasharray="2 2.5" opacity="0.6"/>
+          </svg>
+          <div class="ov-title">No data to display</div>
+          <div class="ov-sub">The empty dataset was loaded. The axes remain, but there are no bars to plot. Switch to <strong>Sample data</strong> to render the chart.</div>
+        </div>
+
+        <!-- ERROR STATE (charting library failed to load) -->
+        <div class="overlay error" id="ovError" hidden>
+          <svg class="ov-icon" width="42" height="42" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/><path d="M12 8v4.5"/><path d="M12 16h.01"/>
+          </svg>
+          <div class="ov-title">Couldn't load the chart library</div>
+          <div class="ov-sub">The Apache ECharts CDN script didn't load. Check your network connection and reload the page.</div>
+        </div>
+      </div>
+
+      <!-- Accessible data fallback: latest bars as a real table (also a no-JS / non-visual path) -->
+      <table class="vh" id="dataTable">
+        <caption>Latest synthetic OHLCV bars (most recent first)</caption>
+        <thead><tr><th>Date</th><th>Direction</th><th>Open</th><th>High</th><th>Low</th><th>Close</th><th>Volume</th></tr></thead>
+        <tbody id="dataTableBody"></tbody>
+      </table>
+
+      <div class="panel-foot">
+        <strong>Synthetic data</strong>
+        <span class="sep" aria-hidden="true"></span>
+        <span>generated client-side by a seeded mulberry32 random walk</span>
+        <span class="sep" aria-hidden="true"></span>
+        <span>not a real instrument · not real prices · not investment advice</span>
+        <span class="sep" aria-hidden="true"></span>
+        <span>rendered with Apache ECharts 5.5.1</span>
+      </div>
+    </section>
+
+    <footer class="pagefoot">
+      <p>Build target: spec [74/100] Candlestick / OHLC Financial Chart. Data integrity: the OHLC series shown is <strong>not</strong> real market data and is <strong>not</strong> tied to any real company or ticker — it is a deterministic synthetic walk seeded in code and clearly labeled as such throughout the UI.</p>
+    </footer>
+  </main>
+
+  <!-- Apache ECharts — pinned version, jsDelivr CDN. onerror flags a load failure for the error state. -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"
+          crossorigin="anonymous"
+          onerror="window.__chartLibFailed = true;"></script>
+
+  <script>
+  (function () {
+    "use strict";
+
+    /* ---------- token mirror (ECharts needs JS values) ---------- */
+    var C = {
+      up:'#4ea1ff', down:'#ffa94d',
+      volUp:'rgba(78,161,255,0.50)', volDown:'rgba(255,169,77,0.50)',
+      text:'#e6ecf3', muted:'#9aa6b4', faint:'#8b97a8',
+      panel:'#11161d', panel2:'#161d26', border:'#243042',
+      split:'rgba(255,255,255,0.045)', axis:'rgba(255,255,255,0.14)',
+      ma:{ 5:'#cdb4ff', 10:'#ff9ed8', 20:'#7ee0c8', 30:'#ffe08a' }
+    };
+    var FONT_SANS = 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+    var FONT_MONO = 'ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace';
+
+    var MA_PERIODS = [5, 10, 20, 30];
+    var N_BARS = 200;
+    var ZOOM_START = 45;          // default visible window: last ~55%
+    var REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* ---------- state ---------- */
+    var chart = null;
+    var current = null;           // {dates, candles, volumes, ma:{5:[],...}}
+    var seed = 73074;             // deterministic default seed (pattern 73-074, mnemonic only)
+    var mode = 'data';            // 'data' | 'empty'
+    var legendSel = { Candles:true, MA5:true, MA10:true, MA20:true, MA30:true };
+
+    var EMPTY = { dates:[], candles:[], volumes:[], ma:{ 5:[],10:[],20:[],30:[] } };
+
+    /* ============================================================
+       DATA — seeded synthetic OHLC (random walk). No real prices.
+       ============================================================ */
+    function mulberry32(a) {
+      return function () {
+        a |= 0; a = (a + 0x6D2B79F5) | 0;
+        var t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+    function r2(x) { return Math.round(x * 100) / 100; }
+    function pad2(n) { return (n < 10 ? '0' : '') + n; }
+    function isoOf(d) { return d.getUTCFullYear() + '-' + pad2(d.getUTCMonth() + 1) + '-' + pad2(d.getUTCDate()); }
+
+    function generate(seedVal, n) {
+      var rnd = mulberry32(seedVal >>> 0);
+      var dates = [], candles = [], volumes = [];
+      var prevClose = 120 + rnd() * 50;                 // synthetic start 120–170
+      var day = new Date(Date.UTC(2024, 0, 1));
+      while (candles.length < n) {
+        var wd = day.getUTCDay();
+        if (wd !== 0 && wd !== 6) {                      // weekdays only, to read like trading days
+          var open = prevClose;
+          var cycle = Math.sin(candles.length / 21) * 0.25;   // gentle multi-week swings
+          var shock = rnd() - 0.5;                              // mean-zero noise
+          var ret = shock * 0.022 + cycle * 0.0045;            // daily log-ish return
+          var close = Math.max(2, open * (1 + ret));
+          var bodyHalf = open * (0.004 + rnd() * 0.012);       // wick reach beyond body
+          var high = Math.max(open, close) + rnd() * bodyHalf * 1.8;
+          var low  = Math.min(open, close) - rnd() * bodyHalf * 1.8;
+          var vol  = Math.round(1.2e6 + rnd() * 4.0e6 + Math.abs(ret) * 8.0e7); // spikes on big moves
+          dates.push(isoOf(day));
+          candles.push([r2(open), r2(close), r2(low), r2(high)]); // [open, close, low, high]
+          volumes.push(vol);
+          prevClose = close;
+        }
+        day = new Date(day.getTime() + 86400000);
+      }
+      return { dates: dates, candles: candles, volumes: volumes };
+    }
+
+    // Trailing simple moving average of CLOSE; null until the window fills (no spurious leading zero).
+    function calcMA(period, candles) {
+      var out = [];
+      for (var i = 0; i < candles.length; i++) {
+        if (i < period - 1) { out.push(null); continue; }
+        var sum = 0;
+        for (var j = 0; j < period; j++) { sum += candles[i - j][1]; }
+        out.push(r2(sum / period));
+      }
+      return out;
+    }
+
+    function buildData(seedVal) {
+      var d = generate(seedVal, N_BARS);
+      d.ma = {};
+      for (var k = 0; k < MA_PERIODS.length; k++) { d.ma[MA_PERIODS[k]] = calcMA(MA_PERIODS[k], d.candles); }
+      return d;
+    }
+
+    /* ============================================================
+       FORMATTERS
+       ============================================================ */
+    var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var WEEK   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+    function fmtPrice(v) { return (v == null) ? '—' : Number(v).toFixed(2); }
+    function fmtAxisDate(s) {
+      var p = String(s).split('-');
+      if (p.length < 3) return String(s);
+      return MONTHS[(+p[1]) - 1] + ' ' + (+p[2]);
+    }
+    function fmtFullDate(s) {
+      var d = new Date(s + 'T00:00:00Z');
+      if (isNaN(d.getTime())) return String(s);
+      return WEEK[d.getUTCDay()] + ', ' + MONTHS[d.getUTCMonth()] + ' ' + d.getUTCDate() + ', ' + d.getUTCFullYear();
+    }
+    function fmtVol(n) {
+      if (n == null) return '—';
+      var a = Math.abs(n);
+      if (a >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+      if (a >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+      if (a >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+      return String(n);
+    }
+
+    /* ============================================================
+       TOOLTIP  — reads from `current` by dataIndex => always matches the bar.
+       States direction in WORDS (not colour alone). Shows only visible MAs.
+       ============================================================ */
+    function tooltipFormatter(params) {
+      if (!params || !params.length || !current || !current.candles.length) return '';
+      var i = params[0].dataIndex;
+      var c = current.candles[i];
+      if (!c) return '';
+      var open = c[0], close = c[1], low = c[2], high = c[3];
+      var vol = current.volumes[i];
+      var up = close >= open;
+      var dirWord = up ? 'Up' : 'Down';
+      var dirArrow = up ? '▲' : '▼';
+      var dirCol = up ? C.up : C.down;
+
+      var prevClose = (i > 0) ? current.candles[i - 1][1] : open;
+      var chg = close - prevClose;
+      var chgPct = prevClose ? (chg / prevClose * 100) : 0;
+      var chgUp = chg >= 0;
+      var chgCol = chgUp ? C.up : C.down;
+      var chgArrow = chgUp ? '▲' : '▼';
+
+      function row(label, val, col) {
+        return '<div style="display:flex;justify-content:space-between;gap:18px;line-height:1.7">' +
+          '<span style="color:' + C.muted + '">' + label + '</span>' +
+          '<span style="font-family:' + FONT_MONO + ';font-variant-numeric:tabular-nums;color:' + (col || C.text) + '">' + val + '</span>' +
+          '</div>';
+      }
+
+      var html = '' +
+        '<div style="min-width:204px;padding:11px 13px;font-size:12px">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:8px">' +
+            '<span style="color:' + C.text + ';font-weight:700">' + fmtFullDate(current.dates[i]) + '</span>' +
+            '<span style="display:inline-flex;align-items:center;gap:5px;font-weight:700;color:' + dirCol + '">' +
+              '<span style="font-size:10px">' + dirArrow + '</span>' + dirWord +
+            '</span>' +
+          '</div>' +
+          '<div style="height:1px;background:' + C.border + ';margin:0 0 8px"></div>' +
+          row('Open', fmtPrice(open)) +
+          row('High', fmtPrice(high)) +
+          row('Low', fmtPrice(low)) +
+          row('Close', fmtPrice(close), dirCol) +
+          row('Change', chgArrow + ' ' + (chgUp ? '+' : '') + chg.toFixed(2) + ' (' + (chgUp ? '+' : '') + chgPct.toFixed(2) + '%)', chgCol) +
+          '<div style="height:1px;background:' + C.border + ';margin:8px 0"></div>' +
+          row('Volume', fmtVol(vol));
+
+      // moving averages — only those currently toggled on, only where defined
+      var maRows = '';
+      for (var m = 0; m < MA_PERIODS.length; m++) {
+        var p = MA_PERIODS[m];
+        if (legendSel['MA' + p] === false) continue;
+        var v = current.ma[p][i];
+        if (v == null) continue;
+        maRows += '<div style="display:flex;justify-content:space-between;gap:18px;line-height:1.7">' +
+            '<span style="display:inline-flex;align-items:center;gap:7px;color:' + C.muted + '">' +
+              '<span style="width:14px;height:2px;border-radius:2px;background:' + C.ma[p] + '"></span>MA' + p +
+            '</span>' +
+            '<span style="font-family:' + FONT_MONO + ';color:' + C.text + '">' + fmtPrice(v) + '</span>' +
+          '</div>';
+      }
+      if (maRows) html += '<div style="height:1px;background:' + C.border + ';margin:8px 0"></div>' + maRows;
+
+      html += '</div>';
+      return html;
+    }
+
+    /* ============================================================
+       ECHARTS OPTION
+       ============================================================ */
+    function maSeries(period) {
+      return {
+        name: 'MA' + period,
+        type: 'line',
+        data: current ? current.ma[period] : [],
+        smooth: false,
+        showSymbol: false,
+        symbol: 'circle',
+        sampling: 'lttb',
+        lineStyle: { width: 1.4, color: C.ma[period] },
+        itemStyle: { color: C.ma[period] },
+        emphasis: { focus: 'series', lineStyle: { width: 2.2 } },
+        z: 3
+      };
+    }
+
+    function buildOption(data) {
+      current = data;
+      var dates   = data.dates;
+      var candles = data.candles;
+      var volumes = data.volumes;
+
+      // Per-bar volume colour matches its candle's direction (close >= open => up).
+      var volData = volumes.map(function (v, i) {
+        var up = candles[i][1] >= candles[i][0];
+        return { value: v, itemStyle: { color: up ? C.volUp : C.volDown } };
+      });
+
+      return {
+        backgroundColor: 'transparent',
+        animation: !REDUCE,
+        animationDuration: REDUCE ? 0 : 360,
+        animationEasing: 'cubicOut',
+        textStyle: { fontFamily: FONT_SANS, color: C.text },
+
+        // Hidden ECharts legend = the state machine; the visible legend is our styled HTML chips,
+        // which drive it via dispatchAction (legendSelect/legendUnSelect) — no full re-render.
+        legend: { show: false, data: ['Candles','MA5','MA10','MA20','MA30'], selected: Object.assign({}, legendSel) },
+
+        axisPointer: {
+          link: [{ xAxisIndex: 'all' }],
+          label: { backgroundColor: C.panel2, borderColor: C.border, borderWidth: 1, color: C.text, fontFamily: FONT_MONO }
+        },
+
+        tooltip: {
+          trigger: 'axis',
+          confine: true,
+          axisPointer: {
+            type: 'cross',
+            snap: true,
+            label: { backgroundColor: C.panel2, borderColor: C.border, color: C.text, fontFamily: FONT_MONO },
+            crossStyle: { color: C.faint, width: 1 },
+            lineStyle: { color: C.faint, width: 1, type: 'dashed' }
+          },
+          backgroundColor: 'rgba(22,29,38,0.97)',
+          borderColor: C.border,
+          borderWidth: 1,
+          padding: 0,
+          textStyle: { color: C.text, fontSize: 12 },
+          extraCssText: 'border-radius:12px; box-shadow:0 14px 36px rgba(0,0,0,0.55);',
+          formatter: tooltipFormatter
+        },
+
+        grid: [
+          { left: 12, right: 64, top: 16, height: '55%' },          // price (candles)
+          { left: 12, right: 64, top: '70%', height: '15%' }         // volume
+        ],
+
+        xAxis: [
+          {
+            type: 'category', data: dates, gridIndex: 0,
+            boundaryGap: true, min: 'dataMin', max: 'dataMax',
+            axisLine: { lineStyle: { color: C.axis } },
+            axisTick: { show: false },
+            axisLabel: { show: false },
+            splitLine: { show: false },
+            axisPointer: { z: 60 }
+          },
+          {
+            type: 'category', data: dates, gridIndex: 1,
+            boundaryGap: true, min: 'dataMin', max: 'dataMax',
+            axisLine: { lineStyle: { color: C.axis } },
+            axisTick: { show: false },
+            axisLabel: { show: true, color: C.muted, fontFamily: FONT_MONO, fontSize: 11, margin: 12, hideOverlap: true, formatter: fmtAxisDate },
+            splitLine: { show: false }
+          }
+        ],
+
+        yAxis: [
+          {
+            scale: true, gridIndex: 0, position: 'right', splitNumber: 4,
+            axisLine: { show: false }, axisTick: { show: false },
+            axisLabel: { color: C.muted, fontFamily: FONT_MONO, fontSize: 11, margin: 12, formatter: function (v) { return v.toFixed(2); } },
+            splitLine: { show: true, lineStyle: { color: C.split } }
+          },
+          {
+            gridIndex: 1, position: 'right', min: 0, splitNumber: 2,
+            axisLine: { show: false }, axisTick: { show: false },
+            axisLabel: { color: C.muted, fontFamily: FONT_MONO, fontSize: 10, margin: 12, formatter: fmtVol },
+            splitLine: { show: false }
+          }
+        ],
+
+        dataZoom: [
+          { type: 'inside', xAxisIndex: [0, 1], start: ZOOM_START, end: 100, minValueSpan: 8, zoomOnMouseWheel: true, moveOnMouseMove: true },
+          {
+            type: 'slider', xAxisIndex: [0, 1], start: ZOOM_START, end: 100, minValueSpan: 8,
+            bottom: 12, height: 22,
+            borderColor: 'transparent',
+            backgroundColor: 'rgba(255,255,255,0.02)',
+            fillerColor: 'rgba(78,161,255,0.12)',
+            dataBackground: { lineStyle: { color: C.border, width: 1 }, areaStyle: { color: 'rgba(255,255,255,0.04)' } },
+            selectedDataBackground: { lineStyle: { color: C.up, width: 1 }, areaStyle: { color: 'rgba(78,161,255,0.10)' } },
+            handleStyle: { color: C.panel2, borderColor: C.up, borderWidth: 1.5 },
+            moveHandleStyle: { color: C.border },
+            emphasis: { handleStyle: { borderColor: C.focus } },
+            handleSize: '110%',
+            textStyle: { color: C.muted, fontFamily: FONT_MONO, fontSize: 10 },
+            labelFormatter: function (val) {
+              var s;
+              if (typeof val === 'number') { s = current && current.dates[val]; } else { s = val; }
+              return s ? fmtAxisDate(s) : '';
+            }
+          }
+        ],
+
+        series: [
+          {
+            name: 'Candles',
+            type: 'candlestick',
+            data: candles,
+            barMaxWidth: 16,
+            itemStyle: {
+              color: C.up, color0: C.down,            // color = bullish (up), color0 = bearish (down)
+              borderColor: C.up, borderColor0: C.down,
+              borderWidth: 1
+            },
+            emphasis: { itemStyle: { borderWidth: 1.6 } },
+            z: 5
+          },
+          {
+            name: 'Volume',
+            type: 'bar',
+            xAxisIndex: 1, yAxisIndex: 1,
+            data: volData,
+            barWidth: '60%',
+            z: 2
+          },
+          maSeries(5), maSeries(10), maSeries(20), maSeries(30)
+        ]
+      };
+    }
+
+    /* ============================================================
+       LEGEND CHIPS (custom, styled, accessible)
+       ============================================================ */
+    function candleSwatch() {
+      return '<svg class="swatch" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">' +
+        '<line x1="4.5" y1="1.5" x2="4.5" y2="14.5" stroke="' + C.up + '" stroke-width="1.2"/>' +
+        '<rect x="2.5" y="4" width="4" height="6" rx="0.6" fill="' + C.up + '"/>' +
+        '<line x1="11.5" y1="2.5" x2="11.5" y2="15" stroke="' + C.down + '" stroke-width="1.2"/>' +
+        '<rect x="9.5" y="6" width="4" height="6" rx="0.6" fill="' + C.down + '"/>' +
+        '</svg>';
+    }
+    function lineSwatch(color) {
+      return '<svg class="swatch" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">' +
+        '<path d="M1 11 Q5 4 8 8 T15 5" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round"/>' +
+        '</svg>';
+    }
+
+    var CHIP_DEFS = [
+      { name: 'Candles', label: 'Candles', swatch: candleSwatch() },
+      { name: 'MA5',  label: 'MA5',  swatch: lineSwatch(C.ma[5]) },
+      { name: 'MA10', label: 'MA10', swatch: lineSwatch(C.ma[10]) },
+      { name: 'MA20', label: 'MA20', swatch: lineSwatch(C.ma[20]) },
+      { name: 'MA30', label: 'MA30', swatch: lineSwatch(C.ma[30]) }
+    ];
+
+    function buildLegend() {
+      var host = document.getElementById('legend');
+      host.innerHTML = '';
+      CHIP_DEFS.forEach(function (def) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'chip';
+        b.setAttribute('aria-pressed', String(legendSel[def.name] !== false));
+        b.dataset.name = def.name;
+        b.innerHTML = def.swatch + '<span>' + def.label + '</span>';
+        b.addEventListener('click', function () {
+          var on = !(legendSel[def.name] !== false);   // flip
+          legendSel[def.name] = on;
+          b.setAttribute('aria-pressed', String(on));
+          if (chart && mode === 'data') {
+            chart.dispatchAction({ type: on ? 'legendSelect' : 'legendUnSelect', name: def.name });
+          }
+        });
+        host.appendChild(b);
+      });
+    }
+
+    /* ============================================================
+       HEADER QUOTE + DATA TABLE
+       ============================================================ */
+    function updateQuote(data) {
+      var lastEl = document.getElementById('lastPrice');
+      var pill   = document.getElementById('changePill');
+      var txt    = document.getElementById('changeText');
+      var sr     = document.getElementById('changeSr');
+      var arrow  = pill.querySelector('.arrow');
+
+      if (!data || !data.candles.length) {
+        lastEl.textContent = '—';
+        pill.className = 'change flat';
+        arrow.textContent = '•';
+        txt.textContent = '—';
+        sr.textContent = 'No data loaded';
+        return;
+      }
+      var n = data.candles.length;
+      var last = data.candles[n - 1][1];
+      var prev = n > 1 ? data.candles[n - 2][1] : data.candles[n - 1][0];
+      var chg = last - prev;
+      var pct = prev ? (chg / prev * 100) : 0;
+      var up = chg >= 0;
+
+      lastEl.textContent = last.toFixed(2);
+      pill.className = 'change ' + (chg === 0 ? 'flat' : (up ? 'up' : 'down'));
+      arrow.textContent = chg === 0 ? '•' : (up ? '▲' : '▼');
+      txt.textContent = (up ? '+' : '') + chg.toFixed(2) + '  (' + (up ? '+' : '') + pct.toFixed(2) + '%)';
+      sr.textContent = (up ? 'Up' : 'Down') + ' ' + Math.abs(chg).toFixed(2) + ', ' + Math.abs(pct).toFixed(2) + ' percent versus the previous bar';
+    }
+
+    function updateTable(data) {
+      var body = document.getElementById('dataTableBody');
+      body.innerHTML = '';
+      if (!data || !data.candles.length) return;
+      var rows = Math.min(12, data.candles.length);
+      for (var k = 0; k < rows; k++) {
+        var i = data.candles.length - 1 - k;
+        var c = data.candles[i];
+        var up = c[1] >= c[0];
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + data.dates[i] + '</td><td>' + (up ? 'Up' : 'Down') + '</td>' +
+          '<td>' + c[0].toFixed(2) + '</td><td>' + c[3].toFixed(2) + '</td>' +
+          '<td>' + c[2].toFixed(2) + '</td><td>' + c[1].toFixed(2) + '</td>' +
+          '<td>' + data.volumes[i] + '</td>';
+        body.appendChild(tr);
+      }
+    }
+
+    /* ============================================================
+       OVERLAYS + CONTROL ENABLEMENT
+       ============================================================ */
+    function showOverlay(kind) {
+      document.getElementById('ovEmpty').hidden = (kind !== 'empty');
+      document.getElementById('ovError').hidden = (kind !== 'error');
+    }
+    function setDataControlsDisabled(disabled) {
+      document.getElementById('btnRegen').disabled = disabled;
+      document.getElementById('btnReset').disabled = disabled;
+      var chips = document.querySelectorAll('#legend .chip');
+      for (var i = 0; i < chips.length; i++) {
+        chips[i].disabled = disabled;
+        chips[i].style.opacity = disabled ? '' : '';
+      }
+    }
+
+    /* ============================================================
+       RENDER
+       ============================================================ */
+    var loadingOpts = {
+      text: 'Generating synthetic series…',
+      color: C.up, textColor: C.muted,
+      maskColor: 'rgba(13,17,23,0.55)',
+      fontSize: 13, fontFamily: FONT_SANS,
+      spinnerRadius: 9, lineWidth: 3, showSpinner: !REDUCE
+    };
+
+    var renderGen = 0;   // guards against a stale loading-timer overwriting newer state
+
+    function render(withLoading) {
+      var gen = ++renderGen;
+
+      if (mode === 'empty') {
+        chart.hideLoading();
+        chart.setOption(buildOption(EMPTY), true);
+        showOverlay('empty');
+        updateQuote(null);
+        updateTable(null);
+        setDataControlsDisabled(true);
+        return;
+      }
+
+      setDataControlsDisabled(false);
+      showOverlay('none');
+
+      var apply = function () {
+        if (gen !== renderGen) return;                // superseded by a newer render — newer one owns the state
+        var data = buildData(seed);
+        chart.setOption(buildOption(data), true);     // notMerge: legend.selected is baked from legendSel
+        updateQuote(data);
+        updateTable(data);
+        document.getElementById('seedVal').textContent = seed;
+        chart.hideLoading();
+      };
+
+      if (withLoading && !REDUCE) {
+        chart.showLoading('default', loadingOpts);
+        setTimeout(apply, 600);
+      } else {
+        apply();
+      }
+    }
+
+    /* ============================================================
+       WIRING
+       ============================================================ */
+    function debounce(fn, ms) {
+      var t;
+      return function () { clearTimeout(t); t = setTimeout(fn, ms); };
+    }
+
+    function setMode(next) {
+      mode = next;
+      document.getElementById('modeSample').setAttribute('aria-pressed', String(next === 'data'));
+      document.getElementById('modeEmpty').setAttribute('aria-pressed', String(next === 'empty'));
+      render(next === 'data');   // shimmer only when (re)loading sample data
+    }
+
+    function init() {
+      var el = document.getElementById('chart');
+
+      if (window.__chartLibFailed || typeof echarts === 'undefined') {
+        showOverlay('error');
+        setDataControlsDisabled(true);
+        document.getElementById('modeSample').disabled = true;
+        document.getElementById('modeEmpty').disabled = true;
+        return;
+      }
+
+      buildLegend();
+
+      try {
+        chart = echarts.init(el, null, { renderer: 'canvas' });
+      } catch (err) {
+        showOverlay('error');
+        setDataControlsDisabled(true);
+        return;
+      }
+
+      // controls
+      document.getElementById('modeSample').addEventListener('click', function () { if (mode !== 'data') setMode('data'); });
+      document.getElementById('modeEmpty').addEventListener('click', function () { if (mode !== 'empty') setMode('empty'); });
+      document.getElementById('btnRegen').addEventListener('click', function () {
+        seed = Math.floor(Math.random() * 900000) + 100000;   // new seed (still a seeded, reproducible walk)
+        render(true);
+      });
+      document.getElementById('btnReset').addEventListener('click', function () {
+        if (!chart || mode !== 'data') return;
+        chart.dispatchAction({ type: 'dataZoom', batch: [
+          { dataZoomIndex: 0, start: ZOOM_START, end: 100 },
+          { dataZoomIndex: 1, start: ZOOM_START, end: 100 }
+        ]});
+      });
+
+      // responsive resize
+      var doResize = debounce(function () { if (chart) chart.resize(); }, 120);
+      window.addEventListener('resize', doResize);
+      if (window.ResizeObserver) { new ResizeObserver(doResize).observe(el); }
+
+      render(true);   // first paint with brief loading shimmer
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+  </script>
+</body>
+</html>

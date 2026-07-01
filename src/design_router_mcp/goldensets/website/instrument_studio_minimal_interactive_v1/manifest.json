@@ -1,0 +1,64 @@
+{
+  "pack_id": "instrument_studio_minimal_interactive_v1",
+  "role": "anchor",
+  "family": "website.interactive_experience",
+  "source_paths": [
+    "source_snapshot/index.html",
+    "source_snapshot/styles.css",
+    "source_snapshot/extracted_patterns.md"
+  ],
+  "origin_example_ids": [
+    "instrument-studio-interactive"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "website"
+  ],
+  "tones": [
+    "dark",
+    "minimal",
+    "interactive",
+    "studio",
+    "quiet",
+    "experimental",
+    "premium"
+  ],
+  "surfaces": [
+    "homepage",
+    "hero",
+    "landing",
+    "section",
+    "full_site"
+  ],
+  "motif_tags": [
+    "interactive_stage",
+    "minimal_centerpiece",
+    "instrument_control",
+    "motion_surface",
+    "sound_studio",
+    "hero_shell",
+    "microcopy"
+  ],
+  "supports_tasks": [
+    "interactive_tool_landing",
+    "browser_instrument_app",
+    "creative_studio_interface",
+    "audio_visual_demo",
+    "single_screen_experience",
+    "minimal_web_app_hero"
+  ],
+  "anti_patterns": [
+    "multi-section marketing padding",
+    "fake feature grids",
+    "instructions that crowd the instrument",
+    "copying exact synth controls",
+    "nonfunctional decorative controls"
+  ],
+  "screenshot_paths": [
+    "screenshots/desktop-1512x812.png",
+    "screenshots/mobile-390x844.png"
+  ],
+  "token_budget_hint": 6200,
+  "confidence_score": 5
+}

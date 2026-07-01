@@ -1,0 +1,126 @@
+<!--
+  testimonial_block_v1
+  Pair with snippet.css. Fonts: Lora (display) + Inter (body).
+
+  DATA INTEGRITY ATOM. This component exists partly to MODEL honest placeholders.
+  Every quote, name, and role is a bracketed placeholder: [TESTIMONIAL_QUOTE],
+  [CUSTOMER_NAME], [ROLE]. NEVER replace these with invented words. The portrait
+  is a bespoke inline-SVG monogram frame, NOT a photo — so nothing about a real
+  person is fabricated either.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<section class="quotes" aria-labelledby="quotes-title">
+  <div class="quotes__inner">
+    <header class="quotes__head">
+      <span class="quotes__kicker">In their words</span>
+      <h2 class="quotes__title" id="quotes-title">What clients say — once you have real quotes to show.</h2>
+      <p class="quotes__note">
+        Placeholder content only. Replace each <code>[TESTIMONIAL_QUOTE]</code>,
+        <code>[CUSTOMER_NAME]</code>, and <code>[ROLE]</code> with a verbatim,
+        consented quote from a real client. Do not paraphrase or invent.
+      </p>
+    </header>
+
+    <ul class="quotes__grid" role="list">
+      <li>
+        <figure class="quote">
+          <svg class="quote__mark" viewBox="0 0 48 36" width="40" height="30" aria-hidden="true" focusable="false">
+            <path d="M0 36 V20 C0 9 7 1 19 0 V8 C12 9 9 13 9 19 H20 V36 Z M28 36 V20 C28 9 35 1 47 0 V8 C40 9 37 13 37 19 H48 V36 Z" fill="currentColor"/>
+          </svg>
+          <blockquote class="quote__body">
+            <p>[TESTIMONIAL_QUOTE]</p>
+          </blockquote>
+          <figcaption class="quote__cite">
+            <span class="quote__portrait" aria-hidden="true">
+              <!-- Bespoke SVG monogram frame (no photo). [INITIALS] = client initials. -->
+              <svg viewBox="0 0 72 72" width="56" height="56" role="img" aria-label="Monogram placeholder">
+                <defs>
+                  <linearGradient id="q1-ring" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="var(--c-portrait-1)"/>
+                    <stop offset="1" stop-color="var(--c-portrait-2)"/>
+                  </linearGradient>
+                </defs>
+                <circle cx="36" cy="36" r="33" fill="none" stroke="url(#q1-ring)" stroke-width="3"/>
+                <circle cx="36" cy="36" r="27" fill="var(--c-portrait-fill)"/>
+                <text x="36" y="37" text-anchor="middle" dominant-baseline="central"
+                      font-family="Lora, Georgia, serif" font-size="24" font-weight="600"
+                      fill="var(--c-portrait-text)">[INITIALS]</text>
+              </svg>
+            </span>
+            <span class="quote__who">
+              <span class="quote__name">[CUSTOMER_NAME]</span>
+              <span class="quote__role">[ROLE]</span>
+            </span>
+          </figcaption>
+        </figure>
+      </li>
+
+      <li>
+        <figure class="quote quote--featured">
+          <svg class="quote__mark" viewBox="0 0 48 36" width="40" height="30" aria-hidden="true" focusable="false">
+            <path d="M0 36 V20 C0 9 7 1 19 0 V8 C12 9 9 13 9 19 H20 V36 Z M28 36 V20 C28 9 35 1 47 0 V8 C40 9 37 13 37 19 H48 V36 Z" fill="currentColor"/>
+          </svg>
+          <blockquote class="quote__body">
+            <p>[TESTIMONIAL_QUOTE]</p>
+          </blockquote>
+          <figcaption class="quote__cite">
+            <span class="quote__portrait" aria-hidden="true">
+              <svg viewBox="0 0 72 72" width="56" height="56" role="img" aria-label="Monogram placeholder">
+                <defs>
+                  <linearGradient id="q2-ring" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="var(--c-portrait-1)"/>
+                    <stop offset="1" stop-color="var(--c-portrait-2)"/>
+                  </linearGradient>
+                </defs>
+                <circle cx="36" cy="36" r="33" fill="none" stroke="url(#q2-ring)" stroke-width="3"/>
+                <circle cx="36" cy="36" r="27" fill="var(--c-portrait-fill)"/>
+                <text x="36" y="37" text-anchor="middle" dominant-baseline="central"
+                      font-family="Lora, Georgia, serif" font-size="24" font-weight="600"
+                      fill="var(--c-portrait-text)">[INITIALS]</text>
+              </svg>
+            </span>
+            <span class="quote__who">
+              <span class="quote__name">[CUSTOMER_NAME]</span>
+              <span class="quote__role">[ROLE]</span>
+            </span>
+          </figcaption>
+        </figure>
+      </li>
+
+      <li>
+        <figure class="quote">
+          <svg class="quote__mark" viewBox="0 0 48 36" width="40" height="30" aria-hidden="true" focusable="false">
+            <path d="M0 36 V20 C0 9 7 1 19 0 V8 C12 9 9 13 9 19 H20 V36 Z M28 36 V20 C28 9 35 1 47 0 V8 C40 9 37 13 37 19 H48 V36 Z" fill="currentColor"/>
+          </svg>
+          <blockquote class="quote__body">
+            <p>[TESTIMONIAL_QUOTE]</p>
+          </blockquote>
+          <figcaption class="quote__cite">
+            <span class="quote__portrait" aria-hidden="true">
+              <svg viewBox="0 0 72 72" width="56" height="56" role="img" aria-label="Monogram placeholder">
+                <defs>
+                  <linearGradient id="q3-ring" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="var(--c-portrait-1)"/>
+                    <stop offset="1" stop-color="var(--c-portrait-2)"/>
+                  </linearGradient>
+                </defs>
+                <circle cx="36" cy="36" r="33" fill="none" stroke="url(#q3-ring)" stroke-width="3"/>
+                <circle cx="36" cy="36" r="27" fill="var(--c-portrait-fill)"/>
+                <text x="36" y="37" text-anchor="middle" dominant-baseline="central"
+                      font-family="Lora, Georgia, serif" font-size="24" font-weight="600"
+                      fill="var(--c-portrait-text)">[INITIALS]</text>
+              </svg>
+            </span>
+            <span class="quote__who">
+              <span class="quote__name">[CUSTOMER_NAME]</span>
+              <span class="quote__role">[ROLE]</span>
+            </span>
+          </figcaption>
+        </figure>
+      </li>
+    </ul>
+  </div>
+</section>

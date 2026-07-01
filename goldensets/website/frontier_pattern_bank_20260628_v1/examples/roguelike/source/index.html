@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Cathode Crawl — a turn-based procedural roguelike rendered on a green-phosphor CRT terminal. Descend the Nine Depths, fight monsters, recover the Phosphor Core.">
+<title>Cathode Crawl // DV-80 Phosphor Terminal</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS  (build only from these)
+   ============================================================ */
+:root{
+  /* spacing — 4px scale */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  /* radii */
+  --r-sm:6px; --r-md:12px; --r-lg:20px; --r-xl:28px;
+  /* fluid type scale (ratio-locked, body >=16px) */
+  --fs-2xs:clamp(10px,.62rem + .15vw,12px);
+  --fs-xs: clamp(12px,.72rem + .2vw,13px);
+  --fs-sm: clamp(13px,.8rem + .2vw,14px);
+  --fs-md: clamp(15px,.9rem + .3vw,16px);
+  --fs-lg: clamp(18px,1rem + .8vw,22px);
+  --fs-xl: clamp(26px,1.4rem + 2.4vw,46px);
+  --fs-2xl:clamp(34px,1.6rem + 5vw,72px);
+  /* bezel / chassis (plastic + metal — hue-independent of phosphor) */
+  --bezel:#171a1c; --bezel-2:#1e2225; --bezel-hi:#30363a; --bezel-lo:#090b0c;
+  --metal:#363c40; --metal-hi:#5b6469; --metal-lo:#191d1f;
+  --plate:#22282b; --screw:#4a5256;
+  /* phosphor — overwritten by JS applyPalette() per mode */
+  --scr-bg:#04130c;
+  --ph-dim:#1c5232;
+  --ph-mid:#36b366;
+  --ph-lit:#5fe08c;
+  --ph-bright:#c8ffdc;
+  --ph-glow:rgba(72,220,130,.55);
+  --ph-faint:rgba(72,220,130,.10);
+  --danger:#ff5a5a;
+  --warn:#ffb454;
+  --gold:#ffd75f;
+  --cyan:#54e6ff;
+  /* elevation */
+  --e1:0 1px 2px rgba(0,0,0,.5);
+  --e2:0 6px 18px rgba(0,0,0,.5);
+  --e3:0 20px 60px rgba(0,0,0,.6);
+  /* motion */
+  --dur:180ms; --dur-fast:130ms; --ease:cubic-bezier(.2,.7,.2,1);
+  --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Mono",Menlo,Consolas,"DejaVu Sans Mono",monospace;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  min-height:100svh;
+  font-family:var(--mono);
+  color:var(--ph-mid);
+  background:
+    radial-gradient(120% 90% at 50% -10%, #14181b 0%, #0a0d0f 45%, #050708 100%);
+  display:flex; align-items:center; justify-content:center;
+  padding:clamp(8px,2vw,28px);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* skip link */
+.skip{
+  position:absolute; left:50%; top:8px; transform:translate(-50%,-160%);
+  background:var(--ph-bright); color:#03150b; font-weight:700;
+  padding:10px 16px; border-radius:var(--r-sm); z-index:50; font-size:var(--fs-sm);
+  text-decoration:none; transition:transform var(--dur) var(--ease);
+}
+.skip:focus-visible{transform:translate(-50%,0)}
+
+/* ============================================================
+   CHASSIS / BEZEL
+   ============================================================ */
+.cabinet{
+  width:min(1060px,100%);
+  background:
+    linear-gradient(180deg,var(--bezel-2),var(--bezel) 55%, #101314);
+  border-radius:var(--r-xl);
+  padding:clamp(12px,2.4vw,26px);
+  box-shadow:
+    var(--e3),
+    inset 0 1px 0 var(--bezel-hi),
+    inset 0 0 0 1px #000,
+    inset 0 -2px 6px rgba(0,0,0,.7);
+  position:relative;
+}
+/* moulded outer lip */
+.cabinet::before{
+  content:""; position:absolute; inset:6px; border-radius:calc(var(--r-xl) - 6px);
+  pointer-events:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04), inset 0 0 0 1px rgba(0,0,0,.5);
+}
+
+/* top deck: nameplate + controls */
+.deck{
+  display:flex; align-items:center; gap:var(--s3);
+  padding:0 var(--s2) var(--s4);
+  flex-wrap:wrap;
+}
+.brand{display:flex; align-items:center; gap:var(--s3); min-width:0}
+.power-led{
+  width:11px; height:11px; border-radius:50%; flex:none;
+  background:radial-gradient(circle at 35% 30%, var(--ph-bright), var(--ph-mid) 55%, #0c3a20 100%);
+  box-shadow:0 0 10px var(--ph-glow), 0 0 2px var(--ph-lit), inset 0 0 2px rgba(0,0,0,.4);
+}
+.nameplate{
+  display:flex; flex-direction:column; line-height:1.05; min-width:0;
+}
+.nameplate b{
+  font-size:var(--fs-sm); letter-spacing:.16em; color:#cfd6d9; font-weight:700;
+  text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.nameplate span{
+  font-size:var(--fs-2xs); letter-spacing:.22em; color:#6b7479; text-transform:uppercase;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.deck-spacer{flex:1 1 auto}
+.deck-controls{display:flex; gap:var(--s2); align-items:center}
+
+/* chassis buttons (toggles in the deck) */
+.chip{
+  font-family:var(--mono); font-size:var(--fs-2xs); letter-spacing:.12em; text-transform:uppercase;
+  color:#aeb6ba; background:linear-gradient(180deg,#2a3033,#1a1f21);
+  border:1px solid #000; border-top-color:var(--bezel-hi);
+  border-radius:var(--r-sm); padding:9px 12px; min-height:38px; cursor:pointer;
+  display:inline-flex; align-items:center; gap:7px;
+  box-shadow:var(--e1), inset 0 1px 0 rgba(255,255,255,.05);
+  transition:transform var(--dur-fast) var(--ease), color var(--dur) var(--ease),
+             box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.chip:hover{color:#fff; border-top-color:var(--metal-hi)}
+.chip:active{transform:translateY(1px)}
+.chip[aria-pressed="true"]{
+  color:var(--ph-bright);
+  box-shadow:inset 0 0 0 1px var(--ph-mid), 0 0 12px var(--ph-faint);
+  border-color:var(--ph-dim);
+}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor;flex:none}
+.chip svg{width:15px;height:15px;flex:none}
+
+/* corner screws */
+.screw{position:absolute; width:13px; height:13px; border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, var(--metal-hi), var(--metal) 60%, var(--metal-lo));
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.6), var(--e1); z-index:2}
+.screw::after{content:""; position:absolute; inset:3px; border-radius:1px;
+  background:linear-gradient(90deg,transparent 44%, rgba(0,0,0,.55) 44% 56%, transparent 56%)}
+.screw.tl{top:14px;left:14px} .screw.tr{top:14px;right:14px}
+.screw.bl{bottom:14px;left:14px} .screw.br{bottom:14px;right:14px}
+
+/* ============================================================
+   LAYOUT: screen (focal) + rail + log
+   ============================================================ */
+.console{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 17.5rem;
+  grid-template-areas:"screen rail" "log rail";
+  gap:var(--s4);
+}
+.screen{grid-area:screen}
+.rail{grid-area:rail; display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.log-wrap{grid-area:log}
+
+/* ---------- the CRT screen ---------- */
+.screen{
+  position:relative;
+  aspect-ratio:4/3;
+  background:
+    radial-gradient(120% 130% at 50% 42%, var(--scr-bg) 60%, #010604 100%);
+  border-radius:var(--r-lg);
+  overflow:hidden;
+  box-shadow:
+    inset 0 0 0 2px #000,
+    inset 0 0 22px rgba(0,0,0,.9),
+    inset 0 0 80px color-mix(in srgb, var(--ph-mid) 12%, transparent),
+    0 2px 0 rgba(255,255,255,.03);
+  outline:none;
+  border:1px solid #000;
+}
+.screen:focus-visible{
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--ph-mid) 80%, transparent),
+    inset 0 0 24px rgba(0,0,0,.8),
+    inset 0 0 70px color-mix(in srgb, var(--ph-mid) 16%, transparent),
+    0 0 0 3px var(--ph-faint);
+}
+.canvas-fit{position:absolute; inset:0; display:grid; place-items:center}
+#view{
+  display:block; image-rendering:auto;
+  filter:saturate(1.05);
+}
+.screen.boot #view{animation:boot 460ms var(--ease) both}
+@keyframes boot{
+  0%{opacity:0; transform:scaleY(.4) scaleX(1.02); filter:brightness(2) saturate(.4)}
+  35%{opacity:1; transform:scaleY(1.04) scaleX(.995); filter:brightness(1.6)}
+  100%{opacity:1; transform:none; filter:saturate(1.05)}
+}
+
+/* CRT overlays */
+.crt{position:absolute; inset:0; pointer-events:none; z-index:3; border-radius:var(--r-lg)}
+.crt.scan{
+  background:repeating-linear-gradient(0deg,
+    rgba(0,0,0,0) 0, rgba(0,0,0,0) 1.5px,
+    rgba(0,0,0,.16) 1.5px, rgba(0,0,0,.16) 3px);
+  mix-blend-mode:multiply; opacity:.6;
+  animation:scandrift 9s linear infinite;
+}
+@keyframes scandrift{from{background-position:0 0}to{background-position:0 6px}}
+.crt.mask{
+  background:
+    radial-gradient(130% 120% at 50% 50%, transparent 52%, rgba(0,0,0,.34) 78%, rgba(0,0,0,.72) 100%);
+}
+.crt.glow{
+  box-shadow:inset 0 0 60px color-mix(in srgb, var(--ph-mid) 10%, transparent);
+  background:radial-gradient(80% 60% at 50% 22%, color-mix(in srgb, var(--ph-mid) 6%, transparent), transparent 60%);
+}
+.crt.flick{background:var(--ph-mid); opacity:0; mix-blend-mode:screen; animation:flick 7s steps(1) infinite}
+@keyframes flick{
+  0%,97%,100%{opacity:0} 97.5%{opacity:.018} 98.5%{opacity:.045} 99%{opacity:.01}
+}
+
+/* ============================================================
+   RAIL: stats + inventory + pad
+   ============================================================ */
+.panel{
+  background:linear-gradient(180deg,#0c1113,#080b0c);
+  border:1px solid #000; border-top-color:#222a2d;
+  border-radius:var(--r-md);
+  padding:var(--s4);
+  box-shadow:var(--e2), inset 0 1px 0 rgba(255,255,255,.03);
+}
+.panel-title{
+  font-size:var(--fs-2xs); letter-spacing:.24em; text-transform:uppercase;
+  color:#6e777b; margin:0 0 var(--s3); display:flex; align-items:center; gap:8px;
+}
+.panel-title::after{content:""; flex:1; height:1px; background:linear-gradient(90deg,#2a3437,transparent)}
+
+/* stat rows */
+.stat{display:flex; align-items:center; gap:var(--s3); margin-bottom:var(--s3)}
+.stat:last-child{margin-bottom:0}
+.stat .ic{width:20px;height:20px;flex:none;color:var(--ph-mid)}
+.stat .body{flex:1; min-width:0}
+.stat .lbl{display:flex; justify-content:space-between; font-size:var(--fs-2xs);
+  letter-spacing:.1em; text-transform:uppercase; color:#7e878b; margin-bottom:5px}
+.stat .num{color:var(--ph-bright); font-variant-numeric:tabular-nums; font-weight:700}
+.bar{height:9px; border-radius:99px; background:#05100a; overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.7)}
+.bar > i{display:block; height:100%; border-radius:99px; width:0%;
+  transition:width var(--dur) var(--ease), background var(--dur) var(--ease);
+  background:linear-gradient(90deg, var(--ph-mid), var(--ph-lit));
+  box-shadow:0 0 8px var(--ph-glow)}
+.bar.hp > i{background:linear-gradient(90deg,#2fa85f,#5fe08c)}
+.bar.hp.warn > i{background:linear-gradient(90deg,#c98a1f,#ffce5a); box-shadow:0 0 8px rgba(255,180,60,.5)}
+.bar.hp.low > i{background:linear-gradient(90deg,#b5343a,#ff6a6a); box-shadow:0 0 8px rgba(255,90,90,.55)}
+.bar.xp > i{background:linear-gradient(90deg,#2a8fb8,#54e6ff); box-shadow:0 0 8px rgba(84,230,255,.45)}
+
+.chiprow{display:flex; gap:var(--s2); margin-top:var(--s2)}
+.minichip{
+  flex:1; text-align:center; font-size:var(--fs-2xs); letter-spacing:.08em;
+  text-transform:uppercase; color:#8a9296; padding:7px 4px; border-radius:var(--r-sm);
+  background:#0a1011; border:1px solid #000; border-top-color:#1d2426;
+}
+.minichip b{display:block; color:var(--ph-bright); font-size:var(--fs-md); margin-top:2px; font-variant-numeric:tabular-nums}
+.minichip .g{color:var(--gold)}
+
+/* inventory */
+.inv-item{
+  display:flex; align-items:center; gap:var(--s3);
+  padding:var(--s2) var(--s2);
+  border-radius:var(--r-sm);
+  background:#0a1011; border:1px solid #11181a; margin-bottom:var(--s2);
+}
+.inv-item:last-of-type{margin-bottom:0}
+.inv-item.empty{opacity:.4}
+.inv-item .ic{width:22px;height:22px;flex:none}
+.inv-item .meta{flex:1; min-width:0}
+.inv-item .name{font-size:var(--fs-xs); color:var(--ph-lit); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.inv-item .sub{font-size:var(--fs-2xs); color:#697276}
+.inv-item .cnt{font-variant-numeric:tabular-nums; color:var(--ph-bright); font-weight:700; min-width:1.5em; text-align:right}
+
+/* generic action button */
+.btn{
+  font-family:var(--mono); cursor:pointer; border-radius:var(--r-sm);
+  border:1px solid #000; border-top-color:#2a3236;
+  background:linear-gradient(180deg,#222a2d,#141a1c);
+  color:#cdd5d8; letter-spacing:.06em; text-transform:uppercase;
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  transition:transform var(--dur-fast) var(--ease), color var(--dur) var(--ease),
+             box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease),
+             background var(--dur) var(--ease);
+}
+.btn svg{width:16px;height:16px;flex:none}
+.btn:hover{color:#fff; border-top-color:var(--metal-hi)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.38; cursor:not-allowed; color:#7a8285}
+.btn:disabled:hover{border-top-color:#2a3236}
+.btn.use{font-size:var(--fs-2xs); padding:9px 11px; min-height:40px}
+.btn.primary{
+  background:linear-gradient(180deg, color-mix(in srgb,var(--ph-mid) 26%, #1a2320), #0f1714);
+  border-top-color:var(--ph-mid); color:var(--ph-bright);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.4), 0 0 18px var(--ph-faint);
+}
+.btn.primary:hover{box-shadow:inset 0 0 0 1px var(--ph-mid), 0 0 26px var(--ph-glow)}
+
+/* focus ring — phosphor, visible */
+:where(.btn,.chip,.pad-btn,.skip,.screen,a,button):focus-visible{
+  outline:2px solid var(--ph-lit); outline-offset:2px;
+}
+
+/* ---------- directional pad ---------- */
+.controls{display:flex; flex-direction:column; gap:var(--s3)}
+.dpad{display:grid; grid-template-columns:repeat(3,1fr); gap:6px}
+.pad-btn{
+  appearance:none; -webkit-appearance:none;
+  min-width:44px; min-height:44px; aspect-ratio:1; width:100%;
+  border-radius:var(--r-sm); cursor:pointer;
+  border:1px solid #000; border-top-color:#2c3438;
+  background:linear-gradient(180deg,#1c2326,#10161800);
+  background-color:#12181a;
+  color:var(--ph-lit);
+  display:grid; place-items:center;
+  transition:transform var(--dur-fast) var(--ease), box-shadow var(--dur) var(--ease),
+             color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  touch-action:manipulation; user-select:none; -webkit-user-select:none;
+}
+.pad-btn svg{width:20px;height:20px}
+.pad-btn:hover{color:var(--ph-bright); border-top-color:var(--metal-hi)}
+.pad-btn:active{transform:scale(.93); box-shadow:inset 0 0 14px var(--ph-faint); color:var(--ph-bright)}
+.pad-btn.center{color:#7e878b}
+.pad-btn.center:hover{color:var(--ph-lit)}
+.actions{display:grid; grid-template-columns:1fr 1fr; gap:6px}
+.actions .btn{min-height:44px; font-size:var(--fs-2xs); padding:6px}
+
+/* ---------- message log ---------- */
+.log-wrap .panel{height:100%; display:flex; flex-direction:column}
+.log{
+  flex:1; min-height:7.5rem; max-height:11rem; overflow-y:auto;
+  display:flex; flex-direction:column; gap:3px;
+  font-size:var(--fs-sm); line-height:1.45;
+  scrollbar-width:thin; scrollbar-color:#2a3437 transparent;
+  padding-right:4px;
+}
+.log::-webkit-scrollbar{width:8px}
+.log::-webkit-scrollbar-thumb{background:#222b2e; border-radius:99px}
+.log p{margin:0; color:var(--ph-mid); text-shadow:0 0 6px var(--ph-faint)}
+.log p::before{content:"› "; color:#54635a}
+.log p.good{color:var(--ph-lit)}
+.log p.bad{color:var(--danger); text-shadow:0 0 7px rgba(255,90,90,.25)}
+.log p.item{color:var(--gold)}
+.log p.level{color:var(--cyan); font-weight:700}
+.log p.warn{color:var(--warn)}
+.log p.sys{color:#6f7a74; font-style:italic}
+.log p.intro{color:var(--ph-bright)}
+.log p.enter-anim{animation:logIn var(--dur) var(--ease) both}
+@keyframes logIn{from{opacity:0; transform:translateX(-4px)}to{opacity:1; transform:none}}
+
+/* ============================================================
+   OVERLAYS (title / game-over / victory / help)
+   ============================================================ */
+.overlay{
+  position:absolute; inset:0; z-index:6;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; gap:var(--s4);
+  padding:clamp(16px,4vw,40px);
+  background:
+    radial-gradient(120% 120% at 50% 40%, color-mix(in srgb,var(--scr-bg) 86%, transparent), #020805 100%);
+  -webkit-backdrop-filter:blur(1px); backdrop-filter:blur(1px);
+  animation:ovIn var(--dur) var(--ease) both;
+}
+@keyframes ovIn{from{opacity:0}to{opacity:1}}
+.overlay[hidden]{display:none}
+.overlay .eyebrow{
+  font-size:var(--fs-2xs); letter-spacing:.42em; text-transform:uppercase; color:var(--ph-mid);
+  margin:0;
+}
+.wordmark{
+  font-size:var(--fs-2xl); font-weight:800; letter-spacing:.04em; line-height:.92;
+  color:var(--ph-bright); margin:0; text-transform:uppercase;
+  text-shadow:
+    0 0 18px var(--ph-glow),
+    2px 0 0 rgba(255,60,90,.32), -2px 0 0 rgba(40,200,255,.30);
+}
+.wordmark small{display:block; font-size:.34em; letter-spacing:.5em; color:var(--ph-mid);
+  font-weight:600; margin-top:.5em; text-shadow:0 0 10px var(--ph-faint)}
+.tagline{max-width:34ch; font-size:var(--fs-sm); color:var(--ph-mid); margin:0; line-height:1.55}
+.cursor{display:inline-block; width:.62em; height:1.05em; background:var(--ph-bright);
+  vertical-align:-.16em; margin-left:.12em; box-shadow:0 0 10px var(--ph-glow);
+  animation:blink 1.05s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.over-title{font-size:var(--fs-xl); font-weight:800; letter-spacing:.06em; margin:0; text-transform:uppercase}
+.over-title.dead{color:var(--danger); text-shadow:0 0 20px rgba(255,90,90,.45)}
+.over-title.win{color:var(--gold); text-shadow:0 0 22px rgba(255,215,95,.5)}
+.scoreboard{
+  display:grid; grid-template-columns:repeat(2,auto); gap:6px var(--s5);
+  font-size:var(--fs-sm); color:var(--ph-mid);
+  background:rgba(0,0,0,.3); border:1px solid var(--ph-faint); border-radius:var(--r-sm);
+  padding:var(--s3) var(--s5);
+}
+.scoreboard dt{text-align:left; color:#7d877f; letter-spacing:.05em}
+.scoreboard dd{margin:0; text-align:right; color:var(--ph-bright); font-variant-numeric:tabular-nums; font-weight:700}
+.keyhint{font-size:var(--fs-2xs); color:#6f7a74; letter-spacing:.1em; text-transform:uppercase}
+.keyhint kbd{
+  font-family:var(--mono); background:#0c1413; border:1px solid var(--ph-dim);
+  border-bottom-width:2px; border-radius:4px; padding:1px 6px; color:var(--ph-lit); font-size:.95em;
+}
+.overlay .btn-row{display:flex; gap:var(--s3); flex-wrap:wrap; justify-content:center}
+.overlay .btn.primary,.overlay .btn{padding:13px 22px; font-size:var(--fs-sm); min-height:48px}
+
+/* help table */
+.help-grid{
+  display:grid; grid-template-columns:auto 1fr; gap:6px var(--s4);
+  text-align:left; font-size:var(--fs-sm); max-width:30rem; width:100%;
+  color:var(--ph-mid);
+}
+.help-grid dt{color:var(--ph-lit); font-weight:700; white-space:nowrap}
+.help-grid dd{margin:0; color:#8b948f}
+.help-legend{display:flex; flex-wrap:wrap; gap:8px var(--s4); justify-content:center; font-size:var(--fs-xs)}
+.help-legend span{display:inline-flex; align-items:center; gap:6px; color:#8b948f}
+.help-legend b{font-size:var(--fs-md); width:1.1em; text-align:center}
+
+/* legend swatches colour via inline style set in JS-free markup */
+.lg-at{color:var(--ph-bright)} .lg-wall{color:var(--ph-lit)} .lg-stair{color:var(--ph-bright)}
+.lg-rat{color:#9fb3a6} .lg-orc{color:#ff9d3c} .lg-pot{color:#54e6ff} .lg-amu{color:#fff1a8}
+
+/* visually hidden */
+.vh{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* footer credit strip */
+.foot{display:flex; justify-content:space-between; align-items:center; gap:var(--s3);
+  padding:var(--s4) var(--s2) 0; font-size:var(--fs-2xs); letter-spacing:.12em;
+  color:#525a5d; text-transform:uppercase; flex-wrap:wrap}
+.foot .dotline{flex:1; height:1px; background:repeating-linear-gradient(90deg,#2a3134 0 4px,transparent 4px 8px); min-width:24px}
+
+/* ============================================================
+   RESPONSIVE  — mobile-first stack under 760px
+   ============================================================ */
+@media (max-width:760px){
+  .console{grid-template-columns:1fr; grid-template-areas:"screen" "rail" "log"}
+  .rail{flex-direction:column}
+}
+@media (min-width:761px){
+  /* on desktop keep the touch pad available but compact */
+  .controls{margin-top:auto}
+}
+@media (max-width:420px){
+  .nameplate span{display:none}
+}
+
+/* reduced motion — kill flicker/drift/blink/boot, keep state changes instant-ish */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important; animation-iteration-count:1!important;
+    transition-duration:.001ms!important}
+  .crt.scan{animation:none}
+  .crt.flick{display:none}
+  .cursor{animation:none}
+  .screen.boot #view{animation:none}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#screen">Skip to game</a>
+
+<main class="cabinet" aria-label="Cathode Crawl handheld dungeon terminal">
+  <span class="screw tl" aria-hidden="true"></span>
+  <span class="screw tr" aria-hidden="true"></span>
+  <span class="screw bl" aria-hidden="true"></span>
+  <span class="screw br" aria-hidden="true"></span>
+
+  <header class="deck">
+    <div class="brand">
+      <span class="power-led" aria-hidden="true"></span>
+      <span class="nameplate">
+        <b>Cathode&nbsp;Crawl</b>
+        <span>DV-80 · Phosphor Terminal</span>
+      </span>
+    </div>
+    <div class="deck-spacer"></div>
+    <div class="deck-controls">
+      <button class="chip" id="phosphorBtn" type="button" aria-pressed="false"
+              aria-label="Toggle phosphor colour, currently green">
+        <span class="dot"></span><span id="phosphorLbl">P1 Green</span>
+      </button>
+      <button class="chip" id="helpBtn" type="button" aria-haspopup="dialog" aria-label="How to play">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.2 9.3a2.8 2.8 0 1 1 4 2.5c-.9.5-1.4 1-1.4 2"/><circle cx="12" cy="16.6" r="1" fill="currentColor" stroke="none"/></svg>
+        <span>Help</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="console">
+    <!-- ============ SCREEN (focal) ============ -->
+    <section class="screen" id="screen" tabindex="-1" role="application"
+             aria-roledescription="dungeon viewport"
+             aria-label="Dungeon map. Use arrow keys, H J K L or the on-screen pad to move. Combat and events are announced in the message log below.">
+      <div class="canvas-fit"><canvas id="view" width="640" height="480" aria-hidden="true"></canvas></div>
+      <div class="crt glow" aria-hidden="true"></div>
+      <div class="crt scan" aria-hidden="true"></div>
+      <div class="crt flick" aria-hidden="true"></div>
+      <div class="crt mask" aria-hidden="true"></div>
+
+      <!-- TITLE -->
+      <div class="overlay" id="ovTitle" role="dialog" aria-modal="false" aria-label="Title screen">
+        <p class="eyebrow">Insert quarter — boot ROM v8.0</p>
+        <h1 class="wordmark">Cathode<br>Crawl<small>Depths of the Phosphor Core</small></h1>
+        <p class="tagline">A turn-based dungeon, freshly generated every run. Descend nine levels, fight what lurks in the dark, and carry the Phosphor Core back into the light.<span class="cursor" aria-hidden="true"></span></p>
+        <div class="btn-row">
+          <button class="btn primary" id="beginBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+            Begin descent
+          </button>
+        </div>
+        <p class="keyhint">Press <kbd>Enter</kbd> to start · <kbd>?</kbd> for controls</p>
+      </div>
+
+      <!-- GAME OVER -->
+      <div class="overlay" id="ovOver" role="dialog" aria-modal="false" aria-label="Game over" hidden>
+        <p class="eyebrow">Signal lost</p>
+        <h2 class="over-title dead">You Died</h2>
+        <p class="tagline" id="overCause">Slain in the dark.</p>
+        <dl class="scoreboard" id="overStats"></dl>
+        <div class="btn-row">
+          <button class="btn primary" id="restartBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 4v4h4"/></svg>
+            New descent
+          </button>
+        </div>
+        <p class="keyhint">Press <kbd>R</kbd> or <kbd>Enter</kbd> to crawl again</p>
+      </div>
+
+      <!-- VICTORY -->
+      <div class="overlay" id="ovWin" role="dialog" aria-modal="false" aria-label="Victory" hidden>
+        <p class="eyebrow">Transmission restored</p>
+        <h2 class="over-title win">The Core Is Yours</h2>
+        <p class="tagline">You wrench the Phosphor Core from the deep and the terminal blazes back to life. The Nine Depths fade behind you.</p>
+        <dl class="scoreboard" id="winStats"></dl>
+        <div class="btn-row">
+          <button class="btn primary" id="winAgainBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 4v4h4"/></svg>
+            Descend again
+          </button>
+        </div>
+        <p class="keyhint">Press <kbd>R</kbd> or <kbd>Enter</kbd> for a fresh dungeon</p>
+      </div>
+
+      <!-- HELP -->
+      <div class="overlay" id="ovHelp" role="dialog" aria-modal="true" aria-label="How to play" hidden>
+        <p class="eyebrow">Operator's manual</p>
+        <dl class="help-grid">
+          <dt>Move</dt><dd>Arrow keys · H J K L · or Y U B N for diagonals</dd>
+          <dt>Wait</dt><dd>Period <kbd>.</kbd> or the centre pad button</dd>
+          <dt>Attack</dt><dd>Move into a monster to strike it</dd>
+          <dt>Descend</dt><dd><kbd>&gt;</kbd> while standing on the stairs</dd>
+          <dt>Quaff</dt><dd><kbd>Q</kbd> draught · <kbd>P</kbd> elixir (or tap inventory)</dd>
+          <dt>Help</dt><dd><kbd>?</kbd> toggle · <kbd>Esc</kbd> close</dd>
+        </dl>
+        <div class="help-legend" aria-label="Glyph legend">
+          <span><b class="lg-at">@</b> you</span>
+          <span><b class="lg-wall">#</b> wall</span>
+          <span><b class="lg-stair">&gt;</b> stairs down</span>
+          <span><b class="lg-rat">r</b> beast</span>
+          <span><b class="lg-orc">o</b> brute</span>
+          <span><b class="lg-pot">!</b> draught</span>
+          <span><b class="lg-amu">&#9733;</b> the Core</span>
+        </div>
+        <div class="btn-row"><button class="btn primary" id="helpCloseBtn" type="button">Close manual</button></div>
+      </div>
+    </section>
+
+    <!-- ============ RAIL: stats + inventory + controls ============ -->
+    <aside class="rail" aria-label="Status and controls">
+      <div class="panel" id="statsPanel">
+        <h2 class="panel-title">Vitals</h2>
+
+        <div class="stat">
+          <svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.7-10-9.3C.2 8.3 1.7 4.7 5 4.1 7 3.8 8.7 4.8 12 8c3.3-3.2 5-4.2 7-3.9 3.3.6 4.8 4.2 3 7.6C19.5 16.3 12 21 12 21z"/></svg>
+          <div class="body">
+            <div class="lbl"><span>Health</span><span class="num"><span id="hpNow">24</span>/<span id="hpMax">24</span></span></div>
+            <div class="bar hp"><i id="hpBar"></i></div>
+          </div>
+        </div>
+
+        <div class="stat">
+          <svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.6 6.3 6.8.5-5.2 4.4 1.7 6.6L12 16.9 6.1 20.4l1.7-6.6L2.6 8.8l6.8-.5z"/></svg>
+          <div class="body">
+            <div class="lbl"><span>Level <b id="lvlNow" style="color:var(--ph-bright)">1</b></span><span class="num"><span id="xpNow">0</span>/<span id="xpNext">12</span> xp</span></div>
+            <div class="bar xp"><i id="xpBar"></i></div>
+          </div>
+        </div>
+
+        <div class="chiprow">
+          <span class="minichip">Depth<b id="depthNow">1</b></span>
+          <span class="minichip">Attack<b id="atkNow">3–5</b></span>
+          <span class="minichip">Gold<b class="g" id="goldNow">0</b></span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 class="panel-title">Satchel</h2>
+        <div class="inv-item" id="invHealth">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#54e6ff" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M9 2h6M10 2v4.2L5.6 16a3 3 0 0 0 2.7 4.3h7.4A3 3 0 0 0 18.4 16L14 6.2V2"/><path d="M7 14.5h10" stroke="#54e6ff"/></svg>
+          <div class="meta"><div class="name">Healing draught</div><div class="sub">Restores health, purges venom</div></div>
+          <span class="cnt" id="healthCnt">1</span>
+          <button class="btn use" id="useHealth" type="button" aria-label="Quaff a healing draught (Q)">Quaff</button>
+        </div>
+        <div class="inv-item" id="invPower">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#ff79c6" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h6l-1 8 9-12h-6z" fill="#ff79c6" fill-opacity=".18"/></svg>
+          <div class="meta"><div class="name">Elixir of might</div><div class="sub">Permanently raises attack</div></div>
+          <span class="cnt" id="powerCnt">0</span>
+          <button class="btn use" id="usePower" type="button" aria-label="Quaff an elixir of might (P)">Quaff</button>
+        </div>
+      </div>
+
+      <div class="panel controls">
+        <h2 class="panel-title">Controls</h2>
+        <div class="dpad" role="group" aria-label="Movement pad">
+          <button class="pad-btn" data-dx="-1" data-dy="-1" type="button" aria-label="Move up-left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17V7h10"/><path d="M7 7l10 10"/></svg></button>
+          <button class="pad-btn" data-dx="0" data-dy="-1" type="button" aria-label="Move up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="M6 11l6-6 6 6"/></svg></button>
+          <button class="pad-btn" data-dx="1" data-dy="-1" type="button" aria-label="Move up-right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 17V7H7"/><path d="M17 7L7 17"/></svg></button>
+          <button class="pad-btn" data-dx="-1" data-dy="0" type="button" aria-label="Move left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></button>
+          <button class="pad-btn center" data-dx="0" data-dy="0" type="button" aria-label="Wait one turn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="8"/></svg></button>
+          <button class="pad-btn" data-dx="1" data-dy="0" type="button" aria-label="Move right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></button>
+          <button class="pad-btn" data-dx="-1" data-dy="1" type="button" aria-label="Move down-left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7v10h10"/><path d="M7 17L17 7"/></svg></button>
+          <button class="pad-btn" data-dx="0" data-dy="1" type="button" aria-label="Move down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M6 13l6 6 6-6"/></svg></button>
+          <button class="pad-btn" data-dx="1" data-dy="1" type="button" aria-label="Move down-right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 7v10H7"/><path d="M17 17L7 7"/></svg></button>
+        </div>
+        <div class="actions">
+          <button class="btn" id="descendBtn" type="button" aria-label="Descend the stairs (>)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h6v4h5v4h5"/><path d="M16 18l3 1-1-3" transform="translate(-1 0)"/></svg>
+            Descend
+          </button>
+          <button class="btn" id="quaffBtn" type="button" aria-label="Quaff a healing draught (Q)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M9 2h6M10 2v4.2L5.6 16a3 3 0 0 0 2.7 4.3h7.4A3 3 0 0 0 18.4 16L14 6.2V2"/></svg>
+            Quaff
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ============ MESSAGE LOG ============ -->
+    <section class="log-wrap" aria-label="Message log">
+      <div class="panel">
+        <h2 class="panel-title">Log</h2>
+        <div class="log" id="log" role="log" aria-live="polite" aria-relevant="additions" tabindex="0"></div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="foot">
+    <span>DV-80 · 80×24 phosphor</span>
+    <span class="dotline" aria-hidden="true"></span>
+    <span id="seedLbl">SEED ——</span>
+  </footer>
+</main>
+
+<script>
+"use strict";
+(function(){
+/* ============================================================
+   CATHODE CRAWL — turn-based procedural roguelike
+   Zero dependencies / zero network. Algorithms hand-rolled:
+   • room+corridor generator with guaranteed connectivity
+   • recursive shadowcasting field-of-view (Björn Bergström)
+   • BFS "Dijkstra map" gradient pursuit for monsters
+   rot.js is the design reference for this technique set.
+   ============================================================ */
+
+/* ---------- config ---------- */
+const MAP_W = 58, MAP_H = 38;
+const FOV_R = 8;
+const MAX_DEPTH = 9;                 // Phosphor Core waits on depth 9
+const T_WALL = 0, T_FLOOR = 1, T_STAIRS = 2;
+const DX = [-1, 0, 1,-1, 1,-1, 0, 1];
+const DY = [-1,-1,-1, 0, 0, 1, 1, 1];
+
+/* ---------- palettes (canvas + chrome) ---------- */
+const PALETTES = {
+  green: {
+    label:"P1 Green", css:false,
+    bg:"#04130c", litBg:"rgba(74,210,126,0.06)",
+    floorLit:"#3bbf6c", floorDim:"#12381f",
+    wallLit:"#62da8e",  wallDim:"#1a4d2d",
+    stairs:"#d6ffe6", dim:"#1b4a2c", player:"#e2ffe9",
+    rat:"#9fb3a6", bat:"#c79bff", goblin:"#9be34a", snake:"#dbe84a",
+    orc:"#ff9d3c", wraith:"#ff5a5a",
+    health:"#54e6ff", power:"#ff79c6", gold:"#ffd75f", amulet:"#fff1a8",
+    vars:{ "--scr-bg":"#04130c","--ph-dim":"#1c5232","--ph-mid":"#36b366",
+           "--ph-lit":"#5fe08c","--ph-bright":"#c8ffdc","--ph-glow":"rgba(72,220,130,.55)",
+           "--ph-faint":"rgba(72,220,130,.10)" }
+  },
+  amber: {
+    label:"P3 Amber", css:true,
+    bg:"#160a02", litBg:"rgba(255,176,64,0.06)",
+    floorLit:"#cf8a2c", floorDim:"#3a230d",
+    wallLit:"#ffb454",  wallDim:"#4a2f12",
+    stairs:"#ffe7bd", dim:"#4a3015", player:"#fff1d6",
+    rat:"#c2ad8f", bat:"#c79bff", goblin:"#b6e34a", snake:"#ffe14a",
+    orc:"#ff7a3c", wraith:"#ff5a5a",
+    health:"#54e6ff", power:"#ff8fd0", gold:"#ffe07a", amulet:"#fff6cf",
+    vars:{ "--scr-bg":"#160a02","--ph-dim":"#6a3f10","--ph-mid":"#d68a26",
+           "--ph-lit":"#ffb14e","--ph-bright":"#ffe6bc","--ph-glow":"rgba(255,170,70,.5)",
+           "--ph-faint":"rgba(255,170,70,.10)" }
+  }
+};
+let palette = PALETTES.green;
+let phosphor = "green";
+
+/* ---------- monster archetypes ---------- */
+const KINDS = {
+  rat:    {name:"giant rat",   glyph:"r", hp:3,  amin:1, amax:2, xp:2,  ai:"chase",   col:"rat",    min:1},
+  bat:    {name:"cave bat",    glyph:"b", hp:4,  amin:1, amax:3, xp:3,  ai:"erratic", col:"bat",    min:1},
+  goblin: {name:"goblin",      glyph:"g", hp:8,  amin:2, amax:4, xp:6,  ai:"chase",   col:"goblin", min:2},
+  snake:  {name:"pit viper",   glyph:"s", hp:7,  amin:1, amax:3, xp:7,  ai:"chase",   col:"snake",  min:3, poison:3},
+  orc:    {name:"orc brute",   glyph:"o", hp:16, amin:3, amax:6, xp:14, ai:"slow",    col:"orc",    min:4},
+  wraith: {name:"wraith",      glyph:"W", hp:24, amin:4, amax:8, xp:26, ai:"chase",   col:"wraith", min:6}
+};
+/* depth -> weighted spawn pool */
+function poolFor(d){
+  const w = [];
+  const add=(k,n)=>{ for(let i=0;i<n;i++) w.push(k); };
+  if(d>=1){ add("rat", Math.max(1,5-d)); add("bat", 3); }
+  if(d>=2){ add("goblin", 3); }
+  if(d>=3){ add("snake", 2 + (d>=4?1:0)); }
+  if(d>=4){ add("orc", 2 + (d>=6?2:0)); }
+  if(d>=6){ add("wraith", 1 + (d>=8?2:0)); }
+  return w;
+}
+
+/* ---------- seedable RNG (mulberry32) ---------- */
+let _rng = 1;
+function srand(s){ _rng = (s>>>0) || 1; }
+function rnd(){
+  _rng |= 0; _rng = (_rng + 0x6D2B79F5) | 0;
+  let t = Math.imul(_rng ^ (_rng>>>15), 1 | _rng);
+  t = (t + Math.imul(t ^ (t>>>7), 61 | t)) ^ t;
+  return ((t ^ (t>>>14)) >>> 0) / 4294967296;
+}
+const ri = (a,b)=> a + Math.floor(rnd()*(b-a+1));
+const pick = a => a[Math.floor(rnd()*a.length)];
+
+/* ---------- game state ---------- */
+let map, explored, visible;
+let monsters, items, player, stairs;
+let depth, turn, state, seed, cause, messages;
+
+/* ---------- DOM ---------- */
+const $ = id => document.getElementById(id);
+const canvas = $("view"), ctx = canvas.getContext("2d");
+const screenEl = $("screen"), logEl = $("log");
+let motionOK = !matchMedia("(prefers-reduced-motion: reduce)").matches;
+matchMedia("(prefers-reduced-motion: reduce)").addEventListener?.("change", e => { motionOK = !e.matches; });
+
+/* canvas layout (camera viewport) */
+let cols = 0, rows = 0, cell = 18, dpr = 1, glyphFont = "";
+
+/* ============================================================
+   MAP GENERATION  — rooms + corridors, guaranteed connected
+   ============================================================ */
+function inB(x,y){ return x>=0 && y>=0 && x<MAP_W && y<MAP_H; }
+function tile(x,y){ return inB(x,y) ? map[y*MAP_W+x] : T_WALL; }
+function walkable(x,y){ return inB(x,y) && map[y*MAP_W+x] !== T_WALL; }
+
+function generate(){
+  for(let tries=0; tries<8; tries++){
+    const m = new Uint8Array(MAP_W*MAP_H);          // 0 = wall everywhere
+    const rooms = [];
+    for(let i=0;i<240 && rooms.length<16;i++){
+      const w = ri(4,9), h = ri(4,7);
+      const x = ri(1, MAP_W-w-2), y = ri(1, MAP_H-h-2);
+      let ok = true;
+      for(const o of rooms){
+        if(x <= o.x+o.w+1 && x+w+1 >= o.x && y <= o.y+o.h+1 && y+h+1 >= o.y){ ok=false; break; }
+      }
+      if(!ok) continue;
+      rooms.push({x,y,w,h,cx:x+(w>>1),cy:y+(h>>1)});
+    }
+    if(rooms.length < 5) continue;
+    for(const r of rooms)
+      for(let yy=r.y; yy<r.y+r.h; yy++)
+        for(let xx=r.x; xx<r.x+r.w; xx++) m[yy*MAP_W+xx] = T_FLOOR;
+
+    const carveH=(x1,x2,y)=>{ for(let x=Math.min(x1,x2);x<=Math.max(x1,x2);x++) m[y*MAP_W+x]=T_FLOOR; };
+    const carveV=(y1,y2,x)=>{ for(let y=Math.min(y1,y2);y<=Math.max(y1,y2);y++) m[y*MAP_W+x]=T_FLOOR; };
+    const connect=(a,b)=>{
+      if(rnd()<0.5){ carveH(a.cx,b.cx,a.cy); carveV(a.cy,b.cy,b.cx); }
+      else        { carveV(a.cy,b.cy,a.cx); carveH(a.cx,b.cx,b.cy); }
+    };
+    for(let i=1;i<rooms.length;i++) connect(rooms[i-1], rooms[i]);   // spanning tree
+    const extra = 2 + (rooms.length>>2);
+    for(let i=0;i<extra;i++){ const a=pick(rooms), b=pick(rooms); if(a!==b) connect(a,b); } // loops
+
+    // connectivity proof: BFS over floor must reach every floor cell
+    if(floodReaches(m, rooms[0].cx, rooms[0].cy)) return { map:m, rooms };
+  }
+  // extremely defensive fallback: one big room (still valid + connected)
+  const m = new Uint8Array(MAP_W*MAP_H);
+  for(let y=2;y<MAP_H-2;y++) for(let x=2;x<MAP_W-2;x++) m[y*MAP_W+x]=T_FLOOR;
+  return { map:m, rooms:[{x:2,y:2,w:MAP_W-4,h:MAP_H-4,cx:MAP_W>>1,cy:MAP_H>>1}] };
+}
+function floodReaches(m, sx, sy){
+  const seen = new Uint8Array(MAP_W*MAP_H);
+  const q = new Int32Array(MAP_W*MAP_H); let h=0,t=0;
+  let total=0; for(let i=0;i<m.length;i++) if(m[i]!==T_WALL) total++;
+  const s = sy*MAP_W+sx; seen[s]=1; q[t++]=s; let reached=1;
+  while(h<t){
+    const c=q[h++], cx=c%MAP_W, cy=(c/MAP_W)|0;
+    for(let k=0;k<8;k++){
+      const nx=cx+DX[k], ny=cy+DY[k]; if(!inB(nx,ny)) continue;
+      const ni=ny*MAP_W+nx;
+      if(seen[ni] || m[ni]===T_WALL) continue;
+      seen[ni]=1; q[t++]=ni; reached++;
+    }
+  }
+  return reached === total;
+}
+
+/* ============================================================
+   FOV  — recursive shadowcasting
+   ============================================================ */
+const MULT = [
+  [1, 0, 0,-1,-1, 0, 0, 1],
+  [0, 1,-1, 0, 0,-1, 1, 0],
+  [0, 1, 1, 0, 0,-1,-1, 0],
+  [1, 0, 0, 1,-1, 0, 0,-1]
+];
+function castLight(cx,cy,row,start,end,r,xx,xy,yx,yy){
+  if(start < end) return;
+  let newStart = 0;
+  for(let i=row;i<=r;i++){
+    let dx=-i-1, dy=-i, blocked=false;
+    while(dx<=0){
+      dx++;
+      const X=cx+dx*xx+dy*xy, Y=cy+dx*yx+dy*yy;
+      const lS=(dx-0.5)/(dy+0.5), rS=(dx+0.5)/(dy-0.5);
+      if(start < rS) continue;
+      if(end > lS) break;
+      if(dx*dx+dy*dy <= r*r && inB(X,Y)){ visible[Y*MAP_W+X]=1; explored[Y*MAP_W+X]=1; }
+      if(blocked){
+        if(!walkable(X,Y)){ newStart=rS; continue; }
+        else { blocked=false; start=newStart; }
+      } else if(!walkable(X,Y) && i<r){
+        blocked=true;
+        castLight(cx,cy,i+1,start,lS,r,xx,xy,yx,yy);
+        newStart=rS;
+      }
+    }
+    if(blocked) break;
+  }
+}
+function computeFOV(){
+  visible.fill(0);
+  visible[player.y*MAP_W+player.x]=1; explored[player.y*MAP_W+player.x]=1;
+  for(let o=0;o<8;o++) castLight(player.x,player.y,1,1,0,FOV_R,MULT[0][o],MULT[1][o],MULT[2][o],MULT[3][o]);
+}
+
+/* ============================================================
+   PURSUIT  — BFS distance field from the player
+   ============================================================ */
+function distanceField(){
+  const dist = new Int32Array(MAP_W*MAP_H).fill(-1);
+  const q = new Int32Array(MAP_W*MAP_H); let h=0,t=0;
+  const s = player.y*MAP_W+player.x; dist[s]=0; q[t++]=s;
+  while(h<t){
+    const c=q[h++], cx=c%MAP_W, cy=(c/MAP_W)|0, cd=dist[c];
+    for(let k=0;k<8;k++){
+      const nx=cx+DX[k], ny=cy+DY[k]; if(!inB(nx,ny)) continue;
+      const ni=ny*MAP_W+nx;
+      if(dist[ni]!==-1 || map[ni]===T_WALL) continue;
+      dist[ni]=cd+1; q[t++]=ni;
+    }
+  }
+  return dist;
+}
+
+/* ============================================================
+   ENTITY HELPERS
+   ============================================================ */
+function monsterAt(x,y){ for(const m of monsters) if(m.hp>0 && m.x===x && m.y===y) return m; return null; }
+function itemAt(x,y){ for(const it of items) if(it.x===x && it.y===y) return it; return null; }
+function occupied(x,y){ return (x===player.x && y===player.y) || !!monsterAt(x,y); }
+function chebyshev(ax,ay,bx,by){ return Math.max(Math.abs(ax-bx), Math.abs(ay-by)); }
+
+/* ============================================================
+   LEVEL BUILD
+   ============================================================ */
+function buildLevel(){
+  const g = generate();
+  map = g.map;
+  explored = new Uint8Array(MAP_W*MAP_H);
+  visible  = new Uint8Array(MAP_W*MAP_H);
+
+  const rooms = g.rooms.slice();
+  const start = rooms[0];
+  player.x = start.cx; player.y = start.cy;
+
+  // stairs (or Core) in the room farthest from the player
+  let far = start, best = -1;
+  for(const r of rooms){
+    const d = Math.abs(r.cx-player.x) + Math.abs(r.cy-player.y);
+    if(d > best){ best = d; far = r; }
+  }
+  monsters = []; items = [];
+  if(depth >= MAX_DEPTH){
+    stairs = null;
+    items.push({ x:far.cx, y:far.cy, type:"amulet" });
+  } else {
+    stairs = { x:far.cx, y:far.cy };
+    map[far.cy*MAP_W+far.cx] = T_STAIRS;
+  }
+
+  // spawn monsters in non-start rooms
+  const pool = poolFor(depth);
+  const count = Math.min(3 + Math.round(depth*1.7), 22);
+  let guard = 0;
+  while(monsters.length < count && guard++ < 400){
+    const r = pick(rooms);
+    if(r === start) continue;
+    const x = ri(r.x, r.x+r.w-1), y = ri(r.y, r.y+r.h-1);
+    if(map[y*MAP_W+x] !== T_FLOOR) continue;
+    if(occupied(x,y)) continue;
+    const k = KINDS[pick(pool)];
+    monsters.push({ kind:k.name, glyph:k.glyph, x, y, hp:k.hp, maxhp:k.hp,
+      amin:k.amin, amax:k.amax, xp:k.xp, ai:k.ai, col:k.col, poison:k.poison||0,
+      tick:0, inFOV:false });
+  }
+
+  // items: draughts, the odd elixir, gold piles
+  const drop = (type, extra) => {
+    let g2=0;
+    do{ var r=pick(rooms); var x=ri(r.x,r.x+r.w-1), y=ri(r.y,r.y+r.h-1); }
+    while((map[y*MAP_W+x]!==T_FLOOR || itemAt(x,y) || (x===player.x&&y===player.y)) && g2++<60);
+    if(map[y*MAP_W+x]===T_FLOOR) items.push(Object.assign({x,y,type}, extra||{}));
+  };
+  const potions = ri(1,2) + (depth>4?1:0);
+  for(let i=0;i<potions;i++) drop("health");
+  if(rnd() < 0.45) drop("power");
+  const piles = ri(2,4);
+  for(let i=0;i<piles;i++) drop("gold", { amount: ri(4, 12+depth*4) });
+
+  computeFOV();
+}
+
+/* ============================================================
+   TURN ENGINE
+   ============================================================ */
+function playerStep(dx,dy){
+  if(state !== "playing") return;
+  if(dx===0 && dy===0){ endTurn(); return; }   // wait
+  const nx = player.x+dx, ny = player.y+dy;
+  const mob = monsterAt(nx,ny);
+  if(mob){ attack(player, mob); endTurn(); return; }
+  if(walkable(nx,ny)){
+    player.x = nx; player.y = ny;
+    onEnterTile();
+    if(state==="playing") endTurn();
+  } else {
+    bumpFeedback();                              // wall: no turn spent
+  }
+}
+function onEnterTile(){
+  const it = itemAt(player.x, player.y);
+  if(!it) return;
+  if(it.type==="gold"){ player.gold += it.amount; log("You scoop up "+it.amount+" gold.","item"); removeItem(it); }
+  else if(it.type==="health"){ player.inv.health++; log("You pocket a healing draught.","item"); removeItem(it); }
+  else if(it.type==="power"){ player.inv.power++; log("You pocket an elixir of might.","item"); removeItem(it); }
+  else if(it.type==="amulet"){ removeItem(it); victory(); }
+}
+function removeItem(it){ const i=items.indexOf(it); if(i>=0) items.splice(i,1); }
+
+function endTurn(){
+  turn++;
+  if(player.poison > 0){
+    player.hp -= 1; player.poison--;
+    log("Venom burns through you (-1).","bad");
+    if(player.hp <= 0){ player.hp=0; gameOver("a viper's venom"); return; }
+  }
+  computeFOV();
+  monstersAct();
+  updateHUD();
+  render();
+}
+
+function monstersAct(){
+  const dist = distanceField();
+  for(const m of monsters.slice()){
+    if(m.hp <= 0) continue;
+    m.inFOV = visible[m.y*MAP_W+m.x] === 1;
+    if(!m.inFOV) continue;                        // gate: outside FOV → no move
+    if(m.ai === "slow"){ m.tick ^= 1; if(m.tick===0) continue; }   // acts every other turn
+    if(chebyshev(m.x,m.y,player.x,player.y) === 1){ attack(m, player); if(state!=="playing") return; continue; }
+    let step = (m.ai==="erratic" && rnd()<0.5) ? randomStep(m) : gradientStep(m, dist);
+    if(step){ m.x = step.x; m.y = step.y; }
+  }
+}
+function gradientStep(m, dist){
+  let best=null, bestD = dist[m.y*MAP_W+m.x]; if(bestD<0) bestD = 1e9;
+  const order = [0,1,2,3,4,5,6,7];
+  for(let i=order.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); const tmp=order[i]; order[i]=order[j]; order[j]=tmp; }
+  for(const k of order){
+    const nx=m.x+DX[k], ny=m.y+DY[k]; if(!inB(nx,ny)) continue;
+    const ni=ny*MAP_W+nx;
+    if(map[ni]===T_WALL || occupied(nx,ny)) continue;
+    const d=dist[ni]; if(d<0) continue;
+    if(d < bestD){ bestD=d; best={x:nx,y:ny}; }
+  }
+  return best;
+}
+function randomStep(m){
+  const opts=[];
+  for(let k=0;k<8;k++){ const nx=m.x+DX[k], ny=m.y+DY[k];
+    if(walkable(nx,ny) && !occupied(nx,ny)) opts.push({x:nx,y:ny}); }
+  return opts.length ? pick(opts) : null;
+}
+
+function attack(att, def){
+  const dmg = ri(att.amin, att.amax);
+  def.hp -= dmg;
+  if(def === player){
+    cause = att.kind;
+    log("The "+att.kind+" hits you for "+dmg+".","bad");
+    if(att.poison){ player.poison = Math.max(player.poison, att.poison); log("Its bite festers with venom!","bad"); }
+    flashScreen();
+    if(player.hp <= 0){ player.hp=0; gameOver("the "+att.kind); }
+  } else {
+    log("You strike the "+def.kind+" for "+dmg+".","good");
+    if(def.hp <= 0) killMonster(def);
+  }
+}
+function killMonster(m){
+  const i = monsters.indexOf(m); if(i>=0) monsters.splice(i,1);
+  player.kills++;
+  log("The "+m.kind+" crumbles to static.","good");
+  gainXP(m.xp);
+}
+function gainXP(n){
+  player.xp += n;
+  while(player.xp >= player.xpNext){
+    player.xp -= player.xpNext;
+    player.level++;
+    player.maxhp += 6; player.hp = Math.min(player.maxhp, player.hp + 6);
+    player.amin += 1; player.amax += 1;
+    player.xpNext = Math.round(player.xpNext * 1.6);
+    log("You reach level "+player.level+"! Vitality surges.","level");
+  }
+}
+
+function quaff(type){
+  if(state !== "playing") return;
+  if(type==="health"){
+    if(player.inv.health <= 0){ log("No healing draughts left.","warn"); return; }
+    player.inv.health--;
+    const heal = Math.round(player.maxhp*0.5) + 4;
+    const before = player.hp;
+    player.hp = Math.min(player.maxhp, player.hp + heal);
+    player.poison = 0;
+    log("You quaff a draught (+"+(player.hp-before)+" HP).","good");
+  } else {
+    if(player.inv.power <= 0){ log("No elixirs of might left.","warn"); return; }
+    player.inv.power--;
+    player.amin += 1; player.amax += 2;
+    log("Might floods your arm — attack rises.","good");
+  }
+  endTurn();                                       // quaffing costs a turn
+}
+
+function descend(){
+  if(state !== "playing") return;
+  if(!stairs || tile(player.x,player.y) !== T_STAIRS){ log("There are no stairs here.","warn"); flashScreen(); return; }
+  depth++;
+  buildLevel();
+  log("You descend to depth "+depth+". The air grows colder.","level");
+  bootFlash();
+  updateHUD(); layout(); render();
+}
+
+/* ============================================================
+   STATE TRANSITIONS
+   ============================================================ */
+function newGame(s){
+  seed = (s==null) ? (((Date.now() ^ Math.floor(Math.random()*0x7fffffff)) >>> 0) || 1) : (s>>>0 || 1);
+  srand(seed);
+  depth = 1; turn = 0; cause = null; messages = [];
+  player = { x:0, y:0, hp:24, maxhp:24, amin:3, amax:5, level:1, xp:0, xpNext:12,
+             gold:0, kills:0, poison:0, inv:{ health:1, power:0 } };
+  buildLevel();
+  state = "playing";
+  showOverlay(null);
+  logEl.innerHTML = "";
+  $("seedLbl").textContent = "SEED " + seed.toString(36).toUpperCase().slice(0,7);
+  log("You boot into the phosphor depths. Recover the Core.","intro");
+  bootFlash();
+  layout(); updateHUD(); render();
+  screenEl.focus({preventScroll:true});
+}
+function gameOver(by){
+  state = "gameover";
+  cause = by || cause || "the dark";
+  $("overCause").textContent = "Felled by " + cause + " on depth " + depth + ".";
+  fillScores("overStats");
+  showOverlay("over");
+  setTimeout(()=>$("restartBtn").focus({preventScroll:true}), 30);
+  render();
+}
+function victory(){
+  state = "victory";
+  fillScores("winStats");
+  showOverlay("win");
+  log("The Phosphor Core is yours!","level");
+  setTimeout(()=>$("winAgainBtn").focus({preventScroll:true}), 30);
+  render();
+}
+function fillScores(id){
+  const dl = $(id);
+  const rows = [
+    ["Depth reached", depth],
+    ["Level", player.level],
+    ["Monsters slain", player.kills],
+    ["Gold", player.gold],
+    ["Turns", turn]
+  ];
+  dl.innerHTML = rows.map(r=>"<dt>"+r[0]+"</dt><dd>"+r[1]+"</dd>").join("");
+}
+
+/* ============================================================
+   RENDER  — camera viewport of glyphs with phosphor bloom
+   ============================================================ */
+function layout(){
+  const rect = screenEl.getBoundingClientRect();
+  const pad = 10;
+  const availW = Math.max(120, rect.width  - pad*2);
+  const availH = Math.max(120, rect.height - pad*2);
+  const target = availW < 430 ? 15 : 18;          // CSS px per cell (legible on mobile)
+  cols = Math.min(MAP_W, Math.max(18, Math.floor(availW/target)));
+  rows = Math.min(MAP_H, Math.max(13, Math.floor(availH/target)));
+  cell = Math.max(11, Math.min(Math.floor(availW/cols), Math.floor(availH/rows)));
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const cw = cols*cell, chh = rows*cell;
+  canvas.width  = Math.round(cw*dpr);
+  canvas.height = Math.round(chh*dpr);
+  canvas.style.width  = cw + "px";
+  canvas.style.height = chh + "px";
+  glyphFont = '700 ' + Math.floor(cell*0.86) + 'px ' + getComputedStyle(document.body).fontFamily;
+}
+function render(){
+  if(!cols || !player) return;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle = palette.bg;
+  ctx.fillRect(0,0,cols*cell,rows*cell);
+
+  let camX = clamp(player.x - (cols>>1), 0, Math.max(0, MAP_W-cols));
+  let camY = clamp(player.y - (rows>>1), 0, Math.max(0, MAP_H-rows));
+
+  ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = glyphFont;
+
+  for(let vy=0; vy<rows; vy++){
+    for(let vx=0; vx<cols; vx++){
+      const mx=camX+vx, my=camY+vy; if(!inB(mx,my)) continue;
+      const i = my*MAP_W+mx;
+      if(!explored[i]) continue;                  // unseen → blank
+      const vis = visible[i]===1;
+      const t = map[i];
+
+      if(vis){ ctx.shadowBlur=0; ctx.fillStyle = palette.litBg; ctx.fillRect(vx*cell, vy*cell, cell, cell); }
+
+      // terrain
+      let ch, col, bloom;
+      if(t===T_WALL){ ch="#"; col = vis?palette.wallLit:palette.wallDim; bloom = vis?cell*0.16:0; }
+      else if(t===T_STAIRS){ ch=">"; col = vis?palette.stairs:palette.dim; bloom = vis?cell*0.4:0; }
+      else { ch="·"; col = vis?palette.floorLit:palette.floorDim; bloom = 0; }
+      glyph(vx,vy,ch,col,bloom);
+
+      // remembered items (dim when out of sight)
+      const it = itemAt(mx,my);
+      if(it){ const g=itemGlyph(it); glyph(vx,vy,g.ch, vis?g.col:palette.dim, vis?cell*0.42:0); }
+
+      // monsters only when visible
+      if(vis){ const m=monsterAt(mx,my); if(m) glyph(vx,vy,m.glyph, palette[m.col]||palette.floorLit, cell*0.5); }
+    }
+  }
+  // the player — always centre of attention
+  glyph(player.x-camX, player.y-camY, "@", palette.player, cell*0.55);
+  ctx.shadowBlur = 0;
+}
+function glyph(vx,vy,ch,color,bloom){
+  const x = vx*cell + cell/2, y = vy*cell + cell/2 + 1;
+  ctx.shadowBlur = bloom||0; if(bloom) ctx.shadowColor = color;
+  ctx.fillStyle = color;
+  ctx.fillText(ch, x, y);
+  ctx.shadowBlur = 0;
+}
+function itemGlyph(it){
+  if(it.type==="health") return {ch:"!", col:palette.health};
+  if(it.type==="power")  return {ch:"◆", col:palette.power};   // ◆
+  if(it.type==="gold")   return {ch:"$", col:palette.gold};
+  if(it.type==="amulet") return {ch:"★", col:palette.amulet};  // ★
+  return {ch:"?", col:palette.floorLit};
+}
+function clamp(v,a,b){ return v<a?a:v>b?b:v; }
+
+/* ============================================================
+   HUD + LOG
+   ============================================================ */
+function updateHUD(){
+  if(!player) return;
+  $("hpNow").textContent = player.hp;
+  $("hpMax").textContent = player.maxhp;
+  const hpPct = Math.max(0, player.hp/player.maxhp*100);
+  const hpBar = $("hpBar"); hpBar.style.width = hpPct + "%";
+  const hpEl = hpBar.parentElement;
+  hpEl.classList.toggle("low", hpPct <= 25);
+  hpEl.classList.toggle("warn", hpPct > 25 && hpPct <= 55);
+  $("lvlNow").textContent = player.level;
+  $("xpNow").textContent = player.xp;
+  $("xpNext").textContent = player.xpNext;
+  $("xpBar").style.width = (player.xp/player.xpNext*100) + "%";
+  $("depthNow").textContent = depth;
+  $("atkNow").textContent = player.amin + "–" + player.amax;
+  $("goldNow").textContent = player.gold;
+  $("healthCnt").textContent = player.inv.health;
+  $("powerCnt").textContent = player.inv.power;
+  $("invHealth").classList.toggle("empty", player.inv.health===0);
+  $("invPower").classList.toggle("empty", player.inv.power===0);
+  $("useHealth").disabled = player.inv.health===0 || state!=="playing";
+  $("usePower").disabled  = player.inv.power===0  || state!=="playing";
+  $("quaffBtn").disabled  = player.inv.health===0 || state!=="playing";
+  $("descendBtn").disabled = state!=="playing";
+}
+function log(text, kind){
+  messages.push({text, kind});
+  if(messages.length > 80) messages.shift();
+  const p = document.createElement("p");
+  if(kind) p.className = kind;
+  if(motionOK) p.classList.add("enter-anim");
+  p.textContent = text;
+  logEl.appendChild(p);
+  while(logEl.childElementCount > 60) logEl.removeChild(logEl.firstChild);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+/* ============================================================
+   FX
+   ============================================================ */
+function flashScreen(){
+  if(!motionOK) return;
+  screenEl.animate(
+    [{boxShadow:"inset 0 0 0 3px rgba(255,70,70,.0)"},
+     {boxShadow:"inset 0 0 40px rgba(255,60,60,.5), inset 0 0 0 3px rgba(255,70,70,.6)"},
+     {boxShadow:"inset 0 0 0 3px rgba(255,70,70,.0)"}],
+    {duration:220, easing:"ease-out"});
+}
+function bumpFeedback(){
+  if(!motionOK){ return; }
+  canvas.animate([{transform:"translateX(0)"},{transform:"translateX(-3px)"},{transform:"translateX(2px)"},{transform:"translateX(0)"}],
+    {duration:150, easing:"ease-out"});
+}
+function bootFlash(){
+  if(!motionOK) return;
+  screenEl.classList.remove("boot"); void screenEl.offsetWidth; screenEl.classList.add("boot");
+}
+
+/* ============================================================
+   OVERLAYS
+   ============================================================ */
+function showOverlay(which){
+  $("ovTitle").hidden = which!=="title";
+  $("ovOver").hidden  = which!=="over";
+  $("ovWin").hidden   = which!=="win";
+  if(which!=="help") $("ovHelp").hidden = true;
+}
+let helpReturn = null;
+function toggleHelp(force){
+  const open = force!==undefined ? force : $("ovHelp").hidden;
+  if(open){ helpReturn = document.activeElement; $("ovHelp").hidden=false; setTimeout(()=>$("helpCloseBtn").focus({preventScroll:true}),20); }
+  else{ $("ovHelp").hidden=true; if(helpReturn && helpReturn.focus) helpReturn.focus({preventScroll:true}); }
+}
+
+/* ============================================================
+   PALETTE TOGGLE
+   ============================================================ */
+function applyPalette(){
+  palette = PALETTES[phosphor];
+  const root = document.documentElement;
+  for(const k in palette.vars) root.style.setProperty(k, palette.vars[k]);
+  $("phosphorLbl").textContent = palette.label;
+  $("phosphorBtn").setAttribute("aria-pressed", phosphor==="amber" ? "true":"false");
+  $("phosphorBtn").setAttribute("aria-label","Toggle phosphor colour, currently "+(phosphor==="amber"?"amber":"green"));
+  render();
+}
+
+/* ============================================================
+   INPUT
+   ============================================================ */
+const MOVE = {
+  ArrowLeft:[-1,0], ArrowRight:[1,0], ArrowUp:[0,-1], ArrowDown:[0,1],
+  h:[-1,0], l:[1,0], k:[0,-1], j:[0,1],
+  y:[-1,-1], u:[1,-1], b:[-1,1], n:[1,1],
+  "1":[-1,1], "2":[0,1], "3":[1,1], "4":[-1,0], "5":[0,0], "6":[1,0],
+  "7":[-1,-1], "8":[0,-1], "9":[1,-1]
+};
+
+window.addEventListener("keydown", e=>{
+  const tag = (e.target && e.target.tagName) || "";
+  // help overlay open: Esc / ? closes
+  if(!$("ovHelp").hidden){
+    if(e.key==="Escape" || e.key==="?"){ e.preventDefault(); toggleHelp(false); }
+    return;
+  }
+  if(e.key==="?"){ e.preventDefault(); toggleHelp(true); return; }
+
+  if(state==="title"){
+    if(tag!=="BUTTON" && (e.key==="Enter" || e.key===" ")){ e.preventDefault(); newGame(); }
+    return;
+  }
+  if(state==="gameover" || state==="victory"){
+    if(e.key==="r" || e.key==="R"){ e.preventDefault(); newGame(); return; }       // R always restarts
+    if((e.key==="Enter" || e.key===" ") && tag!=="BUTTON"){ e.preventDefault(); newGame(); }
+    return;
+  }
+  if(state!=="playing") return;
+  if(tag==="BUTTON" && (e.key==="Enter"||e.key===" ")) return;   // let focused buttons work
+
+  const key = e.key.length===1 ? e.key.toLowerCase() : e.key;
+  if(MOVE[key]){ e.preventDefault(); playerStep(MOVE[key][0], MOVE[key][1]); return; }
+  if(key==="." ){ e.preventDefault(); playerStep(0,0); return; }
+  if(key===">"){ e.preventDefault(); descend(); return; }
+  if(key==="q"){ e.preventDefault(); quaff("health"); return; }
+  if(key==="p"){ e.preventDefault(); quaff("power"); return; }
+});
+
+// on-screen movement pad
+document.querySelectorAll(".pad-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    const dx = +btn.dataset.dx, dy = +btn.dataset.dy;
+    if(state!=="playing"){ screenEl.focus({preventScroll:true}); return; }
+    playerStep(dx,dy);
+    screenEl.focus({preventScroll:true});
+  });
+});
+// action + menu buttons
+$("descendBtn").addEventListener("click", ()=>{ descend(); screenEl.focus({preventScroll:true}); });
+$("quaffBtn").addEventListener("click", ()=>{ quaff("health"); screenEl.focus({preventScroll:true}); });
+$("useHealth").addEventListener("click", ()=>{ quaff("health"); screenEl.focus({preventScroll:true}); });
+$("usePower").addEventListener("click", ()=>{ quaff("power"); screenEl.focus({preventScroll:true}); });
+$("beginBtn").addEventListener("click", ()=> newGame());
+$("restartBtn").addEventListener("click", ()=> newGame());
+$("winAgainBtn").addEventListener("click", ()=> newGame());
+$("helpBtn").addEventListener("click", ()=> toggleHelp());
+$("helpCloseBtn").addEventListener("click", ()=> toggleHelp(false));
+$("phosphorBtn").addEventListener("click", ()=>{ phosphor = phosphor==="green"?"amber":"green"; applyPalette(); });
+
+// responsive relayout
+let rT=0;
+window.addEventListener("resize", ()=>{ clearTimeout(rT); rT=setTimeout(()=>{ layout(); render(); }, 90); });
+
+/* ============================================================
+   TEST / DEBUG API  (verification hook for Playwright; read-mostly)
+   ============================================================ */
+window.__rl = {
+  get state(){ return state; },
+  get turn(){ return turn; },
+  get depth(){ return depth; },
+  get seed(){ return seed; },
+  get player(){ return player ? {x:player.x,y:player.y,hp:player.hp,maxhp:player.maxhp,
+      level:player.level,xp:player.xp,atk:[player.amin,player.amax],gold:player.gold,
+      kills:player.kills,poison:player.poison,inv:Object.assign({},player.inv)} : null; },
+  get monsters(){ return monsters ? monsters.map(m=>({kind:m.kind,glyph:m.glyph,x:m.x,y:m.y,
+      hp:m.hp,inFOV:visible[m.y*MAP_W+m.x]===1})) : []; },
+  dims(){ return {W:MAP_W,H:MAP_H,cols,rows,cell}; },
+  isVisible(x,y){ return inB(x,y) && visible[y*MAP_W+x]===1; },
+  isExplored(x,y){ return inB(x,y) && explored[y*MAP_W+x]===1; },
+  tile(x,y){ return tile(x,y); },
+  visibleCount(){ let c=0; for(let i=0;i<visible.length;i++) c+=visible[i]; return c; },
+  exploredCount(){ let c=0; for(let i=0;i<explored.length;i++) c+=explored[i]; return c; },
+  floorCount(){ let c=0; for(let i=0;i<map.length;i++) if(map[i]!==T_WALL) c++; return c; },
+  reachableFromPlayer(){ // BFS count over floor from player
+    const seen=new Uint8Array(MAP_W*MAP_H), q=new Int32Array(MAP_W*MAP_H); let h=0,t=0,n=0;
+    const s=player.y*MAP_W+player.x; seen[s]=1; q[t++]=s; n=1;
+    while(h<t){ const c=q[h++],cx=c%MAP_W,cy=(c/MAP_W)|0;
+      for(let k=0;k<8;k++){ const nx=cx+DX[k],ny=cy+DY[k]; if(!inB(nx,ny))continue;
+        const ni=ny*MAP_W+nx; if(seen[ni]||map[ni]===T_WALL)continue; seen[ni]=1;q[t++]=ni;n++; } }
+    return n;
+  },
+  layoutHash(){ let hsh=2166136261>>>0;
+    for(let i=0;i<map.length;i++){ hsh^=map[i]; hsh=Math.imul(hsh,16777619); }
+    hsh ^= player.x*131 + player.y; return hsh>>>0; },
+  newGame(s){ newGame(s); },
+  teleport(x,y){ if(walkable(x,y)){ player.x=x; player.y=y; computeFOV(); updateHUD(); render(); return true; } return false; },
+  setHP(n){ player.hp = Math.max(0, Math.min(player.maxhp, n)); updateHUD(); render();
+    if(player.hp<=0) gameOver("a grievous wound"); },
+  forceMonster(type, x, y){ const k=KINDS[type]; if(!k||!walkable(x,y)) return false;
+    monsters.push({kind:k.name,glyph:k.glyph,x,y,hp:k.hp,maxhp:k.hp,amin:k.amin,amax:k.amax,
+      xp:k.xp,ai:k.ai,col:k.col,poison:k.poison||0,tick:1,inFOV:false}); computeFOV(); render(); return true; },
+  clearMonsters(){ monsters.length=0; render(); },
+  stairsPos(){ return stairs ? {x:stairs.x,y:stairs.y} : null; },
+  amuletPos(){ const a = items && items.find(i=>i.type==="amulet"); return a ? {x:a.x,y:a.y} : null; },
+  overlayShown(){ return $("ovOver").hidden===false ? "over" :
+    $("ovWin").hidden===false ? "win" : $("ovTitle").hidden===false ? "title" : null; },
+  findWallDir(){ for(let k=0;k<8;k++){ if(!walkable(player.x+DX[k],player.y+DY[k])) return {dx:DX[k],dy:DY[k]}; } return null; },
+  findFloorDir(){ for(let k=0;k<8;k++){ const nx=player.x+DX[k],ny=player.y+DY[k];
+    if(walkable(nx,ny)&&!occupied(nx,ny)&&!itemAt(nx,ny)) return {dx:DX[k],dy:DY[k]}; } return null; }
+};
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+function init(){
+  applyPalette();
+  state = "title";
+  showOverlay("title");
+  // size the screen so the title sits on a real (dark) viewport
+  layout();
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle = palette.bg; ctx.fillRect(0,0,cols*cell,rows*cell);
+  setTimeout(()=>$("beginBtn").focus({preventScroll:true}), 60);
+}
+if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", init);
+else init();
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,345 @@
+/* === DESIGN SYSTEM: Editorial Precision (Harborpipe Plumbing) === */
+:root {
+    --bg-ocean: #051A2C;
+    --text-primary: #f0f4f8;
+    --text-muted: rgba(240, 244, 248, 0.6);
+    --gold-light: #EBD399;
+    --gold-mid: #CBA358;
+    --gold-dark: #9A7737;
+
+    --font-serif: 'Playfair Display', Georgia, serif;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    background-color: var(--bg-ocean);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+}
+
+.site-wrapper {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* === HEADER === */
+.header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    padding: 40px 6vw;
+}
+
+.header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: 20px;
+    letter-spacing: 0.5px;
+    color: var(--text-primary);
+}
+
+.nav-links {
+    display: flex;
+    gap: 40px;
+}
+
+.nav-links a {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.4s ease;
+}
+
+.nav-links a:hover {
+    color: var(--gold-mid);
+}
+
+/* === HERO SECTION === */
+.hero {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    min-height: 800px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('harborpipe_bg.png');
+    background-size: cover;
+    background-position: left center;
+    background-repeat: no-repeat;
+    z-index: 1;
+    animation: slowFloat 20s ease-in-out infinite alternate;
+}
+
+@keyframes slowFloat {
+    0% {
+        transform: scale(1.0);
+    }
+
+    100% {
+        transform: scale(1.04) translate(1%, 1%);
+    }
+}
+
+.hero-content-wrapper {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    padding: 0 6vw;
+}
+
+.hero-spacer {
+    flex: 1;
+    /* This pushes the text block to the right half of the screen */
+}
+
+.hero-text-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 650px;
+    padding-left: 4vw;
+}
+
+.hero-title {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: clamp(4rem, 7vw, 7rem);
+    line-height: 1.05;
+    letter-spacing: -1px;
+    margin-bottom: 24px;
+
+    /* Gold Gradient Text Overlay */
+    background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold-mid) 50%, var(--gold-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+
+    /* Subtle drop shadow behind the transparent text mask */
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+}
+
+.title-line {
+    display: block;
+}
+
+.hero-subtitle {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    color: var(--text-primary);
+    margin-bottom: 40px;
+    letter-spacing: 0.5px;
+}
+
+.hero-divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(203, 163, 88, 0.4) 0%, rgba(203, 163, 88, 0) 100%);
+    margin-bottom: 40px;
+}
+
+.hero-bottom-info {
+    display: flex;
+    align-items: center;
+    gap: 48px;
+}
+
+.info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.info-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+}
+
+.info-value {
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 1px;
+    color: var(--gold-mid);
+}
+
+.btn-discover {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+    padding: 14px 28px;
+    border: 1px solid rgba(203, 163, 88, 0.4);
+    background: transparent;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-discover span:first-child {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--gold-mid);
+    position: relative;
+    z-index: 2;
+}
+
+.btn-discover .arrow {
+    color: var(--gold-mid);
+    transition: transform 0.4s ease;
+    position: relative;
+    z-index: 2;
+}
+
+.btn-discover::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(203, 163, 88, 0.1);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1;
+}
+
+.btn-discover:hover {
+    border-color: rgba(203, 163, 88, 0.8);
+}
+
+.btn-discover:hover::before {
+    transform: scaleX(1);
+}
+
+.btn-discover:hover .arrow {
+    transform: translateX(4px);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1024px) {
+    .header {
+        padding: 30px 4vw;
+    }
+
+    .hero-content-wrapper {
+        padding: 0 4vw;
+    }
+
+    .hero-bottom-info {
+        gap: 32px;
+        flex-wrap: wrap;
+    }
+
+    .btn-discover {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-inner {
+        flex-direction: column;
+        gap: 24px;
+        align-items: flex-start;
+    }
+
+    .nav-links {
+        gap: 20px;
+    }
+
+    .hero {
+        min-height: 100vh;
+        align-items: flex-end;
+        padding-bottom: 80px;
+    }
+
+    .hero-bg {
+        /* On mobile, ensure the pipe is visible but dims towards the bottom */
+        background-position: center top;
+        background-size: 150%;
+    }
+
+    /* Add a stronger gradient overlay for mobile so text is legible over the pipe */
+    .hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, rgba(5, 26, 44, 0.2) 0%, rgba(5, 26, 44, 0.9) 60%, rgba(5, 26, 44, 1) 100%);
+        z-index: 2;
+    }
+
+    .hero-content-wrapper {
+        flex-direction: column;
+    }
+
+    .hero-spacer {
+        display: none;
+    }
+
+    .hero-text-block {
+        padding-left: 0;
+        max-width: 100%;
+        text-align: left;
+    }
+
+    .hero-title {
+        font-size: 14vw;
+        margin-bottom: 16px;
+    }
+
+    .hero-subtitle {
+        font-size: 6vw;
+        margin-bottom: 24px;
+    }
+
+    .hero-bottom-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .btn-discover {
+        margin-top: 20px;
+        width: 100%;
+        justify-content: center;
+    }
+}

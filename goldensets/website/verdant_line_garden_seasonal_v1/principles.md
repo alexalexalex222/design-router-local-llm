@@ -1,0 +1,6 @@
+- Anchor in horticultural literacy: name beds, borders, kitchen gardens, soil, irrigation, and seasonal pruning the way a working studio talks about them.
+- Treat the page as an almanac: a sticky calendar, monthly cadence, and seasonal services should feel published rather than promotional.
+- Keep the palette paper-warm with moss, fern, lime, clay, and sky accents; avoid neon, dashboard glass, or industrial heavy textures.
+- Pair Georgia/serif display with Inter/sans body; reserve large weights for hero and section openers, never for filler stats.
+- Below-fold sections separate roles: trust rail, services split, seasonal cadence, coverage, planting palette, process, garden care grid, consultation form.
+- Use real inline SVG illustrations (garden plans, seasonal arcs, plant beds) instead of stock raster imagery.

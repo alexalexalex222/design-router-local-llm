@@ -1,0 +1,13 @@
+{
+  "atom_id": "form_intake_states_v1",
+  "category": "form",
+  "summary": "Contact/intake form modelling the full state vocabulary: idle, focus, filled, inline aria-invalid error with described message, submit loading, and success panel.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": ["form_intake", "consultation_flow"],
+  "tags": ["form", "contact", "intake", "validation", "states", "loading", "success", "aria-invalid", "accessibility"],
+  "tone": ["premium", "trustworthy", "modern"],
+  "files": ["snippet.html", "snippet.css", "snippet.js"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

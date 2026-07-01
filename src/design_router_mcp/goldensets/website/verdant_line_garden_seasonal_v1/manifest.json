@@ -1,0 +1,62 @@
+{
+  "pack_id": "verdant_line_garden_seasonal_v1",
+  "role": "anchor",
+  "family": "website.local_service",
+  "source_paths": [
+    "source_snapshot/index.html",
+    "source_snapshot/styles.css"
+  ],
+  "origin_example_ids": [
+    "verdant-line-garden-co"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "website"
+  ],
+  "tones": [
+    "editorial",
+    "natural",
+    "light",
+    "warm",
+    "restrained",
+    "horticultural",
+    "almanac"
+  ],
+  "surfaces": [
+    "homepage",
+    "hero",
+    "landing",
+    "section"
+  ],
+  "motif_tags": [
+    "hero_shell",
+    "sticky_nav",
+    "trust_rail",
+    "cta_treatment",
+    "service_map",
+    "proof_cards",
+    "process_timeline",
+    "split_hero",
+    "light_precision",
+    "headline_hierarchy"
+  ],
+  "supports_tasks": [
+    "gardening_company_homepage",
+    "garden_care_landing",
+    "seasonal_lawn_care_website",
+    "horticulture_studio_homepage",
+    "ongoing_garden_maintenance_landing",
+    "garden_service_calendar_section"
+  ],
+  "anti_patterns": [
+    "generic lawn care template",
+    "patio showroom hero",
+    "industrial landscape contractor look",
+    "dashboard SaaS shell",
+    "wedding-event-rental homepage grammar"
+  ],
+  "screenshot_paths": [],
+  "token_budget_hint": 5200,
+  "confidence_score": 5
+}

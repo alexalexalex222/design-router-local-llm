@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<meta name="description" content="MERIDIAN Atelier — a concept luxury-watch configurator. Customize case, bezel, dial, indices, hands and strap in real time, lit in a studio environment. Sample product; price illustrative." />
+<title>MERIDIAN Atelier · Watch Configurator</title>
+
+<!-- Fonts: editorial serif wordmark (Fraunces) + Inter UI. font-display:swap via Google API; system fallbacks if offline. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" />
+
+<style>
+/* ============================================================================
+   DESIGN TOKENS  — build only from these
+   ========================================================================== */
+:root{
+  /* Neutral ramp (10 steps, deep studio dark) */
+  --n-0:#08090c; --n-1:#0d0f13; --n-2:#13161c; --n-3:#1a1e26;
+  --n-4:#242a35; --n-5:#323948; --n-6:#454e60; --n-7:#828a9d;
+  --n-8:#9aa2b4; --n-9:#c8cedb; --n-10:#eef1f7;
+
+  /* Semantic roles */
+  --bg:var(--n-0);
+  --surface:var(--n-2);
+  --surface-2:var(--n-3);
+  --elevated:var(--n-4);
+  --line:#2a313d;
+  --line-strong:#3c4453;
+  --text:var(--n-10);
+  --text-2:var(--n-9);
+  --text-muted:var(--n-8);
+  --text-subtle:var(--n-7);
+
+  /* Brand accent — warm brass / champagne (luxury watch register) */
+  --accent:#cda85a;
+  --accent-bright:#e6c478;
+  --accent-deep:#9c7e3c;
+  --accent-ink:#23190a;            /* text on accent */
+  --accent-glow:rgba(205,168,90,.30);
+  --accent-line:rgba(205,168,90,.42);
+
+  /* Status */
+  --ok:#5fbf8f; --ok-ink:#0a1a12;
+  --warn:#e0a96d;
+  --danger:#e0726b; --danger-ink:#1d0c0b;
+  --info:#7bb6d6;
+
+  /* Fluid type scale — ratio-locked (~1.2 minor third), body >=16px */
+  --fs-50:clamp(0.69rem, 0.66rem + 0.14vw, 0.76rem);
+  --fs-75:clamp(0.80rem, 0.77rem + 0.16vw, 0.875rem);
+  --fs-100:clamp(0.95rem, 0.92rem + 0.18vw, 1.02rem);   /* body */
+  --fs-200:clamp(1.10rem, 1.03rem + 0.34vw, 1.27rem);
+  --fs-300:clamp(1.32rem, 1.20rem + 0.55vw, 1.65rem);
+  --fs-400:clamp(1.58rem, 1.36rem + 1.00vw, 2.20rem);
+  --fs-500:clamp(2.00rem, 1.55rem + 2.10vw, 3.30rem);
+
+  /* Spacing — 4px scale */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px;
+  --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px; --sp-16:64px;
+
+  /* Radii */
+  --r-xs:7px; --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px; --r-pill:999px;
+
+  /* Elevation (3 tiers) */
+  --e-1:0 1px 2px rgba(0,0,0,.40), 0 2px 8px rgba(0,0,0,.28);
+  --e-2:0 8px 24px rgba(0,0,0,.42), 0 2px 8px rgba(0,0,0,.30);
+  --e-3:0 24px 60px rgba(0,0,0,.55), 0 8px 24px rgba(0,0,0,.40);
+
+  /* Motion */
+  --dur-1:160ms; --dur-2:220ms; --dur-3:360ms;
+  --ease-out:cubic-bezier(.22,.68,.16,1);
+  --ease-in-out:cubic-bezier(.6,.04,.2,.96);
+
+  --focus:0 0 0 2px var(--bg), 0 0 0 4px var(--accent-bright);
+
+  --panel-w:clamp(340px, 30vw, 408px);
+  --header-h:64px;
+}
+
+/* ============================================================================
+   RESET / BASE
+   ========================================================================== */
+*,*::before,*::after{box-sizing:border-box}
+*{margin:0}
+html{ -webkit-text-size-adjust:100%; }
+body{
+  font-family:"Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size:var(--fs-100);
+  line-height:1.5;
+  color:var(--text);
+  background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  min-height:100dvh;
+  overflow-x:hidden;        /* guard against any horizontal overflow */
+}
+h1,h2,h3{ line-height:1.12; font-weight:600; letter-spacing:-0.01em; }
+button{ font:inherit; color:inherit; background:none; border:none; cursor:pointer; }
+img,canvas{ display:block; max-width:100%; }
+:where(button,a,[tabindex],input):focus-visible{ outline:none; box-shadow:var(--focus); }
+/* inset rings for controls inside overflow-clipped accordions (avoid clipped focus) */
+.swatch:focus-visible, .zone__btn:focus-visible{ box-shadow:inset 0 0 0 2px var(--accent-bright); }
+::selection{ background:var(--accent); color:var(--accent-ink); }
+
+.serif{ font-family:"Fraunces", "Iowan Old Style", Georgia, "Times New Roman", serif; font-weight:600; }
+.sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
+
+.skip-link{
+  position:fixed; top:var(--sp-3); left:var(--sp-3); z-index:120;
+  transform:translateY(-160%);
+  background:var(--accent); color:var(--accent-ink); font-weight:600;
+  padding:var(--sp-3) var(--sp-4); border-radius:var(--r-sm); box-shadow:var(--e-2);
+  transition:transform var(--dur-2) var(--ease-out);
+}
+.skip-link:focus-visible{ transform:translateY(0); }
+
+/* ============================================================================
+   APP SHELL  — header + stage + panel
+   ========================================================================== */
+.app{
+  display:grid;
+  grid-template-rows:var(--header-h) 1fr;
+  grid-template-columns:1fr var(--panel-w);
+  grid-template-areas:"header header" "stage panel";
+  height:100dvh;
+  background:
+    radial-gradient(120% 80% at 18% 0%, #11131a 0%, var(--bg) 60%);
+}
+
+/* Header */
+.masthead{
+  grid-area:header;
+  display:flex; align-items:center; gap:var(--sp-4);
+  padding:0 clamp(var(--sp-4), 2.4vw, var(--sp-8));
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(13,15,19,.86), rgba(13,15,19,.55));
+  backdrop-filter:blur(10px);
+  z-index:40; overflow:hidden; min-width:0;
+}
+.brand{ display:flex; align-items:baseline; gap:var(--sp-3); min-width:0; }
+.brand__mark{
+  font-size:var(--fs-300); letter-spacing:.14em; font-weight:600;
+  background:linear-gradient(180deg, var(--text) 30%, var(--accent-bright));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  white-space:nowrap;
+}
+.brand__sub{ color:var(--text-subtle); font-size:var(--fs-50); letter-spacing:.22em; text-transform:uppercase; white-space:nowrap; }
+.tag{
+  margin-left:auto; display:inline-flex; align-items:center; gap:var(--sp-2);
+  font-size:var(--fs-50); letter-spacing:.06em; color:var(--accent-bright);
+  border:1px solid var(--accent-line); border-radius:var(--r-pill);
+  padding:6px var(--sp-3); white-space:nowrap;
+  background:rgba(205,168,90,.06);
+}
+.tag svg{ width:13px; height:13px; }
+.masthead__hint{ display:none; }
+@media (min-width:1100px){
+  .masthead__hint{ display:flex; align-items:center; gap:8px; color:var(--text-subtle); font-size:var(--fs-50); }
+}
+
+/* Stage (3D) */
+.stage{
+  grid-area:stage; position:relative; overflow:hidden;
+  background:
+    radial-gradient(80% 70% at 50% 42%, #1c2130 0%, #0c0e13 55%, #07080b 100%);
+}
+#stage-canvas{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; outline:none; }
+#stage-canvas:focus-visible{ box-shadow:inset 0 0 0 2px var(--accent-bright); }
+
+/* floor vignette + accent horizon glow drawn in CSS for instant first paint */
+.stage::after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(60% 22% at 50% 78%, var(--accent-glow), transparent 70%),
+    radial-gradient(100% 60% at 50% 120%, rgba(0,0,0,.65), transparent 60%);
+  mix-blend-mode:screen; opacity:.0; transition:opacity var(--dur-3) var(--ease-out);
+}
+.stage.is-ready::after{ opacity:.85; }
+
+/* Selected-part chip */
+.partchip{
+  position:absolute; left:clamp(var(--sp-4),2vw,var(--sp-6)); bottom:clamp(var(--sp-4),2vw,var(--sp-6));
+  display:inline-flex; align-items:center; gap:var(--sp-3);
+  padding:var(--sp-2) var(--sp-4) var(--sp-2) var(--sp-2);
+  background:rgba(18,22,28,.74); border:1px solid var(--line-strong); border-radius:var(--r-pill);
+  box-shadow:var(--e-2); backdrop-filter:blur(8px);
+  font-size:var(--fs-75); color:var(--text-2); max-width:min(70vw,320px);
+  transition:opacity var(--dur-2) var(--ease-out), transform var(--dur-2) var(--ease-out);
+}
+.partchip__dot{ width:26px; height:26px; border-radius:50%; flex:none; box-shadow:inset 0 0 0 1px rgba(255,255,255,.18); background:var(--accent); display:grid; place-items:center; }
+.partchip__dot svg{ width:15px; height:15px; color:#0c0e13; }
+.partchip strong{ color:var(--text); font-weight:600; }
+.partchip__zone{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* Stage toolbar */
+.toolbar{
+  position:absolute; top:clamp(var(--sp-4),2vw,var(--sp-6)); right:clamp(var(--sp-4),2vw,var(--sp-6));
+  display:flex; flex-direction:column; gap:var(--sp-2);
+  z-index:12;
+}
+.tool{
+  --sz:44px;
+  width:var(--sz); height:var(--sz); border-radius:var(--r-sm);
+  display:grid; place-items:center; position:relative;
+  background:rgba(18,22,28,.72); border:1px solid var(--line-strong); color:var(--text-2);
+  box-shadow:var(--e-1); backdrop-filter:blur(8px);
+  transition:background var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out),
+             border-color var(--dur-1) var(--ease-out), transform var(--dur-1) var(--ease-out);
+}
+.tool svg{ width:20px; height:20px; }
+.tool:hover{ background:var(--elevated); color:var(--text); border-color:var(--line-strong); }
+.tool:active{ transform:scale(.94); }
+.tool[aria-pressed="true"]{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent-bright); }
+.tool[disabled]{ opacity:.4; cursor:not-allowed; }
+/* Tooltip label */
+.tool::after{
+  content:attr(data-label); position:absolute; right:calc(100% + 8px); top:50%; transform:translateY(-50%) translateX(4px);
+  background:var(--n-1); color:var(--text-2); font-size:var(--fs-50); white-space:nowrap;
+  padding:5px 9px; border-radius:var(--r-xs); border:1px solid var(--line-strong);
+  opacity:0; pointer-events:none; transition:opacity var(--dur-1), transform var(--dur-1); box-shadow:var(--e-1);
+}
+.tool:hover::after,.tool:focus-visible::after{ opacity:1; transform:translateY(-50%) translateX(0); }
+
+/* ============================================================================
+   PANEL
+   ========================================================================== */
+.panel{
+  grid-area:panel; position:relative;
+  background:linear-gradient(180deg, var(--surface), var(--n-1));
+  border-left:1px solid var(--line);
+  display:flex; flex-direction:column; min-height:0;
+}
+.panel__scroll{ flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; padding:var(--sp-6) clamp(var(--sp-4),1.6vw,var(--sp-6)) var(--sp-4); display:flex; flex-direction:column; gap:var(--sp-6); }
+.panel__scroll::-webkit-scrollbar{ width:10px; }
+.panel__scroll::-webkit-scrollbar-thumb{ background:var(--n-4); border-radius:var(--r-pill); border:3px solid transparent; background-clip:content-box; }
+.panel__scroll::-webkit-scrollbar-thumb:hover{ background:var(--n-5); background-clip:content-box; }
+
+.prodhead .eyebrow{ font-size:var(--fs-50); letter-spacing:.22em; text-transform:uppercase; color:var(--accent-bright); }
+.prodhead h1{ font-size:var(--fs-400); margin-top:var(--sp-2); }
+.prodhead .model{ color:var(--text-muted); font-size:var(--fs-75); margin-top:var(--sp-2); }
+.prodhead .disclaimer{ margin-top:var(--sp-3); display:flex; gap:var(--sp-2); align-items:flex-start; color:var(--text-subtle); font-size:var(--fs-50); line-height:1.45; }
+.prodhead .disclaimer svg{ width:14px; height:14px; flex:none; margin-top:1px; color:var(--text-muted); }
+
+/* Section primitive */
+.section{ border-top:1px solid var(--line); padding-top:var(--sp-5); }
+.section__head{ display:flex; align-items:center; gap:var(--sp-3); margin-bottom:var(--sp-4); }
+.section__head h2,.section__head h3{ font-size:var(--fs-200); font-family:"Fraunces",Georgia,serif; font-weight:600; letter-spacing:-0.01em; }
+.section__num{ font-size:var(--fs-50); color:var(--text-subtle); font-variant-numeric:tabular-nums; letter-spacing:.1em; }
+.section__hint{ margin-left:auto; font-size:var(--fs-50); color:var(--text-subtle); }
+
+/* Colorways */
+.colorways{ display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-3); }
+.cway{
+  display:flex; align-items:center; gap:var(--sp-3); text-align:left;
+  padding:var(--sp-3); border-radius:var(--r-md);
+  border:1px solid var(--line); background:var(--surface-2);
+  transition:border-color var(--dur-1) var(--ease-out), background var(--dur-1) var(--ease-out), transform var(--dur-1) var(--ease-out);
+}
+.cway:hover{ border-color:var(--line-strong); background:var(--elevated); }
+.cway:active{ transform:translateY(1px); }
+.cway[aria-checked="true"]{ border-color:var(--accent); background:rgba(205,168,90,.08); }
+.cway__sw{ width:30px; height:30px; border-radius:50%; flex:none; box-shadow:inset 0 0 0 1px rgba(255,255,255,.16), var(--e-1); position:relative; }
+.cway[aria-checked="true"] .cway__sw::after{
+  content:""; position:absolute; inset:-5px; border-radius:50%; border:1.5px solid var(--accent);
+}
+.cway__name{ font-size:var(--fs-75); font-weight:500; color:var(--text-2); line-height:1.2; }
+
+/* Zones */
+.zones{ display:flex; flex-direction:column; gap:var(--sp-2); }
+.zone{ border:1px solid var(--line); border-radius:var(--r-md); background:var(--surface-2); overflow:hidden; transition:border-color var(--dur-1) var(--ease-out); }
+.zone.is-active{ border-color:var(--accent-line); box-shadow:0 0 0 1px var(--accent-line); }
+.zone__btn{
+  width:100%; display:flex; align-items:center; gap:var(--sp-3);
+  padding:var(--sp-4); text-align:left;
+  transition:background var(--dur-1) var(--ease-out);
+}
+.zone__btn:hover{ background:var(--elevated); }
+.zone__swatch{ width:24px; height:24px; border-radius:7px; flex:none; box-shadow:inset 0 0 0 1px rgba(255,255,255,.18); }
+.zone__meta{ display:flex; flex-direction:column; min-width:0; gap:1px; }
+.zone__name{ font-weight:600; font-size:var(--fs-100); }
+.zone__val{ font-size:var(--fs-50); color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.zone__chev{ margin-left:auto; color:var(--text-subtle); transition:transform var(--dur-2) var(--ease-out); flex:none; }
+.zone.is-open .zone__chev{ transform:rotate(180deg); }
+.zone__body{ display:grid; grid-template-rows:0fr; transition:grid-template-rows var(--dur-3) var(--ease-out); }
+.zone.is-open .zone__body{ grid-template-rows:1fr; }
+.zone__inner{ overflow:hidden; }
+.zone__group{ padding:0 var(--sp-4) var(--sp-4); }
+.zone__group + .zone__group{ border-top:1px dashed var(--line); padding-top:var(--sp-4); }
+.zone__label{ font-size:var(--fs-50); letter-spacing:.1em; text-transform:uppercase; color:var(--text-subtle); margin-bottom:var(--sp-3); }
+
+/* Swatch grids (materials / colors) */
+.swatches{ display:flex; flex-wrap:wrap; gap:var(--sp-2); }
+.swatch{
+  position:relative; display:inline-flex; align-items:center; gap:var(--sp-2);
+  min-height:44px; padding:6px var(--sp-3) 6px 6px; border-radius:var(--r-pill);
+  border:1px solid var(--line-strong); background:var(--surface);
+  transition:border-color var(--dur-1) var(--ease-out), background var(--dur-1) var(--ease-out), transform var(--dur-1) var(--ease-out);
+}
+.swatch:hover{ background:var(--elevated); border-color:var(--n-6); }
+.swatch:active{ transform:scale(.97); }
+.swatch[aria-checked="true"]{ border-color:var(--accent); background:rgba(205,168,90,.10); }
+.swatch__chip{ width:30px; height:30px; border-radius:50%; flex:none; box-shadow:inset 0 0 0 1px rgba(255,255,255,.16); }
+.swatch__chip--mat{ border-radius:9px; }
+.swatch__txt{ font-size:var(--fs-75); color:var(--text-2); white-space:nowrap; padding-right:2px; }
+.swatch[aria-checked="true"] .swatch__txt{ color:var(--text); }
+.swatch__tick{ position:absolute; top:-5px; right:-3px; width:18px; height:18px; border-radius:50%; background:var(--accent); color:var(--accent-ink); display:none; place-items:center; box-shadow:var(--e-1); }
+.swatch[aria-checked="true"] .swatch__tick{ display:grid; }
+.swatch__tick svg{ width:11px; height:11px; }
+.swatch[aria-disabled="true"]{ opacity:.4; cursor:not-allowed; }
+.swatch[aria-disabled="true"]:hover{ background:var(--surface); border-color:var(--line-strong); transform:none; }
+.zone__note{ font-size:var(--fs-50); color:var(--text-subtle); margin-top:var(--sp-2); line-height:1.45; display:none; }
+
+/* Summary + price */
+.summary{ display:flex; flex-direction:column; gap:var(--sp-2); }
+.summary__row{ display:flex; align-items:center; gap:var(--sp-3); font-size:var(--fs-75); padding:7px 0; border-bottom:1px solid var(--line); }
+.summary__row:last-child{ border-bottom:none; }
+.summary__k{ color:var(--text-muted); width:84px; flex:none; }
+.summary__v{ color:var(--text-2); display:flex; align-items:center; gap:var(--sp-2); }
+.summary__sw{ width:14px; height:14px; border-radius:4px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.2); flex:none; }
+
+.price{
+  margin-top:var(--sp-4); padding:var(--sp-4); border-radius:var(--r-md);
+  background:linear-gradient(180deg, rgba(205,168,90,.10), rgba(205,168,90,.03));
+  border:1px solid var(--accent-line);
+  display:flex; align-items:flex-end; justify-content:space-between; gap:var(--sp-3);
+}
+.price__lbl{ font-size:var(--fs-50); letter-spacing:.14em; text-transform:uppercase; color:var(--accent-bright); }
+.price__val{ font-family:"Fraunces",Georgia,serif; font-size:var(--fs-400); font-weight:600; font-variant-numeric:tabular-nums; line-height:1; }
+.price__note{ font-size:var(--fs-50); color:var(--text-subtle); margin-top:6px; max-width:50%; text-align:right; }
+
+/* Action footer */
+.panel__foot{
+  border-top:1px solid var(--line); padding:var(--sp-4) clamp(var(--sp-4),1.6vw,var(--sp-6));
+  display:flex; gap:var(--sp-3); background:linear-gradient(180deg, transparent, rgba(0,0,0,.18));
+}
+.btn{
+  flex:1; min-height:48px; border-radius:var(--r-sm); font-weight:600; font-size:var(--fs-75);
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--sp-2);
+  transition:background var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out), transform var(--dur-1), color var(--dur-1);
+}
+.btn svg{ width:17px; height:17px; }
+.btn--primary{ background:var(--accent); color:var(--accent-ink); border:1px solid var(--accent-bright); }
+.btn--primary:hover{ background:var(--accent-bright); }
+.btn--primary:active{ transform:translateY(1px); }
+.btn--ghost{ background:var(--surface-2); color:var(--text-2); border:1px solid var(--line-strong); }
+.btn--ghost:hover{ background:var(--elevated); color:var(--text); border-color:var(--n-6); }
+.btn--ghost:active{ transform:translateY(1px); }
+.btn[disabled]{ opacity:.5; cursor:not-allowed; pointer-events:none; }
+.btn.is-busy{ pointer-events:none; }
+.btn.is-busy .btn__spin{ display:inline-block; }
+.btn__spin{ display:none; width:15px; height:15px; border-radius:50%; border:2px solid currentColor; border-top-color:transparent; animation:spin .7s linear infinite; }
+
+/* ============================================================================
+   LOADING + ERROR OVERLAYS (async states)
+   ========================================================================== */
+.overlay{ position:absolute; inset:0; display:grid; place-items:center; z-index:30; padding:var(--sp-6); text-align:center; }
+.loader{ background:rgba(8,9,12,.55); backdrop-filter:blur(4px); transition:opacity var(--dur-3) var(--ease-out); }
+.loader.is-hidden{ opacity:0; pointer-events:none; }
+.loader__box{ display:flex; flex-direction:column; align-items:center; gap:var(--sp-4); }
+.loader__ring{ width:54px; height:54px; }
+.loader__ring circle{ fill:none; stroke-width:3; }
+.loader__ring .track{ stroke:var(--n-4); }
+.loader__ring .arc{ stroke:var(--accent-bright); stroke-linecap:round; stroke-dasharray:42 999; transform-origin:center; animation:spin 1s linear infinite; }
+.loader__txt{ font-size:var(--fs-75); color:var(--text-muted); letter-spacing:.04em; }
+.loader__sub{ font-size:var(--fs-50); color:var(--text-subtle); }
+
+.errorstate{ background:radial-gradient(80% 70% at 50% 40%, #1a1216, #0a0a0c); }
+.errorstate[hidden]{ display:none; }
+.errorcard{ max-width:440px; display:flex; flex-direction:column; align-items:center; gap:var(--sp-4); }
+.errorcard__icon{ width:58px; height:58px; color:var(--warn); }
+.errorcard h2{ font-size:var(--fs-300); font-family:"Fraunces",Georgia,serif; }
+.errorcard p{ color:var(--text-muted); font-size:var(--fs-75); line-height:1.55; }
+.errorcard code{ background:var(--n-2); padding:2px 7px; border-radius:6px; font-size:.9em; color:var(--accent-bright); border:1px solid var(--line); }
+.errorcard__row{ display:flex; gap:var(--sp-3); flex-wrap:wrap; justify-content:center; margin-top:var(--sp-2); }
+
+/* Toast */
+.toasts{ position:fixed; left:50%; bottom:clamp(var(--sp-5),4vw,var(--sp-10)); transform:translateX(-50%); z-index:200; display:flex; flex-direction:column; gap:var(--sp-2); width:max-content; max-width:92vw; pointer-events:none; }
+.toast{
+  display:flex; align-items:center; gap:var(--sp-3); padding:var(--sp-3) var(--sp-4);
+  background:var(--n-2); border:1px solid var(--line-strong); border-radius:var(--r-md); box-shadow:var(--e-3);
+  font-size:var(--fs-75); color:var(--text-2);
+  animation:toastIn var(--dur-3) var(--ease-out);
+}
+.toast.is-out{ animation:toastOut var(--dur-2) var(--ease-out) forwards; }
+.toast__ic{ width:20px; height:20px; flex:none; display:grid; place-items:center; border-radius:50%; }
+.toast--ok .toast__ic{ color:var(--ok); }
+.toast--err .toast__ic{ color:var(--danger); }
+.toast--info .toast__ic{ color:var(--info); }
+.toast img{ width:46px; height:46px; border-radius:8px; border:1px solid var(--line-strong); }
+.toast a{ color:var(--accent-bright); font-weight:600; text-decoration:none; pointer-events:auto; }
+.toast a:hover{ text-decoration:underline; }
+
+@keyframes spin{ to{ transform:rotate(360deg); } }
+@keyframes toastIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
+@keyframes toastOut{ to{ opacity:0; transform:translateY(8px); } }
+@keyframes pulseDot{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(.82); } }
+
+/* ============================================================================
+   RESPONSIVE  — recompose, not just reflow
+   ========================================================================== */
+@media (max-width:1023px){
+  .app{
+    grid-template-rows:var(--header-h) minmax(46dvh,52dvh) auto;
+    grid-template-columns:minmax(0,1fr);
+    grid-template-areas:"header" "stage" "panel";
+    height:auto; min-height:100dvh;
+  }
+  .panel{ border-left:none; border-top:1px solid var(--line); }
+  .panel__scroll{ padding-top:var(--sp-5); }
+  .colorways{ grid-template-columns:1fr 1fr; }
+}
+@media (max-width:560px){
+  :root{ --header-h:58px; }
+  .app{ grid-template-rows:var(--header-h) 50dvh auto; }
+  .brand__sub{ display:none; }
+  .colorways{ grid-template-columns:1fr; }
+  .price__val{ font-size:var(--fs-300); }
+  .panel__foot{ position:sticky; bottom:0; }
+  .toolbar{ flex-direction:row; }
+}
+@media (max-width:400px){
+  .tag{ display:none; }   /* concept/sample labeling stays in the panel disclaimer */
+}
+@media (max-width:380px){
+  .swatch__txt{ font-size:var(--fs-50); }
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#config-panel">Skip to configuration</a>
+
+<div class="app" id="app">
+  <!-- ===================== HEADER ===================== -->
+  <header class="masthead">
+    <div class="brand">
+      <span class="brand__mark serif">MERIDIAN</span>
+      <span class="brand__sub">Atelier · Bespoke</span>
+    </div>
+    <div class="masthead__hint" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="15" height="15"><path d="M12 3a9 9 0 1 0 9 9" stroke-linecap="round"/><path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Drag to orbit · scroll to zoom · click a part to customize
+    </div>
+    <span class="tag">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v4M12 18v4M2 12h4M18 12h4" stroke-linecap="round"/><circle cx="12" cy="12" r="4"/></svg>
+      Concept · sample product
+    </span>
+  </header>
+
+  <!-- ===================== STAGE (3D) ===================== -->
+  <section class="stage" id="stage" aria-label="Interactive 3D watch preview">
+    <canvas id="stage-canvas" tabindex="0"
+            role="application"
+            aria-roledescription="Interactive 3D model"
+            aria-label="3D watch preview. Use arrow keys to orbit, plus and minus to zoom. Press Tab to reach the customization controls."></canvas>
+
+    <!-- toolbar -->
+    <div class="toolbar" role="toolbar" aria-label="View controls">
+      <button class="tool" id="t-rotate" data-label="Auto-rotate" aria-pressed="false" aria-label="Toggle auto-rotate">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 12a9 9 0 1 1-2.64-6.36" stroke-linecap="round"/><path d="M21 4v5h-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="tool" id="t-zin" data-label="Zoom in" aria-label="Zoom in">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6M20 20l-3.6-3.6" stroke-linecap="round"/></svg>
+      </button>
+      <button class="tool" id="t-zout" data-label="Zoom out" aria-label="Zoom out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M20 20l-3.6-3.6" stroke-linecap="round"/></svg>
+      </button>
+      <button class="tool" id="t-recenter" data-label="Reset view" aria-label="Reset camera view">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke-linecap="round"/></svg>
+      </button>
+      <button class="tool" id="t-shot" data-label="Save image" aria-label="Save image of configuration">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.4"/></svg>
+      </button>
+    </div>
+
+    <!-- selected-part chip -->
+    <div class="partchip" id="partchip" aria-live="polite">
+      <span class="partchip__dot" id="partchip-dot">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 12l3 3 5-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="partchip__zone"><strong id="partchip-name">Tap or click a part</strong><br><span id="partchip-sub" style="color:var(--text-subtle);font-size:var(--fs-50)">to start customizing</span></span>
+    </div>
+
+    <!-- loading state -->
+    <div class="overlay loader" id="loader">
+      <div class="loader__box">
+        <svg class="loader__ring" viewBox="0 0 50 50" aria-hidden="true"><circle class="track" cx="25" cy="25" r="20"/><circle class="arc" cx="25" cy="25" r="20"/></svg>
+        <div>
+          <div class="loader__txt">Preparing the studio…</div>
+          <div class="loader__sub" id="loader-sub">Loading renderer</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WebGL / fatal error state -->
+    <div class="overlay errorstate" id="errorstate" role="alert" hidden>
+      <div class="errorcard">
+        <svg class="errorcard__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 3 2.5 20h19L12 3Z" stroke-linejoin="round"/><path d="M12 10v4" stroke-linecap="round"/><circle cx="12" cy="17.4" r="1" fill="currentColor" stroke="none"/></svg>
+        <h2 id="error-title">3D preview unavailable</h2>
+        <p id="error-msg">Your browser or device could not start <strong>WebGL</strong>, which this configurator needs to render the watch in 3D. The rest of the page still works — your selections are shown in the panel.</p>
+        <div class="errorcard__row">
+          <button class="btn btn--primary" id="error-retry" style="flex:0 0 auto;padding:0 var(--sp-5)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-2.64-6.36" stroke-linecap="round"/><path d="M21 4v5h-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Try again
+          </button>
+        </div>
+        <p style="font-size:var(--fs-50);color:var(--text-subtle)">Tips: enable hardware acceleration, update your browser, or try a different one. On some setups <code>chrome://gpu</code> shows the status.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PANEL ===================== -->
+  <aside class="panel" id="config-panel" aria-label="Watch configuration">
+    <div class="panel__scroll">
+      <div class="prodhead">
+        <p class="eyebrow">Bespoke configurator</p>
+        <h1 class="serif">Meridian&nbsp;39 Automatic</h1>
+        <p class="model">Reference MR-39 · 39mm · concept piece</p>
+        <p class="disclaimer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01" stroke-linecap="round"/></svg>
+          <span>This is a fictional concept product for demonstration. Materials, specifications and the price shown are <strong>illustrative samples</strong>, not a real quote.</span>
+        </p>
+      </div>
+
+      <!-- Colorways -->
+      <section class="section" aria-labelledby="cw-h">
+        <div class="section__head">
+          <span class="section__num">01</span>
+          <h2 id="cw-h">Signature colorways</h2>
+        </div>
+        <div class="colorways" id="colorways" role="radiogroup" aria-labelledby="cw-h">
+          <!-- JS-populated; skeletons below until ready -->
+          <div class="cway" aria-hidden="true" style="opacity:.4"><span class="cway__sw" style="background:#2a2f3a"></span><span class="cway__name">Loading…</span></div>
+          <div class="cway" aria-hidden="true" style="opacity:.25"><span class="cway__sw" style="background:#2a2f3a"></span><span class="cway__name">&nbsp;</span></div>
+        </div>
+      </section>
+
+      <!-- Zones -->
+      <section class="section" aria-labelledby="zn-h">
+        <div class="section__head">
+          <span class="section__num">02</span>
+          <h2 id="zn-h">Customize by part</h2>
+          <span class="section__hint">6 zones</span>
+        </div>
+        <div class="zones" id="zones"><!-- JS-populated --></div>
+      </section>
+
+      <!-- Summary -->
+      <section class="section" aria-labelledby="sm-h">
+        <div class="section__head">
+          <span class="section__num">03</span>
+          <h2 id="sm-h">Your configuration</h2>
+        </div>
+        <div class="summary" id="summary" aria-live="polite"><!-- JS-populated --></div>
+        <div class="price">
+          <div>
+            <div class="price__lbl">Sample price</div>
+            <div class="price__val" id="price-val">$0</div>
+          </div>
+          <div class="price__note">Illustrative only — not a real price.</div>
+        </div>
+      </section>
+    </div>
+
+    <div class="panel__foot">
+      <button class="btn btn--ghost" id="btn-reset">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4v5h5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.5 9A9 9 0 1 1 4 15" stroke-linecap="round"/></svg>
+        Reset
+      </button>
+      <button class="btn btn--primary" id="btn-share">
+        <span class="btn__spin" aria-hidden="true"></span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" id="share-ic"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.4"/></svg>
+        Save image
+      </button>
+    </div>
+  </aside>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+
+<noscript>
+  <div style="position:fixed;inset:0;display:grid;place-items:center;background:#0a0a0c;color:#c8cedb;padding:24px;text-align:center;font-family:system-ui">
+    <div><h1 style="font-family:Georgia,serif">JavaScript required</h1><p style="color:#9aa2b4;max-width:38ch;margin:12px auto 0">This 3D watch configurator needs JavaScript and WebGL to render. Please enable JavaScript to continue.</p></div>
+  </div>
+</noscript>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+/* =====================================================================
+   MERIDIAN configurator — Part 1: bootstrap, scene, data, render loop
+   ===================================================================== */
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const TAU = Math.PI * 2;
+const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const el = {
+  stage:   $('#stage'),
+  canvas:  $('#stage-canvas'),
+  loader:  $('#loader'),
+  loaderSub: $('#loader-sub'),
+  error:   $('#errorstate'),
+  errorMsg:$('#error-msg'),
+  errorTitle: $('#error-title'),
+  retry:   $('#error-retry'),
+  toasts:  $('#toasts'),
+};
+
+/* ---- DATA: material & finish registries ----------------------------- */
+// Metal/finish specs reused across case, bezel, indices, hands.
+const METAL = {
+  steel:    { name:'Steel',        color:0xb8bcc4, metalness:1.0,  roughness:0.26 },
+  titanium: { name:'Titanium',     color:0x8e9199, metalness:0.92, roughness:0.50 },
+  rose:     { name:'Rose gold',    color:0xc88a6a, metalness:1.0,  roughness:0.21 },
+  gold:     { name:'Yellow gold',  color:0xc8a24a, metalness:1.0,  roughness:0.21 },
+  graphite: { name:'Graphite DLC', color:0x2a2d33, metalness:0.86, roughness:0.44 },
+  lume:     { name:'Lume',         color:0xe7ecdb, metalness:0.0,  roughness:0.55, emissive:0x57663c, emissiveIntensity:0.22 },
+  black:    { name:'Black',        color:0x15171b, metalness:0.45, roughness:0.5  },
+};
+
+const DIAL_COLORS = {
+  navy:      { name:'Midnight navy', color:0x18233d },
+  black:     { name:'Onyx',          color:0x101216 },
+  silver:    { name:'Silver white',  color:0xd7dadf },
+  champagne: { name:'Champagne',     color:0xd6bf90 },
+  green:     { name:'British green',  color:0x213f2d },
+  slate:     { name:'Slate blue',    color:0x39465c },
+  salmon:    { name:'Salmon',        color:0xcf997f },
+};
+const DIAL_FINISH = {
+  // lower metalness keeps the chosen colour true at grazing angles (sunburst sheen still reads via roughnessMap)
+  sunburst:  { name:'Sunburst',  roughness:0.50, metalness:0.22 },
+  matte:     { name:'Matte',     roughness:0.86, metalness:0.04 },
+  guilloche: { name:'Guilloché', roughness:0.52, metalness:0.20 },
+};
+
+const STRAP_MAT = {
+  leather:  { name:'Leather',        metalness:0.0, roughness:0.62, useColor:true },
+  rubber:   { name:'Rubber',         metalness:0.0, roughness:0.85, useColor:true },
+  bracelet: { name:'Steel bracelet', metalness:1.0, roughness:0.30, useColor:false, color:0xb4b8c0 },
+};
+const STRAP_COLORS = {
+  black: { name:'Black',  color:0x141519 },
+  brown: { name:'Brown',  color:0x4a2f1d },
+  tan:   { name:'Tan',    color:0x946740 },
+  navy:  { name:'Navy',   color:0x1b2740 },
+  olive: { name:'Olive',  color:0x3a3d28 },
+  grey:  { name:'Grey',   color:0x52555d },
+};
+
+// Zone definitions drive both the 3D material apply and the panel UI.
+const ZONES = [
+  { id:'case',    label:'Case & crown', kind:'metal', opts:['steel','titanium','rose','gold','graphite'] },
+  { id:'bezel',   label:'Bezel',        kind:'metal', opts:['steel','titanium','rose','gold','graphite'] },
+  { id:'dial',    label:'Dial',         kind:'dial',  colors:['navy','black','silver','champagne','green','slate','salmon'], finishes:['sunburst','matte','guilloche'] },
+  { id:'indices', label:'Hour markers', kind:'metal', opts:['steel','gold','rose','lume'] },
+  { id:'hands',   label:'Hands',        kind:'metal', opts:['steel','gold','black','lume'] },
+  { id:'strap',   label:'Strap',        kind:'strap', mats:['leather','rubber','bracelet'], colors:['black','brown','tan','navy','olive','grey'] },
+];
+
+// Named colorways set every zone at once. `key` = dial swatch tint for the chip.
+const COLORWAYS = [
+  { id:'midnight', name:'Midnight Steel', sw:0x18233d, cfg:{ case:'steel',    bezel:'steel',    dialColor:'navy',      dialFinish:'sunburst',  indices:'steel', hands:'steel', strapMat:'leather',  strapColor:'black' } },
+  { id:'champagne',name:'Champagne Gold', sw:0xd6bf90, cfg:{ case:'rose',     bezel:'rose',     dialColor:'champagne', dialFinish:'guilloche', indices:'gold',  hands:'gold',  strapMat:'leather',  strapColor:'brown' } },
+  { id:'arctic',   name:'Arctic Titanium',sw:0xd7dadf, cfg:{ case:'titanium', bezel:'titanium', dialColor:'silver',    dialFinish:'matte',     indices:'steel', hands:'steel', strapMat:'rubber',   strapColor:'grey'  } },
+  { id:'heritage', name:'Heritage Green', sw:0x213f2d, cfg:{ case:'steel',    bezel:'steel',    dialColor:'green',     dialFinish:'sunburst',  indices:'gold',  hands:'gold',  strapMat:'bracelet', strapColor:'black' } },
+  { id:'noir',     name:'Graphite Noir',  sw:0x101216, cfg:{ case:'graphite', bezel:'graphite', dialColor:'black',     dialFinish:'matte',     indices:'lume',  hands:'lume',  strapMat:'rubber',   strapColor:'black' } },
+];
+
+// Sample-price model — clearly illustrative (see panel disclaimer). Not a real quote.
+const PRICE = {
+  base: 1850,
+  case:    { steel:0, titanium:650, rose:2400, gold:2200, graphite:900 },
+  bezel:   { steel:0, titanium:200, rose:1200, gold:1100, graphite:400 },
+  finish:  { matte:0, sunburst:150, guilloche:600 },
+  indices: { steel:0, gold:180, rose:180, lume:90 },
+  hands:   { steel:0, gold:120, black:40, lume:80 },
+  strapMat:{ leather:0, rubber:-120, bracelet:780 },
+};
+
+const DEFAULT_CFG = { ...COLORWAYS[0].cfg };
+const state = { ...DEFAULT_CFG };
+
+/* ---- module-scoped three handles (filled in boot) ------------------- */
+let THREE, OrbitControls, RoomEnvironment;
+let renderer, scene, camera, controls, pmrem;
+let watch;                         // root group, rotates for hands/auto-rotate
+const PARTS = {};                  // zone -> { meshes:[], mat }  (mat shared per zone)
+let handHour, handMin, handSec;    // hand pivot groups
+let raf = 0, idleTimer = 0, userAutoRotate = !prefersReduced;
+const clock = { last: performance.now() };
+
+/* ---- tween manager (material + numeric) ----------------------------- */
+const tweens = [];
+function tweenColor(mat, hex, dur = 220){
+  if (!mat) return;
+  const to = new THREE.Color(hex);
+  if (prefersReduced || dur === 0){ mat.color.copy(to); return; }
+  const from = mat.color.clone();
+  tweens.push({ t0: performance.now(), dur, step(p){ mat.color.copy(from).lerp(to, ease(p)); } });
+}
+function tweenNum(obj, key, target, dur = 220){
+  if (obj[key] === undefined) return;
+  if (prefersReduced || dur === 0){ obj[key] = target; return; }
+  const from = obj[key];
+  tweens.push({ t0: performance.now(), dur, step(p){ obj[key] = from + (target - from) * ease(p); } });
+}
+function ease(p){ return 1 - Math.pow(1 - p, 3); }
+function runTweens(now){
+  for (let i = tweens.length - 1; i >= 0; i--){
+    const t = tweens[i];
+    const p = Math.min(1, (now - t.t0) / t.dur);
+    t.step(p);
+    if (p >= 1) tweens.splice(i, 1);
+  }
+}
+
+/* ---- error / loading helpers ---------------------------------------- */
+function showError(title, msg){
+  if (title) el.errorTitle.textContent = title;
+  if (msg)   el.errorMsg.innerHTML = msg;
+  el.error.hidden = false;
+  el.loader.classList.add('is-hidden');
+  // 3D-dependent controls can't work without a renderer — disable, keep panel usable
+  ['#t-rotate','#t-zin','#t-zout','#t-recenter','#t-shot','#btn-share'].forEach(s => { const b = $(s); if (b) b.disabled = true; });
+  const chip = $('#partchip'); if (chip) chip.style.display = 'none';
+}
+function hideLoader(){ el.loader.classList.add('is-hidden'); }
+
+function hasWebGL(){
+  try {
+    const c = document.createElement('canvas');
+    return !!(window.WebGLRenderingContext &&
+      (c.getContext('webgl2') || c.getContext('webgl') || c.getContext('experimental-webgl')));
+  } catch { return false; }
+}
+
+/* ---- BOOT ----------------------------------------------------------- */
+async function boot(){
+  el.retry.addEventListener('click', () => location.reload(), { once: true });
+  el.error.hidden = true;
+  el.loader.classList.remove('is-hidden');
+  el.loaderSub.textContent = 'Checking graphics support';
+
+  if (!hasWebGL()){
+    showError('3D preview unavailable',
+      'Your browser or device could not start <strong>WebGL</strong>, which this configurator needs to render the watch in 3D. The configuration panel still works — your selections are listed there.');
+    buildPanelUI();         // panel remains usable without 3D
+    renderSummary();
+    return;
+  }
+
+  el.loaderSub.textContent = 'Loading 3D engine';
+  try {
+    THREE = await import('three');
+    ({ OrbitControls }   = await import('three/addons/controls/OrbitControls.js'));
+    ({ RoomEnvironment } = await import('three/addons/environments/RoomEnvironment.js'));
+  } catch (err){
+    showError('Could not load the 3D engine',
+      'The configurator failed to download three.js. Check your internet connection and try again.' +
+      (err && err.message ? ' <br><span style="color:var(--text-subtle);font-size:.85em">(' + String(err.message).slice(0,120) + ')</span>' : ''));
+    buildPanelUI(); renderSummary();
+    return;
+  }
+
+  try {
+    initThree();
+    el.loaderSub.textContent = 'Crafting the timepiece';
+    buildWatch();                       // Part 2
+    applyConfig(state, { instant: true });
+    buildPanelUI();                     // Part 3
+    wireInteractions();                 // Part 3
+    renderSummary();
+    syncColorwayHighlight();
+    startLoop();
+    revealReady();
+  } catch (err){
+    showError('Something went wrong building the 3D scene',
+      'An unexpected error stopped the 3D preview.' +
+      (err && err.message ? ' <br><span style="color:var(--text-subtle);font-size:.85em">(' + String(err.message).slice(0,140) + ')</span>' : ''));
+  }
+}
+
+function initThree(){
+  renderer = new THREE.WebGLRenderer({
+    canvas: el.canvas, antialias: true, alpha: false,
+    preserveDrawingBuffer: true,        // needed for PNG export
+    powerPreference: 'high-performance',
+  });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.06;
+  renderer.shadowMap.enabled = false;  // soft contact shadow is a baked texture (no aliasing)
+
+  scene = new THREE.Scene();
+  scene.background = makeBackdropTexture();
+  scene.fog = new THREE.Fog(0x05060a, 7.4, 12.5);   // far strap ends recede into the studio dark
+
+  // Image-based lighting from a neutral studio room (reflections on metal/sapphire).
+  pmrem = new THREE.PMREMGenerator(renderer);
+  pmrem.compileEquirectangularShader();
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+  camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
+  camera.position.set(0.2, 1.35, 6.4);
+
+  // Explicit key + fill + rim so brushed metal shows directional highlights.
+  const key = new THREE.DirectionalLight(0xfff3e6, 2.0); key.position.set(3.5, 6, 5);
+  const fill = new THREE.DirectionalLight(0xa9c8ff, 1.05); fill.position.set(-5, 1.5, 2);
+  const rim  = new THREE.DirectionalLight(0xffe2b4, 0.9); rim.position.set(-2, 3, -6);
+  scene.add(key, fill, rim, new THREE.AmbientLight(0xffffff, 0.18));
+
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.07;
+  controls.enablePan = false;
+  controls.minDistance = 3.4;
+  controls.maxDistance = 9.5;
+  controls.minPolarAngle = 0.35;
+  controls.maxPolarAngle = Math.PI - 0.5;
+  controls.target.set(0, 0.15, 0);
+  controls.autoRotate = userAutoRotate;
+  controls.autoRotateSpeed = 0.7;
+  controls.rotateSpeed = 0.85;
+  controls.zoomSpeed = 0.8;
+  controls.addEventListener('start', onUserInteractStart);
+  controls.update();
+
+  // Soft circular contact shadow (baked radial gradient — premium, no shadow-map fizz).
+  const shadowTex = makeRadialShadowTexture();
+  const shadow = new THREE.Mesh(
+    new THREE.PlaneGeometry(7, 7),
+    new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.62, depthWrite: false })
+  );
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.position.y = -1.78;
+  shadow.renderOrder = -1;
+  scene.add(shadow);
+
+  watch = new THREE.Group();
+  scene.add(watch);
+
+  const ro = new ResizeObserver(resize);
+  ro.observe(el.stage);
+  resize();
+}
+
+/* Studio backdrop: vertical gradient + soft warm pool, drawn to a canvas texture. */
+function makeBackdropTexture(){
+  const c = document.createElement('canvas'); c.width = 16; c.height = 512;
+  const g = c.getContext('2d');
+  const grd = g.createLinearGradient(0, 0, 0, 512);
+  grd.addColorStop(0.0, '#222838');
+  grd.addColorStop(0.42, '#12151d');
+  grd.addColorStop(0.72, '#0b0d12');
+  grd.addColorStop(1.0, '#070809');
+  g.fillStyle = grd; g.fillRect(0, 0, 16, 512);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+function makeRadialShadowTexture(){
+  const s = 256, c = document.createElement('canvas'); c.width = c.height = s;
+  const g = c.getContext('2d');
+  const grd = g.createRadialGradient(s/2, s/2, 0, s/2, s/2, s/2);
+  grd.addColorStop(0,   'rgba(0,0,0,0.85)');
+  grd.addColorStop(0.45,'rgba(0,0,0,0.40)');
+  grd.addColorStop(0.78,'rgba(0,0,0,0.10)');
+  grd.addColorStop(1,   'rgba(0,0,0,0)');
+  g.fillStyle = grd; g.fillRect(0, 0, s, s);
+  return new THREE.CanvasTexture(c);
+}
+
+function resize(){
+  const w = el.stage.clientWidth || 1, h = el.stage.clientHeight || 1;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+
+/* ---- idle auto-rotate: pause on interaction, resume after idle ------- */
+function onUserInteractStart(){
+  controls.autoRotate = false;
+  clearTimeout(idleTimer);
+  if (userAutoRotate && !prefersReduced){
+    idleTimer = setTimeout(() => { if (userAutoRotate && !prefersReduced) controls.autoRotate = true; }, 2600);
+  }
+}
+
+/* ---- live time on the hands ----------------------------------------- */
+function updateHands(){
+  if (!handSec) return;
+  const now = new Date();
+  const ms = prefersReduced ? 0 : now.getMilliseconds();
+  const s = now.getSeconds() + ms / 1000;
+  const m = now.getMinutes() + s / 60;
+  const h = (now.getHours() % 12) + m / 60;
+  handSec.rotation.z  = -s / 60 * TAU;
+  handMin.rotation.z  = -m / 60 * TAU;
+  handHour.rotation.z = -h / 12 * TAU;
+}
+
+/* ---- selected-zone highlight pulse (driven each frame) --------------- */
+let selectedZone = null, hoverZone = null;
+function applyHighlights(now){
+  for (const id in PARTS){
+    const p = PARTS[id]; if (!p.mat) continue;
+    const base = p.base;
+    let target = base.ei;
+    let ecol = base.ecolor;
+    if (id === hoverZone){ target = Math.max(target, 0.30); ecol = 0xcda85a; }
+    if (id === selectedZone){
+      const pulse = prefersReduced ? 0.34 : 0.30 + Math.sin(now / 320) * 0.12;
+      target = Math.max(target, pulse); ecol = 0xcda85a;
+    }
+    p.mat.emissive.setHex(ecol);
+    p.mat.emissiveIntensity += (target - p.mat.emissiveIntensity) * 0.2;
+  }
+}
+
+/* ---- render loop ---------------------------------------------------- */
+function startLoop(){ if (!raf) raf = requestAnimationFrame(loop); }
+function loop(now){
+  raf = requestAnimationFrame(loop);
+  controls.update();
+  runTweens(now);
+  updateHands();
+  applyHighlights(now);
+  renderer.render(scene, camera);
+}
+
+function revealReady(){
+  hideLoader();
+  el.stage.classList.add('is-ready');
+}
+/* =====================================================================
+   Part 2: procedural watch geometry + material application
+   ===================================================================== */
+const R = 1.15;                 // case outer radius
+const pickables = [];           // meshes the raycaster can hit
+let dialMat;                    // dial material (color + finish live on it)
+
+function makeStdMat(spec){
+  const m = new THREE.MeshStandardMaterial({
+    color: spec.color, metalness: spec.metalness, roughness: spec.roughness, envMapIntensity: 1.25,
+  });
+  m.emissive = new THREE.Color(spec.emissive || 0x000000);
+  m.emissiveIntensity = spec.emissiveIntensity || 0;
+  return m;
+}
+function registerPart(zone, meshes, mat, baseEi = 0, baseEcol = 0x000000){
+  meshes.forEach(me => { me.userData.zone = zone; pickables.push(me); });
+  PARTS[zone] = { meshes, mat, base: { ei: baseEi, ecolor: baseEcol } };
+}
+
+/* round solids are authored about +Y then turned to face +Z (camera) */
+function faceForward(mesh){ mesh.rotation.x = Math.PI / 2; return mesh; }
+
+/* Dial finish texture -> used as roughnessMap so the sheen varies by angle. */
+function makeDialTexture(finishId){
+  const s = 512, c = document.createElement('canvas'); c.width = c.height = s;
+  const g = c.getContext('2d'), cx = s / 2, cy = s / 2, rad = s / 2;
+  g.fillStyle = '#7d7d7d'; g.fillRect(0, 0, s, s);
+  if (finishId === 'sunburst'){
+    g.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 900; i++){
+      const a = (i / 900) * TAU;
+      g.strokeStyle = `rgba(255,255,255,${0.02 + (i % 3) * 0.012})`;
+      g.lineWidth = 1.1;
+      g.beginPath(); g.moveTo(cx, cy);
+      g.lineTo(cx + Math.cos(a) * rad, cy + Math.sin(a) * rad); g.stroke();
+    }
+  } else if (finishId === 'guilloche'){
+    g.strokeStyle = 'rgba(255,255,255,0.10)'; g.lineWidth = 1;
+    for (let r = 6; r < rad; r += 7){ g.beginPath(); g.arc(cx, cy, r, 0, TAU); g.stroke(); }
+    g.strokeStyle = 'rgba(0,0,0,0.10)';
+    for (let i = 0; i < 120; i++){ const a = i / 120 * TAU; g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(a) * rad, cy + Math.sin(a) * rad); g.stroke(); }
+  } else { // matte — faint film grain
+    const id = g.getImageData(0, 0, s, s), d = id.data;
+    for (let i = 0; i < d.length; i += 4){ const n = (Math.random() - 0.5) * 14; d[i] += n; d[i+1] += n; d[i+2] += n; }
+    g.putImageData(id, 0, 0);
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.anisotropy = renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 1;
+  return tex;
+}
+
+/* a tapered "dauphine" hand: pointed baton centred at the pivot base */
+function handGeo(len, w){
+  const sh = new THREE.Shape();
+  sh.moveTo(-w/2, -0.06);
+  sh.lineTo(w/2, -0.06);
+  sh.lineTo(w*0.32, len);
+  sh.lineTo(0, len + w*0.5);
+  sh.lineTo(-w*0.32, len);
+  sh.closePath();
+  return new THREE.ExtrudeGeometry(sh, { depth: 0.018, bevelEnabled: true, bevelThickness: 0.006, bevelSize: 0.006, bevelSegments: 1 });
+}
+
+/* rounded-rectangle cross-section swept along the strap curve */
+function roundedRectShape(w, h, r){
+  const s = new THREE.Shape(), x = -w/2, y = -h/2;
+  s.moveTo(x + r, y);
+  s.lineTo(x + w - r, y);      s.quadraticCurveTo(x + w, y, x + w, y + r);
+  s.lineTo(x + w, y + h - r);  s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  s.lineTo(x + r, y + h);      s.quadraticCurveTo(x, y + h, x, y + h - r);
+  s.lineTo(x, y + r);          s.quadraticCurveTo(x, y, x + r, y);
+  return s;
+}
+
+function buildWatch(){
+  watch.rotation.set(-0.16, 0.0, 0);   // gentle elevated 3/4 presentation tilt
+
+  /* ---- CASE (lathe shell) + caseback ---- */
+  const prof = [
+    [0.00,-0.16],[0.50,-0.16],[0.84,-0.14],[1.00,-0.06],[1.10,0.02],
+    [1.13,0.07],[1.10,0.12],[1.02,0.145],[0.95,0.15],[0.905,0.15],
+  ].map(p => new THREE.Vector2(p[0]*R/1.13, p[1]));
+  const caseMat = makeStdMat(METAL[state.case]);
+  const caseMesh = faceForward(new THREE.Mesh(new THREE.LatheGeometry(prof, 96), caseMat));
+  const caseMeshes = [caseMesh];
+
+  /* crown at 3 o'clock (+X) */
+  const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.12, 0.16, 28), caseMat);
+  crown.rotation.z = Math.PI / 2; crown.position.set(R + 0.05, 0, 0.02);
+  const crownCap = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.05, 20), caseMat);
+  crownCap.rotation.z = Math.PI / 2; crownCap.position.set(R + 0.15, 0, 0.02);
+  caseMeshes.push(crown, crownCap);
+
+  /* four lugs at 12 / 6 */
+  const lugGeo = new THREE.BoxGeometry(0.20, 0.34, 0.26);
+  for (const sy of [1, -1]) for (const sx of [-1, 1]){
+    const lug = new THREE.Mesh(lugGeo, caseMat);
+    lug.position.set(sx * 0.52, sy * (R - 0.02), -0.02);
+    lug.rotation.z = sx * sy * 0.18;
+    lug.rotation.x = sy * -0.25;
+    caseMeshes.push(lug);
+  }
+  watch.add(...caseMeshes);
+  registerPart('case', caseMeshes, caseMat, METAL[state.case].emissiveIntensity || 0, METAL[state.case].emissive || 0);
+
+  /* ---- DIAL ---- */
+  const dialTex = makeDialTexture(state.dialFinish);
+  const fin = DIAL_FINISH[state.dialFinish];
+  dialMat = new THREE.MeshStandardMaterial({
+    color: DIAL_COLORS[state.dialColor].color, metalness: fin.metalness ?? 0.5,
+    roughness: fin.roughness, roughnessMap: dialTex, envMapIntensity: 0.40,
+  });
+  dialMat.emissive = new THREE.Color(0x000000);
+  state._dialFinishApplied = state.dialFinish;   // texture already matches; avoid redundant regen
+  const dial = faceForward(new THREE.Mesh(new THREE.CylinderGeometry(0.86*R, 0.86*R, 0.04, 80), dialMat));
+  dial.position.z = 0.03;
+  watch.add(dial);
+  registerPart('dial', [dial], dialMat, 0, 0);
+
+  /* ---- INDICES (12 batons + chapter ring) ---- */
+  const idxMat = makeStdMat(METAL[state.indices]);
+  const idxMeshes = [];
+  const batonGeo = new THREE.BoxGeometry(0.05, 0.135, 0.03);
+  for (let k = 0; k < 12; k++){
+    const a = k / 12 * TAU;                       // 0 = 12 o'clock (+Y)
+    const r = 0.70 * R;
+    const b = new THREE.Mesh(batonGeo, idxMat);
+    b.position.set(Math.sin(a) * r, Math.cos(a) * r, 0.055);
+    b.rotation.z = -a;
+    if (k === 0){ const b2 = b.clone(); b.position.x -= 0.05; b2.position.x += 0.05; idxMeshes.push(b2); } // double index at 12
+    idxMeshes.push(b);
+  }
+  const chapter = new THREE.Mesh(new THREE.TorusGeometry(0.80*R, 0.012, 10, 90), idxMat);
+  chapter.position.z = 0.05; idxMeshes.push(chapter);
+  watch.add(...idxMeshes);
+  registerPart('indices', idxMeshes, idxMat, METAL[state.indices].emissiveIntensity || 0, METAL[state.indices].emissive || 0);
+
+  /* ---- HANDS (live time) ---- */
+  const handMat = makeStdMat(METAL[state.hands]);
+  handHour = new THREE.Group(); handMin = new THREE.Group(); handSec = new THREE.Group();
+  const hourM = new THREE.Mesh(handGeo(0.42*R, 0.085), handMat);
+  const minM  = new THREE.Mesh(handGeo(0.64*R, 0.060), handMat);
+  handHour.add(hourM); handMin.add(minM);
+  // second hand: thin needle + counterweight tail
+  const secM = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.74*R, 0.012), handMat);
+  secM.position.y = 0.30*R;
+  const tail = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.16, 0.012), handMat);
+  tail.position.y = -0.12;
+  handSec.add(secM, tail);
+  handHour.position.z = 0.085; handMin.position.z = 0.10; handSec.position.z = 0.115;
+  const cap = faceForward(new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.06, 20), handMat));
+  cap.position.z = 0.12;
+  watch.add(handHour, handMin, handSec, cap);
+  registerPart('hands', [hourM, minM, secM, tail, cap], handMat, METAL[state.hands].emissiveIntensity || 0, METAL[state.hands].emissive || 0);
+
+  /* ---- BEZEL (flattened torus rim) ---- */
+  const bezelMat = makeStdMat(METAL[state.bezel]);
+  const bezel = new THREE.Mesh(new THREE.TorusGeometry(0.96*R, 0.085, 22, 110), bezelMat); // torus already faces +Z
+  bezel.position.z = 0.085; bezel.scale.z = 0.62;
+  watch.add(bezel);
+  registerPart('bezel', [bezel], bezelMat, METAL[state.bezel].emissiveIntensity || 0, METAL[state.bezel].emissive || 0);
+
+  /* ---- CRYSTAL (domed sapphire) — not configurable; clicks fall through to dial ---- */
+  const crystalMat = new THREE.MeshPhysicalMaterial({
+    color: 0xffffff, metalness: 0, roughness: 0.05, transparent: true, opacity: 0.13,
+    clearcoat: 0.5, clearcoatRoughness: 0.06, ior: 1.5, envMapIntensity: 0.8, depthWrite: false,
+  });
+  const crystalProf = [
+    [0.0, 0.17],[0.30*R, 0.155],[0.55*R, 0.125],[0.74*R, 0.075],[0.86*R, 0.02],[0.90*R, 0.0],
+  ].map(p => new THREE.Vector2(p[0], p[1]));
+  const dome = faceForward(new THREE.Mesh(new THREE.LatheGeometry(crystalProf, 96), crystalMat));
+  dome.position.z = 0.06;
+  dome.renderOrder = 2; dome.userData.zone = 'dial'; pickables.push(dome);
+  watch.add(dome);
+
+  /* ---- STRAP — two continuous bands swept along a smooth curve, tucked into the lugs ---- */
+  const strapMat = new THREE.MeshStandardMaterial({ color: STRAP_COLORS[state.strapColor].color, metalness: 0, roughness: 0.62, envMapIntensity: 0.7 });
+  strapMat.emissive = new THREE.Color(0x000000);
+  const strapShape = roundedRectShape(0.62, 0.11, 0.05);
+  const strapMeshes = [];
+  for (const dir of [1, -1]){              // +1 = 12 o'clock band, -1 = 6 o'clock band (symmetric)
+    const pts = [
+      [0, 0.92 * dir,  0.05],             // anchored inside/under the lug (overlap → no gap)
+      [0, 1.28 * dir,  0.00],
+      [0, 1.66 * dir, -0.26],
+      [0, 1.96 * dir, -0.80],             // curving back and down toward the wrist
+      [0, 2.05 * dir, -1.46],
+    ].map(p => new THREE.Vector3(p[0], p[1], p[2]));
+    const curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal');
+    const geo = new THREE.ExtrudeGeometry(strapShape, { steps: 96, extrudePath: curve, bevelEnabled: false });
+    strapMeshes.push(new THREE.Mesh(geo, strapMat));
+  }
+  watch.add(...strapMeshes);
+  registerPart('strap', strapMeshes, strapMat, 0, 0);
+
+  applyStrap(state.strapMat, state.strapColor, { instant: true });
+}
+
+/* ---- material application -------------------------------------------- */
+function applyConfig(cfg, opts = {}){
+  applyMetalZone('case', cfg.case, opts);
+  applyMetalZone('bezel', cfg.bezel, opts);
+  applyDial(cfg.dialColor, cfg.dialFinish, opts);
+  applyMetalZone('indices', cfg.indices, opts);
+  applyMetalZone('hands', cfg.hands, opts);
+  applyStrap(cfg.strapMat, cfg.strapColor, opts);
+}
+function applyMetalZone(zone, metalId, opts = {}){
+  const p = PARTS[zone]; if (!p) return;
+  const spec = METAL[metalId]; const dur = opts.instant ? 0 : 220;
+  tweenColor(p.mat, spec.color, dur);
+  tweenNum(p.mat, 'metalness', spec.metalness, dur);
+  tweenNum(p.mat, 'roughness', spec.roughness, dur);
+  p.base.ei = spec.emissiveIntensity || 0;
+  p.base.ecolor = spec.emissive || 0x000000;
+}
+function applyDial(colorId, finishId, opts = {}){
+  if (!dialMat) return;
+  const dur = opts.instant ? 0 : 220;
+  tweenColor(dialMat, DIAL_COLORS[colorId].color, dur);
+  const fin = DIAL_FINISH[finishId];
+  tweenNum(dialMat, 'roughness', fin.roughness, dur);
+  tweenNum(dialMat, 'metalness', fin.metalness ?? 0.5, dur);
+  if (finishId !== state._dialFinishApplied){
+    const tex = makeDialTexture(finishId);
+    if (dialMat.roughnessMap) dialMat.roughnessMap.dispose();
+    dialMat.roughnessMap = tex; dialMat.needsUpdate = true;
+    state._dialFinishApplied = finishId;
+  }
+}
+function applyStrap(matId, colorId, opts = {}){
+  const p = PARTS.strap; if (!p) return;
+  const m = STRAP_MAT[matId]; const dur = opts.instant ? 0 : 220;
+  tweenNum(p.mat, 'metalness', m.metalness, dur);
+  tweenNum(p.mat, 'roughness', m.roughness, dur);
+  const col = m.useColor ? STRAP_COLORS[colorId].color : m.color;
+  tweenColor(p.mat, col, dur);
+}
+/* =====================================================================
+   Part 3: UI — panel, selection, raycast, export, states
+   ===================================================================== */
+const hexCss = n => '#' + n.toString(16).padStart(6, '0');
+const metalChip = n => `background:linear-gradient(135deg, rgba(255,255,255,.5), rgba(255,255,255,0) 46%), ${hexCss(n)}`;
+const solidChip = n => `background:${hexCss(n)}`;
+function finishChip(id){
+  if (id === 'sunburst')  return 'background:conic-gradient(from 90deg,#cfcfcf,#6c6c6c,#cfcfcf,#6c6c6c,#cfcfcf,#6c6c6c,#cfcfcf)';
+  if (id === 'guilloche') return 'background:repeating-radial-gradient(circle at 50% 50%, #b3b3b3 0 1.5px, #595959 1.5px 3px)';
+  return 'background:#6b6f78';
+}
+function strapMatChip(id){
+  if (id === 'leather') return 'background:linear-gradient(135deg,#6e4a30,#3a2416)';
+  if (id === 'rubber')  return 'background:linear-gradient(135deg,#33363b,#191b1e)';
+  return metalChip(METAL.steel.color); // bracelet
+}
+const ICON = {
+  chev:`<svg class="zone__chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  check:`<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l4.5 4.5L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  warn:`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 2.5 20h19L12 3Z" stroke-linejoin="round"/><path d="M12 10v4" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="currentColor" stroke="none"/></svg>`,
+  info:`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01" stroke-linecap="round"/></svg>`,
+};
+
+/* ---- value/summary helpers ---- */
+function strapValueText(){ const m = STRAP_MAT[state.strapMat]; return m.name + (m.useColor ? ' · ' + STRAP_COLORS[state.strapColor].name : ''); }
+function strapSwatchColor(){ return STRAP_MAT[state.strapMat].useColor ? STRAP_COLORS[state.strapColor].color : METAL.steel.color; }
+function summaryValueText(zone){
+  if (zone === 'dial')  return DIAL_COLORS[state.dialColor].name + ' · ' + DIAL_FINISH[state.dialFinish].name;
+  if (zone === 'strap') return strapValueText();
+  return METAL[state[zone]].name;
+}
+function zoneSwatchColor(zone){
+  if (zone === 'dial')  return DIAL_COLORS[state.dialColor].color;
+  if (zone === 'strap') return strapSwatchColor();
+  return METAL[state[zone]].color;
+}
+function zoneHeaderChip(zone){
+  if (zone === 'dial')  return solidChip(DIAL_COLORS[state.dialColor].color);
+  if (zone === 'strap') return STRAP_MAT[state.strapMat].useColor ? solidChip(STRAP_COLORS[state.strapColor].color) : metalChip(METAL.steel.color);
+  return metalChip(METAL[state[zone]].color);
+}
+
+/* ---- radiogroup (roving tabindex + arrow keys, ARIA radio) ---------- */
+const radioGroups = [];
+function setGroupChecked(groupEl, val){
+  const radios = $$('[role=radio]', groupEl);
+  let active = false;
+  radios.forEach(r => {
+    const on = r.dataset.val === String(val) && r.getAttribute('aria-disabled') !== 'true';
+    r.setAttribute('aria-checked', on ? 'true' : 'false');
+    r.tabIndex = on ? 0 : -1; if (on) active = true;
+  });
+  if (!active && radios[0]) radios[0].tabIndex = 0;
+}
+function makeRadioGroup(groupEl, field, onChange){
+  radioGroups.push({ el: groupEl, field });
+  const enabled = () => $$('[role=radio]', groupEl).filter(r => r.getAttribute('aria-disabled') !== 'true');
+  const pick = r => { state[field] = r.dataset.val; setGroupChecked(groupEl, r.dataset.val); onChange(field); };
+  groupEl.addEventListener('click', e => {
+    const r = e.target.closest('[role=radio]');
+    if (r && r.getAttribute('aria-disabled') !== 'true') pick(r);
+  });
+  groupEl.addEventListener('keydown', e => {
+    const list = enabled(); if (!list.length) return;
+    let i = list.indexOf(document.activeElement);
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown'){ e.preventDefault(); i = (i + 1 + list.length) % list.length; list[i].focus(); pick(list[i]); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp'){ e.preventDefault(); i = (i - 1 + list.length) % list.length; list[i].focus(); pick(list[i]); }
+    else if (e.key === 'Home'){ e.preventDefault(); list[0].focus(); pick(list[0]); }
+    else if (e.key === 'End'){ e.preventDefault(); list[list.length - 1].focus(); pick(list[list.length - 1]); }
+    else if ((e.key === ' ' || e.key === 'Enter') && document.activeElement.matches('[role=radio]')){ e.preventDefault(); pick(document.activeElement); }
+  });
+}
+
+/* ---- change dispatch ------------------------------------------------ */
+function onZoneChange(field){
+  if (['case','bezel','indices','hands'].includes(field)) applyMetalZone(field, state[field]);
+  else if (field === 'dialColor' || field === 'dialFinish') applyDial(state.dialColor, state.dialFinish);
+  else if (field === 'strapMat'){ applyStrap(state.strapMat, state.strapColor); refreshStrapColorAvailability(); }
+  else if (field === 'strapColor') applyStrap(state.strapMat, state.strapColor);
+  const zone = (field === 'dialColor' || field === 'dialFinish') ? 'dial'
+             : (field === 'strapMat' || field === 'strapColor') ? 'strap' : field;
+  selectZone(zone, { scroll: false });
+  refreshHeaders(); renderSummary(); syncColorwayHighlight();
+}
+
+/* ---- build panel ---------------------------------------------------- */
+function makeGroup(label, field, items){
+  const isMat = ['case','bezel','indices','hands','strapMat'].includes(field);
+  const g = document.createElement('div'); g.className = 'zone__group';
+  g.innerHTML = `<div class="zone__label" id="lbl-${field}">${label}</div>`;
+  const rg = document.createElement('div');
+  rg.className = 'swatches'; rg.setAttribute('role','radiogroup'); rg.setAttribute('aria-labelledby','lbl-'+field); rg.dataset.field = field;
+  items.forEach(it => {
+    const b = document.createElement('button');
+    b.className = 'swatch'; b.setAttribute('role','radio'); b.setAttribute('aria-checked','false'); b.dataset.val = it.val; b.tabIndex = -1;
+    b.innerHTML = `<span class="swatch__chip ${isMat ? 'swatch__chip--mat' : ''}" style="${it.chip}"></span><span class="swatch__txt">${it.label}</span><span class="swatch__tick" aria-hidden="true">${ICON.check}</span>`;
+    rg.appendChild(b);
+  });
+  g.appendChild(rg);
+  makeRadioGroup(rg, field, onZoneChange);
+  return g;
+}
+function buildPanelUI(){
+  /* colorways */
+  const cw = $('#colorways'); cw.innerHTML = '';
+  COLORWAYS.forEach((c, i) => {
+    const b = document.createElement('button');
+    b.className = 'cway'; b.setAttribute('role','radio'); b.setAttribute('aria-checked','false'); b.dataset.cw = c.id; b.tabIndex = i === 0 ? 0 : -1;
+    b.innerHTML = `<span class="cway__sw" style="background:${hexCss(c.sw)}"></span><span class="cway__name">${c.name}</span>`;
+    cw.appendChild(b);
+  });
+  cw.addEventListener('click', e => { const b = e.target.closest('[role=radio]'); if (b) applyColorway(b.dataset.cw); });
+  cw.addEventListener('keydown', e => {
+    const list = $$('[role=radio]', cw); let i = list.indexOf(document.activeElement);
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown'){ e.preventDefault(); i = (i + 1 + list.length) % list.length; list[i].focus(); applyColorway(list[i].dataset.cw); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp'){ e.preventDefault(); i = (i - 1 + list.length) % list.length; list[i].focus(); applyColorway(list[i].dataset.cw); }
+    else if (e.key === 'Home'){ e.preventDefault(); list[0].focus(); applyColorway(list[0].dataset.cw); }
+    else if (e.key === 'End'){ e.preventDefault(); list[list.length-1].focus(); applyColorway(list[list.length-1].dataset.cw); }
+    else if ((e.key === ' ' || e.key === 'Enter') && document.activeElement.matches('[role=radio]')){ e.preventDefault(); applyColorway(document.activeElement.dataset.cw); }
+  });
+
+  /* zones */
+  const zwrap = $('#zones'); zwrap.innerHTML = '';
+  ZONES.forEach(z => {
+    const zoneEl = document.createElement('div'); zoneEl.className = 'zone'; zoneEl.dataset.zone = z.id;
+    const btn = document.createElement('button');
+    btn.className = 'zone__btn'; btn.type = 'button'; btn.setAttribute('aria-expanded','false'); btn.setAttribute('aria-controls','zb-'+z.id);
+    btn.innerHTML = `<span class="zone__swatch" data-zsw></span><span class="zone__meta"><span class="zone__name">${z.label}</span><span class="zone__val" data-zval></span></span>${ICON.chev}`;
+    const body = document.createElement('div'); body.className = 'zone__body'; body.id = 'zb-'+z.id;
+    const inner = document.createElement('div'); inner.className = 'zone__inner'; body.appendChild(inner);
+
+    if (z.kind === 'metal'){
+      inner.appendChild(makeGroup('Material', z.id, z.opts.map(id => ({ val:id, label:METAL[id].name, chip:metalChip(METAL[id].color) }))));
+    } else if (z.kind === 'dial'){
+      inner.appendChild(makeGroup('Dial colour', 'dialColor', z.colors.map(id => ({ val:id, label:DIAL_COLORS[id].name, chip:solidChip(DIAL_COLORS[id].color) }))));
+      inner.appendChild(makeGroup('Finish', 'dialFinish', z.finishes.map(id => ({ val:id, label:DIAL_FINISH[id].name, chip:finishChip(id) }))));
+    } else if (z.kind === 'strap'){
+      inner.appendChild(makeGroup('Material', 'strapMat', z.mats.map(id => ({ val:id, label:STRAP_MAT[id].name, chip:strapMatChip(id) }))));
+      const cg = makeGroup('Colour', 'strapColor', z.colors.map(id => ({ val:id, label:STRAP_COLORS[id].name, chip:solidChip(STRAP_COLORS[id].color) })));
+      cg.dataset.strapColorGroup = '1';
+      const note = document.createElement('p');
+      note.className = 'zone__note'; note.dataset.bnote = '1';
+      note.textContent = 'Bracelet finish is polished steel — colour selection isn’t applicable.';
+      cg.appendChild(note);
+      inner.appendChild(cg);
+    }
+    zoneEl.appendChild(btn); zoneEl.appendChild(body); zwrap.appendChild(zoneEl);
+
+    btn.addEventListener('click', () => {
+      if (zoneEl.classList.contains('is-open')){
+        zoneEl.classList.remove('is-open'); btn.setAttribute('aria-expanded','false');
+        if (selectedZone === z.id) deselect();
+      } else {
+        selectZone(z.id);
+      }
+    });
+  });
+
+  $('#btn-reset').addEventListener('click', reset);
+  refreshHeaders(); refreshStrapColorAvailability(); renderSummary(); syncColorwayHighlight();
+}
+
+function refreshHeaders(){
+  radioGroups.forEach(({ el, field }) => setGroupChecked(el, state[field]));
+  ZONES.forEach(z => {
+    const zEl = $(`.zone[data-zone="${z.id}"]`); if (!zEl) return;
+    const sw = $('[data-zsw]', zEl), val = $('[data-zval]', zEl);
+    if (sw) sw.style.cssText = zoneHeaderChip(z.id);
+    if (val) val.textContent = summaryValueText(z.id);
+  });
+}
+function refreshStrapColorAvailability(){
+  const cg = $('[data-strap-color-group]'); if (!cg) return;
+  const bracelet = state.strapMat === 'bracelet';
+  $$('[role=radio]', cg).forEach(r => { r.setAttribute('aria-disabled', String(bracelet)); r.disabled = bracelet; });
+  const note = $('[data-bnote]', cg); if (note) note.style.display = bracelet ? 'block' : 'none';
+  setGroupChecked(cg, state.strapColor);
+}
+
+/* ---- summary + sample price ----------------------------------------- */
+let priceShown = null, priceRAF = 0;
+function computePrice(){
+  const p = PRICE.base + PRICE.case[state.case] + PRICE.bezel[state.bezel] + PRICE.finish[state.dialFinish]
+          + PRICE.indices[state.indices] + PRICE.hands[state.hands] + PRICE.strapMat[state.strapMat];
+  return Math.max(0, Math.round(p / 10) * 10);
+}
+function renderSummary(){
+  const wrap = $('#summary'); wrap.innerHTML = '';
+  const rows = [
+    ['Case', summaryValueText('case'), zoneSwatchColor('case')],
+    ['Bezel', summaryValueText('bezel'), zoneSwatchColor('bezel')],
+    ['Dial', summaryValueText('dial'), zoneSwatchColor('dial')],
+    ['Markers', summaryValueText('indices'), zoneSwatchColor('indices')],
+    ['Hands', summaryValueText('hands'), zoneSwatchColor('hands')],
+    ['Strap', summaryValueText('strap'), strapSwatchColor()],
+  ];
+  rows.forEach(([k, v, c]) => {
+    const row = document.createElement('div'); row.className = 'summary__row';
+    row.innerHTML = `<span class="summary__k">${k}</span><span class="summary__v"><span class="summary__sw" style="background:${hexCss(c)}"></span>${v}</span>`;
+    wrap.appendChild(row);
+  });
+  countUpPrice(computePrice());
+}
+function countUpPrice(target){
+  const elv = $('#price-val'); if (!elv) return;
+  if (priceShown === null || prefersReduced){ priceShown = target; elv.textContent = '$' + target.toLocaleString('en-US'); return; }
+  cancelAnimationFrame(priceRAF);
+  const from = priceShown, t0 = performance.now(), dur = 420;
+  (function step(now){
+    const p = Math.min(1, (now - t0) / dur);
+    const val = Math.round((from + (target - from) * ease(p)) / 10) * 10;
+    elv.textContent = '$' + val.toLocaleString('en-US');
+    if (p < 1) priceRAF = requestAnimationFrame(step); else priceShown = target;
+  })(performance.now());
+}
+
+/* ---- colorway match + apply ----------------------------------------- */
+function cfgMatches(cfg){ return Object.keys(cfg).every(k => state[k] === cfg[k]); }
+function syncColorwayHighlight(){
+  const wrap = $('#colorways'); if (!wrap) return;
+  let match = null;
+  for (const c of COLORWAYS){ if (cfgMatches(c.cfg)){ match = c.id; break; } }
+  const radios = $$('[role=radio]', wrap); let any = false;
+  radios.forEach(r => { const on = r.dataset.cw === match; r.setAttribute('aria-checked', on ? 'true' : 'false'); r.tabIndex = on ? 0 : -1; if (on) any = true; });
+  if (!any && radios[0]) radios[0].tabIndex = 0;
+}
+function setConfig(cfg, opts = {}){
+  Object.assign(state, cfg);
+  applyConfig(state, { instant: !!opts.instant });
+  refreshHeaders(); refreshStrapColorAvailability(); renderSummary(); syncColorwayHighlight();
+}
+function applyColorway(id){
+  const c = COLORWAYS.find(x => x.id === id); if (!c) return;
+  setConfig(c.cfg);
+}
+function reset(){ setConfig(DEFAULT_CFG); deselect(); toast('info', 'Configuration reset to Midnight Steel'); }
+
+/* ---- selection (panel <-> 3D) --------------------------------------- */
+function selectZone(zone, opts = {}){
+  selectedZone = zone;
+  $$('.zone').forEach(z => z.classList.toggle('is-active', z.dataset.zone === zone));
+  openZone(zone, opts);
+  updatePartChip();
+}
+function openZone(zone, { scroll = true } = {}){
+  $$('.zone').forEach(z => {
+    const on = z.dataset.zone === zone;
+    z.classList.toggle('is-open', on);
+    const b = $('.zone__btn', z); if (b) b.setAttribute('aria-expanded', on ? 'true' : 'false');
+  });
+  if (scroll){ const z = $(`.zone[data-zone="${zone}"]`); if (z) z.scrollIntoView({ block:'nearest', behavior: prefersReduced ? 'auto' : 'smooth' }); }
+}
+function deselect(){
+  selectedZone = null;
+  $$('.zone').forEach(z => z.classList.remove('is-active'));
+  updatePartChip();
+}
+function updatePartChip(){
+  const name = $('#partchip-name'), sub = $('#partchip-sub'), dot = $('#partchip-dot'), svg = dot.querySelector('svg');
+  if (!selectedZone){
+    name.textContent = 'Tap or click a part'; sub.textContent = 'to start customizing';
+    dot.style.background = 'var(--accent)'; if (svg) svg.style.display = '';
+    return;
+  }
+  const z = ZONES.find(x => x.id === selectedZone);
+  name.textContent = z.label; sub.textContent = summaryValueText(selectedZone);
+  dot.style.background = hexCss(zoneSwatchColor(selectedZone)); if (svg) svg.style.display = 'none';
+}
+
+/* ---- raycast + interactions ----------------------------------------- */
+function wireInteractions(){
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+  const pickAt = (cx, cy) => {
+    const r = el.canvas.getBoundingClientRect();
+    ndc.x = ((cx - r.left) / r.width) * 2 - 1;
+    ndc.y = -((cy - r.top) / r.height) * 2 + 1;
+    ray.setFromCamera(ndc, camera);
+    const hits = ray.intersectObjects(pickables, false);
+    return hits.length ? hits[0].object.userData.zone : null;
+  };
+  let down = null;
+  el.canvas.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY }; el.canvas.style.cursor = 'grabbing'; });
+  el.canvas.addEventListener('pointerup', e => {
+    el.canvas.style.cursor = 'grab';
+    if (!down) return;
+    const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y); down = null;
+    if (moved > 6) return;                 // it was an orbit drag, not a click
+    const zone = pickAt(e.clientX, e.clientY);
+    if (zone) selectZone(zone); else deselect();
+  });
+  el.canvas.addEventListener('pointermove', e => {
+    if (down) return;                      // don't fight an active drag
+    const zone = pickAt(e.clientX, e.clientY);
+    hoverZone = zone; el.canvas.style.cursor = zone ? 'pointer' : 'grab';
+  });
+  el.canvas.addEventListener('pointerleave', () => { hoverZone = null; });
+  el.canvas.style.cursor = 'grab';
+
+  /* keyboard orbit/zoom when the canvas is focused */
+  el.canvas.addEventListener('keydown', e => {
+    const sph = new THREE.Spherical().setFromVector3(camera.position.clone().sub(controls.target));
+    const a = 0.18, z = 0.5; let used = true;
+    if (e.key === 'ArrowLeft') sph.theta -= a;
+    else if (e.key === 'ArrowRight') sph.theta += a;
+    else if (e.key === 'ArrowUp') sph.phi = Math.max(controls.minPolarAngle + 0.02, sph.phi - a);
+    else if (e.key === 'ArrowDown') sph.phi = Math.min(controls.maxPolarAngle - 0.02, sph.phi + a);
+    else if (e.key === '+' || e.key === '=') sph.radius = Math.max(controls.minDistance, sph.radius - z);
+    else if (e.key === '-' || e.key === '_') sph.radius = Math.min(controls.maxDistance, sph.radius + z);
+    else used = false;
+    if (used){ e.preventDefault(); camera.position.copy(controls.target).add(new THREE.Vector3().setFromSpherical(sph)); controls.update(); onUserInteractStart(); }
+  });
+
+  /* toolbar */
+  const tRot = $('#t-rotate');
+  tRot.setAttribute('aria-pressed', String(userAutoRotate && !prefersReduced));
+  tRot.addEventListener('click', e => {
+    userAutoRotate = !userAutoRotate;
+    controls.autoRotate = userAutoRotate && !prefersReduced;
+    e.currentTarget.setAttribute('aria-pressed', String(userAutoRotate));
+  });
+  const dolly = d => {
+    const sph = new THREE.Spherical().setFromVector3(camera.position.clone().sub(controls.target));
+    sph.radius = Math.min(controls.maxDistance, Math.max(controls.minDistance, sph.radius + d));
+    camera.position.copy(controls.target).add(new THREE.Vector3().setFromSpherical(sph)); controls.update(); onUserInteractStart();
+  };
+  $('#t-zin').addEventListener('click', () => dolly(-0.7));
+  $('#t-zout').addEventListener('click', () => dolly(0.7));
+  $('#t-recenter').addEventListener('click', () => {
+    camera.position.set(0.2, 1.35, 6.4); controls.target.set(0, 0.15, 0); controls.update();
+  });
+  $('#t-shot').addEventListener('click', exportPNG);
+  $('#btn-share').addEventListener('click', exportPNG);
+}
+
+/* ---- PNG export ----------------------------------------------------- */
+function exportPNG(){
+  if (!renderer){ toast('err', '3D preview is not available'); return; }
+  const btn = $('#btn-share'); btn.classList.add('is-busy'); btn.setAttribute('aria-busy', 'true');
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    let url;
+    try { renderer.render(scene, camera); url = renderer.domElement.toDataURL('image/png'); }
+    catch (err){
+      btn.classList.remove('is-busy'); btn.removeAttribute('aria-busy');
+      toast('err', 'Could not capture the image' + (err && err.message ? ' — ' + String(err.message).slice(0,60) : ''));
+      return;
+    }
+    const fn = `meridian-${state.case}-${state.dialColor}-${Date.now().toString(36)}.png`;
+    const a = document.createElement('a'); a.href = url; a.download = fn;
+    document.body.appendChild(a); a.click(); a.remove();
+    btn.classList.remove('is-busy'); btn.removeAttribute('aria-busy');
+    toast('ok', `Saved <strong>${fn}</strong>`, { thumb: url });
+  }));
+}
+
+/* ---- toasts --------------------------------------------------------- */
+function toast(type, msg, opts = {}){
+  const t = document.createElement('div');
+  t.className = 'toast toast--' + (type === 'ok' ? 'ok' : type === 'err' ? 'err' : 'info');
+  t.setAttribute('role', type === 'err' ? 'alert' : 'status');
+  const ic = type === 'ok' ? ICON.check : type === 'err' ? ICON.warn : ICON.info;
+  t.innerHTML = `<span class="toast__ic">${ic}</span>` + (opts.thumb ? `<img src="${opts.thumb}" alt="Preview of saved configuration">` : '') + `<span>${msg}</span>`;
+  el.toasts.appendChild(t);
+  const ttl = opts.ttl || 4200;
+  setTimeout(() => { t.classList.add('is-out'); setTimeout(() => t.remove(), 260); }, ttl);
+}
+
+/* kick off after the whole module is initialized (the sync no-WebGL path would
+   otherwise hit the temporal dead zone of consts declared further down) */
+boot();
+</script>
+</body>
+</html>

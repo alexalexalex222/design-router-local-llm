@@ -1,0 +1,1292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STRATA — SQL Browser</title>
+<meta name="description" content="STRATA — a refined in-browser SQL client running real SQLite (WASM) over a synthetic sample database.">
+
+<!-- Pinned CDN: CodeMirror 5 (editor) + sql.js 1.13.0 (SQLite WASM). Deferred → run before DOMContentLoaded, in order. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/sql/sql.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/addon/edit/matchbrackets.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/addon/edit/closebrackets.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/addon/selection/active-line.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/sql.js@1.13.0/dist/sql-wasm.js" crossorigin="anonymous"></script>
+
+<style>
+/* ============================== TOKENS ============================== */
+:root{
+  /* neutral ramp (graphite-blue) */
+  --bg:#0b0d11; --panel:#111419; --panel-2:#0e1116; --raised:#161a21; --raised-2:#1b2029;
+  --line:#232934; --line-2:#2c343f;
+  /* ink */
+  --ink:#e7eaf0; --muted:#a8b1c0; --faint:#6f7889;
+  /* brand + semantic */
+  --accent:#2dd4bf; --accent-2:#3fe3cf; --on-accent:#04241f;
+  --accent-soft:color-mix(in oklab, var(--accent) 14%, transparent);
+  --accent-line:color-mix(in oklab, var(--accent) 42%, transparent);
+  --good:#5bd6a4; --warn:#e8b766; --danger:#fb7185;
+  --danger-soft:color-mix(in oklab, var(--danger) 13%, transparent);
+  --danger-line:color-mix(in oklab, var(--danger) 40%, transparent);
+  /* syntax */
+  --syn-kw:#7cc7ff; --syn-fn:#c4a7ff; --syn-str:#9ad27f; --syn-num:#e8b766;
+  --syn-type:#5bd6a4; --syn-op:#9aa4b2; --syn-comment:#5f6b7e; --syn-punc:#aeb6c4;
+  /* spacing (4px) */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s8:32px;
+  /* radii */
+  --r1:6px; --r2:9px; --r3:13px; --rp:999px;
+  /* elevation (3 tiers) */
+  --e1:0 1px 2px rgba(0,0,0,.4);
+  --e2:0 8px 24px -8px rgba(0,0,0,.6), 0 2px 6px rgba(0,0,0,.4);
+  --e3:0 24px 60px -16px rgba(0,0,0,.7), 0 4px 12px rgba(0,0,0,.5);
+  /* type scale (fluid) */
+  --fs-xs:clamp(10.5px,.66rem,11px); --fs-sm:clamp(12px,.78rem,12.5px);
+  --fs-base:clamp(13px,.84rem,13.5px); --fs-ui:clamp(13.5px,.88rem,14px);
+  --fs-md:clamp(15px,.97rem,15.5px); --fs-lg:clamp(17px,1.18rem,19px);
+  /* mono / ui fonts */
+  --mono:"SF Mono",ui-monospace,"JetBrains Mono","Menlo","Cascadia Code","Roboto Mono",monospace;
+  --ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",sans-serif;
+  /* motion */
+  --t-fast:150ms; --t:200ms; --ease:cubic-bezier(.2,.6,.2,1);
+  /* layout */
+  --side-w:264px; --editor-h:42%;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{font-size:16px}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--ui); font-size:var(--fs-ui); line-height:1.45;
+  height:100dvh; overflow:hidden;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+button{font-family:inherit; color:inherit}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:var(--r1)}
+::selection{background:color-mix(in oklab,var(--accent) 32%, transparent)}
+.skip{position:absolute; left:var(--s3); top:-44px; z-index:60; background:var(--accent); color:var(--on-accent);
+  padding:var(--s2) var(--s4); border-radius:var(--r2); font-weight:650; font-size:var(--fs-sm); transition:top var(--t) var(--ease)}
+.skip:focus{top:var(--s3)}
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;padding:0;margin:-1px}
+
+/* scrollbars */
+*::-webkit-scrollbar{width:11px;height:11px}
+*::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:var(--rp);border:3px solid transparent;background-clip:padding-box}
+*::-webkit-scrollbar-thumb:hover{background:#3a444f;background-clip:padding-box}
+*::-webkit-scrollbar-corner{background:transparent}
+*{scrollbar-width:thin;scrollbar-color:var(--line-2) transparent}
+
+svg{display:block}
+.ico{width:16px;height:16px;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.ico-fill{fill:currentColor;stroke:none}
+
+/* ============================== APP SHELL ============================== */
+.app{display:grid; grid-template-rows:auto minmax(0,1fr) auto; height:100dvh}
+
+/* ---- app bar ---- */
+.appbar{display:flex; align-items:center; gap:var(--s3); padding:0 var(--s4); height:54px; overflow:hidden;
+  background:linear-gradient(180deg,var(--raised),#13171e); border-bottom:1px solid var(--line); position:relative; z-index:20}
+.brand{display:flex; align-items:center; gap:var(--s3); min-width:0}
+.mark{width:30px;height:30px;border-radius:var(--r2);display:grid;place-items:center;flex:0 0 auto;
+  background:radial-gradient(120% 120% at 30% 20%, color-mix(in oklab,var(--accent) 34%,transparent), transparent 70%), var(--raised-2);
+  border:1px solid var(--accent-line); box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.mark .ico{width:18px;height:18px;color:var(--accent)}
+.brand-text{display:flex; flex-direction:column; line-height:1.05; min-width:0}
+.brand-name{font-weight:700; letter-spacing:.13em; font-size:var(--fs-sm)}
+.brand-sub{font-size:var(--fs-xs); color:var(--faint); letter-spacing:.04em}
+.db-chip{display:inline-flex; align-items:center; gap:var(--s2); padding:5px var(--s3); min-width:0; flex:0 1 auto;
+  background:var(--raised-2); border:1px solid var(--line); border-radius:var(--rp); color:var(--muted); font-size:var(--fs-sm)}
+.db-chip .ico{width:14px;height:14px;color:var(--accent)}
+.db-chip b{color:var(--ink);font-weight:600;font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.db-chip .syn{color:var(--warn); font-size:var(--fs-xs); letter-spacing:.04em; text-transform:uppercase; font-weight:700;
+  border-left:1px solid var(--line); padding-left:var(--s2)}
+.spacer{flex:1 1 auto; min-width:var(--s2)}
+.bar-actions{display:flex; align-items:center; gap:var(--s2)}
+.engine-chip{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-xs);color:var(--faint);
+  font-family:var(--mono); padding:5px var(--s3); border:1px solid var(--line); border-radius:var(--rp)}
+.engine-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 3px color-mix(in oklab,var(--good) 22%,transparent)}
+.engine-chip.boot .dot{background:var(--warn);box-shadow:0 0 0 3px color-mix(in oklab,var(--warn) 22%,transparent);animation:pulse 1.2s var(--ease) infinite}
+.engine-chip.fail .dot{background:var(--danger);box-shadow:none}
+@keyframes pulse{50%{opacity:.4}}
+
+/* generic buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);height:34px;padding:0 var(--s3);
+  background:var(--raised-2);border:1px solid var(--line);border-radius:var(--r2);color:var(--muted);
+  font-size:var(--fs-sm);font-weight:600;cursor:pointer;transition:background var(--t-fast) var(--ease),border-color var(--t-fast) var(--ease),color var(--t-fast) var(--ease),transform var(--t-fast) var(--ease);white-space:nowrap}
+.btn .ico{width:15px;height:15px}
+.btn:hover{background:#212733;border-color:var(--line-2);color:var(--ink)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.42;cursor:not-allowed;transform:none}
+.btn.icon{width:34px;padding:0}
+.btn.primary{background:var(--accent);border-color:transparent;color:var(--on-accent)}
+.btn.primary:hover{background:var(--accent-2)}
+.btn.primary .ico{color:var(--on-accent)}
+.icon-toggle{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:var(--r2);
+  background:transparent;border:1px solid transparent;color:var(--muted);cursor:pointer;transition:background var(--t-fast),color var(--t-fast),border-color var(--t-fast)}
+.icon-toggle:hover{background:var(--raised-2);color:var(--ink);border-color:var(--line)}
+.icon-toggle[aria-expanded="true"],.icon-toggle.on{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-line)}
+
+/* ---- body grid ---- */
+.body{display:grid; grid-template-columns:var(--side-w) 7px minmax(0,1fr); min-height:0; position:relative}
+.vsplit,.hsplit{background:transparent;position:relative;z-index:5;touch-action:none}
+.vsplit{cursor:col-resize}
+.vsplit::after{content:"";position:absolute;inset:0 3px;background:var(--line);transition:background var(--t-fast)}
+.vsplit:hover::after,.vsplit.drag::after{background:var(--accent)}
+.hsplit{cursor:row-resize;height:7px}
+.hsplit::after{content:"";position:absolute;inset:3px 0;background:var(--line);transition:background var(--t-fast)}
+.hsplit:hover::after,.hsplit.drag::after{background:var(--accent)}
+
+/* ---- sidebar ---- */
+.sidebar{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;min-width:0}
+.side-head{display:flex;align-items:center;gap:var(--s2);padding:var(--s3) var(--s3) var(--s2);}
+.side-title{font-size:var(--fs-xs);letter-spacing:.13em;text-transform:uppercase;color:var(--faint);font-weight:700}
+.side-count{margin-left:auto;font-size:var(--fs-xs);color:var(--faint);font-family:var(--mono)}
+.side-search{position:relative;padding:0 var(--s3) var(--s3)}
+.side-search .ico{position:absolute;left:calc(var(--s3) + 9px);top:50%;transform:translateY(-60%);width:14px;height:14px;color:var(--faint);pointer-events:none}
+.side-search input{width:100%;height:32px;padding:0 var(--s3) 0 32px;background:var(--panel-2);border:1px solid var(--line);
+  border-radius:var(--r2);color:var(--ink);font-size:var(--fs-sm);font-family:var(--ui)}
+.side-search input::placeholder{color:var(--faint)}
+.side-search input:focus{border-color:var(--accent-line);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+.tree{flex:1 1 auto;min-height:0;overflow:auto;padding:0 var(--s2) var(--s4)}
+.db-node{display:flex;align-items:center;gap:var(--s2);padding:var(--s2) var(--s2);color:var(--muted);font-size:var(--fs-sm);font-weight:600}
+.db-node .ico{width:15px;height:15px;color:var(--faint)}
+.db-node .nm{font-family:var(--mono);color:var(--ink)}
+.tbl{margin:1px 0}
+.tbl-row{display:flex;align-items:center;gap:var(--s2);width:100%;padding:7px var(--s2);border:1px solid transparent;border-radius:var(--r2);
+  background:transparent;color:var(--ink);cursor:pointer;text-align:left;font-size:var(--fs-base);transition:background var(--t-fast),border-color var(--t-fast)}
+.tbl-row:hover{background:var(--raised)}
+.tbl-row .twist{display:grid;place-items:center;width:16px;height:16px;color:var(--faint);transition:transform var(--t-fast) var(--ease);flex:0 0 auto}
+.tbl-row .twist .ico{width:12px;height:12px;stroke-width:2}
+.tbl.open .twist{transform:rotate(90deg)}
+.tbl-row .tico{width:15px;height:15px;color:var(--faint);flex:0 0 auto}
+.tbl-row .tname{font-family:var(--mono);font-size:var(--fs-base);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1 1 auto;min-width:0}
+.tbl-row .badge{font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint);background:var(--raised-2);
+  border:1px solid var(--line);border-radius:var(--rp);padding:1px 7px;flex:0 0 auto;font-variant-numeric:tabular-nums}
+.tbl.active>.tbl-row{background:var(--accent-soft);border-color:var(--accent-line)}
+.tbl.active>.tbl-row .tico,.tbl.active>.tbl-row .twist{color:var(--accent)}
+.tbl.active>.tbl-row .tname{color:var(--accent)}
+.cols{overflow:hidden;display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--t) var(--ease)}
+.tbl.open .cols{grid-template-rows:1fr}
+.cols-inner{min-height:0;overflow:hidden;margin:2px 0 var(--s2) 0;padding-left:22px;border-left:1px dashed var(--line);margin-left:13px}
+.col-row{display:flex;align-items:center;gap:var(--s2);padding:4px var(--s2);border-radius:var(--r1);cursor:default}
+.col-row:hover{background:var(--raised)}
+.col-row .kico{width:14px;height:14px;flex:0 0 auto;color:var(--faint)}
+.col-row .kico.pk{color:var(--accent)}
+.col-row .kico.fk{color:var(--syn-fn)}
+.col-row .cname{font-family:var(--mono);font-size:var(--fs-sm);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.col-row .ctype{margin-left:auto;font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint);text-transform:uppercase;letter-spacing:.03em;flex:0 0 auto}
+.tree-empty{padding:var(--s4) var(--s3);color:var(--faint);font-size:var(--fs-sm)}
+
+/* ---- main ---- */
+.main{display:grid;grid-template-rows:auto var(--editor-h) 7px minmax(0,1fr);min-width:0;min-height:0;background:var(--panel-2)}
+
+/* tab bar */
+.tabbar{display:flex;align-items:stretch;gap:0;background:var(--raised);border-bottom:1px solid var(--line);min-width:0}
+.tabs{display:flex;align-items:stretch;overflow-x:auto;overflow-y:hidden;min-width:0;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{display:inline-flex;align-items:center;gap:var(--s2);padding:0 var(--s2) 0 var(--s3);height:40px;min-width:120px;max-width:220px;
+  background:transparent;border:none;border-right:1px solid var(--line);color:var(--muted);cursor:pointer;font-size:var(--fs-sm);
+  position:relative;transition:background var(--t-fast),color var(--t-fast)}
+.tab:hover{background:var(--raised-2);color:var(--ink)}
+.tab .ti{width:13px;height:13px;color:var(--faint);flex:0 0 auto}
+.tab .tt{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;font-weight:600}
+.tab[aria-selected="true"]{background:var(--panel-2);color:var(--ink)}
+.tab[aria-selected="true"] .ti{color:var(--accent)}
+.tab[aria-selected="true"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--accent)}
+.tab .x{display:grid;place-items:center;width:20px;height:20px;border-radius:var(--r1);color:var(--faint);opacity:0;transition:opacity var(--t-fast),background var(--t-fast),color var(--t-fast)}
+.tab:hover .x,.tab[aria-selected="true"] .x{opacity:1}
+.tab .x:hover{background:var(--line-2);color:var(--ink)}
+.tab .x .ico{width:12px;height:12px;stroke-width:2}
+.tab-new{display:grid;place-items:center;width:40px;height:40px;background:transparent;border:none;border-right:1px solid var(--line);
+  color:var(--faint);cursor:pointer;flex:0 0 auto;transition:background var(--t-fast),color var(--t-fast)}
+.tab-new:hover{background:var(--raised-2);color:var(--accent)}
+.tab-new .ico{width:16px;height:16px;stroke-width:2}
+
+/* editor pane */
+.editor-pane{display:flex;flex-direction:column;min-height:0;min-width:0;border-bottom:1px solid var(--line)}
+.editor-tools{display:flex;align-items:center;gap:var(--s2);padding:var(--s2) var(--s3);background:var(--panel-2);min-width:0}
+.run-wrap{display:flex;align-items:stretch}
+.btn.run{height:34px;border-radius:var(--r2);font-weight:700;padding:0 var(--s4)}
+.sel-pill{display:none;align-items:center;gap:6px;font-size:var(--fs-xs);color:var(--accent);background:var(--accent-soft);
+  border:1px solid var(--accent-line);border-radius:var(--rp);padding:3px var(--s3);font-weight:700;letter-spacing:.02em}
+.sel-pill.show{display:inline-flex}
+.kbd-hint{margin-left:auto;display:flex;align-items:center;gap:6px;color:var(--faint);font-size:var(--fs-xs);white-space:nowrap}
+.kbd{font-family:var(--mono);font-size:10.5px;background:var(--raised-2);border:1px solid var(--line);border-bottom-width:2px;
+  border-radius:5px;padding:1px 5px;color:var(--muted)}
+.cm-host{flex:1 1 auto;min-height:0;position:relative}
+.CodeMirror{height:100%!important;font-family:var(--mono)!important;font-size:13px;line-height:1.55;background:var(--panel-2)}
+
+/* results pane */
+.results{display:flex;flex-direction:column;min-height:0;min-width:0;background:var(--panel)}
+.res-tools{display:flex;align-items:center;gap:var(--s2);padding:var(--s2) var(--s3);background:var(--raised);border-bottom:1px solid var(--line);min-width:0}
+.res-title{display:flex;align-items:center;gap:var(--s2);min-width:0;font-size:var(--fs-sm);color:var(--muted)}
+.res-title .ico{width:15px;height:15px;color:var(--faint);flex:0 0 auto}
+.res-title b{color:var(--ink);font-family:var(--mono);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.res-title .state-dot{width:7px;height:7px;border-radius:50%;background:var(--faint);flex:0 0 auto}
+.res-title.ok .state-dot{background:var(--good)}
+.res-title.err .state-dot{background:var(--danger)}
+.res-tools .right{margin-left:auto;display:flex;align-items:center;gap:var(--s2)}
+.grid-host{flex:1 1 auto;min-height:0;min-width:0;position:relative;display:flex;flex-direction:column}
+.err-banner{display:flex;gap:var(--s3);align-items:flex-start;margin:var(--s3);padding:var(--s3) var(--s4);
+  background:var(--danger-soft);border:1px solid var(--danger-line);border-radius:var(--r2);flex:0 0 auto}
+.err-banner .ico{width:18px;height:18px;color:var(--danger);flex:0 0 auto;margin-top:1px}
+.err-banner .et{font-weight:700;color:var(--danger);font-size:var(--fs-sm);margin:0 0 2px}
+.err-banner code{font-family:var(--mono);font-size:var(--fs-sm);color:var(--ink);word-break:break-word}
+.grid-scroll{flex:1 1 auto;min-height:0;overflow:auto;position:relative}
+table.grid{border-collapse:separate;border-spacing:0;min-width:100%;font-family:var(--mono);font-size:13px}
+table.grid thead th{position:sticky;top:0;z-index:3;background:var(--raised-2);border-bottom:1px solid var(--line-2);
+  border-right:1px solid var(--line);padding:0;text-align:left;font-weight:600;white-space:nowrap;color:var(--muted)}
+table.grid thead th .th-in{display:flex;align-items:center;gap:6px;padding:8px var(--s3);min-height:36px;cursor:pointer;user-select:none}
+table.grid thead th .th-in:hover{color:var(--ink)}
+table.grid thead th .th-name{overflow:hidden;text-overflow:ellipsis}
+table.grid thead th .th-type{font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+table.grid thead th .sort{width:13px;height:13px;color:var(--faint);flex:0 0 auto;margin-left:auto;opacity:.5}
+table.grid thead th[aria-sort="ascending"] .sort,table.grid thead th[aria-sort="descending"] .sort{color:var(--accent);opacity:1}
+table.grid thead th .resize{position:absolute;top:0;right:-3px;width:8px;height:100%;cursor:col-resize;z-index:4}
+table.grid thead th .resize::after{content:"";position:absolute;top:6px;bottom:6px;left:3px;width:2px;background:transparent;transition:background var(--t-fast)}
+table.grid thead th .resize:hover::after,table.grid thead th .resize.drag::after{background:var(--accent)}
+table.grid th.gutter,table.grid td.gutter{position:sticky;left:0;z-index:2;width:54px;min-width:54px;max-width:54px;
+  background:var(--raised-2);border-right:1px solid var(--line-2);color:var(--faint);text-align:right;
+  font-size:11px;padding:0 10px;user-select:none;font-variant-numeric:tabular-nums}
+table.grid thead th.gutter{z-index:5}
+table.grid tbody td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:7px var(--s3);
+  color:var(--ink);white-space:nowrap;max-width:520px;overflow:hidden;text-overflow:ellipsis;vertical-align:top}
+table.grid tbody td.num{text-align:right;color:#d8def0;font-variant-numeric:tabular-nums}
+table.grid tbody tr:nth-child(even) td{background:color-mix(in oklab,var(--raised) 38%,transparent)}
+table.grid tbody tr:nth-child(even) td.gutter{background:var(--raised-2)}
+table.grid tbody tr:hover td{background:var(--accent-soft)}
+table.grid tbody tr:hover td.gutter{background:#1f2530;color:var(--muted)}
+.cell-null{color:var(--warn);font-style:italic;opacity:.8;font-size:11.5px;letter-spacing:.02em}
+.cell-num0{color:var(--faint)}
+
+/* result overlays (loading / empty / boot / fail) */
+.overlay{flex:1 1 auto;display:grid;place-items:center;padding:var(--s6);text-align:center}
+.overlay .panel{max-width:340px;display:flex;flex-direction:column;align-items:center;gap:var(--s3)}
+.overlay .glyph{width:54px;height:54px;display:grid;place-items:center;border-radius:var(--r3);background:var(--raised-2);border:1px solid var(--line);color:var(--faint)}
+.overlay .glyph .ico{width:26px;height:26px}
+.overlay h3{margin:0;font-size:var(--fs-md);color:var(--ink);font-weight:650}
+.overlay p{margin:0;font-size:var(--fs-sm);color:var(--muted);line-height:1.5}
+.overlay.empty-headers{display:block;place-items:unset;padding:0}
+.empty-msg{display:flex;flex-direction:column;align-items:center;gap:var(--s2);padding:var(--s8) var(--s4);text-align:center}
+.empty-msg .glyph{width:46px;height:46px;display:grid;place-items:center;border-radius:var(--r2);background:var(--raised-2);border:1px solid var(--line);color:var(--faint);margin-bottom:var(--s1)}
+.empty-msg .glyph .ico{width:22px;height:22px}
+.empty-msg strong{color:var(--ink);font-size:var(--fs-md);font-weight:600}
+.empty-msg span{color:var(--muted);font-size:var(--fs-sm)}
+.spinner{width:30px;height:30px;color:var(--accent)}
+.spinner .ring{opacity:.18}
+.spinner .seg{transform-origin:center;animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---- status bar ---- */
+.statusbar{display:flex;align-items:center;gap:0;height:32px;background:var(--raised);border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:var(--fs-xs);color:var(--muted);padding:0;min-width:0}
+.statusbar .seg{display:flex;align-items:center;gap:7px;padding:0 var(--s4);height:100%;border-right:1px solid var(--line);white-space:nowrap}
+.statusbar .seg .ico{width:13px;height:13px;color:var(--faint)}
+.statusbar .seg b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.statusbar .seg.ms b{color:var(--accent)}
+.statusbar .seg.err{color:var(--danger)}.statusbar .seg.err .ico{color:var(--danger)}
+.statusbar .grow{flex:1 1 auto;min-width:var(--s2)}
+.pager{display:flex;align-items:center;gap:0;margin-left:auto;border-left:1px solid var(--line);height:100%}
+.pager .pg-info{padding:0 var(--s3);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pager button{display:grid;place-items:center;width:38px;height:100%;background:transparent;border:none;border-left:1px solid var(--line);
+  color:var(--muted);cursor:pointer;transition:background var(--t-fast),color var(--t-fast)}
+.pager button:hover:not(:disabled){background:var(--raised-2);color:var(--accent)}
+.pager button:disabled{color:#3c434f;cursor:not-allowed}
+.pager button .ico{width:15px;height:15px;stroke-width:2}
+.engine-seg{color:var(--faint)}
+
+/* ---- history popover ---- */
+.pop{position:fixed;z-index:50;background:var(--panel);border:1px solid var(--line-2);border-radius:var(--r3);box-shadow:var(--e3);
+  width:min(420px,calc(100vw - 24px));max-height:min(440px,70vh);display:none;flex-direction:column;overflow:hidden}
+.pop.show{display:flex;animation:pop var(--t) var(--ease)}
+@keyframes pop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.pop-head{display:flex;align-items:center;gap:var(--s2);padding:var(--s3) var(--s4);border-bottom:1px solid var(--line)}
+.pop-head h3{margin:0;font-size:var(--fs-sm);letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-weight:700}
+.pop-head .btn{height:28px;margin-left:auto;font-size:var(--fs-xs);padding:0 var(--s2)}
+.pop-list{overflow:auto;padding:var(--s2)}
+.hist-item{display:grid;grid-template-columns:auto 1fr auto;gap:var(--s3);align-items:center;width:100%;text-align:left;
+  padding:var(--s2) var(--s3);background:transparent;border:1px solid transparent;border-radius:var(--r2);cursor:pointer;
+  transition:background var(--t-fast),border-color var(--t-fast)}
+.hist-item:hover{background:var(--raised);border-color:var(--line)}
+.hist-item .hs{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.hist-item .hs.ok{background:var(--good)}.hist-item .hs.err{background:var(--danger)}
+.hist-item .hq{font-family:var(--mono);font-size:var(--fs-sm);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.hist-item .hm{font-family:var(--mono);font-size:var(--fs-xs);color:var(--faint);white-space:nowrap;flex:0 0 auto}
+.pop-empty{padding:var(--s6) var(--s4);text-align:center;color:var(--faint);font-size:var(--fs-sm)}
+
+/* ---- mobile drawer scrim ---- */
+.scrim{position:fixed;inset:0;background:rgba(4,6,9,.62);z-index:30;opacity:0;visibility:hidden;transition:opacity var(--t) var(--ease),visibility var(--t)}
+.scrim.show{opacity:1;visibility:visible}
+.mobile-only{display:none}
+
+/* ============================== RESPONSIVE ============================== */
+@media (max-width:880px){
+  .body{grid-template-columns:1fr}
+  .vsplit,.hsplit{display:none}
+  .main{grid-template-rows:auto minmax(160px,38vh) minmax(0,1fr)}
+  .sidebar{position:fixed;top:54px;bottom:0;left:0;width:min(300px,84vw);z-index:40;
+    transform:translateX(-104%);transition:transform var(--t) var(--ease);box-shadow:var(--e3)}
+  .sidebar.open{transform:none}
+  .mobile-only{display:inline-grid}
+  .editor-pane{border-bottom:1px solid var(--line)}
+  .kbd-hint{display:none}
+  .db-chip .syn{display:none}
+}
+@media (max-width:520px){
+  .appbar{padding:0 var(--s3); gap:var(--s2)}
+  .brand-text{display:none}
+  .engine-chip span.lbl{display:none}
+  #historyBtn span{display:none}
+  #historyBtn{width:40px;padding:0}
+  .db-chip{max-width:46vw}
+  .statusbar{font-size:10.5px; overflow:hidden}
+  .statusbar .seg{padding:0 var(--s3)}
+  .statusbar .seg.rows-seg .ico{display:none}
+  .statusbar .engine-seg{display:none}
+}
+@media (pointer:coarse){
+  .btn,.icon-toggle,.tab-new{min-height:44px}
+  .tab{height:46px}
+  .pager button{width:46px}
+  .tab .x{width:30px;height:30px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  .spinner .seg{animation:none}
+}
+
+/* ============================== CODEMIRROR THEME — "strata" ============================== */
+.cm-s-strata.CodeMirror{color:var(--ink);background:var(--panel-2)}
+.cm-s-strata .CodeMirror-gutters{background:var(--panel-2);border-right:1px solid var(--line)}
+.cm-s-strata .CodeMirror-linenumber{color:#444c59;font-size:11.5px;padding:0 8px 0 6px}
+.cm-s-strata .CodeMirror-cursor{border-left:2px solid var(--accent)}
+.cm-s-strata .CodeMirror-activeline-background{background:color-mix(in oklab,var(--raised) 50%,transparent)}
+.cm-s-strata .CodeMirror-activeline-gutter,.cm-s-strata .CodeMirror-gutter-wrapper .CodeMirror-activeline{background:transparent}
+.cm-s-strata .CodeMirror-selected{background:color-mix(in oklab,var(--accent) 22%,transparent)!important}
+.cm-s-strata.CodeMirror-focused .CodeMirror-selected{background:color-mix(in oklab,var(--accent) 28%,transparent)!important}
+.cm-s-strata .CodeMirror-matchingbracket{color:var(--accent)!important;border-bottom:1px solid var(--accent);font-weight:700}
+.cm-s-strata .cm-keyword{color:var(--syn-kw);font-weight:600}
+.cm-s-strata .cm-operator{color:var(--syn-op)}
+.cm-s-strata .cm-variable,.cm-s-strata .cm-variable-2,.cm-s-strata .cm-variable-3{color:var(--ink)}
+.cm-s-strata .cm-builtin{color:var(--syn-type)}
+.cm-s-strata .cm-string,.cm-s-strata .cm-string-2{color:var(--syn-str)}
+.cm-s-strata .cm-number{color:var(--syn-num)}
+.cm-s-strata .cm-comment{color:var(--syn-comment);font-style:italic}
+.cm-s-strata .cm-def,.cm-s-strata .cm-property{color:var(--ink)}
+.cm-s-strata .cm-atom{color:var(--syn-fn)}
+.cm-s-strata .cm-punctuation,.cm-s-strata .cm-bracket{color:var(--syn-punc)}
+.cm-s-strata .CodeMirror-scrollbar-filler{background:transparent}
+</style>
+</head>
+<body>
+<a class="skip" href="#results">Skip to results</a>
+
+<div class="app" id="app">
+  <!-- ============ APP BAR ============ -->
+  <header class="appbar">
+    <button class="icon-toggle mobile-only" id="drawerBtn" aria-label="Open schema" aria-expanded="false" aria-controls="sidebar">
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    </button>
+    <div class="brand">
+      <span class="mark" aria-hidden="true">
+        <svg class="ico" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="7.5" ry="3"/><path d="M4.5 5.5v6c0 1.66 3.36 3 7.5 3s7.5-1.34 7.5-3v-6"/><path d="M4.5 11.5v6c0 1.66 3.36 3 7.5 3s7.5-1.34 7.5-3v-6"/></svg>
+      </span>
+      <span class="brand-text">
+        <span class="brand-name">STRATA</span>
+        <span class="brand-sub">SQL Browser</span>
+      </span>
+    </div>
+    <span class="db-chip" title="Synthetic sample database — generated in-browser">
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="2.8"/><path d="M5 6v12c0 1.55 3.13 2.8 7 2.8s7-1.25 7-2.8V6"/><path d="M5 12c0 1.55 3.13 2.8 7 2.8s7-1.25 7-2.8"/></svg>
+      <b>boutique.db</b><span class="syn">synthetic</span>
+    </span>
+    <span class="spacer"></span>
+    <div class="bar-actions">
+      <button class="btn" id="historyBtn" aria-haspopup="true" aria-expanded="false" aria-controls="historyPop">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 8a9 9 0 1 1-1.2 5"/><polyline points="2 4 2.3 8 6 8"/><polyline points="12 7 12 12 15.5 14"/></svg>
+        <span>History</span>
+      </button>
+      <span class="engine-chip boot" id="engineChip" role="status" aria-live="polite">
+        <span class="dot"></span><span class="lbl">SQLite · WASM</span>
+      </span>
+    </div>
+  </header>
+
+  <!-- ============ BODY ============ -->
+  <div class="body">
+    <!-- sidebar -->
+    <nav class="sidebar" id="sidebar" aria-label="Database schema">
+      <div class="side-head">
+        <span class="side-title">Schema</span>
+        <span class="side-count" id="sideCount">—</span>
+      </div>
+      <div class="side-search">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="20" y1="20" x2="15.5" y2="15.5"/></svg>
+        <input id="tableFilter" type="text" placeholder="Filter tables…" aria-label="Filter tables" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="tree" id="tree" role="tree" aria-label="Tables">
+        <div class="tree-empty">Loading schema…</div>
+      </div>
+    </nav>
+
+    <div class="vsplit" id="vsplit" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" tabindex="0" aria-valuenow="264"></div>
+
+    <!-- main -->
+    <section class="main">
+      <!-- tabs -->
+      <div class="tabbar">
+        <div class="tabs" id="tabs" role="tablist" aria-label="Query tabs"></div>
+        <button class="tab-new" id="newTab" aria-label="New query tab" title="New query (Ctrl/Cmd+T)">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+
+      <!-- editor -->
+      <div class="editor-pane">
+        <div class="editor-tools">
+          <button class="btn primary run" id="runBtn" title="Run (Ctrl/Cmd+Enter)">
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path class="ico-fill" d="M7 5.5v13a1 1 0 0 0 1.5.87l11-6.5a1 1 0 0 0 0-1.74l-11-6.5A1 1 0 0 0 7 5.5Z"/></svg>
+            <span>Run</span>
+          </button>
+          <span class="sel-pill" id="selPill" aria-hidden="true">
+            <svg class="ico" viewBox="0 0 24 24" style="width:12px;height:12px" aria-hidden="true"><path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2"/></svg>
+            Run selection · <span class="kbd" style="border:none;background:none;padding:0">⇧⌘↵</span>
+          </span>
+          <span class="kbd-hint">
+            <span class="kbd" id="modkey">⌘</span><span class="kbd">↵</span><span>run</span>
+            <span style="opacity:.4;margin:0 2px">·</span>
+            <span class="kbd">⇧</span><span class="kbd" id="modkey2">⌘</span><span class="kbd">↵</span><span>selection</span>
+          </span>
+        </div>
+        <div class="cm-host" id="cmHost"></div>
+      </div>
+
+      <div class="hsplit" id="hsplit" role="separator" aria-orientation="horizontal" aria-label="Resize editor" tabindex="0"></div>
+
+      <!-- results -->
+      <div class="results" id="results">
+        <div class="res-tools">
+          <div class="res-title" id="resTitle">
+            <span class="state-dot"></span>
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><line x1="3.5" y1="9.5" x2="20.5" y2="9.5"/><line x1="9" y1="9.5" x2="9" y2="19.5"/></svg>
+            <span id="resTitleText">Results</span>
+          </div>
+          <div class="right">
+            <button class="btn" id="exportCsv" disabled title="Export result as CSV">
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11"/><polyline points="8 10 12 14 16 10"/><path d="M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/></svg>
+              <span>CSV</span>
+            </button>
+            <button class="btn" id="exportJson" disabled title="Export result as JSON">
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H7a2 2 0 0 0-2 2v3a2 2 0 0 1-2 2 2 2 0 0 1 2 2v3a2 2 0 0 0 2 2h2M15 4h2a2 2 0 0 1 2 2v3a2 2 0 0 0 2 2 2 2 0 0 0-2 2v3a2 2 0 0 1-2 2h-2"/></svg>
+              <span>JSON</span>
+            </button>
+          </div>
+        </div>
+        <div class="grid-host" id="gridHost" tabindex="-1">
+          <!-- result rendered here -->
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ STATUS BAR ============ -->
+  <footer class="statusbar" id="statusbar" aria-label="Query status">
+    <span class="seg rows-seg" id="segRows">
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="1.6"/><line x1="3.5" y1="9.6" x2="20.5" y2="9.6"/><line x1="3.5" y1="14.3" x2="20.5" y2="14.3"/></svg>
+      <span id="rowsText">— rows</span>
+    </span>
+    <span class="seg ms" id="segMs">
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="7.5"/><line x1="12" y1="13" x2="12" y2="9"/><line x1="9.5" y1="2.5" x2="14.5" y2="2.5"/></svg>
+      <b id="msText">0.00</b><span>ms</span>
+    </span>
+    <span class="grow"></span>
+    <span class="seg engine-seg" id="segEngine">SQLite 3 · sql.js</span>
+    <div class="pager" id="pager">
+      <span class="pg-info" id="pgInfo">Page 0 / 0</span>
+      <button id="prevBtn" aria-label="Previous page" disabled>
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19"/></svg>
+      </button>
+      <button id="nextBtn" aria-label="Next page" disabled>
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 5 16 12 9 19"/></svg>
+      </button>
+    </div>
+  </footer>
+</div>
+
+<!-- history popover -->
+<div class="pop" id="historyPop" role="dialog" aria-label="Query history" aria-modal="false">
+  <div class="pop-head">
+    <h3>Query history</h3>
+    <button class="btn" id="clearHist">Clear</button>
+  </div>
+  <div class="pop-list" id="histList"></div>
+</div>
+
+<!-- mobile scrim -->
+<div class="scrim" id="scrim" aria-hidden="true"></div>
+
+<!-- live region for assistive tech -->
+<div class="vh" id="live" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+window.addEventListener('DOMContentLoaded', function(){
+  const $ = (s,r)=> (r||document).querySelector(s);
+  const el = (t,c,txt)=>{const n=document.createElement(t); if(c)n.className=c; if(txt!=null)n.textContent=txt; return n;};
+  const PAGE = 100;
+  const isMac = /Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent);
+  if(!isMac){ const m1=$('#modkey'),m2=$('#modkey2'); if(m1)m1.textContent='Ctrl'; if(m2)m2.textContent='Ctrl'; }
+
+  // ---------------- bespoke icons (inline SVG strings) ----------------
+  const I = {
+    table:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><line x1="3.5" y1="9.5" x2="20.5" y2="9.5"/><line x1="9" y1="9.5" x2="9" y2="19.5"/></svg>',
+    chevron:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>',
+    key:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="14" r="3.4"/><path d="M10.4 11.6 19 3"/><line x1="16" y1="6" x2="18.5" y2="8.5"/><line x1="14" y1="8" x2="16" y2="10"/></svg>',
+    link:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 14.5a3.5 3.5 0 0 0 5 0l3-3a3.5 3.5 0 0 0-5-5l-1.2 1.2"/><path d="M14.5 9.5a3.5 3.5 0 0 0-5 0l-3 3a3.5 3.5 0 0 0 5 5l1.2-1.2"/></svg>',
+    dot:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/></svg>',
+    file:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h7l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><polyline points="13 3 13 8 18 8"/></svg>',
+    close:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>',
+    sortNone:'<svg class="ico sort" viewBox="0 0 24 24" aria-hidden="true"><polyline points="8 10 12 6 16 10"/><polyline points="8 14 12 18 16 14"/></svg>',
+    sortAsc:'<svg class="ico sort" viewBox="0 0 24 24" aria-hidden="true"><polyline points="7 14 12 9 17 14"/></svg>',
+    sortDesc:'<svg class="ico sort" viewBox="0 0 24 24" aria-hidden="true"><polyline points="7 10 12 15 17 10"/></svg>',
+    alert:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 22 20H2L12 3.5Z"/><line x1="12" y1="10" x2="12" y2="14.5"/><circle cx="12" cy="17.4" r="0.4" fill="currentColor"/></svg>',
+    empty:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5 5 4h14l2 3.5"/><path d="M3 7.5V19a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7.5"/><path d="M3 7.5h6l1.5 2.5h3L15 7.5h6"/></svg>',
+    fail:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="2.8"/><path d="M5 6v12c0 1.55 3.13 2.8 7 2.8s7-1.25 7-2.8V6"/><line x1="8" y1="11.5" x2="16" y2="17.5"/><line x1="16" y1="11.5" x2="8" y2="17.5"/></svg>',
+    spinner:'<svg class="ico spinner" viewBox="0 0 24 24" aria-hidden="true"><circle class="ring" cx="12" cy="12" r="9"/><path class="seg" d="M12 3a9 9 0 0 1 9 9" stroke-linecap="round"/></svg>'
+  };
+
+  // ---------------- DOM refs ----------------
+  const tree=$('#tree'), sideCount=$('#sideCount'), tableFilter=$('#tableFilter');
+  const tabsEl=$('#tabs'), newTabBtn=$('#newTab');
+  const runBtn=$('#runBtn'), selPill=$('#selPill');
+  const gridHost=$('#gridHost'), resTitle=$('#resTitle'), resTitleText=$('#resTitleText');
+  const exportCsvBtn=$('#exportCsv'), exportJsonBtn=$('#exportJson');
+  const rowsText=$('#rowsText'), msText=$('#msText'), pgInfo=$('#pgInfo'), prevBtn=$('#prevBtn'), nextBtn=$('#nextBtn');
+  const engineChip=$('#engineChip');
+  const historyBtn=$('#historyBtn'), historyPop=$('#historyPop'), histList=$('#histList'), clearHist=$('#clearHist');
+  const drawerBtn=$('#drawerBtn'), sidebar=$('#sidebar'), scrim=$('#scrim');
+  const live=$('#live');
+  const vsplit=$('#vsplit'), hsplit=$('#hsplit');
+
+  // ---------------- state ----------------
+  const state = { db:null, schema:[], schemaByName:{}, activeTable:null, tabs:[], active:null, seq:0, history:[] };
+  let cm=null;
+
+  // ============================================================
+  // 1) SAMPLE DATA — synthetic, deterministic, generated in-browser
+  // ============================================================
+  function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+  function buildDatabase(SQL){
+    const db = new SQL.Database();
+    const rnd = mulberry32(0xC0FFEE);
+    const pick = a => a[Math.floor(rnd()*a.length)];
+    const ri = (a,b)=> a+Math.floor(rnd()*(b-a+1));
+    const rf = (a,b,d)=>{const v=a+rnd()*(b-a);const p=Math.pow(10,d);return Math.round(v*p)/p;};
+    const chance = p => rnd()<p;
+    const pad = (n,w)=> String(n).padStart(w,'0');
+    const dateBetween=(y0,y1)=>{const y=ri(y0,y1),mo=ri(1,12),da=ri(1,28);return y+'-'+pad(mo,2)+'-'+pad(da,2);};
+
+    const firsts=['Ava','Noah','Mia','Liam','Zoe','Kai','Iris','Theo','Luna','Ezra','Nova','Finn','Maya','Owen','Ruby','Leo','Esme','Jude','Cleo','Milo','Wren','Asa','Nina','Reese'];
+    const lasts=['Hale','Mercer','Okafor','Vance','Bello','Reyes','Frost','Adeyemi','Quinn','Sato','Larsen','Marsh','Ibarra','Cole','Dube','Novak','Pace','Ono','Sterling','Khoury','Tan','Rhodes','Fenn','Bauer'];
+    const countries=['US','GB','DE','FR','JP','CA','AU','BR','SE','NL','ES','IN','MX','ZA'];
+    const catNames=['Ceramics','Stationery','Lighting','Textiles','Glassware','Botanicals','Apothecary','Prints','Kitchen','Audio'];
+    const adj=['Aurora','Slate','Copper','Linen','Ember','Tidal','Meadow','Cobalt','Saffron','Ash','Dune','Verdant','Quartz','Indigo'];
+    const noun=['Vase','Notebook','Sconce','Throw','Tumbler','Planter','Balm','Poster','Kettle','Speaker','Carafe','Lamp','Coaster','Diffuser'];
+    const statuses=['paid','paid','paid','shipped','shipped','pending','refunded','cancelled'];
+    const comments=['Beautifully made.','Exactly as pictured.','Shipped fast, well packed.','Smaller than expected.','A new favourite.','Gorgeous finish.','Would buy again.','Color is a touch off.','Excellent quality.','Arrived chipped, refunded promptly.'];
+
+    db.run([
+      'CREATE TABLE categories(id INTEGER PRIMARY KEY, name TEXT NOT NULL, slug TEXT NOT NULL);',
+      'CREATE TABLE customers(id INTEGER PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL, country TEXT, signup_date TEXT NOT NULL, lifetime_value REAL);',
+      'CREATE TABLE products(id INTEGER PRIMARY KEY, sku TEXT NOT NULL, name TEXT NOT NULL, category_id INTEGER NOT NULL, price REAL NOT NULL, stock INTEGER NOT NULL, rating REAL, FOREIGN KEY(category_id) REFERENCES categories(id));',
+      'CREATE TABLE orders(id INTEGER PRIMARY KEY, customer_id INTEGER NOT NULL, status TEXT NOT NULL, total REAL NOT NULL, placed_at TEXT NOT NULL, shipped_at TEXT, FOREIGN KEY(customer_id) REFERENCES customers(id));',
+      'CREATE TABLE order_items(id INTEGER PRIMARY KEY, order_id INTEGER NOT NULL, product_id INTEGER NOT NULL, quantity INTEGER NOT NULL, unit_price REAL NOT NULL, FOREIGN KEY(order_id) REFERENCES orders(id), FOREIGN KEY(product_id) REFERENCES products(id));',
+      'CREATE TABLE reviews(id INTEGER PRIMARY KEY, product_id INTEGER NOT NULL, customer_id INTEGER NOT NULL, rating INTEGER NOT NULL, comment TEXT, created_at TEXT NOT NULL, FOREIGN KEY(product_id) REFERENCES products(id), FOREIGN KEY(customer_id) REFERENCES customers(id));'
+    ].join('\n'));
+
+    const sv = v => v===null||v===undefined ? 'NULL' : (typeof v==='number'? String(v) : "'"+String(v).replace(/'/g,"''")+"'");
+    const insert = (table, cols, rows)=>{
+      if(!rows.length) return;
+      const CH=500;
+      for(let i=0;i<rows.length;i+=CH){
+        const chunk=rows.slice(i,i+CH).map(r=>'('+cols.map(c=>sv(r[c])).join(',')+')').join(',');
+        db.run('INSERT INTO '+table+' ('+cols.join(',')+') VALUES '+chunk+';');
+      }
+    };
+
+    // categories
+    const categories = catNames.map((n,i)=>({id:i+1,name:n,slug:n.toLowerCase()}));
+    insert('categories',['id','name','slug'],categories);
+
+    // customers (412) — some NULL country / lifetime_value
+    const customers=[];
+    for(let i=1;i<=412;i++){
+      const fn=pick(firsts), ln=pick(lasts);
+      customers.push({id:i, name:fn+' '+ln,
+        email:(fn+'.'+ln+i).toLowerCase()+'@example-shop.test',
+        country: chance(.08)? null : pick(countries),
+        signup_date: dateBetween(2022,2025),
+        lifetime_value: chance(.05)? null : rf(0,4200,2)});
+    }
+    insert('customers',['id','name','email','country','signup_date','lifetime_value'],customers);
+
+    // products (86)
+    const products=[];
+    for(let i=1;i<=86;i++){
+      products.push({id:i, sku:'SKU-'+pad(1000+i,4), name:pick(adj)+' '+pick(noun),
+        category_id:ri(1,categories.length), price:rf(8,240,2), stock:ri(0,180),
+        rating: chance(.12)? null : rf(3,5,1)});
+    }
+    insert('products',['id','sku','name','category_id','price','stock','rating'],products);
+
+    // orders (620) + order_items (~1500)
+    const orders=[], items=[]; let itemId=1;
+    for(let i=1;i<=620;i++){
+      const status=pick(statuses);
+      const placed=dateBetween(2023,2025);
+      const shipped=(status==='shipped'||status==='refunded')? placed : null;
+      const nItems=ri(1,4); let total=0;
+      for(let k=0;k<nItems;k++){
+        const p=products[ri(0,products.length-1)];
+        const qty=ri(1,5);
+        items.push({id:itemId++, order_id:i, product_id:p.id, quantity:qty, unit_price:p.price});
+        total+=qty*p.price;
+      }
+      orders.push({id:i, customer_id:ri(1,customers.length), status, total:Math.round(total*100)/100, placed_at:placed, shipped_at:shipped});
+    }
+    insert('orders',['id','customer_id','status','total','placed_at','shipped_at'],orders);
+    insert('order_items',['id','order_id','product_id','quantity','unit_price'],items);
+
+    // reviews (300) — some NULL comment
+    const reviews=[];
+    for(let i=1;i<=300;i++){
+      reviews.push({id:i, product_id:ri(1,products.length), customer_id:ri(1,customers.length),
+        rating:ri(1,5), comment: chance(.2)? null : pick(comments), created_at:dateBetween(2023,2025)});
+    }
+    insert('reviews',['id','product_id','customer_id','rating','comment','created_at'],reviews);
+
+    return db;
+  }
+
+  // ============================================================
+  // 2) SCHEMA INTROSPECTION (live, from sqlite pragmas)
+  // ============================================================
+  const TABLE_ORDER=['categories','customers','products','orders','order_items','reviews'];
+  function readSchema(db){
+    const one = (sql)=>{ const r=db.exec(sql); return r.length? r[0] : {columns:[],values:[]}; };
+    const names = one("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").values.map(r=>r[0]);
+    names.sort((a,b)=>{const ia=TABLE_ORDER.indexOf(a),ib=TABLE_ORDER.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib);});
+    const schema=[];
+    names.forEach(name=>{
+      const info=one('PRAGMA table_info("'+name+'")'); // cid,name,type,notnull,dflt_value,pk
+      const fks=one('PRAGMA foreign_key_list("'+name+'")'); // id,seq,table,from,to,...
+      const fkIdx = fks.columns.indexOf('from');
+      const fkRefT = fks.columns.indexOf('table');
+      const fkSet={};
+      fks.values.forEach(r=>{ fkSet[r[fkIdx]] = r[fkRefT]; });
+      const cols = info.values.map(r=>({ name:r[1], type:r[2]||'', notnull:!!r[3], pk:!!r[5], fk:fkSet[r[1]]||null }));
+      const cnt = one('SELECT COUNT(*) FROM "'+name+'"').values[0][0];
+      schema.push({ name, count:cnt, columns:cols });
+    });
+    return schema;
+  }
+
+  // ============================================================
+  // 3) RENDER — schema sidebar
+  // ============================================================
+  function renderSchema(){
+    const filter=(tableFilter.value||'').trim().toLowerCase();
+    tree.innerHTML='';
+    const node=el('div','db-node');
+    node.innerHTML=I.file.replace('class="ico"','class="ico" ')+'<span class="nm">boutique.db</span>';
+    tree.appendChild(node);
+    let shown=0;
+    state.schema.forEach(t=>{
+      if(filter && !t.name.toLowerCase().includes(filter)) return;
+      shown++;
+      const wrap=el('div','tbl'); wrap.dataset.table=t.name; wrap.setAttribute('role','treeitem');
+      if(state.activeTable===t.name) wrap.classList.add('active');
+      const row=el('button','tbl-row'); row.type='button';
+      row.setAttribute('aria-label','Table '+t.name+', '+t.count+' rows. Click to query.');
+      const twist=el('span','twist'); twist.innerHTML=I.chevron; twist.setAttribute('aria-hidden','true');
+      const tico=el('span'); tico.className=''; tico.innerHTML=I.table.replace('class="ico"','class="ico tico"');
+      const nm=el('span','tname',t.name);
+      const badge=el('span','badge', t.count.toLocaleString());
+      row.appendChild(twist); row.appendChild(tico.firstChild); row.appendChild(nm); row.appendChild(badge);
+      // chevron toggles expansion only
+      twist.addEventListener('click',(e)=>{ e.stopPropagation(); wrap.classList.toggle('open'); });
+      // row click → select + seed + run
+      row.addEventListener('click',()=>{ wrap.classList.add('open'); selectTable(t.name); });
+      wrap.appendChild(row);
+
+      const cols=el('div','cols'); const inner=el('div','cols-inner');
+      t.columns.forEach(c=>{
+        const cr=el('div','col-row');
+        let kico='';
+        if(c.pk) kico='<span class="kico pk" title="Primary key">'+I.key+'</span>';
+        else if(c.fk) kico='<span class="kico fk" title="Foreign key → '+c.fk+'">'+I.link+'</span>';
+        else kico='<span class="kico" aria-hidden="true">'+I.dot+'</span>';
+        cr.innerHTML=kico+'<span class="cname">'+c.name+'</span><span class="ctype">'+(c.type||'·')+'</span>';
+        inner.appendChild(cr);
+      });
+      cols.appendChild(inner); wrap.appendChild(cols);
+      if(state.activeTable===t.name) wrap.classList.add('open');
+      tree.appendChild(wrap);
+    });
+    if(!shown){ tree.appendChild(el('div','tree-empty', filter? 'No tables match “'+filter+'”.' : 'No tables.')); }
+    sideCount.textContent = state.schema.length+' table'+(state.schema.length===1?'':'s');
+  }
+
+  // ============================================================
+  // 4) TABS
+  // ============================================================
+  const STARTER =
+    "-- Sample dataset · synthetic, generated in-browser (sql.js / SQLite)\n"+
+    "-- Try editing, then press Ctrl/Cmd+Enter to run.\n"+
+    "SELECT\n"+
+    "    c.name                       AS category,\n"+
+    "    COUNT(*)                     AS products,\n"+
+    "    ROUND(AVG(p.price), 2)       AS avg_price,\n"+
+    "    SUM(p.stock)                 AS in_stock\n"+
+    "FROM products p\n"+
+    "JOIN categories c ON c.id = p.category_id\n"+
+    "GROUP BY c.name\n"+
+    "ORDER BY products DESC;";
+
+  function newTab(sql, title){
+    const id=++state.seq;
+    const tab={ id, title: title||('Query '+id),
+      doc: CodeMirror.Doc(sql!=null?sql:("-- New query · boutique.db (synthetic)\nSELECT * FROM customers LIMIT 100;"),'text/x-sql'),
+      result:{kind:'idle', columns:null, rows:null, error:null, ms:0, affected:null, sql:''},
+      page:0, sort:{col:-1,dir:0}, colW:{}, ran:false };
+    state.tabs.push(tab);
+    return tab;
+  }
+  function activateTab(id){
+    if(state.active===id) return;
+    // stash current doc scroll/sel is held by Doc automatically via swapDoc
+    state.active=id;
+    const tab=getTab(id);
+    cm.swapDoc(tab.doc);
+    renderTabs(); renderResults(); renderStatus();
+    syncSelPill();
+    setTimeout(()=>cm.refresh(),0);
+  }
+  function getTab(id){ return state.tabs.find(t=>t.id===id); }
+  function activeTab(){ return getTab(state.active); }
+  function closeTab(id){
+    const idx=state.tabs.findIndex(t=>t.id===id);
+    if(idx<0) return;
+    state.tabs.splice(idx,1);
+    if(!state.tabs.length){ const t=newTab(STARTER,'Query'); state.active=null; activateTab(t.id); return; }
+    if(state.active===id){ state.active=null; activateTab(state.tabs[Math.max(0,idx-1)].id); }
+    else renderTabs();
+  }
+  function renderTabs(){
+    tabsEl.innerHTML='';
+    state.tabs.forEach(tab=>{
+      const b=el('button','tab'); b.type='button'; b.setAttribute('role','tab');
+      b.setAttribute('aria-selected', String(tab.id===state.active));
+      b.id='tab-'+tab.id;
+      const dirty = tab.result.error? 'err':'';
+      b.innerHTML = '<span class="ti">'+I.file+'</span><span class="tt">'+escapeHtml(tab.title)+'</span>'+
+                    '<span class="x" role="button" aria-label="Close '+escapeHtml(tab.title)+'" tabindex="-1">'+I.close+'</span>';
+      b.addEventListener('click',(e)=>{
+        if(e.target.closest('.x')){ e.stopPropagation(); closeTab(tab.id); return; }
+        activateTab(tab.id);
+      });
+      b.addEventListener('keydown', tabKeyNav);
+      tabsEl.appendChild(b);
+    });
+  }
+  function tabKeyNav(e){
+    const tabsArr=[...tabsEl.querySelectorAll('.tab')];
+    const i=tabsArr.indexOf(e.currentTarget);
+    if(e.key==='ArrowRight'||e.key==='ArrowLeft'){
+      e.preventDefault();
+      const ni=(i+(e.key==='ArrowRight'?1:-1)+tabsArr.length)%tabsArr.length;
+      const id=+tabsArr[ni].id.replace('tab-','');
+      activateTab(id); tabsArr[ni].focus();
+    }
+  }
+
+  // ============================================================
+  // 5) RUN QUERY
+  // ============================================================
+  let running=false;
+  function pickSql(selectionOnly){
+    const sel=cm.getSelection();
+    if(selectionOnly) return sel.trim()? sel : null;
+    return (sel.trim()? sel : cm.getValue());
+  }
+  function run(selectionOnly){
+    if(running || !state.db) return;
+    const sql = pickSql(selectionOnly);
+    if(sql==null || !sql.trim()){ announce('Nothing selected to run.'); flashStatus('Nothing to run'); return; }
+    const tab=activeTab();
+    running=true; setRunning(true);
+    renderResultsLoading();
+    // let the loading frame paint before the (synchronous) WASM exec
+    requestAnimationFrame(()=> requestAnimationFrame(()=>{
+      // Execute via prepared statements so column names survive a 0-row SELECT
+      // (db.exec() drops empty result sets entirely, losing the headers).
+      let columns=null, rows=null, error=null, ms=0, affected=0, hadSelect=false;
+      const t0=performance.now();
+      try{
+        for(const stmt of state.db.iterateStatements(sql)){
+          const cols=stmt.getColumnNames();
+          if(cols && cols.length){               // a SELECT-shaped statement
+            hadSelect=true; const rws=[];
+            while(stmt.step()) rws.push(stmt.get());
+            columns=cols; rows=rws;               // keep the LAST result set
+          } else {                                // DDL/DML: execute for side effects
+            stmt.step();
+          }
+        }
+        affected=state.db.getRowsModified();
+      }catch(err){ error=(err&&err.message)? err.message : String(err); }
+      ms = performance.now()-t0;
+
+      if(error){
+        // keep prior results intact; only attach the error
+        tab.result.error=error; tab.result.ms=ms; tab.result.sql=sql;
+        pushHistory(sql, ms, false, null);
+        announce('Query error: '+error);
+      } else if(hadSelect){
+        tab.result={ kind: rows.length? 'success':'empty',
+          columns, rows, error:null, ms, affected:null, sql };
+        tab.sort={col:-1,dir:0}; tab.colW={}; tab.page=0;
+        pushHistory(sql, ms, true, rows.length);
+        announce(rows.length+' rows returned in '+fmtMs(ms)+' milliseconds.');
+      } else {
+        tab.result={ kind:'affected', columns:null, rows:null, error:null, ms, affected, sql };
+        tab.page=0;
+        pushHistory(sql, ms, true, affected);
+        announce('Statement executed in '+fmtMs(ms)+' milliseconds. '+affected+' rows affected.');
+      }
+      tab.ran=true;
+      running=false; setRunning(false);
+      renderResults(); renderStatus(); renderTabs();
+    }));
+  }
+  function setRunning(on){
+    runBtn.disabled=on;
+    runBtn.querySelector('span').textContent = on?'Running':'Run';
+    engineChip.classList.toggle('boot', on);
+  }
+
+  // ============================================================
+  // 6) RENDER — results grid + states
+  // ============================================================
+  function renderResultsLoading(){
+    gridHost.innerHTML='';
+    const o=el('div','overlay');
+    o.innerHTML='<div class="panel"><div class="glyph" style="border:none;background:transparent">'+I.spinner+'</div>'+
+      '<h3>Running query…</h3><p>Executing SQL against SQLite (WASM).</p></div>';
+    gridHost.appendChild(o);
+    setResTitle('running','Running…');
+  }
+  function setResTitle(stateClass, text){
+    resTitle.classList.remove('ok','err');
+    if(stateClass==='ok') resTitle.classList.add('ok');
+    if(stateClass==='err') resTitle.classList.add('err');
+    resTitleText.textContent=text;
+  }
+  function colAffinity(rows, ci){ // 'num' | 'txt' | null when unknowable (no non-null sample)
+    let seen=false;
+    for(const r of rows){ const v=r[ci]; if(v===null) continue; seen=true; if(typeof v!=='number') return 'txt'; }
+    return seen? 'num' : null;
+  }
+  function sortedRows(tab){
+    const {columns,rows}=tab.result;
+    if(!rows) return [];
+    if(tab.sort.col<0||tab.sort.dir===0) return rows;
+    const ci=tab.sort.col, dir=tab.sort.dir;
+    const numeric=colAffinity(rows,ci)==='num';
+    const dec=rows.map((r,i)=>[r,i]);
+    dec.sort((A,B)=>{
+      const a=A[0][ci], b=B[0][ci];
+      if(a===null&&b===null) return A[1]-B[1];
+      if(a===null) return 1;            // nulls last
+      if(b===null) return -1;
+      let c = numeric ? (a-b) : String(a).localeCompare(String(b));
+      if(c===0) return A[1]-B[1];       // stable
+      return dir*c;
+    });
+    return dec.map(d=>d[0]);
+  }
+  function renderResults(){
+    const tab=activeTab();
+    gridHost.innerHTML='';
+    const r=tab.result;
+
+    // error banner (kept above any prior results)
+    if(r.error){
+      const ban=el('div','err-banner'); ban.setAttribute('role','alert');
+      ban.innerHTML=I.alert+'<div><p class="et">SQLite error</p><code>'+escapeHtml(r.error)+'</code></div>';
+      gridHost.appendChild(ban);
+      setResTitle('err','Error');
+    }
+
+    if(r.kind==='affected'){
+      const o=el('div','overlay');
+      o.innerHTML='<div class="panel"><div class="glyph">'+I.table+'</div><h3>Statement executed</h3>'+
+        '<p>'+r.affected+' row'+(r.affected===1?'':'s')+' affected · '+fmtMs(r.ms)+' ms</p></div>';
+      gridHost.appendChild(o);
+      if(!r.error) setResTitle('ok','Query OK');
+      updateExport(false); return;
+    }
+
+    if(!r.columns){
+      // idle / pre-run (only when no prior results and no error)
+      if(!r.error){
+        const o=el('div','overlay');
+        o.innerHTML='<div class="panel"><div class="glyph">'+I.table+'</div><h3>No results yet</h3>'+
+          '<p>Pick a table at left, or write SQL above and press <span class="kbd">'+(isMac?'⌘':'Ctrl')+'</span> <span class="kbd">↵</span>.</p></div>';
+        gridHost.appendChild(o);
+        setResTitle('','Results');
+      }
+      updateExport(false); return;
+    }
+
+    // we have a column set → render the grid (headers always visible)
+    const cols=r.columns;
+    const view=sortedRows(tab);
+    const total=view.length;
+    const pageCount=Math.max(1,Math.ceil(total/PAGE));
+    if(tab.page>pageCount-1) tab.page=pageCount-1;
+    const start=tab.page*PAGE;
+    const slice=view.slice(start,start+PAGE);
+    const aff=cols.map((_,ci)=>colAffinity(r.rows,ci));
+    const numericCols=aff.map(a=>a==='num');
+
+    const scroll=el('div','grid-scroll'); scroll.id='gridScroll';
+    scroll.tabIndex=0; scroll.setAttribute('role','region'); scroll.setAttribute('aria-label','Query results table');
+    const table=el('table','grid'); table.setAttribute('role','grid');
+    const cap=el('caption','vh', 'Result set: '+total+' rows, '+cols.length+' columns. Synthetic sample data.');
+    table.appendChild(cap);
+
+    // colgroup for resizable widths
+    const cg=el('colgroup');
+    const gcol=el('col'); gcol.style.width='54px'; cg.appendChild(gcol);
+    cols.forEach(c=>{ const co=el('col'); if(tab.colW[c]) co.style.width=tab.colW[c]+'px'; cg.appendChild(co); });
+    table.appendChild(cg);
+
+    // head
+    const thead=el('thead'); const htr=el('tr');
+    const gh=el('th','gutter'); gh.scope='col'; gh.setAttribute('aria-label','Row number'); gh.innerHTML='<span style="display:block;padding:8px 10px">#</span>'; htr.appendChild(gh);
+    cols.forEach((c,ci)=>{
+      const th=el('th'); th.scope='col'; th.style.position='relative';
+      const dir = tab.sort.col===ci? tab.sort.dir : 0;
+      th.setAttribute('aria-sort', dir>0?'ascending':dir<0?'descending':'none');
+      const sortIco = dir>0? I.sortAsc : dir<0? I.sortDesc : I.sortNone;
+      const inner=el('div','th-in'); inner.setAttribute('role','button'); inner.tabIndex=0;
+      inner.setAttribute('aria-label','Sort by '+c);
+      const typeTag = aff[ci] ? '<span class="th-type">'+aff[ci]+'</span>' : '';
+      inner.innerHTML='<span class="th-name">'+escapeHtml(c)+'</span>'+typeTag+sortIco;
+      const doSort=()=>{ const cur=tab.sort.col===ci?tab.sort.dir:0; const nd=cur===0?1:cur===1?-1:0;
+        tab.sort = nd===0? {col:-1,dir:0} : {col:ci,dir:nd}; renderResults(); };
+      inner.addEventListener('click',doSort);
+      inner.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();doSort();} });
+      th.appendChild(inner);
+      const rz=el('span','resize'); rz.setAttribute('aria-hidden','true'); rz.title='Drag to resize';
+      rz.addEventListener('pointerdown', e=>startColResize(e, ci+1, c, rz));
+      th.appendChild(rz);
+      htr.appendChild(th);
+    });
+    thead.appendChild(htr); table.appendChild(thead);
+
+    // body
+    const tbody=el('tbody');
+    if(slice.length===0){
+      // EMPTY STATE — headers stay visible above
+      const tr=el('tr'); const td=el('td'); td.colSpan=cols.length+1; td.style.padding='0';
+      const m=el('div','empty-msg');
+      m.innerHTML='<div class="glyph">'+I.empty+'</div><strong>0 rows returned</strong>'+
+        '<span>The query ran successfully but matched no rows. Column headers are shown above.</span>';
+      td.appendChild(m); tr.appendChild(td); tbody.appendChild(tr);
+    } else {
+      const frag=document.createDocumentFragment();
+      slice.forEach((row,i)=>{
+        const tr=el('tr');
+        const g=el('td','gutter'); g.textContent=(start+i+1).toLocaleString(); tr.appendChild(g);
+        row.forEach((v,ci)=>{
+          const td=el('td'); if(numericCols[ci]) td.classList.add('num');
+          if(v===null){ const s=el('span','cell-null','NULL'); td.appendChild(s); }
+          else if(typeof v==='number'){ td.textContent=fmtNum(v); }
+          else { const sv=String(v); td.textContent=sv; if(sv.length>60) td.title=sv; }
+          tr.appendChild(td);
+        });
+        frag.appendChild(tr);
+      });
+      tbody.appendChild(frag);
+    }
+    table.appendChild(tbody);
+    scroll.appendChild(table);
+    gridHost.appendChild(scroll);
+
+    if(!r.error){
+      setResTitle('ok', describeFrom(r.sql)||'Results');
+    }
+    updateExport(total>0);
+  }
+
+  function describeFrom(sql){
+    if(!sql) return null;
+    const m=/\bfrom\s+["'`]?([a-z_][a-z0-9_]*)/i.exec(sql);
+    return m? m[1] : null;
+  }
+  function fmtNum(v){
+    if(Number.isInteger(v)) return v.toLocaleString();
+    return (Math.abs(v)>=1000? v.toLocaleString(undefined,{maximumFractionDigits:2}) : String(v));
+  }
+
+  // column resize via pointer drag
+  let colDrag=null;
+  function startColResize(e, colIndex, colName, handle){
+    e.preventDefault(); e.stopPropagation();
+    const table=handle.closest('table'); const col=table.querySelectorAll('colgroup col')[colIndex];
+    const th=handle.closest('th');
+    const startX=e.clientX, startW=th.getBoundingClientRect().width;
+    handle.classList.add('drag'); handle.setPointerCapture(e.pointerId);
+    colDrag={colName, move:(ev)=>{
+      const w=Math.max(64,Math.round(startW+(ev.clientX-startX)));
+      col.style.width=w+'px'; activeTab().colW[colName]=w;
+    }, up:()=>{ handle.classList.remove('drag'); handle.releasePointerCapture(e.pointerId);
+      handle.removeEventListener('pointermove',colDrag.move); handle.removeEventListener('pointerup',colDrag.up); colDrag=null; }};
+    handle.addEventListener('pointermove',colDrag.move);
+    handle.addEventListener('pointerup',colDrag.up);
+  }
+
+  // ============================================================
+  // 7) STATUS BAR + EXPORT
+  // ============================================================
+  function renderStatus(){
+    const tab=activeTab(); const r=tab.result;
+    const segMs=$('#segMs'), segRows=$('#segRows');
+    segRows.classList.remove('err');
+    if(r.kind==='success'||r.kind==='empty'){
+      const total=r.rows? r.rows.length : 0;
+      rowsText.innerHTML='<b>'+total.toLocaleString()+'</b> '+(total===1?'row':'rows');
+      const pageCount=Math.max(1,Math.ceil(total/PAGE));
+      pgInfo.textContent='Page '+(total?tab.page+1:1)+' / '+pageCount;
+      prevBtn.disabled = tab.page<=0;
+      nextBtn.disabled = tab.page>=pageCount-1;
+    } else if(r.kind==='affected'){
+      rowsText.innerHTML='<b>'+r.affected.toLocaleString()+'</b> affected';
+      pgInfo.textContent='Page 1 / 1'; prevBtn.disabled=true; nextBtn.disabled=true;
+    } else {
+      rowsText.textContent='— rows';
+      pgInfo.textContent='Page 0 / 0'; prevBtn.disabled=true; nextBtn.disabled=true;
+    }
+    msText.textContent = r.ms? fmtMs(r.ms) : '0.00';
+  }
+  function fmtMs(ms){ if(ms<10) return ms.toFixed(2); if(ms<100) return ms.toFixed(1); return Math.round(ms).toString(); }
+  function updateExport(on){ exportCsvBtn.disabled=!on; exportJsonBtn.disabled=!on; }
+
+  function currentExportData(){
+    const tab=activeTab(), r=tab.result;
+    if(!r.columns||!r.rows) return null;
+    return { cols:r.columns, rows:sortedRows(tab), name:describeFrom(r.sql)||('query'+tab.id) };
+  }
+  function download(filename, text, mime){
+    const blob=new Blob([text],{type:mime}); const url=URL.createObjectURL(blob);
+    const a=el('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click();
+    setTimeout(()=>{URL.revokeObjectURL(url); a.remove();},0);
+  }
+  function exportCSV(){
+    const d=currentExportData(); if(!d) return;
+    const esc=v=> v===null?'':/[",\n\r]/.test(String(v))?'"'+String(v).replace(/"/g,'""')+'"':String(v);
+    const lines=[d.cols.map(esc).join(',')];
+    d.rows.forEach(r=> lines.push(r.map(esc).join(',')));
+    download(d.name+'.csv', lines.join('\r\n'), 'text/csv;charset=utf-8');
+    announce('Exported '+d.rows.length+' rows as CSV.');
+  }
+  function exportJSON(){
+    const d=currentExportData(); if(!d) return;
+    const arr=d.rows.map(r=>{const o={}; d.cols.forEach((c,i)=>o[c]=r[i]); return o;});
+    download(d.name+'.json', JSON.stringify(arr,null,2), 'application/json');
+    announce('Exported '+d.rows.length+' rows as JSON.');
+  }
+
+  // ============================================================
+  // 8) HISTORY
+  // ============================================================
+  function pushHistory(sql, ms, ok, rows){
+    state.history.unshift({sql:sql.trim(), ms, ok, rows, t:Date.now()});
+    if(state.history.length>50) state.history.pop();
+  }
+  function toggleHistory(force){
+    const open = force!=null? force : !historyPop.classList.contains('show');
+    historyBtn.setAttribute('aria-expanded', String(open));
+    if(open){ renderHistory(); positionPop(); historyPop.classList.add('show'); document.addEventListener('pointerdown',histOutside,true); document.addEventListener('keydown',histEsc); }
+    else { historyPop.classList.remove('show'); document.removeEventListener('pointerdown',histOutside,true); document.removeEventListener('keydown',histEsc); }
+  }
+  function histOutside(e){ if(!historyPop.contains(e.target) && !historyBtn.contains(e.target)) toggleHistory(false); }
+  function histEsc(e){ if(e.key==='Escape'){ toggleHistory(false); historyBtn.focus(); } }
+  function positionPop(){
+    const r=historyBtn.getBoundingClientRect();
+    historyPop.style.top=(r.bottom+8)+'px';
+    const w=Math.min(420, window.innerWidth-24);
+    let left=r.right-w; if(left<12) left=12;
+    historyPop.style.left=left+'px';
+  }
+  function renderHistory(){
+    histList.innerHTML='';
+    if(!state.history.length){ histList.innerHTML='<div class="pop-empty">No queries yet. Run something to build history.</div>'; return; }
+    state.history.forEach(h=>{
+      const b=el('button','hist-item'); b.type='button';
+      const meta = h.ok? (h.rows!=null? h.rows.toLocaleString()+' · '+fmtMs(h.ms)+'ms' : fmtMs(h.ms)+'ms') : 'error';
+      const oneLine=h.sql.replace(/\s+/g,' ').slice(0,90);
+      b.innerHTML='<span class="hs '+(h.ok?'ok':'err')+'"></span><span class="hq">'+escapeHtml(oneLine)+'</span><span class="hm">'+meta+'</span>';
+      b.addEventListener('click',()=>{ cm.setValue(h.sql); toggleHistory(false); cm.focus(); });
+      histList.appendChild(b);
+    });
+  }
+
+  // ============================================================
+  // 9) SELECT TABLE (the core loop)
+  // ============================================================
+  function selectTable(name){
+    state.activeTable=name;
+    const sql='SELECT *\nFROM "'+name+'";';
+    cm.setValue(sql);
+    // mark active in tree without full rebuild flicker
+    [...tree.querySelectorAll('.tbl')].forEach(n=>n.classList.toggle('active', n.dataset.table===name));
+    cm.focus();
+    run(false);
+    closeDrawer();
+  }
+
+  // ============================================================
+  // 10) SPLITTERS (resizable panes)
+  // ============================================================
+  function dragSplit(handle, axis, apply){
+    handle.addEventListener('pointerdown',e=>{
+      e.preventDefault(); handle.setPointerCapture(e.pointerId); handle.classList.add('drag');
+      const move=ev=>apply(ev);
+      const up=()=>{ handle.classList.remove('drag'); handle.releasePointerCapture(e.pointerId);
+        handle.removeEventListener('pointermove',move); handle.removeEventListener('pointerup',up); if(cm)cm.refresh(); };
+      handle.addEventListener('pointermove',move); handle.addEventListener('pointerup',up);
+    });
+  }
+  dragSplit(vsplit,'x',ev=>{
+    const w=Math.min(440,Math.max(180, ev.clientX-4));
+    document.documentElement.style.setProperty('--side-w', w+'px');
+    vsplit.setAttribute('aria-valuenow', Math.round(w));
+  });
+  dragSplit(hsplit,'y',ev=>{
+    const main=hsplit.closest('.main'); const rect=main.getBoundingClientRect();
+    const topOffset=rect.top+40; // tabbar height
+    const pct=Math.min(80,Math.max(15, ((ev.clientY-topOffset)/(rect.height-40))*100 ));
+    document.documentElement.style.setProperty('--editor-h', pct+'%');
+  });
+  // keyboard resize for splitters (a11y)
+  vsplit.addEventListener('keydown',e=>{
+    if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return; e.preventDefault();
+    const cur=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--side-w'))||264;
+    const w=Math.min(440,Math.max(180, cur+(e.key==='ArrowRight'?16:-16)));
+    document.documentElement.style.setProperty('--side-w',w+'px'); vsplit.setAttribute('aria-valuenow',w); cm.refresh();
+  });
+
+  // ============================================================
+  // 11) MOBILE DRAWER + focus cycling
+  // ============================================================
+  function openDrawer(){ sidebar.classList.add('open'); scrim.classList.add('show'); drawerBtn.setAttribute('aria-expanded','true'); }
+  function closeDrawer(){ sidebar.classList.remove('open'); scrim.classList.remove('show'); drawerBtn.setAttribute('aria-expanded','false'); }
+  drawerBtn.addEventListener('click',()=> sidebar.classList.contains('open')?closeDrawer():openDrawer());
+  scrim.addEventListener('click',closeDrawer);
+
+  // F6 cycles panes (sidebar → editor → results)
+  document.addEventListener('keydown',e=>{
+    if(e.key==='F6'){ e.preventDefault();
+      const panes=[tableFilter, cm.getInputField(), $('#gridScroll')||gridHost];
+      const ai=document.activeElement;
+      let idx=0; panes.forEach((p,i)=>{ if(p&&(p===ai||p.contains&&p.contains(ai))) idx=i; });
+      const next=panes[(idx+(e.shiftKey?-1:1)+panes.length)%panes.length];
+      if(next) next.focus();
+    }
+    // Ctrl/Cmd+T new tab
+    if((e.metaKey||e.ctrlKey)&&(e.key==='t'||e.key==='T')){ e.preventDefault(); const t=newTab(); activateTab(t.id); cm.focus(); }
+  });
+
+  // ============================================================
+  // helpers / wiring
+  // ============================================================
+  function escapeHtml(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+  function announce(msg){ live.textContent=''; setTimeout(()=>live.textContent=msg,30); }
+  function flashStatus(msg){ const seg=$('#segRows'); const prev=seg.innerHTML; seg.classList.add('err'); seg.querySelector('#rowsText').textContent=msg; setTimeout(()=>{seg.classList.remove('err'); renderStatus();},1400); }
+  function syncSelPill(){ const has=cm&&cm.somethingSelected&&cm.somethingSelected(); selPill.classList.toggle('show',!!has); }
+
+  runBtn.addEventListener('click',()=>run(false));
+  prevBtn.addEventListener('click',()=>{ const t=activeTab(); if(t.page>0){t.page--; renderResults(); renderStatus(); $('#gridScroll')&&($('#gridScroll').scrollTop=0);} });
+  nextBtn.addEventListener('click',()=>{ const t=activeTab(); t.page++; renderResults(); renderStatus(); $('#gridScroll')&&($('#gridScroll').scrollTop=0); });
+  exportCsvBtn.addEventListener('click',exportCSV);
+  exportJsonBtn.addEventListener('click',exportJSON);
+  newTabBtn.addEventListener('click',()=>{ const t=newTab(); activateTab(t.id); cm.focus(); });
+  historyBtn.addEventListener('click',()=>toggleHistory());
+  clearHist.addEventListener('click',()=>{ state.history=[]; renderHistory(); });
+  tableFilter.addEventListener('input',renderSchema);
+  window.addEventListener('resize',()=>{ if(historyPop.classList.contains('show')) positionPop(); });
+
+  // ============================================================
+  // BOOT
+  // ============================================================
+  function bootError(msg){
+    engineChip.classList.remove('boot'); engineChip.classList.add('fail');
+    engineChip.querySelector('.lbl').textContent='engine offline';
+    gridHost.innerHTML='';
+    const o=el('div','overlay');
+    o.innerHTML='<div class="panel"><div class="glyph" style="color:var(--danger);border-color:var(--danger-line)">'+I.fail+'</div>'+
+      '<h3>Couldn’t start SQLite</h3><p>'+escapeHtml(msg)+'</p>'+
+      '<button class="btn primary" id="retryBoot" style="margin-top:8px">Retry</button></div>';
+    gridHost.appendChild(o);
+    $('#retryBoot').addEventListener('click',()=>location.reload());
+  }
+
+  // first tab exists immediately so the editor renders even while WASM loads
+  const first=newTab(STARTER,'Query 1');
+  cm = CodeMirror($('#cmHost'),{
+    value:first.doc.getValue(), mode:'text/x-sql', theme:'strata',
+    lineNumbers:true, matchBrackets:true, autoCloseBrackets:true, styleActiveLine:true,
+    smartIndent:true, lineWrapping:false, tabSize:2,
+    extraKeys:{
+      'Cmd-Enter':()=>run(false),'Ctrl-Enter':()=>run(false),
+      'Shift-Cmd-Enter':()=>run(true),'Shift-Ctrl-Enter':()=>run(true)
+    }
+  });
+  // bind the real Doc so swapDoc-based tab isolation works from the start
+  cm.swapDoc(first.doc); state.active=first.id;
+  cm.on('cursorActivity',syncSelPill);
+  renderTabs();
+  // pre-run idle render
+  renderResults(); renderStatus();
+  setTimeout(()=>cm.refresh(),0);
+
+  if(typeof initSqlJs!=='function'){ bootError('CodeMirror loaded but the SQLite engine script did not. Check your network and reload.'); return; }
+
+  initSqlJs({ locateFile:f=>'https://cdn.jsdelivr.net/npm/sql.js@1.13.0/dist/'+f })
+    .then(SQL=>{
+      try{
+        state.db = buildDatabase(SQL);
+        state.schema = readSchema(state.db);
+        state.schema.forEach(t=>state.schemaByName[t.name]=t);
+        renderSchema();
+        engineChip.classList.remove('boot');
+        engineChip.querySelector('.lbl').textContent='SQLite · ready';
+        // auto-run the starter query so first paint is a populated success state
+        run(false);
+        window.__DB_READY=true;
+      }catch(err){ console.error(err); bootError((err&&err.message)||'Failed to seed sample database.'); }
+    })
+    .catch(err=>{ bootError('Failed to load the SQLite WASM module from CDN. '+((err&&err.message)||'')); });
+
+  // expose a tiny hook for self-test assertions (read-only)
+  window.__strata={ run:(s)=>{ if(s!=null) cm.setValue(s); run(false); },
+    selectTable, activeTab:()=>activeTab(), newTab:()=>{const t=newTab();activateTab(t.id);return t.id;},
+    activateTab, state };
+});
+</script>
+</body>
+</html>

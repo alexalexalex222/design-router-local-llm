@@ -1,0 +1,1062 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#f4efe4">
+<link rel="icon" href="data:,">
+<title>FLUX · Flow Explorer — A Sankey diagram of where quantity goes (synthetic sample data)</title>
+<meta name="description" content="FLUX — an editorial flow infographic built on d3-sankey. Three SAMPLE flows (national energy, a household budget, a product funnel) laid out as value-weighted ribbons. Trace a path, drag a node to declutter, hover a ribbon for its exact amount, pin a node for its full breakdown. All values are synthetic and clearly labeled.">
+
+<!-- Type: Newsreader (display serif, masthead) + Inter (data sans, tabular figures). font-display:swap; system fallbacks if offline. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+
+<style>
+/* ============================================================================
+   FLUX — DESIGN TOKENS  (build only from these)
+   ========================================================================== */
+:root{
+  /* Warm paper neutral ramp — 11 steps, ink -> paper */
+  --p0:#1d1812; --p1:#2b2419; --p2:#43392b; --p3:#5d5240; --p4:#786b56;
+  --p5:#988a72; --p6:#b6a98f; --p7:#d3c8b0; --p8:#e7ddc8; --p9:#f1ead9; --p10:#faf6ec;
+
+  --bg:#f4efe4;          /* page paper */
+  --canvas:#fbf8f1;      /* chart canvas — lighter paper */
+  --panel:#fffdf7;       /* cards */
+  --ink:var(--p0);
+  --ink-2:var(--p2);
+  --muted:var(--p4);
+  --faint:var(--p5);
+  --line:color-mix(in srgb, var(--p3) 24%, transparent);
+  --line-2:color-mix(in srgb, var(--p3) 13%, transparent);
+
+  --accent:#0f6e64;      /* deep teal — editorial accent */
+  --accent-2:#0b524a;
+  --accent-soft:color-mix(in srgb, var(--accent) 12%, transparent);
+  --accent-ink:#ffffff;
+  --danger:#b3401f;
+
+  /* Stage palette — restrained, desaturated, editorial. Mirrored in JS STAGE. */
+  --st0:#bf843a;  /* ochre   */
+  --st1:#2f8d86;  /* teal    */
+  --st2:#5566a8;  /* indigo  */
+  --st3:#b1586a;  /* rose    */
+  --loss:#9c9486; /* warm grey — unused / lost */
+
+  /* Spacing — 4px scale */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px;
+  /* Radii */
+  --r1:6px; --r2:10px; --r3:14px; --r4:20px; --rp:999px;
+  /* Fluid type — ratio-locked, body >=16px */
+  --fs-2xs:11px; --fs-xs:12px; --fs-sm:13px; --fs-base:clamp(15px,.35vw + 14px,16px);
+  --fs-md:clamp(16px,.6vw + 15px,18px);
+  --fs-lg:clamp(20px,1.3vw + 16px,26px);
+  --fs-xl:clamp(27px,3.4vw + 15px,46px);
+  --fs-num:clamp(26px,3vw + 16px,40px);
+  /* Elevation — 3 tiers */
+  --e1:0 1px 2px rgba(40,30,15,.07), 0 1px 1px rgba(40,30,15,.05);
+  --e2:0 6px 22px rgba(50,38,20,.10), 0 2px 6px rgba(50,38,20,.06);
+  --e3:0 22px 60px rgba(46,34,17,.20), 0 7px 20px rgba(46,34,17,.11);
+  /* Motion */
+  --dur:.16s; --dur-2:.22s; --ease:cubic-bezier(.4,0,.2,1); --ease-out:cubic-bezier(.16,1,.3,1);
+
+  --serif:'Newsreader',Georgia,'Times New Roman',serif;
+  --sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:
+    radial-gradient(120% 80% at 12% -10%, color-mix(in srgb,var(--st1) 7%, transparent), transparent 60%),
+    radial-gradient(120% 80% at 100% 0%, color-mix(in srgb,var(--st0) 7%, transparent), transparent 55%),
+    var(--bg);
+  color:var(--ink);
+  font-family:var(--sans); font-size:var(--fs-base); line-height:1.5;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  overflow-x:hidden; overscroll-behavior-y:none;
+}
+.tnum{font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1, "cv05" 1}
+h1,h2,h3,h4,p{margin:0}
+button{font:inherit; color:inherit}
+:focus-visible{outline:2.5px solid var(--accent); outline-offset:2px; border-radius:var(--r1)}
+
+.skip{position:fixed; left:var(--s3); top:-100px; z-index:60; background:var(--accent); color:#fff;
+  padding:10px 16px; border-radius:var(--r2); box-shadow:var(--e2); transition:top var(--dur) var(--ease)}
+.skip:focus{top:var(--s3)}
+
+.wrap{max-width:1280px; margin:0 auto; padding:clamp(var(--s4),3vw,var(--s7)) clamp(var(--s4),3vw,var(--s6))}
+
+/* ---------- Masthead ---------- */
+.mast{display:flex; flex-wrap:wrap; align-items:flex-end; gap:var(--s4) var(--s5);
+  justify-content:space-between; border-bottom:1.5px solid var(--line);
+  padding-bottom:var(--s4); margin-bottom:var(--s5)}
+.brandrow{display:flex; align-items:center; gap:var(--s3); margin-bottom:var(--s2)}
+.glyph{width:34px; height:34px; flex:none; color:var(--accent)}
+.kicker{font-family:var(--sans); font-weight:600; font-size:var(--fs-2xs); letter-spacing:.18em;
+  text-transform:uppercase; color:var(--accent-2)}
+h1{font-family:var(--serif); font-weight:600; font-size:var(--fs-xl); line-height:1.02; letter-spacing:-.012em}
+h1 em{font-style:italic; color:var(--accent-2)}
+.dek{font-family:var(--serif); font-size:var(--fs-md); color:var(--ink-2); max-width:54ch; margin-top:var(--s3); line-height:1.45}
+.badge{display:inline-flex; align-items:center; gap:6px; font-size:var(--fs-2xs); font-weight:600;
+  letter-spacing:.06em; text-transform:uppercase; color:var(--st0);
+  background:color-mix(in srgb,var(--st0) 12%, var(--panel)); border:1px solid color-mix(in srgb,var(--st0) 30%, transparent);
+  padding:5px 10px; border-radius:var(--rp)}
+.badge svg{width:13px; height:13px}
+.mast-right{display:flex; flex-direction:column; align-items:flex-end; gap:var(--s3); text-align:right}
+
+/* ---------- Toolbar ---------- */
+.toolbar{display:flex; flex-wrap:wrap; gap:var(--s4); align-items:flex-end; justify-content:space-between; margin-bottom:var(--s4)}
+.field{display:flex; flex-direction:column; gap:var(--s2)}
+.field>.lbl{font-size:var(--fs-2xs); font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+.segmented{display:inline-flex; background:var(--panel); border:1px solid var(--line); border-radius:var(--rp);
+  padding:4px; box-shadow:var(--e1); gap:2px}
+.seg{appearance:none; border:0; background:transparent; cursor:pointer; min-height:38px; padding:0 var(--s4);
+  border-radius:var(--rp); font-size:var(--fs-sm); font-weight:600; color:var(--ink-2);
+  display:inline-flex; align-items:center; gap:8px; transition:background var(--dur) var(--ease), color var(--dur) var(--ease)}
+.seg .dot{width:9px; height:9px; border-radius:var(--rp); background:currentColor; opacity:.55}
+.seg:hover{background:color-mix(in srgb,var(--accent) 8%, transparent); color:var(--accent-2)}
+.seg[aria-pressed="true"]{background:var(--ink); color:var(--p10)}
+.seg[aria-pressed="true"] .dot{opacity:1; background:var(--st1)}
+.tools{display:flex; gap:var(--s2); align-items:center}
+.btn{appearance:none; cursor:pointer; min-height:38px; padding:0 var(--s4); border-radius:var(--rp);
+  border:1px solid var(--line); background:var(--panel); color:var(--ink-2); font-size:var(--fs-sm); font-weight:600;
+  display:inline-flex; align-items:center; gap:7px; box-shadow:var(--e1);
+  transition:transform var(--dur) var(--ease), background var(--dur) var(--ease), border-color var(--dur) var(--ease)}
+.btn svg{width:15px; height:15px}
+.btn:hover{background:color-mix(in srgb,var(--accent) 9%, var(--panel)); border-color:color-mix(in srgb,var(--accent) 38%, transparent); color:var(--accent-2)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.45; cursor:not-allowed; box-shadow:none}
+
+/* ---------- Layout grid ---------- */
+.stage-grid{display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:var(--s5); align-items:start}
+@media (max-width:1080px){ .stage-grid{grid-template-columns:1fr} }
+
+/* ---------- Chart card ---------- */
+.chart-card{position:relative; background:var(--canvas); border:1px solid var(--line);
+  border-radius:var(--r4); box-shadow:var(--e2); padding:var(--s5) var(--s5) var(--s4);
+  overflow:hidden}
+.chart-card::before{content:""; position:absolute; inset:0 0 auto 0; height:4px;
+  background:linear-gradient(90deg,var(--st0),var(--st1),var(--st2),var(--st3)); opacity:.85}
+.chart-head{display:flex; flex-wrap:wrap; gap:var(--s3) var(--s5); justify-content:space-between; align-items:baseline; margin-bottom:var(--s3)}
+.chart-title{font-family:var(--serif); font-size:var(--fs-lg); font-weight:600; letter-spacing:-.01em}
+.chart-total{font-size:var(--fs-sm); color:var(--muted)}
+.chart-total b{font-family:var(--sans); color:var(--ink); font-weight:700; font-size:var(--fs-md)}
+.summary{font-family:var(--serif); font-size:var(--fs-base); color:var(--ink-2); line-height:1.5;
+  margin:0 0 var(--s3); max-width:70ch}
+.summary mark{background:color-mix(in srgb,var(--st0) 22%, transparent); color:var(--ink); padding:0 3px; border-radius:3px; font-style:normal}
+.summary mark.loss{background:color-mix(in srgb,var(--loss) 30%, transparent)}
+
+.svg-shell{position:relative; width:100%}
+svg.flow{display:block; width:100%; height:auto; touch-action:pan-y}
+.flow .stage-label{font-family:var(--sans); font-size:11px; font-weight:700; letter-spacing:.1em;
+  text-transform:uppercase; fill:var(--faint)}
+.flow .stage-rule{stroke:var(--line-2); stroke-width:1; stroke-dasharray:2 5}
+.flow .link{fill:none; stroke-opacity:.40; transition:stroke-opacity var(--dur-2) var(--ease)}
+.flow .link.dim{stroke-opacity:.07}
+.flow .link.hot{stroke-opacity:.78}
+.flow .node-rect{stroke:color-mix(in srgb,var(--p10) 55%, transparent); stroke-width:.75;
+  cursor:grab; transition:filter var(--dur) var(--ease)}
+.flow .node-rect:hover{filter:brightness(1.06)}
+.flow .node-g.dragging .node-rect{cursor:grabbing}
+.flow .node-g.dim{opacity:.3; transition:opacity var(--dur-2) var(--ease)}
+.flow .node-label{font-family:var(--sans); font-size:12px; fill:var(--ink-2); paint-order:stroke;
+  stroke:var(--canvas); stroke-width:3px; stroke-linejoin:round}
+.flow .node-label .v{fill:var(--muted); font-variant-numeric:tabular-nums; font-weight:600}
+.flow .node-label .n{font-weight:600; fill:var(--ink)}
+.flow .node-g.sel .node-rect{stroke:var(--ink); stroke-width:2}
+.flow .node-hit{fill:transparent; cursor:grab}
+
+.legend{display:flex; flex-wrap:wrap; gap:var(--s2) var(--s4); margin-top:var(--s4); padding-top:var(--s4);
+  border-top:1px solid var(--line-2); align-items:center}
+.legend .lg-lbl{font-size:var(--fs-2xs); font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-right:2px}
+.lg-item{display:inline-flex; align-items:center; gap:7px; cursor:pointer; background:none; border:0;
+  padding:6px 8px; border-radius:var(--rp); font-size:var(--fs-sm); color:var(--ink-2); min-height:34px;
+  transition:background var(--dur) var(--ease)}
+.lg-item:hover{background:color-mix(in srgb,var(--accent) 8%, transparent)}
+.lg-sw{width:14px; height:14px; border-radius:4px; flex:none; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+
+.hint{font-size:var(--fs-xs); color:var(--faint); margin-top:var(--s3); display:flex; align-items:center; gap:7px}
+.hint svg{width:14px; height:14px; flex:none}
+
+/* ---------- Tooltip ---------- */
+.tip{position:fixed; z-index:50; pointer-events:none; opacity:0; transform:translateY(4px);
+  transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+  background:var(--ink); color:var(--p10); border-radius:var(--r2); box-shadow:var(--e3);
+  padding:10px 13px; max-width:260px; font-size:var(--fs-sm); line-height:1.4}
+.tip.show{opacity:1; transform:translateY(0)}
+.tip .t-flow{display:flex; align-items:center; gap:7px; font-weight:600; margin-bottom:5px}
+.tip .t-arrow{color:var(--p6)}
+.tip .t-val{font-family:var(--sans); font-variant-numeric:tabular-nums; font-size:var(--fs-md); font-weight:700}
+.tip .t-sub{color:var(--p7); font-size:var(--fs-xs); margin-top:3px}
+.tip .t-chip{display:inline-block; width:9px; height:9px; border-radius:3px; vertical-align:middle}
+
+/* ---------- Detail panel ---------- */
+.detail{background:var(--panel); border:1px solid var(--line); border-radius:var(--r4);
+  box-shadow:var(--e2); padding:var(--s5); position:sticky; top:var(--s4)}
+.d-empty{display:flex; flex-direction:column; gap:var(--s3); align-items:flex-start; color:var(--muted)}
+.d-empty .ic{width:42px; height:42px; color:var(--faint)}
+.d-empty h3{font-family:var(--serif); font-size:var(--fs-lg); color:var(--ink)}
+.d-empty p{font-size:var(--fs-sm); line-height:1.5; max-width:30ch}
+.d-content{display:none}
+.detail.is-pinned .d-content{display:block}
+.detail.is-pinned .d-empty{display:none}
+.d-top{display:flex; align-items:flex-start; justify-content:space-between; gap:var(--s3); margin-bottom:var(--s3)}
+.d-eyebrow{display:inline-flex; align-items:center; gap:7px; font-size:var(--fs-2xs); font-weight:700;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+.d-eyebrow .sw{width:11px; height:11px; border-radius:3px}
+.d-name{font-family:var(--serif); font-size:clamp(20px,2vw,24px); font-weight:600; line-height:1.1; margin-top:6px; letter-spacing:-.01em}
+.d-close{appearance:none; border:1px solid var(--line); background:var(--panel); width:36px; height:36px; min-width:36px;
+  border-radius:var(--rp); cursor:pointer; display:grid; place-items:center; color:var(--muted); flex:none;
+  transition:background var(--dur) var(--ease), color var(--dur) var(--ease)}
+.d-close:hover{background:color-mix(in srgb,var(--danger) 10%, transparent); color:var(--danger)}
+.d-close svg{width:16px; height:16px}
+.d-stats{display:grid; grid-template-columns:1fr 1fr; gap:var(--s3); margin:var(--s4) 0}
+.stat{background:var(--canvas); border:1px solid var(--line-2); border-radius:var(--r2); padding:var(--s3) var(--s4)}
+.stat .k{font-size:var(--fs-2xs); font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+.stat .v{font-size:var(--fs-num); font-weight:700; font-variant-numeric:tabular-nums; line-height:1.05; margin-top:4px; letter-spacing:-.02em}
+.stat .u{font-size:var(--fs-xs); color:var(--faint); font-weight:500}
+.d-sub{font-size:var(--fs-2xs); font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:var(--s4) 0 var(--s2)}
+.flowlist{display:flex; flex-direction:column; gap:6px; list-style:none; padding:0; margin:0}
+.flink{display:grid; grid-template-columns:1fr auto; align-items:center; gap:var(--s2) var(--s3); width:100%; text-align:left;
+  appearance:none; border:1px solid transparent; background:var(--canvas); cursor:pointer;
+  padding:9px var(--s3); border-radius:var(--r2); min-height:44px;
+  transition:border-color var(--dur) var(--ease), background var(--dur) var(--ease)}
+.flink:hover{border-color:color-mix(in srgb,var(--accent) 35%, transparent); background:color-mix(in srgb,var(--accent) 6%, var(--canvas))}
+.flink .fl-name{display:flex; align-items:center; gap:8px; font-size:var(--fs-sm); font-weight:600; color:var(--ink-2)}
+.flink .fl-sw{width:8px; height:20px; border-radius:3px; flex:none}
+.flink .fl-val{font-variant-numeric:tabular-nums; font-weight:700; font-size:var(--fs-sm)}
+.flink .fl-pct{display:block; font-size:var(--fs-2xs); color:var(--faint); font-weight:500; text-align:right}
+.fl-bar{grid-column:1 / -1; height:5px; border-radius:var(--rp); background:var(--line-2); overflow:hidden}
+.fl-bar i{display:block; height:100%; border-radius:var(--rp)}
+
+/* ---------- Flow index (accessible parallel) ---------- */
+.aside-2{margin-top:var(--s5)}
+.index-card{background:var(--panel); border:1px solid var(--line); border-radius:var(--r4); box-shadow:var(--e1); overflow:hidden}
+.index-head{width:100%; display:flex; align-items:center; justify-content:space-between; gap:var(--s3);
+  padding:var(--s4) var(--s5); background:none; border:0; cursor:pointer; text-align:left}
+.index-head h3{font-family:var(--serif); font-size:var(--fs-md); font-weight:600}
+.index-head .meta{font-size:var(--fs-xs); color:var(--muted)}
+.index-head .chev{transition:transform var(--dur) var(--ease); color:var(--muted)}
+.index-card[data-open="false"] .chev{transform:rotate(-90deg)}
+.index-body{padding:0 var(--s5) var(--s5)}
+.index-card[data-open="false"] .index-body{display:none}
+.stagegroup{margin-top:var(--s4)}
+.stagegroup>.sg-h{display:flex; align-items:center; gap:8px; font-size:var(--fs-2xs); font-weight:700;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:var(--s2)}
+.stagegroup .sg-sw{width:10px; height:10px; border-radius:3px}
+.nrow{display:flex; align-items:center; justify-content:space-between; gap:var(--s3); width:100%;
+  appearance:none; border:1px solid transparent; background:none; cursor:pointer; text-align:left;
+  padding:8px var(--s2); border-radius:var(--r1); min-height:40px;
+  transition:background var(--dur) var(--ease)}
+.nrow:hover,.nrow.sel{background:color-mix(in srgb,var(--accent) 8%, transparent)}
+.nrow .nr-name{font-size:var(--fs-sm); font-weight:600; color:var(--ink-2)}
+.nrow .nr-val{font-size:var(--fs-sm); font-variant-numeric:tabular-nums; font-weight:600; color:var(--muted)}
+
+/* ---------- States: loading / error / empty ---------- */
+.state{position:absolute; inset:0; display:none; place-items:center; background:color-mix(in srgb,var(--canvas) 86%, transparent);
+  backdrop-filter:blur(2px); z-index:6; padding:var(--s5); text-align:center}
+.state.show{display:grid}
+.state .inner{display:flex; flex-direction:column; align-items:center; gap:var(--s3); max-width:36ch}
+.state h3{font-family:var(--serif); font-size:var(--fs-lg)}
+.state p{font-size:var(--fs-sm); color:var(--muted); line-height:1.5}
+.spinner{width:34px; height:34px}
+.spinner circle{fill:none; stroke:var(--line); stroke-width:3}
+.spinner path{fill:none; stroke:var(--accent); stroke-width:3; stroke-linecap:round; transform-origin:center; animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.state.err .ic{color:var(--danger)} .state.err h3{color:var(--danger)}
+
+.foot{margin-top:var(--s6); padding-top:var(--s4); border-top:1px solid var(--line-2);
+  display:flex; flex-wrap:wrap; gap:var(--s3) var(--s5); justify-content:space-between; align-items:center;
+  font-size:var(--fs-xs); color:var(--faint)}
+.foot a{color:var(--accent-2)}
+.sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+
+/* ---------- Mobile: detail panel becomes a bottom sheet ---------- */
+@media (max-width:1080px){
+  .detail{position:fixed; left:0; right:0; bottom:0; top:auto; z-index:40; border-radius:var(--r4) var(--r4) 0 0;
+    box-shadow:var(--e3); transform:translateY(102%); transition:transform var(--dur-2) var(--ease-out);
+    max-height:80vh; overflow-y:auto; padding-bottom:max(var(--s5), env(safe-area-inset-bottom)); display:block}
+  .detail.is-pinned{transform:translateY(0)}
+  .detail .d-empty{display:none}
+  .sheet-grip{width:40px; height:4px; border-radius:var(--rp); background:var(--line); margin:0 auto var(--s3)}
+}
+@media (min-width:1081px){ .sheet-grip{display:none} }
+.scrim{position:fixed; inset:0; background:rgba(29,24,18,.34); opacity:0; visibility:hidden; z-index:39;
+  transition:opacity var(--dur-2) var(--ease); }
+.scrim.show{opacity:1; visibility:visible}
+@media (min-width:1081px){ .scrim{display:none} }
+
+@media (prefers-reduced-motion:reduce){
+  *{transition-duration:.001ms !important; animation-duration:.001ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#chart">Skip to the flow diagram</a>
+
+<div class="wrap">
+
+  <!-- ============================ MASTHEAD ============================ -->
+  <header class="mast">
+    <div>
+      <div class="brandrow">
+        <svg class="glyph" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M3 8c5 0 5 6 10 6s5-6 10-6 5 4 6 4" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M3 16c5 0 5 8 10 8s5-8 10-8 5 5 6 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" opacity=".55"/>
+          <circle cx="3" cy="8" r="2.4" fill="currentColor"/><circle cx="3" cy="16" r="2.4" fill="currentColor"/>
+        </svg>
+        <span class="kicker">FLUX · Flow Explorer</span>
+      </div>
+      <h1>Where the <em>quantity</em> goes.</h1>
+      <p class="dek">An editorial flow diagram. Each ribbon's width is its share of the total — trace a path from source to outcome, and see exactly where the biggest flows, splits, and losses are.</p>
+    </div>
+    <div class="mast-right">
+      <span class="badge">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.5 14 5v6L8 14.5 2 11V5z" stroke="currentColor" stroke-width="1.4"/><path d="M2 5l6 3.5L14 5M8 8.5v6" stroke="currentColor" stroke-width="1.4"/></svg>
+        Synthetic sample data
+      </span>
+      <p style="font-size:var(--fs-xs); color:var(--muted); max-width:30ch">Built on <strong>d3-sankey</strong>. Layout &amp; widths are real library math; the numbers are illustrative.</p>
+    </div>
+  </header>
+
+  <!-- ============================ TOOLBAR ============================ -->
+  <div class="toolbar">
+    <div class="field">
+      <span class="lbl" id="ds-lbl">Choose a flow</span>
+      <div class="segmented" role="group" aria-labelledby="ds-lbl" id="ds-switch"><!-- buttons injected --></div>
+    </div>
+    <div class="tools">
+      <button class="btn" id="reset-btn" type="button" title="Restore the tidy layout">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8a5.5 5.5 0 1 1 1.6 3.9M2.5 12V8.4H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Reset layout
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================ STAGE GRID ============================ -->
+  <div class="stage-grid">
+
+    <!-- chart -->
+    <section class="chart-card" id="chart" aria-labelledby="chart-title">
+      <div class="chart-head">
+        <h2 class="chart-title" id="chart-title">—</h2>
+        <p class="chart-total tnum">Total <b id="total-val">—</b> <span id="total-unit"></span></p>
+      </div>
+      <p class="summary" id="summary" aria-live="polite">—</p>
+
+      <div class="svg-shell">
+        <svg class="flow" id="svg" role="img" aria-labelledby="chart-title svg-desc"></svg>
+        <p id="svg-desc" class="sr-only"></p>
+
+        <!-- states -->
+        <div class="state" id="state-loading" aria-hidden="true">
+          <div class="inner">
+            <svg class="spinner" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15"/><path d="M18 3a15 15 0 0 1 15 15"/></svg>
+            <p>Laying out the flow…</p>
+          </div>
+        </div>
+        <div class="state err" id="state-error" role="alert" aria-hidden="true">
+          <div class="inner">
+            <svg class="ic" width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 2 20h20L12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 9v5M12 17h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <h3>The flow engine didn't load</h3>
+            <p>d3-sankey couldn't be fetched from the CDN. Check the connection, then retry.</p>
+            <button class="btn" id="retry-btn" type="button">Retry</button>
+          </div>
+        </div>
+        <div class="state" id="state-empty" aria-hidden="true">
+          <div class="inner">
+            <svg class="ic" width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="color:var(--faint)"><path d="M4 12h16M4 12c3 0 3-4 6-4s3 4 6 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <h3>No flows to show</h3>
+            <p>This dataset has no links. Pick another flow above.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="legend" id="legend" aria-label="Stages"></div>
+      <p class="hint">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2v8m0 0 3-3M8 10 5 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="2.5" y="12" width="11" height="2" rx="1" fill="currentColor"/></svg>
+        Drag a node up or down to declutter · hover a ribbon for its amount · click any node or ribbon to pin its breakdown
+      </p>
+    </section>
+
+    <!-- detail panel + index -->
+    <div>
+      <aside class="detail" id="detail" aria-labelledby="d-name" aria-live="polite">
+        <div class="sheet-grip" aria-hidden="true"></div>
+        <div class="d-empty" id="d-empty">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 7c4 0 4 5 8 5s4-5 8-5M3 14c4 0 4 5 8 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="3" cy="7" r="1.6" fill="currentColor"/></svg>
+          <h3>Inspect a flow</h3>
+          <p>Hover to trace a path. Click a node for its in/out totals and a ranked breakdown — or click a ribbon for one flow's detail.</p>
+        </div>
+        <div class="d-content" id="d-content">
+          <div class="d-top">
+            <div>
+              <span class="d-eyebrow"><span class="sw" id="d-sw"></span><span id="d-kind">Node</span> · <span id="d-stage"></span></span>
+              <h3 class="d-name" id="d-name">—</h3>
+            </div>
+            <button class="d-close" id="d-close" type="button" aria-label="Close detail">
+              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <div class="d-stats" id="d-stats"></div>
+          <div id="d-breakdown"></div>
+        </div>
+      </aside>
+
+      <div class="aside-2">
+        <div class="index-card" id="index-card" data-open="true">
+          <button class="index-head" id="index-toggle" aria-expanded="true" aria-controls="index-body">
+            <h3>Flow index <span class="meta" id="index-meta"></span></h3>
+            <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="index-body" id="index-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <span>FLUX — a flow-diagram study. All three datasets are <strong>synthetic samples</strong>, generated by a deterministic split model; they are not real published statistics.</span>
+    <span>Engine: <a href="https://github.com/d3/d3-sankey" rel="noopener">d3-sankey</a> · <a href="https://d3js.org" rel="noopener">D3</a></span>
+  </footer>
+</div>
+
+<div class="tip" id="tip" role="status" aria-hidden="true"></div>
+<div class="scrim" id="scrim" aria-hidden="true"></div>
+
+<!-- ============================ ENGINE (pinned CDN) ============================ -->
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+<script>
+"use strict";
+(function(){
+  /* ---- stage palette (mirrors CSS tokens) ---- */
+  var STAGE = ["#bf843a","#2f8d86","#5566a8","#b1586a"];
+  var LOSS  = "#9c9486";
+  var prefersReduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ========================================================================
+     SYNTHETIC DATASETS  (labeled sample). Values generated by a forward-split
+     model: every interior node's outflow fractions sum to 1, which guarantees
+     conservation (sum in == sum out) exactly. Sources have a seed; sinks have
+     no children. kind:"loss" marks unused / lost quantity.
+     ====================================================================== */
+  var DATASETS = {
+    energy: {
+      label: "National Energy",
+      title: "A nation's energy, source to outcome",
+      unit: "TWh",
+      fmt: function(v){ return Math.round(v).toLocaleString("en-US") + " TWh"; },
+      stages: ["Primary source","Carrier","End-use sector","Outcome"],
+      nodes: [
+        {id:"Solar",stage:0},{id:"Wind",stage:0},{id:"Hydro",stage:0},{id:"Nuclear",stage:0},
+        {id:"Natural Gas",stage:0},{id:"Coal",stage:0},{id:"Petroleum",stage:0},
+        {id:"Electricity",stage:1},{id:"Direct Fuel",stage:1},
+        {id:"Residential",stage:2},{id:"Commercial",stage:2},{id:"Industrial",stage:2},{id:"Transportation",stage:2},
+        {id:"Useful Energy",stage:3},{id:"Rejected Energy",stage:3,kind:"loss"}
+      ],
+      seeds: {Solar:92,Wind:138,Hydro:64,Nuclear:196,"Natural Gas":322,Coal:104,Petroleum:348},
+      splits: {
+        Solar:{Electricity:1}, Wind:{Electricity:1}, Hydro:{Electricity:1}, Nuclear:{Electricity:1},
+        Coal:{Electricity:0.92,"Direct Fuel":0.08},
+        "Natural Gas":{Electricity:0.50,"Direct Fuel":0.50},
+        Petroleum:{"Direct Fuel":1},
+        Electricity:{Residential:0.34,Commercial:0.30,Industrial:0.28,Transportation:0.08},
+        "Direct Fuel":{Residential:0.18,Commercial:0.12,Industrial:0.40,Transportation:0.30},
+        Residential:{"Useful Energy":0.72,"Rejected Energy":0.28},
+        Commercial:{"Useful Energy":0.74,"Rejected Energy":0.26},
+        Industrial:{"Useful Energy":0.62,"Rejected Energy":0.38},
+        Transportation:{"Useful Energy":0.25,"Rejected Energy":0.75}
+      }
+    },
+    budget: {
+      label: "Annual Budget",
+      title: "A household's year, paycheck to pocket",
+      unit: "$K",
+      fmt: function(v){ return "$" + (Math.round(v*10)/10).toLocaleString("en-US") + "K"; },
+      stages: ["Income","Pooled","Allocation","Where it lands"],
+      nodes: [
+        {id:"Salary",stage:0},{id:"Freelance",stage:0},{id:"Dividends",stage:0},
+        {id:"Gross Income",stage:1},
+        {id:"Taxes",stage:2,kind:"loss"},{id:"Needs",stage:2},{id:"Wants",stage:2},{id:"Savings",stage:2},
+        {id:"Housing",stage:3},{id:"Food & Health",stage:3},{id:"Transport",stage:3},
+        {id:"Dining & Fun",stage:3},{id:"Travel",stage:3},{id:"Shopping",stage:3},
+        {id:"Emergency Fund",stage:3},{id:"Retirement",stage:3}
+      ],
+      seeds: {Salary:96,Freelance:28,Dividends:16},
+      splits: {
+        Salary:{"Gross Income":1}, Freelance:{"Gross Income":1}, Dividends:{"Gross Income":1},
+        "Gross Income":{Taxes:0.26,Needs:0.42,Wants:0.20,Savings:0.12},
+        Needs:{Housing:0.55,"Food & Health":0.27,Transport:0.18},
+        Wants:{"Dining & Fun":0.45,Travel:0.30,Shopping:0.25},
+        Savings:{"Emergency Fund":0.40,Retirement:0.60}
+      }
+    },
+    funnel: {
+      label: "Product Signups",
+      title: "A SaaS funnel, visit to plan",
+      unit: "visitors",
+      fmt: function(v){ return Math.round(v).toLocaleString("en-US"); },
+      stages: ["Channel","Site","Engagement","Plan"],
+      nodes: [
+        {id:"Organic Search",stage:0},{id:"Paid Ads",stage:0},{id:"Referral",stage:0},{id:"Social",stage:0},
+        {id:"Site Visits",stage:1},
+        {id:"Bounced",stage:2,kind:"loss"},{id:"Signed Up",stage:2},
+        {id:"Free Plan",stage:3},{id:"Pro Plan",stage:3},{id:"Churned",stage:3,kind:"loss"}
+      ],
+      seeds: {"Organic Search":5200,"Paid Ads":3100,Referral:1400,Social:2300},
+      splits: {
+        "Organic Search":{"Site Visits":1},"Paid Ads":{"Site Visits":1},Referral:{"Site Visits":1},Social:{"Site Visits":1},
+        "Site Visits":{Bounced:0.62,"Signed Up":0.38},
+        "Signed Up":{"Free Plan":0.58,"Pro Plan":0.17,Churned:0.25}
+      }
+    }
+  };
+  var ORDER = ["energy","budget","funnel"];
+
+  /* ---- forward-pass value generator (+ cycle guard) ---- */
+  function buildGraph(ds){
+    var nodes = ds.nodes.map(function(n){ return {id:n.id, name:n.id, stage:n.stage, kind:n.kind||null}; });
+    var byStage = nodes.slice().sort(function(a,b){ return a.stage-b.stage; });
+    var inflow = {}; nodes.forEach(function(n){ inflow[n.id]=0; });
+    var valOf = {};
+    var links = [];
+    // guard: drop any split edge that points to an equal-or-earlier stage (would create a cycle / non-DAG)
+    var stageOf = {}; nodes.forEach(function(n){ stageOf[n.id]=n.stage; });
+    var dropped = 0;
+    byStage.forEach(function(n){
+      var v = (ds.seeds[n.id] != null) ? ds.seeds[n.id] : inflow[n.id];
+      valOf[n.id] = v;
+      var sp = ds.splits[n.id];
+      if(!sp) return;
+      Object.keys(sp).forEach(function(t){
+        if(stageOf[t] == null || stageOf[t] <= n.stage){ dropped++; return; } // cycle/back-edge guard
+        var val = v * sp[t];
+        links.push({source:n.id, target:t, value:val});
+        inflow[t] += val;
+      });
+    });
+    return {nodes:nodes, links:links, droppedEdges:dropped};
+  }
+
+  /* generic acyclic check used by the cycle guard self-test */
+  function hasCycle(graph){
+    var adj = {}; graph.nodes.forEach(function(n){ adj[n.id]=[]; });
+    graph.links.forEach(function(l){ adj[l.source].push(l.target); });
+    var state = {}; // 0 unvisited,1 in-stack,2 done
+    function dfs(u){
+      state[u]=1;
+      for(var i=0;i<adj[u].length;i++){ var v=adj[u][i];
+        if(state[v]===1) return true; if(!state[v] && dfs(v)) return true; }
+      state[u]=2; return false;
+    }
+    for(var k=0;k<graph.nodes.length;k++){ var id=graph.nodes[k].id; if(!state[id] && dfs(id)) return true; }
+    return false;
+  }
+
+  /* ======================================================================== */
+  var svg = d3.select("#svg");
+  var tip = document.getElementById("tip");
+  var detail = document.getElementById("detail");
+  var scrim = document.getElementById("scrim");
+  var sankeyGen, graph, layoutW, layoutH;
+  var currentKey = "energy";
+  var pinned = null;            // {type:'node'|'link', ref}
+  var nodeColor = {};           // id -> color
+
+  var gLinks, gNodes, gStages;  // svg groups
+  var linkSel, nodeSel, labelSel;
+
+  function color(n){ return n.kind==="loss" ? LOSS : (STAGE[n.stage] || STAGE[STAGE.length-1]); }
+
+  /* ---- pick a logical layout size by breakpoint (scaled via viewBox) ---- */
+  function pickSize(){
+    var w = window.innerWidth;
+    if(w <= 560)  return {W:760,  H:760, pad:14, nw:14, np:13, font:13};
+    if(w <= 1080) return {W:1000, H:600, pad:16, nw:16, np:14, font:12.5};
+    return {W:1120, H:560, pad:18, nw:17, np:16, font:12.5};
+  }
+
+  function render(key){
+    currentKey = key;
+    var ds = DATASETS[key];
+    showState("loading");
+
+    // defer one frame so the loading state can actually paint, and engine errors surface
+    requestAnimationFrame(function(){
+      try{
+        if(!d3.sankey){ throw new Error("d3-sankey not available"); }
+        graph = buildGraph(ds);
+        if(!graph.links.length){ showState("empty"); return; }
+
+        var sz = pickSize();
+        layoutW = sz.W; layoutH = sz.H;
+        sankeyGen = d3.sankey()
+          .nodeId(function(d){ return d.id; })
+          .nodeAlign(d3.sankeyLeft)         // align by distance from source => columns == our stages
+          .nodeWidth(sz.nw)
+          .nodePadding(sz.np)
+          .nodeSort(null)
+          .extent([[sz.pad, sz.pad+18],[sz.W-sz.pad, sz.H-sz.pad]]);
+        sankeyGen(graph);
+
+        graph.nodes.forEach(function(n){ nodeColor[n.id] = color(n); });
+        draw(sz);
+        showState(null);
+        buildLegend(ds);
+        buildSummary(ds);
+        buildIndex(ds);
+        buildSvgDesc(ds);
+        // keep a pin across re-render if the node/link still exists
+        if(pinned){ repin(); } else { clearPin(true); }
+      }catch(err){
+        console.warn("[FLUX] render failed:", err && err.message);
+        showState("error");
+      }
+    });
+  }
+
+  function draw(sz){
+    svg.attr("viewBox","0 0 "+sz.W+" "+sz.H)
+       .attr("preserveAspectRatio","xMidYMid meet")
+       .style("aspect-ratio", sz.W+" / "+sz.H);
+    svg.selectAll("*").remove();
+
+    var defs = svg.append("defs");
+    // per-link source->target gradient
+    graph.links.forEach(function(l,i){
+      l._gid = "g"+currentKey+i;
+      var lg = defs.append("linearGradient")
+        .attr("id", l._gid).attr("gradientUnits","userSpaceOnUse")
+        .attr("x1", l.source.x1).attr("x2", l.target.x0)
+        .attr("y1", 0).attr("y2", 0);
+      lg.append("stop").attr("offset","0%").attr("stop-color", nodeColor[l.source.id]);
+      lg.append("stop").attr("offset","100%").attr("stop-color", nodeColor[l.target.id]);
+    });
+
+    // stage headers + column rules
+    gStages = svg.append("g").attr("class","stages");
+    var ds = DATASETS[currentKey];
+    var byDepth = {};
+    graph.nodes.forEach(function(n){ (byDepth[n.depth]=byDepth[n.depth]||[]).push(n); });
+    Object.keys(byDepth).forEach(function(depth){
+      var col = byDepth[depth];
+      var cx = d3.mean(col, function(n){ return (n.x0+n.x1)/2; });
+      var name = ds.stages[depth] || ("Stage "+(+depth+1));
+      var anchor = (+depth===0) ? "start" : (cx > sz.W*0.62 ? "end" : "middle");
+      var tx = anchor==="start" ? col[0].x0 : (anchor==="end" ? col[0].x1 : cx);
+      gStages.append("text").attr("class","stage-label")
+        .attr("x", tx).attr("y", 12).attr("text-anchor", anchor)
+        .text(name.toUpperCase());
+    });
+
+    gLinks = svg.append("g").attr("class","links").attr("fill","none");
+    linkSel = gLinks.selectAll("path").data(graph.links).join("path")
+      .attr("class","link")
+      .attr("d", d3.sankeyLinkHorizontal())
+      .attr("stroke", function(d){ return "url(#"+d._gid+")"; })
+      .attr("stroke-width", function(d){ return Math.max(1, d.width); })
+      .style("cursor","pointer")
+      .attr("tabindex", -1)
+      .on("pointerenter", function(ev,d){ hoverLink(d, ev); })
+      .on("pointermove", function(ev,d){ moveTip(ev); })
+      .on("pointerleave", function(){ if(!pinned) clearHover(); hideTip(); })
+      .on("click", function(ev,d){ ev.stopPropagation(); pinLink(d); });
+    linkSel.append("title").text(function(d){ return d.source.id+" -> "+d.target.id+": "+DATASETS[currentKey].fmt(d.value); });
+
+    gNodes = svg.append("g").attr("class","nodes");
+    nodeSel = gNodes.selectAll("g.node-g").data(graph.nodes).join("g").attr("class","node-g");
+
+    nodeSel.append("rect")
+      .attr("class","node-rect")
+      .attr("x", function(d){ return d.x0; }).attr("y", function(d){ return d.y0; })
+      .attr("width", function(d){ return d.x1-d.x0; })
+      .attr("height", function(d){ return Math.max(1, d.y1-d.y0); })
+      .attr("rx", 2.5)
+      .attr("fill", function(d){ return nodeColor[d.id]; })
+      .on("pointerenter", function(ev,d){ hoverNode(d, ev); })
+      .on("pointermove", function(ev,d){ moveTipNode(ev, d); })
+      .on("pointerleave", function(){ if(!pinned) clearHover(); hideTip(); })
+      .on("click", function(ev,d){ ev.stopPropagation(); pinNode(d); });
+
+    // value labels
+    labelSel = nodeSel.append("text").attr("class","node-label")
+      .attr("font-size", sz.font)
+      .attr("y", function(d){ return (d.y0+d.y1)/2; })
+      .attr("x", function(d){ return d.x0 < sz.W/2 ? d.x1+7 : d.x0-7; })
+      .attr("text-anchor", function(d){ return d.x0 < sz.W/2 ? "start" : "end"; })
+      .attr("dominant-baseline","middle");
+    labelSel.each(function(d){
+      var t = d3.select(this);
+      t.append("tspan").attr("class","n").text(d.name);
+      t.append("tspan").attr("class","v").attr("dx","6").text(DATASETS[currentKey].fmt(d.value));
+    });
+
+    // drag (vertical) — re-routes links via sankey.update
+    var drag = d3.drag()
+      .subject(function(ev,d){ return {y:d.y0}; })
+      .on("start", function(ev,d){ d3.select(this).classed("dragging",true).raise(); clearHover(); })
+      .on("drag", function(ev,d){
+        var h = d.y1-d.y0;
+        var ny = Math.max(sz.pad+18, Math.min(sz.H-sz.pad-h, ev.y));
+        d.y0 = ny; d.y1 = ny+h;
+        sankeyGen.update(graph);
+        redrawPositions();
+      })
+      .on("end", function(ev,d){ d3.select(this).classed("dragging",false); });
+    nodeSel.call(drag);
+
+    svg.on("click", function(){ clearPin(); });
+  }
+
+  // recompute geometry after a drag (node rects, labels, link paths)
+  function redrawPositions(){
+    nodeSel.select("rect")
+      .attr("y", function(d){ return d.y0; })
+      .attr("height", function(d){ return Math.max(1, d.y1-d.y0); });
+    labelSel.attr("y", function(d){ return (d.y0+d.y1)/2; });
+    linkSel.attr("d", d3.sankeyLinkHorizontal());
+  }
+
+  /* ---------------- hover: trace full connected path ---------------- */
+  function connectedSet(node){
+    // all links reachable upstream + downstream through `node`
+    var keepLinks = new Set(), keepNodes = new Set([node]);
+    function down(n){ n.sourceLinks.forEach(function(l){ if(!keepLinks.has(l)){ keepLinks.add(l); keepNodes.add(l.target); down(l.target); } }); }
+    function up(n){ n.targetLinks.forEach(function(l){ if(!keepLinks.has(l)){ keepLinks.add(l); keepNodes.add(l.source); up(l.source); } }); }
+    down(node); up(node);
+    return {links:keepLinks, nodes:keepNodes};
+  }
+  function applyHighlight(keepLinks, keepNodes, hotNode){
+    linkSel.classed("hot", function(d){ return keepLinks.has(d); })
+           .classed("dim", function(d){ return !keepLinks.has(d); });
+    nodeSel.classed("dim", function(d){ return keepNodes ? !keepNodes.has(d) : false; })
+           .classed("sel", function(d){ return d===hotNode; });
+  }
+  function hoverNode(node, ev){
+    if(pinned) return;
+    var c = connectedSet(node);
+    applyHighlight(c.links, c.nodes, node);
+  }
+  function moveTipNode(ev, node){
+    showTip(
+      '<div class="t-flow"><span class="t-chip" style="background:'+nodeColor[node.id]+'"></span>'+esc(node.name)+'</div>'+
+      '<div class="t-val tnum">'+DATASETS[currentKey].fmt(node.value)+'</div>'+
+      '<div class="t-sub">'+ioLabel(node)+'</div>', ev);
+  }
+  function ioLabel(n){
+    var inV=d3.sum(n.targetLinks,function(l){return l.value;});
+    var outV=d3.sum(n.sourceLinks,function(l){return l.value;});
+    if(!n.targetLinks.length) return "source · "+n.sourceLinks.length+" outflow"+(n.sourceLinks.length===1?"":"s");
+    if(!n.sourceLinks.length) return "outcome · "+n.targetLinks.length+" inflow"+(n.targetLinks.length===1?"":"s");
+    return n.targetLinks.length+" in · "+n.sourceLinks.length+" out";
+  }
+  function hoverLink(link, ev){
+    if(pinned) return;
+    var keep = new Set([link]);
+    linkSel.classed("hot", function(d){ return d===link; }).classed("dim", function(d){ return d!==link; });
+    nodeSel.classed("dim", function(d){ return d!==link.source && d!==link.target; })
+           .classed("sel", function(d){ return d===link.source || d===link.target; });
+    showLinkTip(link, ev);
+  }
+  function showLinkTip(link, ev){
+    var pctSrc = link.value/link.source.value*100;
+    showTip(
+      '<div class="t-flow"><span class="t-chip" style="background:'+nodeColor[link.source.id]+'"></span>'+esc(link.source.name)+
+        ' <span class="t-arrow">&rarr;</span> '+esc(link.target.name)+'<span class="t-chip" style="background:'+nodeColor[link.target.id]+'"></span></div>'+
+      '<div class="t-val tnum">'+DATASETS[currentKey].fmt(link.value)+'</div>'+
+      '<div class="t-sub">'+pctSrc.toFixed(0)+'% of '+esc(link.source.name)+(link.target.kind==="loss"?' · lost':'')+'</div>', ev);
+  }
+  function clearHover(){
+    if(pinned){ repinHighlight(); return; }
+    linkSel.classed("hot",false).classed("dim",false);
+    nodeSel.classed("dim",false).classed("sel",false);
+  }
+
+  /* ---------------- tooltip ---------------- */
+  function showTip(html, ev){ tip.innerHTML = html; tip.classList.add("show"); tip.setAttribute("aria-hidden","false"); moveTip(ev); }
+  function moveTip(ev){
+    var pad=14, tw=tip.offsetWidth, th=tip.offsetHeight;
+    var x=ev.clientX+pad, y=ev.clientY+pad;
+    if(x+tw>innerWidth-8) x=ev.clientX-tw-pad;
+    if(y+th>innerHeight-8) y=ev.clientY-th-pad;
+    tip.style.left=Math.max(8,x)+"px"; tip.style.top=Math.max(8,y)+"px";
+  }
+  function hideTip(){ tip.classList.remove("show"); tip.setAttribute("aria-hidden","true"); }
+
+  /* ---------------- pinning + detail panel ---------------- */
+  function pinNode(node){ pinned={type:"node", id:node.id}; repin(); openSheet(); }
+  function pinLink(link){ pinned={type:"link", s:link.source.id, t:link.target.id}; repin(); openSheet(); }
+  function repin(){
+    if(!pinned) return;
+    if(pinned.type==="node"){
+      var n = graph.nodes.find(function(x){ return x.id===pinned.id; });
+      if(!n){ clearPin(true); return; }
+      renderNodeDetail(n); highlightPinnedNode(n);
+    } else {
+      var l = graph.links.find(function(x){ return x.source.id===pinned.s && x.target.id===pinned.t; });
+      if(!l){ clearPin(true); return; }
+      renderLinkDetail(l); highlightPinnedLink(l);
+    }
+  }
+  function repinHighlight(){
+    if(!pinned) return;
+    if(pinned.type==="node"){ var n=graph.nodes.find(function(x){return x.id===pinned.id;}); if(n) highlightPinnedNode(n); }
+    else { var l=graph.links.find(function(x){return x.source.id===pinned.s&&x.target.id===pinned.t;}); if(l) highlightPinnedLink(l); }
+  }
+  function highlightPinnedNode(n){ var c=connectedSet(n); applyHighlight(c.links,c.nodes,n); markIndex(n.id); }
+  function highlightPinnedLink(l){
+    linkSel.classed("hot",function(d){return d===l;}).classed("dim",function(d){return d!==l;});
+    nodeSel.classed("dim",function(d){return d!==l.source&&d!==l.target;}).classed("sel",function(d){return d===l.source||d===l.target;});
+    markIndex(null);
+  }
+  function clearPin(silent){
+    pinned=null; detail.classList.remove("is-pinned"); detail.setAttribute("aria-hidden","false");
+    scrim.classList.remove("show");
+    if(linkSel){ linkSel.classed("hot",false).classed("dim",false); nodeSel.classed("dim",false).classed("sel",false); }
+    markIndex(null);
+  }
+  function openSheet(){ detail.classList.add("is-pinned"); if(innerWidth<=1080) scrim.classList.add("show"); }
+
+  var fmtPct = function(x){ return (x>=9.95?x.toFixed(0):x.toFixed(1))+"%"; };
+
+  function renderNodeDetail(n){
+    var ds=DATASETS[currentKey];
+    document.getElementById("d-kind").textContent = (!n.targetLinks.length?"Source":(!n.sourceLinks.length?(n.kind==="loss"?"Loss":"Outcome"):"Node"));
+    document.getElementById("d-stage").textContent = ds.stages[n.depth]||("Stage "+(n.depth+1));
+    document.getElementById("d-sw").style.background = nodeColor[n.id];
+    document.getElementById("d-name").textContent = n.name;
+    var inV=d3.sum(n.targetLinks,function(l){return l.value;});
+    var outV=d3.sum(n.sourceLinks,function(l){return l.value;});
+    var stats=document.getElementById("d-stats");
+    var cells=[];
+    if(n.targetLinks.length) cells.push({k:"Inflow",v:ds.fmt(inV)});
+    if(n.sourceLinks.length) cells.push({k:"Outflow",v:ds.fmt(outV)});
+    if(!n.targetLinks.length) cells.push({k:"Source total",v:ds.fmt(outV)});
+    if(!n.sourceLinks.length) cells.push({k:"Received",v:ds.fmt(inV)});
+    cells.push({k:"Share of total", v:fmtPct(n.value/totalOf(ds)*100)});
+    stats.innerHTML = cells.slice(0,2).map(function(c){
+      return '<div class="stat"><div class="k">'+esc(c.k)+'</div><div class="v tnum">'+splitNum(c.v)+'</div></div>';
+    }).join("");
+
+    var bd=document.getElementById("d-breakdown"); bd.innerHTML="";
+    if(n.sourceLinks.length) bd.appendChild(breakdownBlock("Flows out", n.sourceLinks, outV, "target"));
+    if(n.targetLinks.length) bd.appendChild(breakdownBlock("Flows in", n.targetLinks, inV, "source"));
+  }
+  function breakdownBlock(title, links, denom, side){
+    var ds=DATASETS[currentKey];
+    var frag=document.createDocumentFragment();
+    var h=document.createElement("div"); h.className="d-sub"; h.textContent=title; frag.appendChild(h);
+    var ul=document.createElement("ul"); ul.className="flowlist";
+    links.slice().sort(function(a,b){return b.value-a.value;}).forEach(function(l){
+      var other = side==="target"? l.target : l.source;
+      var pct = l.value/denom*100;
+      var li=document.createElement("li");
+      var btn=document.createElement("button"); btn.type="button"; btn.className="flink";
+      btn.setAttribute("aria-label", other.name+", "+ds.fmt(l.value)+", "+fmtPct(pct));
+      btn.innerHTML =
+        '<span class="fl-name"><span class="fl-sw" style="background:'+nodeColor[other.id]+'"></span>'+esc(other.name)+
+          (other.kind==="loss"?' <span style="color:var(--loss);font-size:11px">lost</span>':'')+'</span>'+
+        '<span><span class="fl-val tnum">'+ds.fmt(l.value)+'</span><span class="fl-pct tnum">'+fmtPct(pct)+'</span></span>'+
+        '<span class="fl-bar"><i style="width:'+Math.max(2,pct).toFixed(1)+'%;background:'+nodeColor[other.id]+'"></i></span>';
+      btn.addEventListener("click", function(){ pinLink(l); });
+      li.appendChild(btn); ul.appendChild(li);
+    });
+    frag.appendChild(ul); return frag;
+  }
+  function renderLinkDetail(l){
+    var ds=DATASETS[currentKey];
+    document.getElementById("d-kind").textContent="Flow";
+    document.getElementById("d-stage").textContent=(ds.stages[l.source.depth]||"")+" → "+(ds.stages[l.target.depth]||"");
+    document.getElementById("d-sw").style.background = nodeColor[l.target.id];
+    document.getElementById("d-name").textContent = l.source.name+" → "+l.target.name;
+    var stats=document.getElementById("d-stats");
+    stats.innerHTML =
+      '<div class="stat"><div class="k">Amount</div><div class="v tnum">'+splitNum(ds.fmt(l.value))+'</div></div>'+
+      '<div class="stat"><div class="k">Share of total</div><div class="v tnum">'+fmtPct(l.value/totalOf(ds)*100)+'</div></div>';
+    var bd=document.getElementById("d-breakdown"); bd.innerHTML="";
+    var h1=document.createElement("div"); h1.className="d-sub"; h1.textContent="In context"; bd.appendChild(h1);
+    var ul=document.createElement("ul"); ul.className="flowlist";
+    ul.appendChild(ctxRow(l.value/l.source.value*100, "of "+l.source.name+"'s outflow", nodeColor[l.source.id]));
+    ul.appendChild(ctxRow(l.value/l.target.value*100, "of "+l.target.name+"'s inflow", nodeColor[l.target.id]));
+    bd.appendChild(ul);
+  }
+  function ctxRow(pct, label, c){
+    var li=document.createElement("li");
+    li.innerHTML='<div class="flink" style="cursor:default">'+
+      '<span class="fl-name"><span class="fl-sw" style="background:'+c+'"></span>'+esc(label)+'</span>'+
+      '<span class="fl-val tnum">'+fmtPct(pct)+'</span>'+
+      '<span class="fl-bar"><i style="width:'+Math.max(2,Math.min(100,pct)).toFixed(1)+'%;background:'+c+'"></i></span></div>';
+    return li;
+  }
+  function splitNum(s){ // wrap unit suffix in muted span
+    var m=s.match(/^([^\sA-Za-z$]*[\d.,$]+)\s*(.*)$/);
+    if(m && m[2]) return m[1]+'<span class="u"> '+m[2]+'</span>';
+    return s;
+  }
+  function totalOf(ds){ return d3.sum(Object.keys(ds.seeds), function(k){ return ds.seeds[k]; }); }
+
+  /* ---------------- legend (by stage) ---------------- */
+  function buildLegend(ds){
+    var el=document.getElementById("legend");
+    var n=Math.max.apply(null, ds.nodes.map(function(d){return d.stage;}))+1;
+    var hasLoss = ds.nodes.some(function(d){return d.kind==="loss";});
+    var html='<span class="lg-lbl">Stage</span>';
+    for(var i=0;i<n;i++){
+      html+='<button class="lg-item" type="button" data-stage="'+i+'"><span class="lg-sw" style="background:'+STAGE[i]+'"></span>'+esc(ds.stages[i]||("Stage "+(i+1)))+'</button>';
+    }
+    if(hasLoss) html+='<button class="lg-item" type="button" data-loss="1"><span class="lg-sw" style="background:'+LOSS+'"></span>Lost / unused</button>';
+    el.innerHTML=html;
+    el.querySelectorAll(".lg-item").forEach(function(b){
+      b.addEventListener("pointerenter", function(){
+        if(pinned) return;
+        var isLoss=b.hasAttribute("data-loss"); var st=+b.getAttribute("data-stage");
+        var keepNodes=new Set(), keepLinks=new Set();
+        graph.nodes.forEach(function(nd){ if(isLoss? nd.kind==="loss" : (nd.depth===st && nd.kind!=="loss")) keepNodes.add(nd); });
+        graph.links.forEach(function(l){ if(keepNodes.has(l.source)||keepNodes.has(l.target)) keepLinks.add(l); });
+        applyHighlight(keepLinks, keepNodes, null);
+      });
+      b.addEventListener("pointerleave", clearHover);
+      b.addEventListener("focus", function(){ b.dispatchEvent(new Event("pointerenter")); });
+      b.addEventListener("blur", clearHover);
+    });
+  }
+
+  /* ---------------- summary line ---------------- */
+  function buildSummary(ds){
+    var biggest=graph.links.reduce(function(a,b){return b.value>a.value?b:a;});
+    var lossLinks=graph.links.filter(function(l){return l.target.kind==="loss";});
+    var biggestLoss = lossLinks.length? lossLinks.reduce(function(a,b){return b.value>a.value?b:a;}) : null;
+    var total=totalOf(ds);
+    var s='The widest ribbon is <mark>'+esc(biggest.source.name)+' → '+esc(biggest.target.name)+'</mark> at '+
+          '<strong class="tnum">'+ds.fmt(biggest.value)+'</strong> ('+(biggest.value/total*100).toFixed(0)+'% of the total).';
+    if(biggestLoss){
+      var lostTotal=d3.sum(lossLinks,function(l){return l.value;});
+      s+=' The biggest single loss is <mark class="loss">'+esc(biggestLoss.source.name)+' → '+esc(biggestLoss.target.name)+
+         '</mark> — '+(lostTotal/total*100).toFixed(0)+'% of everything ends up unused.';
+    }
+    document.getElementById("summary").innerHTML=s;
+    document.getElementById("chart-title").textContent=ds.title;
+    document.getElementById("total-val").textContent=ds.fmt(total).replace(/\s?[A-Za-z]+$/,"").trim();
+    document.getElementById("total-unit").textContent=ds.unit;
+  }
+  function buildSvgDesc(ds){
+    var biggest=graph.links.reduce(function(a,b){return b.value>a.value?b:a;});
+    document.getElementById("svg-desc").textContent =
+      "Sankey flow diagram, "+ds.title+". "+graph.nodes.length+" nodes across "+ds.stages.length+
+      " stages ("+ds.stages.join(", ")+"). Total "+ds.fmt(totalOf(ds))+
+      ". Widest flow: "+biggest.source.name+" to "+biggest.target.name+", "+ds.fmt(biggest.value)+
+      ". Use the Flow index below to inspect each node with the keyboard.";
+  }
+
+  /* ---------------- flow index (accessible parallel) ---------------- */
+  function buildIndex(ds){
+    var body=document.getElementById("index-body"); body.innerHTML="";
+    document.getElementById("index-meta").textContent="· "+graph.nodes.length+" nodes";
+    var n=Math.max.apply(null, ds.nodes.map(function(d){return d.stage;}))+1;
+    for(var st=0; st<n; st++){
+      var inStage=graph.nodes.filter(function(nd){return nd.depth===st;})
+        .sort(function(a,b){return b.value-a.value;});
+      if(!inStage.length) continue;
+      var g=document.createElement("div"); g.className="stagegroup";
+      var h=document.createElement("div"); h.className="sg-h";
+      h.innerHTML='<span class="sg-sw" style="background:'+STAGE[st]+'"></span>'+esc(ds.stages[st]||("Stage "+(st+1)));
+      g.appendChild(h);
+      inStage.forEach(function(nd){
+        var b=document.createElement("button"); b.type="button"; b.className="nrow"; b.dataset.id=nd.id;
+        b.setAttribute("aria-label", nd.name+", "+ioLabel(nd)+", "+ds.fmt(nd.value));
+        b.innerHTML='<span class="nr-name">'+esc(nd.name)+(nd.kind==="loss"?' <span style="color:var(--loss);font-size:11px">·lost</span>':'')+'</span><span class="nr-val tnum">'+ds.fmt(nd.value)+'</span>';
+        b.addEventListener("click", function(){ pinNode(nd); document.getElementById("chart").scrollIntoView({block:"nearest"}); });
+        b.addEventListener("pointerenter", function(){ if(!pinned) hoverNode(nd); });
+        b.addEventListener("pointerleave", function(){ if(!pinned) clearHover(); });
+        b.addEventListener("focus", function(){ if(!pinned) hoverNode(nd); });
+        b.addEventListener("blur", function(){ if(!pinned) clearHover(); });
+        g.appendChild(b);
+      });
+      body.appendChild(g);
+    }
+  }
+  function markIndex(id){
+    document.querySelectorAll(".nrow").forEach(function(b){ b.classList.toggle("sel", b.dataset.id===id); });
+  }
+
+  /* ---------------- states ---------------- */
+  function showState(which){
+    [["loading","state-loading"],["error","state-error"],["empty","state-empty"]].forEach(function(p){
+      var el=document.getElementById(p[1]); var on=p[0]===which;
+      el.classList.toggle("show",on); el.setAttribute("aria-hidden", on?"false":"true");
+    });
+  }
+
+  /* ---------------- utils ---------------- */
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+
+  /* ---------------- dataset switcher ---------------- */
+  function buildSwitcher(){
+    var el=document.getElementById("ds-switch");
+    el.innerHTML = ORDER.map(function(k){
+      return '<button class="seg" type="button" role="button" data-key="'+k+'" aria-pressed="'+(k===currentKey)+'">'+
+             '<span class="dot"></span>'+esc(DATASETS[k].label)+'</button>';
+    }).join("");
+    el.querySelectorAll(".seg").forEach(function(b){
+      b.addEventListener("click", function(){
+        if(b.dataset.key===currentKey) return;
+        el.querySelectorAll(".seg").forEach(function(x){ x.setAttribute("aria-pressed", x===b); });
+        pinned=null;
+        render(b.dataset.key);
+      });
+    });
+  }
+
+  /* ---------------- wiring ---------------- */
+  document.getElementById("reset-btn").addEventListener("click", function(){ render(currentKey); });
+  document.getElementById("retry-btn").addEventListener("click", function(){
+    if(window.d3 && d3.sankey){ render(currentKey); }
+    else location.reload();
+  });
+  document.getElementById("d-close").addEventListener("click", function(){ clearPin(); clearHover(); });
+  scrim.addEventListener("click", function(){ clearPin(); clearHover(); });
+  document.addEventListener("keydown", function(e){ if(e.key==="Escape" && pinned){ clearPin(); clearHover(); } });
+  var idxCard=document.getElementById("index-card");
+  document.getElementById("index-toggle").addEventListener("click", function(){
+    var open=idxCard.dataset.open==="true"; idxCard.dataset.open=String(!open);
+    this.setAttribute("aria-expanded", String(!open));
+  });
+
+  // debounced resize -> re-layout (keeps mobile legible; resets drags by design)
+  var rt;
+  window.addEventListener("resize", function(){
+    clearTimeout(rt); rt=setTimeout(function(){ if(window.d3 && d3.sankey) render(currentKey); }, 180);
+  });
+
+  // expose a tiny harness for the self-test (conservation, ratios, cycle guard)
+  window.__flux = {
+    get graph(){ return graph; },
+    hasCycle: hasCycle,
+    buildGraph: function(k){ return buildGraph(DATASETS[k]); },
+    // a deliberately cyclic input to prove the guard breaks it
+    cyclicProbe: function(){
+      var bad={ stages:["A","B"], nodes:[{id:"A",stage:0},{id:"B",stage:1}],
+        seeds:{A:10}, splits:{A:{B:1}, B:{A:1}} };  // B->A is a back-edge
+      var g=buildGraph(bad);
+      return { dropped:g.droppedEdges, acyclic: !hasCycle(g) };
+    }
+  };
+
+  /* ---------------- boot ---------------- */
+  function boot(){
+    buildSwitcher();
+    if(!window.d3 || !d3.sankey){ showState("error"); return; }
+    render("energy");
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
+})();
+</script>
+</body>
+</html>

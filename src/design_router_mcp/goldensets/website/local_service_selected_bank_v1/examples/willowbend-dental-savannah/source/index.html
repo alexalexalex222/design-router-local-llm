@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Willowbend Dental - Savannah's Trusted Care</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+  <style>
+    /* Reset & Base */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #E9EFEA;
+      color: #15322A;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Hero Section Structure */
+    .hero-section {
+      min-height: 1200px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: linear-gradient(180deg, #F4F7F6 0%, #E9EFEA 100%);
+      overflow: hidden;
+    }
+
+    /* Background Elements: Coastal Editorial / Sea Glass */
+    .bg-layer {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      overflow: hidden;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .glow-1 {
+      position: absolute;
+      width: 900px; height: 900px;
+      background: radial-gradient(circle, rgba(124, 180, 163, 0.25) 0%, rgba(255,255,255,0) 70%);
+      top: -200px; right: -100px;
+      border-radius: 50%;
+      filter: blur(60px);
+    }
+    .glow-2 {
+      position: absolute;
+      width: 1200px; height: 1200px;
+      background: radial-gradient(circle, rgba(216, 195, 165, 0.15) 0%, rgba(255,255,255,0) 70%);
+      bottom: -400px; left: -200px;
+      border-radius: 50%;
+      filter: blur(80px);
+    }
+    .bg-contours {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+    .geometric-smile-2 {
+      position: absolute;
+      bottom: -200px;
+      right: -300px;
+      width: 1400px;
+      height: 1400px;
+      border: 1px solid rgba(124, 180, 163, 0.25);
+      border-radius: 50%;
+    }
+    .geometric-smile-1 {
+      position: absolute;
+      bottom: -150px;
+      right: -250px;
+      width: 1200px;
+      height: 1200px;
+      border: 1px solid rgba(255,255,255,0.7);
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .vertical-marker {
+      position: absolute;
+      left: 2.5rem;
+      bottom: 6rem;
+      transform: rotate(-90deg);
+      transform-origin: left bottom;
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      color: #7cb4a3;
+      text-transform: uppercase;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* Navigation */
+    .site-nav {
+      position: relative;
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2.5rem 5rem;
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .brand-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.65rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: #15322A;
+    }
+    .brand-est {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: #7cb4a3;
+      font-weight: 600;
+    }
+    .nav-links {
+      display: flex;
+      gap: 3.5rem;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: #4A6D63;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: color 0.3s ease;
+    }
+    .nav-links a:hover {
+      color: #15322A;
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 2.5rem;
+    }
+    .nav-phone {
+      text-decoration: none;
+      color: #15322A;
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+    .btn-nav {
+      padding: 0.85rem 1.75rem;
+      border-radius: 100px;
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(21, 50, 42, 0.1);
+      color: #15322A;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+    .btn-nav:hover {
+      background: #15322A;
+      color: #fff;
+      border-color: #15322A;
+    }
+
+    /* Main Grid Layout */
+    .hero-container {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 3rem;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0 5rem;
+      align-items: center;
+      flex: 1;
+      z-index: 10;
+      position: relative;
+      width: 100%;
+    }
+    
+    /* Left Content Column */
+    .hero-content {
+      grid-column: 1 / 8;
+      padding-right: 2rem;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.25rem;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: #2a4d46;
+      text-transform: uppercase;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    }
+    .hero-badge svg {
+      width: 14px;
+      height: 14px;
+      color: #CBA37E;
+    }
+    .headline {
+      font-family: 'Playfair Display', serif;
+      font-size: 5.5rem;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.75rem;
+      color: #15322A;
+      margin-top: 0;
+    }
+    .headline em {
+      font-style: italic;
+      color: #38564D;
+      font-weight: 400;
+    }
+    .hero-desc {
+      font-size: 1.25rem;
+      line-height: 1.6;
+      color: #38564D;
+      margin-bottom: 0;
+      max-width: 580px;
+      font-weight: 400;
+    }
+
+    /* Proof Points Sequence */
+    .proof-sequence {
+      display: flex;
+      gap: 2.5rem;
+      margin-top: 3.5rem;
+      margin-bottom: 4rem;
+      max-width: 600px;
+    }
+    .proof-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      border-top: 1px solid rgba(21, 50, 42, 0.15);
+      padding-top: 1.25rem;
+      flex: 1;
+    }
+    .proof-num {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #7cb4a3;
+      letter-spacing: 0.05em;
+    }
+    .proof-text {
+      font-size: 0.95rem;
+      line-height: 1.4;
+      color: #38564D;
+      font-weight: 500;
+    }
+
+    /* CTAs */
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 2.5rem;
+    }
+    .btn-primary {
+      background-color: #15322A;
+      color: #FFFFFF;
+      padding: 1.25rem 2.75rem;
+      border-radius: 100px;
+      font-size: 1.05rem;
+      font-weight: 500;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.4s ease;
+      border: 1px solid #15322A;
+    }
+    .btn-primary:hover {
+      background-color: #2a4d46;
+      border-color: #2a4d46;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(21, 50, 42, 0.15);
+    }
+    .btn-text {
+      color: #15322A;
+      font-weight: 500;
+      text-decoration: none;
+      font-size: 1.05rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+    }
+    .btn-text svg {
+      width: 20px;
+      height: 20px;
+      transition: transform 0.3s ease;
+    }
+    .btn-text:hover svg {
+      transform: translateX(4px);
+    }
+
+    /* Right Glass Module */
+    .hero-module {
+      grid-column: 8 / 13;
+    }
+    .glass-module {
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 24px;
+      padding: 3.5rem;
+      box-shadow: 
+        0 40px 80px rgba(0, 0, 0, 0.04), 
+        inset 0 2px 0 rgba(255, 255, 255, 0.8),
+        inset 0 0 20px rgba(255, 255, 255, 0.4);
+      position: relative;
+    }
+    .glass-module::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 4px;
+      background: linear-gradient(90deg, #7cb4a3, #CBA37E);
+      border-radius: 24px 24px 0 0;
+    }
+    .module-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #CBA37E;
+      margin-bottom: 0.75rem;
+    }
+    .module-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.25rem;
+      font-weight: 500;
+      color: #15322A;
+      margin: 0 0 1rem 0;
+    }
+    .module-desc {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #4A6D63;
+      margin-bottom: 2.5rem;
+    }
+    .module-action-card {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      padding: 1.25rem;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.9);
+      margin-bottom: 2.5rem;
+    }
+    .mac-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #E9EFEA;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #2a4d46;
+      flex-shrink: 0;
+    }
+    .mac-icon svg {
+      width: 20px; height: 20px;
+    }
+    .mac-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .mac-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #15322A;
+    }
+    .mac-value {
+      font-size: 0.85rem;
+      color: #4A6D63;
+    }
+    .module-form .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #38564D;
+      margin-bottom: 0.5rem;
+    }
+    .module-form select {
+      width: 100%;
+      appearance: none;
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(21, 50, 42, 0.1);
+      padding: 1.25rem 1.5rem;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #15322A;
+      outline: none;
+      margin-bottom: 1.5rem;
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2315322A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1.25rem center;
+      background-size: 1.25em;
+      transition: all 0.3s ease;
+    }
+    .module-form select:hover {
+      background-color: rgba(255, 255, 255, 1);
+      border-color: rgba(21, 50, 42, 0.2);
+    }
+    .module-form select:focus {
+      border-color: #7cb4a3;
+      box-shadow: 0 0 0 3px rgba(124, 180, 163, 0.2);
+    }
+    .btn-primary.w-100 {
+      width: 100%;
+      padding: 1.25rem;
+      font-size: 1.05rem;
+      border: none;
+      cursor: pointer;
+    }
+    
+    .module-footer {
+      margin-top: 2.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(21, 50, 42, 0.1);
+    }
+    .avatar-group {
+      display: flex;
+      align-items: center;
+    }
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      background-color: #CBA37E;
+      margin-left: -12px;
+    }
+    .avatar:first-child {
+      margin-left: 0;
+      background-color: #7cb4a3;
+    }
+    .avatar:nth-child(2) {
+      background-color: #38564D;
+    }
+    .avatar-text {
+      font-size: 0.85rem;
+      color: #4A6D63;
+      font-weight: 500;
+      margin-left: 1rem;
+    }
+
+  </style>
+</head>
+<body>
+
+<section class="hero-section">
+  
+  <!-- Abstract Savannah Coastal Background -->
+  <div class="bg-layer">
+    <div class="glow-1"></div>
+    <div class="glow-2"></div>
+    
+    <!-- Topographic Harbor/Coastal Lines -->
+    <svg class="bg-contours" viewBox="0 0 1440 1200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#2a4d46" stroke-width="0.75" opacity="0.08">
+        <path d="M-100, 200 C 200, 150 400, 400 800, 300 C 1100, 200 1300, 450 1600, 350" />
+        <path d="M-100, 230 C 200, 180 400, 430 800, 330 C 1100, 230 1300, 480 1600, 380" />
+        <path d="M-100, 260 C 200, 210 400, 460 800, 360 C 1100, 260 1300, 510 1600, 410" />
+        <path d="M-100, 290 C 200, 240 400, 490 800, 390 C 1100, 290 1300, 540 1600, 440" />
+        
+        <path d="M400, -100 C 600, 200 500, 600 900, 800 C 1200, 950 1300, 1300 1500, 1400" />
+        <path d="M440, -100 C 640, 200 540, 600 940, 800 C 1240, 950 1340, 1300 1540, 1400" />
+        <path d="M480, -100 C 680, 200 580, 600 980, 800 C 1280, 950 1380, 1300 1580, 1400" />
+        <path d="M520, -100 C 720, 200 620, 600 1020, 800 C 1320, 950 1420, 1300 1620, 1400" />
+      </g>
+    </svg>
+
+    <!-- Geometric "Smile" Arcs -->
+    <div class="geometric-smile-2"></div>
+    <div class="geometric-smile-1"></div>
+
+    <div class="vertical-marker">
+      SAVANNAH &nbsp;&mdash;&nbsp; GA &nbsp;&mdash;&nbsp; 32° 05' N &nbsp; 81° 05' W
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="site-nav">
+    <div class="brand">
+      <span class="brand-name">WILLOWBEND DENTAL</span>
+      <span class="brand-est">EST. 1978</span>
+    </div>
+    <div class="nav-links">
+      <a href="#">Our Expertise</a>
+      <a href="#">Cosmetic Design</a>
+      <a href="#">Restorative Care</a>
+      <a href="#">Meet the Family</a>
+    </div>
+    <div class="nav-actions">
+      <a href="#" class="nav-phone">912.555.0161</a>
+      <a href="#" class="btn-nav">Book Visit</a>
+    </div>
+  </header>
+
+  <!-- Main Hero Grid -->
+  <div class="hero-container">
+    
+    <!-- Left Column: Editorial Content -->
+    <div class="hero-content">
+      <div class="hero-badge">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        45+ Years of Trusted Care
+      </div>
+      
+      <h1 class="headline">Refined dentistry.<br><em>Rooted in Savannah.</em></h1>
+      
+      <p class="hero-desc">For over 45 years, we have provided comprehensive, family-focused care—merging generations of expertise with modern restorative and cosmetic techniques.</p>
+      
+      <div class="proof-sequence">
+        <div class="proof-item">
+          <span class="proof-num">01</span>
+          <span class="proof-text">Comprehensive<br>General Care</span>
+        </div>
+        <div class="proof-item">
+          <span class="proof-num">02</span>
+          <span class="proof-text">Cosmetic &<br>Clear Aligners</span>
+        </div>
+        <div class="proof-item">
+          <span class="proof-num">03</span>
+          <span class="proof-text">Sleep Apnea<br>Appliance Therapy</span>
+        </div>
+      </div>
+
+      <div class="hero-actions">
+        <a href="#" class="btn-primary">Request an Appointment</a>
+        <a href="#" class="btn-text">
+          Explore Services
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Right Column: Booking Module -->
+    <div class="hero-module">
+      <div class="glass-module">
+        <div class="module-badge">Seamless Scheduling</div>
+        <h3 class="module-title">Begin Your Care</h3>
+        <p class="module-desc">New patients are always welcome. We take the friction out of your first visit so you can focus entirely on your health.</p>
+        
+        <div class="module-action-card">
+          <div class="mac-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          </div>
+          <div class="mac-text">
+            <span class="mac-label">Priority Availability</span>
+            <span class="mac-value">Appointments available this week</span>
+          </div>
+        </div>
+
+        <form class="module-form">
+          <div class="form-group">
+            <label>I am looking for...</label>
+            <select>
+              <option>General Checkup & Cleaning</option>
+              <option>Cosmetic Consultation</option>
+              <option>Sleep Apnea Therapy</option>
+              <option>Clear Aligners / Invisalign</option>
+            </select>
+          </div>
+          <button type="button" class="btn-primary w-100">Find a Time &rarr;</button>
+        </form>
+
+        <div class="module-footer">
+          <div class="avatar-group">
+            <div class="avatar"></div>
+            <div class="avatar"></div>
+            <div class="avatar"></div>
+            <div class="avatar-text">Trusted by Savannah families since 1978.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+
+<style id="below-fold-patch">
+  /* Base Below-Fold Layout */
+  .bf-section {
+    padding: 8rem 5rem;
+    max-width: 1440px;
+    margin: 0 auto;
+    width: 100%;
+    position: relative;
+    z-index: 10;
+  }
+  .bf-section.bg-dark {
+    background-color: #15322A;
+    color: #E9EFEA;
+    max-width: 100%;
+    padding: 8rem 0;
+  }
+  .bf-section.bg-dark .bf-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 5rem;
+  }
+  
+  /* Typography */
+  .bf-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #7cb4a3;
+    margin-bottom: 1.5rem;
+    display: block;
+  }
+  .bf-section.bg-dark .bf-label {
+    color: #CBA37E;
+  }
+  .bf-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem;
+    line-height: 1.1;
+    color: #15322A;
+    margin-bottom: 2rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .bf-section.bg-dark .bf-title {
+    color: #FFFFFF;
+  }
+  .bf-title em {
+    font-style: italic;
+    color: #38564D;
+    font-weight: 400;
+  }
+  .bf-section.bg-dark .bf-title em {
+    color: #7cb4a3;
+  }
+  .bf-desc {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: #4A6D63;
+    max-width: 600px;
+  }
+
+  /* Services Grid */
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.5rem;
+    margin-top: 4rem;
+  }
+  .service-card {
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 20px;
+    padding: 3.5rem 3rem;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .service-card:hover {
+    background: rgba(255, 255, 255, 0.7);
+    transform: translateY(-5px);
+    box-shadow: 0 24px 48px rgba(21, 50, 42, 0.04);
+  }
+  .service-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #E9EFEA;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #15322A;
+    margin-bottom: 2.5rem;
+    border: 1px solid rgba(21, 50, 42, 0.05);
+  }
+  .service-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 1.5;
+  }
+  .service-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.85rem;
+    font-weight: 500;
+    color: #15322A;
+    margin-bottom: 1rem;
+  }
+  .service-desc {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #4A6D63;
+    margin-bottom: 2.5rem;
+  }
+  .service-link {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #15322A;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .service-link svg {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.3s ease;
+  }
+  .service-card:hover .service-link svg {
+    transform: translateX(4px);
+  }
+
+  /* Philosophy Split */
+  .philosophy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    align-items: center;
+  }
+  .phil-image {
+    width: 100%;
+    height: 600px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 24px;
+    position: relative;
+    border: 1px solid rgba(124, 180, 163, 0.2);
+    overflow: hidden;
+  }
+  .phil-image::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, rgba(203, 163, 126, 0.15) 0%, rgba(21, 50, 42, 0.4) 100%);
+  }
+  .phil-content p {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: #E9EFEA;
+    margin-bottom: 1.5rem;
+    font-weight: 300;
+    opacity: 0.9;
+  }
+  .phil-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    margin-top: 3.5rem;
+    padding-top: 3.5rem;
+    border-top: 1px solid rgba(124, 180, 163, 0.3);
+  }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem;
+    color: #CBA37E;
+    margin-bottom: 0.5rem;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.85rem;
+    color: #7cb4a3;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* Patient Experience / Testimonial */
+  .testimonial-wrapper {
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 24px;
+    padding: 6rem 5rem;
+    text-align: center;
+    max-width: 1000px;
+    margin: 0 auto;
+    position: relative;
+    box-shadow: inset 0 0 40px rgba(255,255,255,0.5);
+  }
+  .quote-icon {
+    color: #CBA37E;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+  }
+  .quote-icon svg {
+    width: 48px;
+    height: 48px;
+    opacity: 0.8;
+  }
+  .testimonial-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.25rem;
+    line-height: 1.4;
+    color: #15322A;
+    margin-bottom: 3rem;
+    font-style: italic;
+  }
+  .testimonial-author {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #38564D;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* Footer */
+  .site-footer {
+    background: #15322A;
+    color: #E9EFEA;
+    padding: 6rem 5rem 3rem;
+    margin-top: 4rem;
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1.5fr;
+    gap: 4rem;
+    max-width: 1440px;
+    margin: 0 auto;
+    margin-bottom: 5rem;
+  }
+  .footer-brand .brand-name {
+    color: #FFFFFF;
+    margin-bottom: 1.5rem;
+    display: inline-block;
+  }
+  .footer-desc {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #7cb4a3;
+    max-width: 320px;
+  }
+  .footer-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #CBA37E;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+  .footer-links {
+    list-style: none;
+    padding: 0;
+  }
+  .footer-links li {
+    margin-bottom: 1.25rem;
+  }
+  .footer-links a {
+    color: #E9EFEA;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.3s ease;
+    opacity: 0.8;
+  }
+  .footer-links a:hover {
+    color: #FFFFFF;
+    opacity: 1;
+  }
+  .footer-contact p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #E9EFEA;
+    opacity: 0.8;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .footer-contact p svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: #7cb4a3;
+    margin-top: 2px;
+  }
+  .footer-bottom {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding-top: 3rem;
+    border-top: 1px solid rgba(124, 180, 163, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #7cb4a3;
+  }
+</style>
+
+<!-- Signature Services -->
+<section class="bf-section">
+  <span class="bf-label">Clinical Excellence</span>
+  <h2 class="bf-title">Comprehensive care,<br><em>elevated standards.</em></h2>
+  <p class="bf-desc">We offer a full spectrum of dental treatments designed to restore function, enhance aesthetics, and optimize your long-term oral health under one roof.</p>
+  
+  <div class="services-grid">
+    <div class="service-card">
+      <div class="service-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+      </div>
+      <h3 class="service-title">Preventative & General</h3>
+      <p class="service-desc">The foundation of lasting health. Meticulous cleanings, thorough diagnostics, and proactive care to prevent issues before they arise.</p>
+      <a href="#" class="service-link">
+        Learn More
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </a>
+    </div>
+
+    <div class="service-card">
+      <div class="service-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+      </div>
+      <h3 class="service-title">Cosmetic Design</h3>
+      <p class="service-desc">Refine your smile with precision. From porcelain veneers to professional whitening and clear aligner therapy tailored to your exact facial aesthetics.</p>
+      <a href="#" class="service-link">
+        Learn More
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </a>
+    </div>
+
+    <div class="service-card">
+      <div class="service-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      </div>
+      <h3 class="service-title">Restorative & Sleep</h3>
+      <p class="service-desc">Rebuild strength and function. Expert implant restorations, custom crowns, and advanced oral appliance therapy for sleep apnea.</p>
+      <a href="#" class="service-link">
+        Learn More
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Brand Philosophy / Dark Section -->
+<section class="bf-section bg-dark">
+  <div class="bf-container philosophy-grid">
+    <div class="phil-content">
+      <span class="bf-label">Our Philosophy</span>
+      <h2 class="bf-title">A legacy of trust,<br><em>a future of innovation.</em></h2>
+      <p>Since 1978, Willowbend Dental has served the Savannah community with an unwavering commitment to clinical precision and patient comfort. We believe that exceptional dentistry is a delicate balance of art, science, and empathy.</p>
+      <p>We take the time to understand your unique health profile, utilizing modern technology to ensure every diagnosis is accurate and every treatment is comfortable, predictable, and beautifully executed.</p>
+      
+      <div class="phil-stats">
+        <div>
+          <div class="stat-num">1978</div>
+          <div class="stat-label">Year Established</div>
+        </div>
+        <div>
+          <div class="stat-num">45+</div>
+          <div class="stat-label">Years of Expertise</div>
+        </div>
+      </div>
+    </div>
+    <div class="phil-image">
+      <!-- Abstract representation of the clinic's premium aesthetic -->
+    </div>
+  </div>
+</section>
+
+<!-- Testimonial Section -->
+<section class="bf-section">
+  <div class="testimonial-wrapper">
+    <div class="quote-icon">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21L16.41 14.92c-1.22-.44-2.12-1.62-2.12-3.05 0-1.76 1.43-3.19 3.19-3.19 1.76 0 3.19 1.43 3.19 3.19 0 3.3-2.61 7.42-4.99 8.68l-1.66.45zm-9.35 0L7.06 14.92c-1.22-.44-2.12-1.62-2.12-3.05 0-1.76 1.43-3.19 3.19-3.19 1.76 0 3.19 1.43 3.19 3.19 0 3.3-2.61 7.42-4.99 8.68l-1.66.45z"></path></svg>
+    </div>
+    <p class="testimonial-text">"The level of care and attention to detail at Willowbend Dental is unmatched. They transformed my anxiousness into complete confidence. It feels less like a clinic and more like a private health concierge."</p>
+    <div class="testimonial-author">&mdash; Sarah M., Savannah Resident</div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <span class="brand-name">WILLOWBEND DENTAL</span>
+      <p class="footer-desc">Refined, comprehensive dentistry rooted in Savannah. Providing generations of families with beautiful, functional smiles since 1978.</p>
+    </div>
+    
+    <div>
+      <h4 class="footer-title">Practice</h4>
+      <ul class="footer-links">
+        <li><a href="#">Meet the Doctors</a></li>
+        <li><a href="#">New Patients</a></li>
+        <li><a href="#">Clinical Technology</a></li>
+        <li><a href="#">Patient Reviews</a></li>
+      </ul>
+    </div>
+    
+    <div>
+      <h4 class="footer-title">Services</h4>
+      <ul class="footer-links">
+        <li><a href="#">General Dentistry</a></li>
+        <li><a href="#">Cosmetic Design</a></li>
+        <li><a href="#">Restorative Care</a></li>
+        <li><a href="#">Sleep Apnea Therapy</a></li>
+      </ul>
+    </div>
+    
+    <div>
+      <h4 class="footer-title">Contact</h4>
+      <div class="footer-contact">
+        <p>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          <span>123 Medical Arts Center<br>Savannah, GA 31405</span>
+        </p>
+        <p>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+          <span>912.555.0161</span>
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="footer-bottom">
+    <div>&copy; 2026 Willowbend Dental. All rights reserved.</div>
+    <div>Designed for Excellence</div>
+  </div>
+</footer>
+
+</body>
+</html>

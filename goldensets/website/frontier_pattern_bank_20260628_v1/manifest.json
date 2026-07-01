@@ -1,0 +1,1371 @@
+{
+  "pack_id": "frontier_pattern_bank_20260628_v1",
+  "role": "support_bank",
+  "family": "app.tool",
+  "source_paths": [
+    "examples/analytics-brutalist.md",
+    "examples/analytics-dashboard.md",
+    "examples/analytics-editorial.md",
+    "examples/analytics-ops.md",
+    "examples/ascii-art.md",
+    "examples/audio-spectrum-visualizer.md",
+    "examples/boids.md",
+    "examples/breakout.md",
+    "examples/browser-os.md",
+    "examples/calendar.md",
+    "examples/calendar-heatmap.md",
+    "examples/candlestick-ohlc-chart.md",
+    "examples/chess.md",
+    "examples/chess-obsidian.md",
+    "examples/chord.md",
+    "examples/choropleth.md",
+    "examples/choropleth-parallel.md",
+    "examples/code-editor.md",
+    "examples/code-playground.md",
+    "examples/command-palette.md",
+    "examples/contacts.md",
+    "examples/data-globe.md",
+    "examples/db-browser.md",
+    "examples/drum-machine.md",
+    "examples/duotone.md",
+    "examples/email-client.md",
+    "examples/file-manager.md",
+    "examples/flashcards.md",
+    "examples/font-playground.md",
+    "examples/gantt.md",
+    "examples/gear-train.md",
+    "examples/git-graph.md",
+    "examples/glitch-lab.md",
+    "examples/gltf-inspector.md",
+    "examples/gradient-studio.md",
+    "examples/image-cropper.md",
+    "examples/json-tree.md",
+    "examples/kanban-board.md",
+    "examples/markdown-editor.md",
+    "examples/mind-map.md",
+    "examples/music-player.md",
+    "examples/network-graph.md",
+    "examples/node-graph.md",
+    "examples/notifications.md",
+    "examples/orrery.md",
+    "examples/particle-flow.md",
+    "examples/pattern-generator.md",
+    "examples/pattern-generator-s2.md",
+    "examples/physics-sandbox.md",
+    "examples/pixel-editor.md",
+    "examples/product-configurator-3d.md",
+    "examples/qr-styler.md",
+    "examples/racer.md",
+    "examples/raymarched-sdf-metaball.md",
+    "examples/regex-tester.md",
+    "examples/roguelike.md",
+    "examples/sankey.md",
+    "examples/settings.md",
+    "examples/solitaire.md",
+    "examples/spreadsheet.md",
+    "examples/sql-builder.md",
+    "examples/streaming-line.md",
+    "examples/sudoku.md",
+    "examples/sunburst.md",
+    "examples/svg-stroke.md",
+    "examples/terminal.md",
+    "examples/terrain.md",
+    "examples/tower-defense.md",
+    "examples/treemap.md",
+    "examples/typing-test.md",
+    "examples/voxel-sandbox.md",
+    "examples/whiteboard.md"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "javascript",
+    "canvas",
+    "svg",
+    "webgl",
+    "website"
+  ],
+  "tones": [
+    "dark",
+    "interactive",
+    "light",
+    "playful",
+    "precise",
+    "restrained",
+    "technical",
+    "warm"
+  ],
+  "surfaces": [
+    "dashboard",
+    "app",
+    "tool",
+    "single_screen",
+    "canvas",
+    "editor"
+  ],
+  "motif_tags": [
+    "code_block",
+    "command_surface",
+    "data_terminal",
+    "glass_panel",
+    "instrument_control",
+    "interactive_stage",
+    "market_table",
+    "minimal_centerpiece",
+    "process_timeline",
+    "sidebar_nav",
+    "specification_table",
+    "stats_strip"
+  ],
+  "supports_tasks": [
+    "dashboard_layout",
+    "data_visualization",
+    "interactive_tool",
+    "editor_ui",
+    "game_ui",
+    "app_shell",
+    "canvas_scene",
+    "admin_panel",
+    "spreadsheet_ui",
+    "timeline_ui"
+  ],
+  "anti_patterns": [
+    "marketing landing page",
+    "hero-led brochure site",
+    "fake metrics",
+    "stock imagery"
+  ],
+  "screenshot_paths": [],
+  "token_budget_hint": 16000,
+  "confidence_score": 5,
+  "example_ids": [
+    "analytics-brutalist",
+    "analytics-dashboard",
+    "analytics-editorial",
+    "analytics-ops",
+    "ascii-art",
+    "audio-spectrum-visualizer",
+    "boids",
+    "breakout",
+    "browser-os",
+    "calendar",
+    "calendar-heatmap",
+    "candlestick-ohlc-chart",
+    "chess",
+    "chess-obsidian",
+    "chord",
+    "choropleth",
+    "choropleth-parallel",
+    "code-editor",
+    "code-playground",
+    "command-palette",
+    "contacts",
+    "data-globe",
+    "db-browser",
+    "drum-machine",
+    "duotone",
+    "email-client",
+    "file-manager",
+    "flashcards",
+    "font-playground",
+    "gantt",
+    "gear-train",
+    "git-graph",
+    "glitch-lab",
+    "gltf-inspector",
+    "gradient-studio",
+    "image-cropper",
+    "json-tree",
+    "kanban-board",
+    "markdown-editor",
+    "mind-map",
+    "music-player",
+    "network-graph",
+    "node-graph",
+    "notifications",
+    "orrery",
+    "particle-flow",
+    "pattern-generator",
+    "pattern-generator-s2",
+    "physics-sandbox",
+    "pixel-editor",
+    "product-configurator-3d",
+    "qr-styler",
+    "racer",
+    "raymarched-sdf-metaball",
+    "regex-tester",
+    "roguelike",
+    "sankey",
+    "settings",
+    "solitaire",
+    "spreadsheet",
+    "sql-builder",
+    "streaming-line",
+    "sudoku",
+    "sunburst",
+    "svg-stroke",
+    "terminal",
+    "terrain",
+    "tower-defense",
+    "treemap",
+    "typing-test",
+    "voxel-sandbox",
+    "whiteboard"
+  ],
+  "source_dirs": {
+    "analytics-brutalist": "examples/analytics-brutalist/source",
+    "analytics-dashboard": "examples/analytics-dashboard/source",
+    "analytics-editorial": "examples/analytics-editorial/source",
+    "analytics-ops": "examples/analytics-ops/source",
+    "ascii-art": "examples/ascii-art/source",
+    "audio-spectrum-visualizer": "examples/audio-spectrum-visualizer/source",
+    "boids": "examples/boids/source",
+    "breakout": "examples/breakout/source",
+    "browser-os": "examples/browser-os/source",
+    "calendar": "examples/calendar/source",
+    "calendar-heatmap": "examples/calendar-heatmap/source",
+    "candlestick-ohlc-chart": "examples/candlestick-ohlc-chart/source",
+    "chess": "examples/chess/source",
+    "chess-obsidian": "examples/chess-obsidian/source",
+    "chord": "examples/chord/source",
+    "choropleth": "examples/choropleth/source",
+    "choropleth-parallel": "examples/choropleth-parallel/source",
+    "code-editor": "examples/code-editor/source",
+    "code-playground": "examples/code-playground/source",
+    "command-palette": "examples/command-palette/source",
+    "contacts": "examples/contacts/source",
+    "data-globe": "examples/data-globe/source",
+    "db-browser": "examples/db-browser/source",
+    "drum-machine": "examples/drum-machine/source",
+    "duotone": "examples/duotone/source",
+    "email-client": "examples/email-client/source",
+    "file-manager": "examples/file-manager/source",
+    "flashcards": "examples/flashcards/source",
+    "font-playground": "examples/font-playground/source",
+    "gantt": "examples/gantt/source",
+    "gear-train": "examples/gear-train/source",
+    "git-graph": "examples/git-graph/source",
+    "glitch-lab": "examples/glitch-lab/source",
+    "gltf-inspector": "examples/gltf-inspector/source",
+    "gradient-studio": "examples/gradient-studio/source",
+    "image-cropper": "examples/image-cropper/source",
+    "json-tree": "examples/json-tree/source",
+    "kanban-board": "examples/kanban-board/source",
+    "markdown-editor": "examples/markdown-editor/source",
+    "mind-map": "examples/mind-map/source",
+    "music-player": "examples/music-player/source",
+    "network-graph": "examples/network-graph/source",
+    "node-graph": "examples/node-graph/source",
+    "notifications": "examples/notifications/source",
+    "orrery": "examples/orrery/source",
+    "particle-flow": "examples/particle-flow/source",
+    "pattern-generator": "examples/pattern-generator/source",
+    "pattern-generator-s2": "examples/pattern-generator-s2/source",
+    "physics-sandbox": "examples/physics-sandbox/source",
+    "pixel-editor": "examples/pixel-editor/source",
+    "product-configurator-3d": "examples/product-configurator-3d/source",
+    "qr-styler": "examples/qr-styler/source",
+    "racer": "examples/racer/source",
+    "raymarched-sdf-metaball": "examples/raymarched-sdf-metaball/source",
+    "regex-tester": "examples/regex-tester/source",
+    "roguelike": "examples/roguelike/source",
+    "sankey": "examples/sankey/source",
+    "settings": "examples/settings/source",
+    "solitaire": "examples/solitaire/source",
+    "spreadsheet": "examples/spreadsheet/source",
+    "sql-builder": "examples/sql-builder/source",
+    "streaming-line": "examples/streaming-line/source",
+    "sudoku": "examples/sudoku/source",
+    "sunburst": "examples/sunburst/source",
+    "svg-stroke": "examples/svg-stroke/source",
+    "terminal": "examples/terminal/source",
+    "terrain": "examples/terrain/source",
+    "tower-defense": "examples/tower-defense/source",
+    "treemap": "examples/treemap/source",
+    "typing-test": "examples/typing-test/source",
+    "voxel-sandbox": "examples/voxel-sandbox/source",
+    "whiteboard": "examples/whiteboard/source"
+  },
+  "preview_paths": {},
+  "example_strengths": {
+    "analytics-brutalist": [
+      "navigation_clarity",
+      "section_sequencing",
+      "measurement_table",
+      "service_clarity",
+      "technical_specs"
+    ],
+    "analytics-dashboard": [
+      "navigation_clarity",
+      "section_sequencing",
+      "measurement_table",
+      "service_clarity",
+      "technical_specs"
+    ],
+    "analytics-editorial": [
+      "navigation_clarity",
+      "section_sequencing",
+      "measurement_table",
+      "service_clarity",
+      "technical_specs"
+    ],
+    "analytics-ops": [
+      "navigation_clarity",
+      "section_sequencing",
+      "measurement_table",
+      "service_clarity",
+      "technical_specs"
+    ],
+    "ascii-art": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "audio-spectrum-visualizer": [
+      "measurement_table",
+      "navigation_clarity",
+      "single_screen_stage",
+      "technical_specs"
+    ],
+    "boids": [
+      "measurement_table",
+      "navigation_clarity",
+      "single_screen_stage",
+      "technical_specs"
+    ],
+    "breakout": [
+      "single_screen_stage",
+      "navigation_clarity",
+      "central_control"
+    ],
+    "browser-os": [
+      "navigation_clarity",
+      "section_sequencing",
+      "service_clarity"
+    ],
+    "calendar": [
+      "navigation_clarity",
+      "section_sequencing",
+      "service_clarity"
+    ],
+    "calendar-heatmap": [
+      "measurement_table",
+      "navigation_clarity",
+      "single_screen_stage",
+      "technical_specs"
+    ],
+    "candlestick-ohlc-chart": [
+      "measurement_table",
+      "navigation_clarity",
+      "single_screen_stage",
+      "technical_specs"
+    ],
+    "chess": [
+      "single_screen_stage",
+      "navigation_clarity",
+      "central_control"
+    ],
+    "chess-obsidian": [
+      "single_screen_stage",
+      "navigation_clarity",
+      "central_control"
+    ],
+    "chord": [
+      "measurement_table",
+      "navigation_clarity",
+      "single_screen_stage",
+      "technical_specs"
+    ],
+    "choropleth": [
+      "measurement_table",
+      "navigation_clarity",
+      "single_screen_stage",
+      "technical_specs"
+    ],
+    "choropleth-parallel": [
+      "measurement_table",
+      "navigation_clarity",
+      "single_screen_stage",
+      "technical_specs"
+    ],
+    "code-editor": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "code-playground": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "command-palette": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "contacts": [
+      "navigation_clarity",
+      "section_sequencing",
+      "service_clarity"
+    ],
+    "data-globe": [
+      "measurement_table",
+      "navigation_clarity",
+      "single_screen_stage",
+      "technical_specs"
+    ],
+    "db-browser": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "drum-machine": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "duotone": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "email-client": [
+      "navigation_clarity",
+      "section_sequencing",
+      "service_clarity"
+    ],
+    "file-manager": [
+      "navigation_clarity",
+      "section_sequencing",
+      "service_clarity"
+    ],
+    "flashcards": [
+      "navigation_clarity",
+      "section_sequencing",
+      "single_screen_stage"
+    ],
+    "font-playground": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "gantt": [
+      "navigation_clarity",
+      "section_sequencing",
+      "service_clarity"
+    ],
+    "gear-train": [
+      "single_screen_stage",
+      "central_control",
+      "navigation_clarity"
+    ],
+    "git-graph": [
+      "measurement_table",
+      "navigation_clarity",
+      "single_screen_stage",
+      "technical_specs"
+    ],
+    "glitch-lab": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "gltf-inspector": [
+      "single_screen_stage",
+      "central_control",
+      "navigation_clarity"
+    ],
+    "gradient-studio": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "image-cropper": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "json-tree": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "kanban-board": [
+      "navigation_clarity",
+      "section_sequencing",
+      "service_clarity"
+    ],
+    "markdown-editor": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "mind-map": [
+      "navigation_clarity",
+      "section_sequencing",
+      "single_screen_stage"
+    ],
+    "music-player": [
+      "navigation_clarity",
+      "section_sequencing",
+      "service_clarity"
+    ],
+    "network-graph": [
+      "measurement_table",
+      "navigation_clarity",
+      "single_screen_stage",
+      "technical_specs"
+    ],
+    "node-graph": [
+      "measurement_table",
+      "navigation_clarity",
+      "single_screen_stage",
+      "technical_specs"
+    ],
+    "notifications": [
+      "navigation_clarity",
+      "section_sequencing",
+      "service_clarity"
+    ],
+    "orrery": [
+      "single_screen_stage",
+      "central_control",
+      "navigation_clarity"
+    ],
+    "particle-flow": [
+      "measurement_table",
+      "navigation_clarity",
+      "single_screen_stage",
+      "technical_specs"
+    ],
+    "pattern-generator": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "pattern-generator-s2": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "physics-sandbox": [
+      "single_screen_stage",
+      "central_control",
+      "navigation_clarity"
+    ],
+    "pixel-editor": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "product-configurator-3d": [
+      "single_screen_stage",
+      "central_control",
+      "navigation_clarity"
+    ],
+    "qr-styler": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "racer": [
+      "single_screen_stage",
+      "central_control",
+      "navigation_clarity"
+    ],
+    "raymarched-sdf-metaball": [
+      "single_screen_stage",
+      "central_control",
+      "navigation_clarity"
+    ],
+    "regex-tester": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "roguelike": [
+      "single_screen_stage",
+      "navigation_clarity",
+      "central_control"
+    ],
+    "sankey": [
+      "measurement_table",
+      "navigation_clarity",
+      "single_screen_stage",
+      "technical_specs"
+    ],
+    "settings": [
+      "navigation_clarity",
+      "section_sequencing",
+      "service_clarity"
+    ],
+    "solitaire": [
+      "single_screen_stage",
+      "navigation_clarity",
+      "central_control"
+    ],
+    "spreadsheet": [
+      "navigation_clarity",
+      "section_sequencing",
+      "service_clarity"
+    ],
+    "sql-builder": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "streaming-line": [
+      "measurement_table",
+      "navigation_clarity",
+      "single_screen_stage",
+      "technical_specs"
+    ],
+    "sudoku": [
+      "single_screen_stage",
+      "navigation_clarity",
+      "central_control"
+    ],
+    "sunburst": [
+      "measurement_table",
+      "navigation_clarity",
+      "single_screen_stage",
+      "technical_specs"
+    ],
+    "svg-stroke": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "terminal": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ],
+    "terrain": [
+      "single_screen_stage",
+      "central_control",
+      "navigation_clarity"
+    ],
+    "tower-defense": [
+      "single_screen_stage",
+      "navigation_clarity",
+      "central_control"
+    ],
+    "treemap": [
+      "measurement_table",
+      "navigation_clarity",
+      "single_screen_stage",
+      "technical_specs"
+    ],
+    "typing-test": [
+      "navigation_clarity",
+      "section_sequencing",
+      "single_screen_stage"
+    ],
+    "voxel-sandbox": [
+      "single_screen_stage",
+      "central_control",
+      "navigation_clarity"
+    ],
+    "whiteboard": [
+      "code_blocks",
+      "central_control",
+      "navigation_clarity",
+      "technical_specs"
+    ]
+  },
+  "motif_overlaps": {
+    "analytics-brutalist": [
+      "command_surface",
+      "glass_panel",
+      "data_terminal",
+      "stats_strip",
+      "market_table",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "analytics-dashboard": [
+      "command_surface",
+      "glass_panel",
+      "data_terminal",
+      "stats_strip",
+      "market_table",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "analytics-editorial": [
+      "command_surface",
+      "glass_panel",
+      "data_terminal",
+      "stats_strip",
+      "market_table",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "analytics-ops": [
+      "command_surface",
+      "glass_panel",
+      "data_terminal",
+      "stats_strip",
+      "market_table",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "ascii-art": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "audio-spectrum-visualizer": [
+      "data_terminal",
+      "interactive_stage",
+      "stats_strip"
+    ],
+    "boids": [
+      "data_terminal",
+      "interactive_stage",
+      "stats_strip"
+    ],
+    "breakout": [
+      "interactive_stage",
+      "command_surface",
+      "minimal_centerpiece"
+    ],
+    "browser-os": [
+      "sidebar_nav",
+      "command_surface",
+      "glass_panel",
+      "specification_table",
+      "market_table"
+    ],
+    "calendar": [
+      "sidebar_nav",
+      "command_surface",
+      "glass_panel",
+      "specification_table",
+      "market_table"
+    ],
+    "calendar-heatmap": [
+      "data_terminal",
+      "interactive_stage",
+      "stats_strip"
+    ],
+    "candlestick-ohlc-chart": [
+      "data_terminal",
+      "interactive_stage",
+      "stats_strip"
+    ],
+    "chess": [
+      "interactive_stage",
+      "command_surface",
+      "minimal_centerpiece"
+    ],
+    "chess-obsidian": [
+      "interactive_stage",
+      "command_surface",
+      "minimal_centerpiece"
+    ],
+    "chord": [
+      "data_terminal",
+      "interactive_stage",
+      "stats_strip"
+    ],
+    "choropleth": [
+      "data_terminal",
+      "interactive_stage",
+      "stats_strip"
+    ],
+    "choropleth-parallel": [
+      "data_terminal",
+      "interactive_stage",
+      "stats_strip"
+    ],
+    "code-editor": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "code-playground": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "command-palette": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "contacts": [
+      "sidebar_nav",
+      "command_surface",
+      "glass_panel",
+      "specification_table",
+      "market_table"
+    ],
+    "data-globe": [
+      "data_terminal",
+      "interactive_stage",
+      "stats_strip"
+    ],
+    "db-browser": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "drum-machine": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "duotone": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "email-client": [
+      "sidebar_nav",
+      "command_surface",
+      "glass_panel",
+      "specification_table",
+      "market_table"
+    ],
+    "file-manager": [
+      "sidebar_nav",
+      "command_surface",
+      "glass_panel",
+      "specification_table",
+      "market_table"
+    ],
+    "flashcards": [
+      "interactive_stage",
+      "process_timeline",
+      "command_surface"
+    ],
+    "font-playground": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "gantt": [
+      "sidebar_nav",
+      "command_surface",
+      "glass_panel",
+      "specification_table",
+      "market_table"
+    ],
+    "gear-train": [
+      "interactive_stage",
+      "instrument_control",
+      "glass_panel"
+    ],
+    "git-graph": [
+      "data_terminal",
+      "interactive_stage",
+      "stats_strip"
+    ],
+    "glitch-lab": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "gltf-inspector": [
+      "interactive_stage",
+      "instrument_control",
+      "glass_panel"
+    ],
+    "gradient-studio": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "image-cropper": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "json-tree": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "kanban-board": [
+      "sidebar_nav",
+      "command_surface",
+      "glass_panel",
+      "specification_table",
+      "market_table"
+    ],
+    "markdown-editor": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "mind-map": [
+      "interactive_stage",
+      "process_timeline",
+      "command_surface"
+    ],
+    "music-player": [
+      "sidebar_nav",
+      "command_surface",
+      "glass_panel",
+      "specification_table",
+      "market_table"
+    ],
+    "network-graph": [
+      "data_terminal",
+      "interactive_stage",
+      "stats_strip"
+    ],
+    "node-graph": [
+      "data_terminal",
+      "interactive_stage",
+      "stats_strip"
+    ],
+    "notifications": [
+      "sidebar_nav",
+      "command_surface",
+      "glass_panel",
+      "specification_table",
+      "market_table"
+    ],
+    "orrery": [
+      "interactive_stage",
+      "instrument_control",
+      "glass_panel"
+    ],
+    "particle-flow": [
+      "data_terminal",
+      "interactive_stage",
+      "stats_strip"
+    ],
+    "pattern-generator": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "pattern-generator-s2": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "physics-sandbox": [
+      "interactive_stage",
+      "instrument_control",
+      "glass_panel"
+    ],
+    "pixel-editor": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "product-configurator-3d": [
+      "interactive_stage",
+      "instrument_control",
+      "glass_panel"
+    ],
+    "qr-styler": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "racer": [
+      "interactive_stage",
+      "instrument_control",
+      "glass_panel"
+    ],
+    "raymarched-sdf-metaball": [
+      "interactive_stage",
+      "instrument_control",
+      "glass_panel"
+    ],
+    "regex-tester": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "roguelike": [
+      "interactive_stage",
+      "command_surface",
+      "minimal_centerpiece"
+    ],
+    "sankey": [
+      "data_terminal",
+      "interactive_stage",
+      "stats_strip"
+    ],
+    "settings": [
+      "sidebar_nav",
+      "command_surface",
+      "glass_panel",
+      "specification_table",
+      "market_table"
+    ],
+    "solitaire": [
+      "interactive_stage",
+      "command_surface",
+      "minimal_centerpiece"
+    ],
+    "spreadsheet": [
+      "sidebar_nav",
+      "command_surface",
+      "glass_panel",
+      "specification_table",
+      "market_table"
+    ],
+    "sql-builder": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "streaming-line": [
+      "data_terminal",
+      "interactive_stage",
+      "stats_strip"
+    ],
+    "sudoku": [
+      "interactive_stage",
+      "command_surface",
+      "minimal_centerpiece"
+    ],
+    "sunburst": [
+      "data_terminal",
+      "interactive_stage",
+      "stats_strip"
+    ],
+    "svg-stroke": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "terminal": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ],
+    "terrain": [
+      "interactive_stage",
+      "instrument_control",
+      "glass_panel"
+    ],
+    "tower-defense": [
+      "interactive_stage",
+      "command_surface",
+      "minimal_centerpiece"
+    ],
+    "treemap": [
+      "data_terminal",
+      "interactive_stage",
+      "stats_strip"
+    ],
+    "typing-test": [
+      "interactive_stage",
+      "process_timeline",
+      "command_surface"
+    ],
+    "voxel-sandbox": [
+      "interactive_stage",
+      "instrument_control",
+      "glass_panel"
+    ],
+    "whiteboard": [
+      "command_surface",
+      "code_block",
+      "instrument_control",
+      "sidebar_nav",
+      "specification_table"
+    ]
+  },
+  "example_ux_roles": {
+    "analytics-brutalist": [
+      "stats_strip"
+    ],
+    "analytics-dashboard": [
+      "stats_strip"
+    ],
+    "analytics-editorial": [
+      "stats_strip"
+    ],
+    "analytics-ops": [
+      "stats_strip"
+    ],
+    "ascii-art": [
+      "process_steps"
+    ],
+    "audio-spectrum-visualizer": [
+      "stats_strip"
+    ],
+    "boids": [
+      "stats_strip"
+    ],
+    "breakout": [
+      "process_steps"
+    ],
+    "browser-os": [
+      "form_intake",
+      "footer_full"
+    ],
+    "calendar": [
+      "form_intake",
+      "footer_full"
+    ],
+    "calendar-heatmap": [
+      "stats_strip"
+    ],
+    "candlestick-ohlc-chart": [
+      "stats_strip"
+    ],
+    "chess": [
+      "process_steps"
+    ],
+    "chess-obsidian": [
+      "process_steps"
+    ],
+    "chord": [
+      "stats_strip"
+    ],
+    "choropleth": [
+      "stats_strip"
+    ],
+    "choropleth-parallel": [
+      "stats_strip"
+    ],
+    "code-editor": [
+      "process_steps"
+    ],
+    "code-playground": [
+      "process_steps"
+    ],
+    "command-palette": [
+      "process_steps"
+    ],
+    "contacts": [
+      "form_intake",
+      "footer_full"
+    ],
+    "data-globe": [
+      "stats_strip"
+    ],
+    "db-browser": [
+      "process_steps"
+    ],
+    "drum-machine": [
+      "process_steps"
+    ],
+    "duotone": [
+      "process_steps"
+    ],
+    "email-client": [
+      "form_intake",
+      "footer_full"
+    ],
+    "file-manager": [
+      "form_intake",
+      "footer_full"
+    ],
+    "flashcards": [
+      "process_steps"
+    ],
+    "font-playground": [
+      "process_steps"
+    ],
+    "gantt": [
+      "form_intake",
+      "footer_full"
+    ],
+    "gear-train": [
+      "process_steps"
+    ],
+    "git-graph": [
+      "stats_strip"
+    ],
+    "glitch-lab": [
+      "process_steps"
+    ],
+    "gltf-inspector": [
+      "process_steps"
+    ],
+    "gradient-studio": [
+      "process_steps"
+    ],
+    "image-cropper": [
+      "process_steps"
+    ],
+    "json-tree": [
+      "process_steps"
+    ],
+    "kanban-board": [
+      "form_intake",
+      "footer_full"
+    ],
+    "markdown-editor": [
+      "process_steps"
+    ],
+    "mind-map": [
+      "process_steps"
+    ],
+    "music-player": [
+      "form_intake",
+      "footer_full"
+    ],
+    "network-graph": [
+      "stats_strip"
+    ],
+    "node-graph": [
+      "stats_strip"
+    ],
+    "notifications": [
+      "form_intake",
+      "footer_full"
+    ],
+    "orrery": [
+      "process_steps"
+    ],
+    "particle-flow": [
+      "stats_strip"
+    ],
+    "pattern-generator": [
+      "process_steps"
+    ],
+    "pattern-generator-s2": [
+      "process_steps"
+    ],
+    "physics-sandbox": [
+      "process_steps"
+    ],
+    "pixel-editor": [
+      "process_steps"
+    ],
+    "product-configurator-3d": [
+      "process_steps"
+    ],
+    "qr-styler": [
+      "process_steps"
+    ],
+    "racer": [
+      "process_steps"
+    ],
+    "raymarched-sdf-metaball": [
+      "process_steps"
+    ],
+    "regex-tester": [
+      "process_steps"
+    ],
+    "roguelike": [
+      "process_steps"
+    ],
+    "sankey": [
+      "stats_strip"
+    ],
+    "settings": [
+      "form_intake",
+      "footer_full"
+    ],
+    "solitaire": [
+      "process_steps"
+    ],
+    "spreadsheet": [
+      "form_intake",
+      "footer_full"
+    ],
+    "sql-builder": [
+      "process_steps"
+    ],
+    "streaming-line": [
+      "stats_strip"
+    ],
+    "sudoku": [
+      "process_steps"
+    ],
+    "sunburst": [
+      "stats_strip"
+    ],
+    "svg-stroke": [
+      "process_steps"
+    ],
+    "terminal": [
+      "process_steps"
+    ],
+    "terrain": [
+      "process_steps"
+    ],
+    "tower-defense": [
+      "process_steps"
+    ],
+    "treemap": [
+      "stats_strip"
+    ],
+    "typing-test": [
+      "process_steps"
+    ],
+    "voxel-sandbox": [
+      "process_steps"
+    ],
+    "whiteboard": [
+      "process_steps"
+    ]
+  }
+}

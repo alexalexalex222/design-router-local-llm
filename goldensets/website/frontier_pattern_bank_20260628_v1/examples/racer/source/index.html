@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<title>NULLGRAV — Anti-Gravity Time Trial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* ============================== DESIGN TOKENS ============================== */
+  :root{
+    /* neutral ramp (cool, near-black to fog white) */
+    --n900:#04050b; --n800:#080a14; --n700:#0e1120; --n600:#161a2e;
+    --n500:#222840; --n400:#3a4366; --n300:#5b668c; --n200:#8e97b8;
+    --n100:#c3c9e0; --n050:#e7eaf6; --n000:#f6f8ff;
+    /* semantic / brand */
+    --accent:#37f0ff;        /* primary neon cyan */
+    --accent-2:#ff3df0;      /* magenta */
+    --accent-3:#9b6bff;      /* violet */
+    --speed:#5cf2ff;
+    --good:#46f7a0;
+    --warn:#ffc04d;
+    --bad:#ff476b;
+    --bg:var(--n900);
+    --ink:var(--n000);
+    --ink-dim:var(--n200);
+    --scrim:rgba(4,5,11,.72);
+    --glass:rgba(10,14,28,.58);
+    --hud-line:rgba(55,240,255,.30);
+    /* fluid type scale (ratio-locked, body >=16px) */
+    --fs-300:clamp(.72rem,.66rem + .3vw,.84rem);
+    --fs-400:clamp(.95rem,.9rem + .3vw,1.05rem);   /* body */
+    --fs-500:clamp(1.1rem,1rem + .6vw,1.4rem);
+    --fs-600:clamp(1.45rem,1.2rem + 1.2vw,2.1rem);
+    --fs-700:clamp(2rem,1.5rem + 2.6vw,3.6rem);
+    --fs-900:clamp(3rem,2rem + 6vw,6.5rem);
+    /* spacing 4px scale */
+    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px;
+    /* radii */
+    --r1:6px; --r2:10px; --r3:16px; --r-pill:999px;
+    /* elevation */
+    --e1:0 1px 0 rgba(255,255,255,.04), 0 8px 24px -12px rgba(0,0,0,.6);
+    --e2:0 0 0 1px var(--hud-line), 0 18px 50px -20px rgba(0,0,0,.8);
+    --e3:0 0 0 1px rgba(55,240,255,.45), 0 0 40px -6px rgba(55,240,255,.35), 0 30px 70px -25px rgba(0,0,0,.9);
+    /* motion */
+    --t-fast:140ms; --t-med:240ms; --t-slow:520ms;
+    --ease:cubic-bezier(.22,.61,.36,1);
+    --ease-out:cubic-bezier(.16,1,.3,1);
+    --font-display:"Orbitron","Rajdhani",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --font-hud:"Rajdhani",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:var(--font-hud);
+    font-size:var(--fs-400);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overscroll-behavior:none;
+    touch-action:none;
+  }
+  #app{position:fixed;inset:0;overflow:hidden}
+  canvas#scene{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+  /* render fallback if WebGL unavailable */
+  #glfail{
+    position:absolute;inset:0;display:none;place-items:center;
+    background:radial-gradient(120% 90% at 50% 0%,#0b1024 0%,var(--n900) 70%);
+    color:var(--ink-dim);text-align:center;padding:var(--s5);z-index:1
+  }
+  #glfail .inner{max-width:36ch}
+  #glfail b{color:var(--accent);font-family:var(--font-display)}
+
+  /* ============================== SHARED HUD CHROME ============================== */
+  .hud-layer{position:absolute;inset:0;pointer-events:none;z-index:5}
+  .panel{
+    background:var(--glass);
+    border:1px solid var(--hud-line);
+    border-radius:var(--r2);
+    backdrop-filter:blur(7px) saturate(115%);
+    -webkit-backdrop-filter:blur(7px) saturate(115%);
+    box-shadow:var(--e2);
+  }
+  .mono-num{font-family:var(--font-display);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+  .label{
+    font-size:var(--fs-300);letter-spacing:.22em;text-transform:uppercase;
+    color:var(--ink-dim);font-weight:600
+  }
+  .skip-link{
+    position:absolute;left:var(--s3);top:var(--s3);z-index:60;
+    background:var(--accent);color:#02121a;padding:var(--s2) var(--s4);
+    border-radius:var(--r1);font-weight:700;transform:translateY(-180%);
+    transition:transform var(--t-fast) var(--ease);pointer-events:auto;text-decoration:none
+  }
+  .skip-link:focus-visible{transform:translateY(0)}
+
+  /* ---------- top bar: lap counter / timer / minimap ---------- */
+  #topbar{
+    position:absolute;top:0;left:0;right:0;
+    display:grid;grid-template-columns:1fr auto 1fr;align-items:start;
+    gap:var(--s3);padding:var(--s4) clamp(var(--s3),3vw,var(--s6));
+  }
+  #lapBox{justify-self:start;padding:var(--s2) var(--s4);display:flex;flex-direction:column;gap:2px}
+  #lapBox .v{font-size:var(--fs-500);color:var(--ink);font-weight:700}
+  #lapBox .v b{color:var(--accent)}
+
+  #timeBox{justify-self:center;text-align:center;padding:var(--s2) var(--s5);min-width:min(46vw,300px)}
+  #curTime{font-size:var(--fs-600);color:var(--ink);line-height:1}
+  #timeMeta{display:flex;gap:var(--s4);justify-content:center;margin-top:var(--s1)}
+  #timeMeta .cell{display:flex;flex-direction:column;align-items:center;gap:1px}
+  #timeMeta .cell .n{font-size:var(--fs-400);font-family:var(--font-display);font-weight:600}
+  #delta.up{color:var(--bad)} #delta.down{color:var(--good)} #delta.flat{color:var(--ink-dim)}
+  #bestTime{color:var(--accent)}
+
+  #miniBox{justify-self:end;padding:var(--s3);display:flex;flex-direction:column;align-items:center;gap:var(--s1)}
+  #miniBox svg{display:block;width:clamp(78px,9vw,128px);height:auto}
+  #miniBox .label{font-size:10px;letter-spacing:.18em}
+
+  /* ---------- bottom: speedo / shield ---------- */
+  #botbar{
+    position:absolute;left:0;right:0;bottom:0;
+    display:flex;justify-content:space-between;align-items:flex-end;
+    gap:var(--s3);padding:0 clamp(var(--s3),3vw,var(--s6)) clamp(var(--s4),3vw,var(--s6));
+  }
+  #speedo{padding:var(--s3) var(--s4);display:flex;align-items:center;gap:var(--s3)}
+  #speedo svg{width:clamp(88px,11vw,140px);height:auto;display:block}
+  #speedRead{display:flex;flex-direction:column;line-height:.95}
+  #speedNum{font-size:var(--fs-700);color:var(--speed);font-weight:900;letter-spacing:-.01em}
+  #speedNum.redline{color:var(--accent-2)}
+  #speedUnit{font-size:var(--fs-300);letter-spacing:.3em;color:var(--ink-dim)}
+
+  #shieldBox{padding:var(--s3) var(--s4);display:flex;align-items:center;gap:var(--s3);text-align:right}
+  #shieldBox svg{width:clamp(76px,9vw,116px);height:auto;display:block}
+  #shieldRead{display:flex;flex-direction:column;align-items:flex-end;line-height:1}
+  #shieldNum{font-size:var(--fs-600);font-weight:900;color:var(--good)}
+  #shieldNum.warn{color:var(--warn)} #shieldNum.crit{color:var(--bad)}
+
+  /* boost / wrecks chip row above speedo */
+  #statChips{position:absolute;left:clamp(var(--s3),3vw,var(--s6));bottom:clamp(96px,16vh,150px);display:flex;gap:var(--s2)}
+  .chip{padding:var(--s1) var(--s3);border-radius:var(--r-pill);font-size:var(--fs-300);
+    letter-spacing:.12em;text-transform:uppercase;background:var(--glass);border:1px solid var(--hud-line);
+    display:flex;align-items:center;gap:6px;color:var(--ink-dim)}
+  .chip b{color:var(--ink);font-family:var(--font-display)}
+  .chip .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+
+  /* ---------- speed lines / ground-rush canvas ---------- */
+  #rush{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none;opacity:.0;
+    transition:opacity var(--t-med) var(--ease)}
+
+  /* ---------- damage vignette ---------- */
+  #dmgVig{position:absolute;inset:0;z-index:6;pointer-events:none;opacity:0;
+    background:radial-gradient(120% 90% at 50% 50%,transparent 52%,rgba(255,71,107,.0) 60%,rgba(255,71,107,.55) 100%);
+    transition:opacity 90ms linear}
+
+  /* ============================== CENTERED OVERLAYS ============================== */
+  .overlay{
+    position:absolute;inset:0;z-index:20;display:none;place-items:center;
+    padding:var(--s5);pointer-events:auto;
+  }
+  .overlay.show{display:grid}
+  .overlay::before{content:"";position:absolute;inset:0;background:var(--scrim);backdrop-filter:blur(3px)}
+  .overlay-inner{position:relative;z-index:1;width:100%;max-width:560px;
+    display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--s5)}
+
+  /* title */
+  #title .brand{display:flex;flex-direction:column;align-items:center;gap:var(--s2)}
+  .wordmark{font-family:var(--font-display);font-weight:900;font-size:var(--fs-900);line-height:.86;
+    letter-spacing:.02em;
+    background:linear-gradient(180deg,#eafdff 0%,var(--accent) 55%,#1aa6c4 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 36px rgba(55,240,255,.28);filter:drop-shadow(0 6px 30px rgba(55,240,255,.25))}
+  .wordmark .g2{color:transparent;background:linear-gradient(180deg,#ffe9fd,var(--accent-2));-webkit-background-clip:text;background-clip:text}
+  .tagline{font-size:var(--fs-400);letter-spacing:.34em;text-transform:uppercase;color:var(--ink-dim);font-weight:600}
+  .sub{color:var(--ink-dim);max-width:42ch;line-height:1.5;font-size:var(--fs-400)}
+
+  /* quality preset segmented control */
+  fieldset.seg{border:0;display:flex;flex-direction:column;gap:var(--s2);align-items:center}
+  fieldset.seg legend{font-size:var(--fs-300);letter-spacing:.22em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:var(--s1)}
+  .seg-track{display:inline-flex;background:var(--n800);border:1px solid var(--n500);border-radius:var(--r-pill);padding:4px;gap:2px}
+  .seg-track input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+  .seg-track label{
+    cursor:pointer;padding:var(--s2) var(--s5);border-radius:var(--r-pill);
+    font-size:var(--fs-400);font-weight:700;color:var(--ink-dim);letter-spacing:.05em;
+    min-height:44px;display:flex;align-items:center;transition:color var(--t-fast),background var(--t-fast)}
+  .seg-track input:checked + label{background:linear-gradient(180deg,var(--accent),#15b6d6);color:#02121a;box-shadow:0 4px 16px -6px var(--accent)}
+  .seg-track input:focus-visible + label{outline:2px solid var(--accent);outline-offset:2px}
+  .seg-track label:hover{color:var(--ink)}
+  .seg-track input:checked + label:hover{color:#02121a}
+  .seg-note{font-size:var(--fs-300);color:var(--ink-dim);min-height:1.2em}
+
+  /* buttons */
+  .btn{
+    pointer-events:auto;cursor:pointer;border:0;font-family:var(--font-hud);
+    font-weight:700;font-size:var(--fs-400);letter-spacing:.08em;text-transform:uppercase;
+    min-height:48px;padding:0 var(--s6);border-radius:var(--r-pill);
+    display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);
+    transition:transform var(--t-fast) var(--ease),box-shadow var(--t-fast),background var(--t-fast),color var(--t-fast);
+  }
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  .btn-primary{background:linear-gradient(180deg,#7df8ff,var(--accent));color:#021318;box-shadow:0 10px 30px -10px var(--accent),inset 0 0 0 1px rgba(255,255,255,.25)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 40px -10px var(--accent)}
+  .btn-primary:active{transform:translateY(0)}
+  .btn-ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--n400)}
+  .btn-ghost:hover{box-shadow:inset 0 0 0 1px var(--accent);color:var(--accent)}
+  .btn-ghost:active{transform:translateY(1px)}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:inset 0 0 0 1px var(--n500)}
+  .btn-row{display:flex;gap:var(--s3);flex-wrap:wrap;justify-content:center}
+
+  /* controls legend */
+  .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:var(--s2);width:100%;max-width:480px}
+  .ctl{display:flex;align-items:center;gap:var(--s2);background:var(--n800);border:1px solid var(--n500);border-radius:var(--r1);padding:var(--s2) var(--s3)}
+  .keycap{font-family:var(--font-display);font-size:var(--fs-300);font-weight:700;color:var(--accent);
+    background:var(--n700);border:1px solid var(--n400);border-bottom-width:2px;border-radius:5px;
+    padding:2px 7px;min-width:24px;text-align:center}
+  .ctl .d{font-size:var(--fs-300);color:var(--ink-dim);letter-spacing:.04em}
+
+  /* countdown */
+  #countdown{z-index:22}
+  #countdown::before{background:transparent;backdrop-filter:none}
+  #cdNum{font-family:var(--font-display);font-weight:900;font-size:var(--fs-900);color:var(--ink);
+    text-shadow:0 0 50px var(--accent);line-height:1}
+  #cdNum.go{color:var(--good);text-shadow:0 0 60px var(--good)}
+  .cd-pop{animation:cdpop var(--t-slow) var(--ease-out)}
+  @keyframes cdpop{0%{transform:scale(.5);opacity:0}30%{opacity:1}100%{transform:scale(1.25);opacity:0}}
+
+  /* results table */
+  .results-table{width:100%;max-width:440px;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  .results-table caption{font-size:var(--fs-300);letter-spacing:.2em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:var(--s2)}
+  .results-table th,.results-table td{padding:var(--s2) var(--s3);text-align:left;border-bottom:1px solid var(--n600)}
+  .results-table th{font-size:var(--fs-300);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim);font-weight:600}
+  .results-table td{font-family:var(--font-display);font-size:var(--fs-400)}
+  .results-table td.t{text-align:right;color:var(--ink)}
+  .results-table tr.best td{color:var(--accent)}
+  .results-table tr.best td.tag::after{content:" ◂ BEST";font-size:.7em;color:var(--accent);letter-spacing:.1em}
+  .result-hero{display:flex;flex-direction:column;gap:var(--s1)}
+  .result-hero .k{font-size:var(--fs-300);letter-spacing:.24em;text-transform:uppercase;color:var(--ink-dim)}
+  .result-hero .v{font-family:var(--font-display);font-size:var(--fs-700);font-weight:900;color:var(--accent)}
+  .ghost-note{font-size:var(--fs-300);color:var(--ink-dim);max-width:40ch}
+
+  .corner-fade{position:absolute;inset:0;pointer-events:none;z-index:3;
+    background:
+      radial-gradient(120% 70% at 50% -10%,rgba(55,240,255,.10),transparent 55%),
+      linear-gradient(0deg,rgba(4,5,11,.55),transparent 28%),
+      linear-gradient(180deg,rgba(4,5,11,.35),transparent 22%)}
+
+  /* ---------- touch controls ---------- */
+  #touch{position:absolute;inset:0;z-index:7;pointer-events:none;display:none}
+  #touch.on{display:block}
+  .tpad{position:absolute;bottom:max(env(safe-area-inset-bottom),18px);pointer-events:auto;
+    width:clamp(64px,18vw,88px);height:clamp(64px,18vw,88px);border-radius:50%;
+    background:var(--glass);border:1px solid var(--hud-line);display:grid;place-items:center;
+    color:var(--accent);box-shadow:var(--e2);user-select:none;-webkit-user-select:none;touch-action:none}
+  .tpad:active{background:rgba(55,240,255,.22)}
+  .tpad svg{width:46%;height:46%}
+  #tThrust{right:18px;bottom:calc(max(env(safe-area-inset-bottom),18px) + clamp(78px,20vw,104px));width:clamp(78px,21vw,104px);height:clamp(78px,21vw,104px)}
+  #tBrake{right:18px}
+  #tLeft{left:18px}
+  #tRight{left:calc(18px + clamp(78px,20vw,104px))}
+
+  @media (max-width:560px){
+    #timeBox{min-width:0;padding:var(--s2) var(--s3)}
+    #timeMeta{gap:var(--s3)}
+    #statChips{display:none}
+    #speedo svg{display:none}
+    #shieldBox svg{display:none}
+  }
+  @media (max-width:380px){
+    #topbar{padding:var(--s2) var(--s2);gap:var(--s2)}
+    #botbar{padding:0 var(--s2) var(--s3)}
+    #lapBox .v{font-size:var(--fs-400)}
+    #miniBox svg{width:64px}
+  }
+
+  @media (max-width:480px){
+    .overlay{padding:var(--s4)}
+    .overlay-inner{max-width:100%;gap:var(--s4)}
+    .wordmark{font-size:clamp(2rem,11vw,3rem);letter-spacing:0}
+    .tagline{letter-spacing:.14em;font-size:var(--fs-300)}
+    .controls{grid-template-columns:1fr 1fr;max-width:100%}
+    .sub{font-size:var(--fs-400)}
+    .seg-track label{padding:var(--s2) var(--s4)}
+    .results-table,.result-hero{max-width:100%}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.05ms !important}
+    .cd-pop{animation:none}
+  }
+</style>
+</head>
+<body>
+<a href="#playBtn" class="skip-link">Skip to start</a>
+<div id="app">
+  <canvas id="scene" aria-hidden="true"></canvas>
+  <canvas id="rush" aria-hidden="true"></canvas>
+  <div class="corner-fade" aria-hidden="true"></div>
+  <div id="dmgVig" aria-hidden="true"></div>
+
+  <div id="glfail" role="alert"><div class="inner">
+    <p><b>NULLGRAV</b> needs WebGL.</p>
+    <p style="margin-top:8px">Your browser or device could not start a 3D context. The simulation and HUD still run, but the track can’t be drawn here.</p>
+  </div></div>
+
+  <!-- ============================ IN-RACE HUD ============================ -->
+  <div class="hud-layer" id="hud" aria-hidden="true">
+    <div id="topbar">
+      <div id="lapBox" class="panel">
+        <span class="label">Lap</span>
+        <span class="v mono-num"><b id="lapCur">1</b> / <span id="lapTot">3</span></span>
+      </div>
+      <div id="timeBox" class="panel">
+        <div class="label">Current Lap</div>
+        <div id="curTime" class="mono-num">0:00.000</div>
+        <div id="timeMeta">
+          <div class="cell"><span class="label">Best</span><span id="bestTime" class="n mono-num">—:——.———</span></div>
+          <div class="cell"><span class="label">Delta</span><span id="delta" class="n mono-num flat">+0.000</span></div>
+        </div>
+      </div>
+      <div id="miniBox" class="panel">
+        <svg id="miniSvg" viewBox="0 0 100 100" role="img" aria-label="Track minimap"></svg>
+        <span class="label">Circuit Zero</span>
+      </div>
+    </div>
+
+    <div id="statChips">
+      <span class="chip"><span class="dot"></span>QUALITY <b id="chipQ">HIGH</b></span>
+      <span class="chip">WRECKS <b id="chipW">0</b></span>
+    </div>
+
+    <div id="botbar">
+      <div id="speedo" class="panel">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <defs>
+            <linearGradient id="spGrad" x1="0" y1="1" x2="1" y2="0">
+              <stop offset="0" stop-color="#37f0ff"/><stop offset="1" stop-color="#ff3df0"/>
+            </linearGradient>
+          </defs>
+          <path d="M22 96 A48 48 0 1 1 98 96" fill="none" stroke="#161a2e" stroke-width="9" stroke-linecap="round"/>
+          <path id="spArc" d="M22 96 A48 48 0 1 1 98 96" fill="none" stroke="url(#spGrad)" stroke-width="9" stroke-linecap="round"/>
+          <circle cx="60" cy="60" r="4" fill="#37f0ff"/>
+          <line id="spNeedle" x1="60" y1="60" x2="60" y2="20" stroke="#eafdff" stroke-width="2.5" stroke-linecap="round" transform="rotate(-135 60 60)"/>
+        </svg>
+        <div id="speedRead">
+          <span id="speedNum" class="mono-num">0</span>
+          <span id="speedUnit">km / h</span>
+        </div>
+      </div>
+
+      <div id="shieldBox" class="panel">
+        <div id="shieldRead">
+          <span id="shieldNum" class="mono-num">100</span>
+          <span class="label">Shield</span>
+        </div>
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <path d="M60 14 L100 30 V64 C100 88 82 102 60 110 C38 102 20 88 20 64 V30 Z"
+                fill="rgba(70,247,160,.06)" stroke="#222840" stroke-width="6"/>
+          <path id="shClip" d="M60 14 L100 30 V64 C100 88 82 102 60 110 C38 102 20 88 20 64 V30 Z"
+                fill="none" stroke="#46f7a0" stroke-width="6" stroke-linejoin="round"
+                pathLength="100" stroke-dasharray="100" stroke-dashoffset="0"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ TOUCH CONTROLS ============================ -->
+  <div id="touch">
+    <button class="tpad" id="tLeft" aria-label="Steer left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 L8 12 L15 19"/></svg></button>
+    <button class="tpad" id="tRight" aria-label="Steer right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5 L16 12 L9 19"/></svg></button>
+    <button class="tpad" id="tBrake" aria-label="Air brake"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="6" y="6" width="4" height="12" rx="1"/><rect x="14" y="6" width="4" height="12" rx="1"/></svg></button>
+    <button class="tpad" id="tThrust" aria-label="Thrust"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L12 21 M12 3 L6 10 M12 3 L18 10"/></svg></button>
+  </div>
+
+  <!-- ============================ TITLE ============================ -->
+  <section id="title" class="overlay show" role="dialog" aria-modal="true" aria-labelledby="brandTitle">
+    <div class="overlay-inner">
+      <div class="brand">
+        <h1 id="brandTitle" class="wordmark">NULL<span class="g2">GRAV</span></h1>
+        <p class="tagline">Anti-Gravity Time Trial</p>
+      </div>
+      <p class="sub">Pilot a hover-craft around <strong>Circuit Zero</strong>. Hold your line through the spires — wall kisses bleed speed and shield. Three laps. Beat the ghost.</p>
+
+      <fieldset class="seg">
+        <legend>Graphics Quality</legend>
+        <div class="seg-track" role="radiogroup" aria-label="Graphics quality">
+          <input type="radio" name="q" id="qLow" value="low"><label for="qLow">Low</label>
+          <input type="radio" name="q" id="qMid" value="mid"><label for="qMid">Mid</label>
+          <input type="radio" name="q" id="qHigh" value="high" checked><label for="qHigh">High</label>
+        </div>
+        <span class="seg-note" id="qNote">High — bloom + crisp pixels. For discrete GPUs.</span>
+      </fieldset>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="playBtn">▶ Start Race</button>
+      </div>
+
+      <div class="controls" aria-label="Controls">
+        <div class="ctl"><span class="keycap">W</span><span class="d">Thrust</span></div>
+        <div class="ctl"><span class="keycap">A</span><span class="keycap">D</span><span class="d">Steer</span></div>
+        <div class="ctl"><span class="keycap">S</span><span class="d">Brake</span></div>
+        <div class="ctl"><span class="keycap">Q</span><span class="keycap">E</span><span class="d">Air-brake</span></div>
+        <div class="ctl"><span class="keycap">Esc</span><span class="d">Pause</span></div>
+        <div class="ctl"><span class="keycap">R</span><span class="d">Respawn</span></div>
+      </div>
+      <p class="ghost-note">Ghost target 1:08.420 is an illustrative reference, not a real record. <span style="color:var(--accent-2)">[GHOST_TIME_PLACEHOLDER]</span></p>
+    </div>
+  </section>
+
+  <!-- ============================ COUNTDOWN ============================ -->
+  <section id="countdown" class="overlay" aria-hidden="true">
+    <div class="overlay-inner"><div id="cdNum" class="mono-num">3</div></div>
+  </section>
+
+  <!-- ============================ PAUSE ============================ -->
+  <section id="pause" class="overlay" role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
+    <div class="overlay-inner">
+      <h2 id="pauseTitle" class="wordmark" style="font-size:var(--fs-700)">PAUSED</h2>
+      <p class="sub">Hold position. The clock is stopped.</p>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="resumeBtn">Resume</button>
+        <button class="btn btn-ghost" id="restartBtn">Restart</button>
+        <button class="btn btn-ghost" id="quitBtn">Main Menu</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ RESULTS ============================ -->
+  <section id="results" class="overlay" role="dialog" aria-modal="true" aria-labelledby="resTitle">
+    <div class="overlay-inner">
+      <h2 id="resTitle" class="wordmark" style="font-size:var(--fs-600)">RACE COMPLETE</h2>
+      <div class="result-hero">
+        <span class="k">Best Lap</span>
+        <span class="v mono-num" id="resBest">—:——.———</span>
+      </div>
+      <table class="results-table">
+        <caption>Lap Splits</caption>
+        <thead><tr><th>Lap</th><th style="text-align:right">Time</th></tr></thead>
+        <tbody id="resBody"></tbody>
+        <tfoot><tr><th>Total</th><th class="t" id="resTotal" style="text-align:right">—:——.———</th></tr></tfoot>
+      </table>
+      <p class="ghost-note" id="resWreck">Clean run — no wall contacts.</p>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="againBtn">Race Again</button>
+        <button class="btn btn-ghost" id="menuBtn">Main Menu</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script type="importmap">
+{
+  "imports":{
+    "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+/* =====================================================================================
+   NULLGRAV — single-file anti-gravity racer
+   Architecture: a pure(-ish) deterministic SIM (fixed-timestep) is fully decoupled from
+   the Three.js RENDER. The sim runs even if WebGL fails, so headless tests assert physics,
+   collision, lap logic, the state machine and audio-gating without a GPU.
+   ===================================================================================== */
+
+/* -------------------------------- tunables / presets -------------------------------- */
+const FIXED = 1/120;                 // physics fixed step (s). 1/60 & 1/30 both divide evenly.
+const TOP_SPEED = 112;               // world units / s
+const SPEED_TO_KMH = 3.12;           // display only -> ~349 km/h top
+const THRUST = 82;                   // accel scalar (curve-shaped toward TOP_SPEED)
+const COAST_DRAG = 20;               // passive decel when off-throttle
+const BRAKE = 128;                   // S / air-brake decel
+const AIRBRAKE = 70;                 // extra decel from Q/E
+const STEER_RATE = 1.95;             // rad/s at full grip
+const MAX_BANK = 0.46;               // visual roll
+const WALL_KEEP = 0.46;              // speed retained on wall hit
+const HIT_DMG = 17;                  // shield removed per wall contact
+const HIT_COOLDOWN = 0.32;           // s between scored contacts
+const SHIELD_REGEN = 3.4;            // /s recovery
+const TRACK_HALF = 13.0;             // half track width
+const SHIP_R = 1.7;                  // ship collision radius
+const LAPS_TO_FINISH = 3;
+const HOVER_Y = 1.4;
+const RESPAWN_HOLD = 1.15;           // s frozen on wreck
+
+const PRESETS = {
+  low:  {pixelRatio:1.0, bloom:false, bloomStrength:0,    aa:false, stars:1400, fog:[70,420], shake:.5, label:'Low — 60fps target @1080p on integrated graphics.'},
+  mid:  {pixelRatio:1.25,bloom:false, bloomStrength:0,    aa:true,  stars:2600, fog:[80,520], shake:.8, label:'Mid — antialiasing, denser starfield, no bloom.'},
+  high: {pixelRatio:Math.min(2,(self.devicePixelRatio||1)), bloom:true, bloomStrength:0.9, aa:true, stars:4200, fog:[90,640], shake:1, label:'High — bloom + crisp pixels. For discrete GPUs.'}
+};
+
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ============================== TRACK GEOMETRY (shared) ============================== */
+// Closed circuit control points in XZ. Hand-tuned: long straight, two hairpins, a sweeper.
+const CTRL = [
+  [0,0],[58,-6],[112,-44],[126,-118],[96,-176],[34,-196],
+  [-44,-190],[-96,-152],[-104,-86],[-78,-26],[-34,6],[-6,4]
+].map(([x,z])=>new THREE.Vector3(x,0,z));
+
+const curve = new THREE.CatmullRomCurve3(CTRL, true, 'catmullrom', 0.5);
+
+// arc-length LUT for fast nearest-u lookup and minimap
+const LUT_N = 900;
+const LUT = [];
+for(let i=0;i<LUT_N;i++){
+  const u=i/LUT_N;
+  LUT.push({u, p:curve.getPointAt(u), t:curve.getTangentAt(u)});
+}
+function nearestU(x,z){
+  let best=0,bd=Infinity;
+  for(let i=0;i<LUT_N;i++){
+    const p=LUT[i].p, dx=p.x-x, dz=p.z-z, d=dx*dx+dz*dz;
+    if(d<bd){bd=d;best=i;}
+  }
+  return LUT[best];
+}
+const CHECKPOINTS=[0.25,0.5,0.75];
+
+/* ================================== THE SIMULATION ================================== */
+class Sim{
+  constructor(){ this.acc=0; this.reset(); }
+  reset(){
+    const s=LUT[0];
+    this.pos=new THREE.Vector3(s.p.x, HOVER_Y, s.p.z);
+    this.yaw=Math.atan2(s.t.x, s.t.z);
+    this.speed=0; this.bank=0; this.shield=100;
+    this.lap=0; this.lapTime=0; this.bestLap=null; this.splits=[];
+    this.u=0; this.prevU=0; this.progressMax=0;
+    this.hitTimer=0; this.shakeImpulse=0; this.lastHit=0;
+    this.wrecks=0; this.phase='title';
+    this.respawnTimer=0; this.lastCpU=0;
+    this.totalTime=0; this.input={thrust:0,brake:0,steer:0,abL:0,abR:0,respawn:0};
+    this.acc=0; this.finished=false; this._hitEvent=false;
+  }
+  setInput(i){ Object.assign(this.input, i); }
+
+  // public: advance real-frame time; chunks into fixed steps -> frame-rate independent.
+  step(dt){
+    if(dt>0.1) dt=0.1;            // clamp huge tab-switch gaps
+    this.acc+=dt;
+    let n=0;
+    while(this.acc>=FIXED && n<8){ this.fixed(FIXED); this.acc-=FIXED; n++; }
+    if(this.shakeImpulse>0) this.shakeImpulse=Math.max(0,this.shakeImpulse-dt*4);
+  }
+
+  fixed(h){
+    const inp=this.input;
+    if(this.phase==='respawn'){
+      this.respawnTimer-=h;
+      if(this.respawnTimer<=0) this._doRespawn();
+      return;
+    }
+    if(this.phase!=='race') return;
+
+    this.totalTime+=h; this.lapTime+=h;
+
+    // ---- longitudinal: curve-shaped accel toward TOP_SPEED ----
+    if(inp.thrust){
+      const room=Math.max(0,1-this.speed/TOP_SPEED);
+      this.speed+=THRUST*room*h;
+    } else {
+      this.speed-=COAST_DRAG*h;
+    }
+    if(inp.brake) this.speed-=BRAKE*h;
+    if(inp.abL||inp.abR) this.speed-=AIRBRAKE*h;
+    if(this.speed<0) this.speed=0;
+    if(this.speed>TOP_SPEED) this.speed=TOP_SPEED;   // hard top-speed clamp
+
+    // ---- steering: grip ramps with speed, air-brake tightens turn ----
+    const grip=0.4+0.6*Math.min(1,this.speed/(TOP_SPEED*0.45));
+    let steer=inp.steer + (inp.abR?0.6:0) - (inp.abL?0.6:0);
+    steer=Math.max(-1.6,Math.min(1.6,steer));
+    this.yaw+=steer*STEER_RATE*grip*h;
+    const targetBank=-steer*MAX_BANK;
+    this.bank+=(targetBank-this.bank)*Math.min(1,h*9);
+
+    // ---- integrate position along heading ----
+    const fx=Math.sin(this.yaw), fz=Math.cos(this.yaw);
+    this.pos.x+=fx*this.speed*h;
+    this.pos.z+=fz*this.speed*h;
+
+    // ---- collision vs track walls ----
+    if(this.hitTimer>0) this.hitTimer-=h;
+    const near=nearestU(this.pos.x,this.pos.z);
+    // lateral normal in XZ
+    const nx=near.t.z, nz=-near.t.x;
+    const off=(this.pos.x-near.p.x)*nx+(this.pos.z-near.p.z)*nz;
+    const limit=TRACK_HALF-SHIP_R;
+    if(Math.abs(off)>limit){
+      const sign=off>0?1:-1;
+      this.pos.x=near.p.x+nx*sign*limit;     // clamp back inside
+      this.pos.z=near.p.z+nz*sign*limit;
+      const grazing=Math.abs(this.speed*(fx*nx+fz*nz)); // perpendicular speed -> impact
+      this.speed*=WALL_KEEP;
+      if(this.hitTimer<=0){
+        const dmg=HIT_DMG*(0.5+0.5*Math.min(1,grazing/TOP_SPEED));
+        this.shield=Math.max(0,this.shield-dmg);
+        this.hitTimer=HIT_COOLDOWN;
+        this.shakeImpulse=Math.min(1,0.55+grazing/TOP_SPEED);
+        this.lastHit=this.totalTime;
+        this._hitEvent=true;
+        if(this.shield<=0){ this.phase='respawn'; this.respawnTimer=RESPAWN_HOLD; }
+      }
+    } else if(this.shield<100){
+      this.shield=Math.min(100,this.shield+SHIELD_REGEN*h);
+    }
+
+    // ---- lap / progress tracking ----
+    this.u=near.u;
+    for(const c of CHECKPOINTS){ if(this.prevU<c && this.u>=c && this.u-this.prevU<0.4) this.lastCpU=c; }
+    if(this.u>this.progressMax && this.u<0.97) this.progressMax=this.u;
+    // forward wrap across start line
+    if(this.prevU>0.85 && this.u<0.15){
+      if(this.progressMax>0.5){ this._scoreLap(); }
+    }
+    // backward wrap -> ignored (no lap), reset stray progress
+    this.prevU=this.u;
+  }
+
+  _scoreLap(){
+    this.lap++;
+    this.splits.push(this.lapTime);
+    if(this.bestLap===null||this.lapTime<this.bestLap) this.bestLap=this.lapTime;
+    this.lapTime=0; this.progressMax=0;
+    if(this.lap>=LAPS_TO_FINISH){ this.phase='finish'; this.finished=true; }
+  }
+  _doRespawn(){
+    const c=nearestU(this.pos.x,this.pos.z);
+    // place on the centerline at the last good checkpoint
+    const ru=this.lastCpU, rp=curve.getPointAt(ru), rt=curve.getTangentAt(ru);
+    this.pos.set(rp.x,HOVER_Y,rp.z);
+    this.yaw=Math.atan2(rt.x,rt.z);
+    this.speed=0; this.bank=0; this.shield=70; this.wrecks++;
+    this.phase='race'; this.hitTimer=HIT_COOLDOWN;
+  }
+
+  // place ship on centerline at param u and run lap logic (used for headless lap tests)
+  placeAt(u){
+    const p=curve.getPointAt(u), t=curve.getTangentAt(u);
+    this.pos.set(p.x,HOVER_Y,p.z); this.yaw=Math.atan2(t.x,t.z);
+    this.u=u;
+    for(const c of CHECKPOINTS){ if(this.prevU<c && this.u>=c && this.u-this.prevU<0.4) this.lastCpU=c; }
+    if(this.u>this.progressMax && this.u<0.97) this.progressMax=this.u;
+    if(this.prevU>0.85 && this.u<0.15 && this.progressMax>0.5) this._scoreLap();
+    this.prevU=this.u;
+  }
+  consumeHit(){ const h=this._hitEvent; this._hitEvent=false; return h; }
+  snapshot(){
+    return {x:this.pos.x,y:this.pos.y,z:this.pos.z,yaw:this.yaw,speed:this.speed,
+      kmh:Math.round(this.speed*SPEED_TO_KMH),shield:Math.round(this.shield),lap:this.lap,
+      lapTime:this.lapTime,bestLap:this.bestLap,phase:this.phase,u:this.u,wrecks:this.wrecks,
+      progressMax:this.progressMax};
+  }
+}
+
+/* ===================================== RENDER ===================================== */
+const sceneCanvas=document.getElementById('scene');
+const rushCanvas=document.getElementById('rush');
+let renderer=null, scene=null, camera=null, composer=null, bloomPass=null, glOK=false;
+let shipGroup=null, thrusterMat=null, trackMat=null, stars=null, sunLight=null;
+let RenderPass, EffectComposer, UnrealBloomPass;
+const rctx=rushCanvas.getContext('2d');
+
+async function initRender(preset){
+  try{
+    renderer=new THREE.WebGLRenderer({canvas:sceneCanvas, antialias:preset.aa, powerPreference:'high-performance', alpha:false});
+    renderer.setPixelRatio(preset.pixelRatio);
+    renderer.setSize(innerWidth,innerHeight,false);
+    renderer.outputColorSpace=THREE.SRGBColorSpace;
+    renderer.toneMapping=THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure=1.05;
+  }catch(e){
+    glOK=false; document.getElementById('glfail').style.display='grid';
+    console.warn('[NULLGRAV] WebGL unavailable, sim-only mode:', e.message); return;
+  }
+  glOK=true;
+  scene=new THREE.Scene();
+  scene.background=new THREE.Color(0x04050b);
+  scene.fog=new THREE.Fog(0x05070f, preset.fog[0], preset.fog[1]);
+
+  camera=new THREE.PerspectiveCamera(62, innerWidth/innerHeight, 0.3, 2000);
+  camera.position.set(0,18,40);
+
+  // lights
+  scene.add(new THREE.AmbientLight(0x33406a, 1.1));
+  sunLight=new THREE.DirectionalLight(0xbfe9ff, 1.15);
+  sunLight.position.set(60,120,30); scene.add(sunLight);
+  const rim=new THREE.DirectionalLight(0xff3df0, 0.5); rim.position.set(-60,40,-80); scene.add(rim);
+
+  buildTrack();
+  buildShip();
+  buildStars(preset.stars);
+  buildGrid();
+
+  // postprocessing
+  if(preset.bloom){
+    ({EffectComposer}=await import('three/addons/postprocessing/EffectComposer.js'));
+    ({RenderPass}=await import('three/addons/postprocessing/RenderPass.js'));
+    ({UnrealBloomPass}=await import('three/addons/postprocessing/UnrealBloomPass.js'));
+    composer=new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene,camera));
+    bloomPass=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight), preset.bloomStrength, 0.7, 0.85);
+    composer.addPass(bloomPass);
+    composer.setPixelRatio(preset.pixelRatio);
+    composer.setSize(innerWidth,innerHeight);
+  }
+  resize();
+}
+
+function buildTrack(){
+  // ribbon surface
+  const seg=600, verts=[], idx=[], uvs=[];
+  for(let i=0;i<=seg;i++){
+    const u=i/seg, p=curve.getPointAt(u), t=curve.getTangentAt(u);
+    const nx=t.z, nz=-t.x;
+    verts.push(p.x+nx*TRACK_HALF, p.y, p.z+nz*TRACK_HALF);
+    verts.push(p.x-nx*TRACK_HALF, p.y, p.z-nz*TRACK_HALF);
+    uvs.push(0, u*60); uvs.push(1, u*60);
+  }
+  for(let i=0;i<seg;i++){
+    const a=i*2,b=i*2+1,c=i*2+2,d=i*2+3;
+    idx.push(a,b,c, b,d,c);
+  }
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
+  g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));
+  g.setIndex(idx); g.computeVertexNormals();
+
+  // procedural chevron stripe texture (scrolls with speed)
+  const tc=document.createElement('canvas'); tc.width=64; tc.height=256;
+  const x=tc.getContext('2d');
+  x.fillStyle='#070a16'; x.fillRect(0,0,64,256);
+  x.fillStyle='rgba(55,240,255,0.12)'; x.fillRect(0,0,3,256); x.fillRect(61,0,3,256);
+  x.strokeStyle='rgba(155,107,255,0.16)'; x.lineWidth=2;
+  for(let i=0;i<256;i+=32){ x.beginPath(); x.moveTo(20,i); x.lineTo(32,i+12); x.lineTo(44,i); x.stroke(); }
+  x.fillStyle='rgba(255,255,255,0.05)'; x.fillRect(30,0,4,256);
+  const tex=new THREE.CanvasTexture(tc);
+  tex.wrapS=tex.wrapT=THREE.RepeatWrapping; tex.repeat.set(1,1); tex.anisotropy=4;
+  trackMat=new THREE.MeshStandardMaterial({map:tex, color:0x6a78b0, roughness:0.55, metalness:0.5,
+    emissive:0x0a1430, emissiveIntensity:0.8});
+  scene.add(new THREE.Mesh(g,trackMat));
+
+  // glowing edge walls
+  const wallGeo=(sideSign)=>{
+    const pts=[];
+    for(let i=0;i<=seg;i++){
+      const u=i/seg, p=curve.getPointAt(u), t=curve.getTangentAt(u);
+      const nx=t.z, nz=-t.x;
+      pts.push(new THREE.Vector3(p.x+nx*TRACK_HALF*sideSign, p.y, p.z+nz*TRACK_HALF*sideSign));
+    }
+    return new THREE.CatmullRomCurve3(pts,true);
+  };
+  for(const s of [1,-1]){
+    const tubeColor=s>0?0x37f0ff:0xff3df0;
+    const tube=new THREE.Mesh(
+      new THREE.TubeGeometry(wallGeo(s),seg,0.55,8,true),
+      new THREE.MeshBasicMaterial({color:tubeColor})
+    );
+    tube.position.y=1.6; scene.add(tube);
+    // low wall band
+    const band=new THREE.Mesh(
+      new THREE.TubeGeometry(wallGeo(s),seg,0.18,4,true),
+      new THREE.MeshBasicMaterial({color:tubeColor, transparent:true, opacity:0.5})
+    );
+    band.position.y=0.3; scene.add(band);
+  }
+
+  // start/finish line
+  const s0=LUT[0]; const t0=curve.getTangentAt(0);
+  const startGeo=new THREE.PlaneGeometry(TRACK_HALF*2,4);
+  const sc=document.createElement('canvas'); sc.width=128; sc.height=16;
+  const sx=sc.getContext('2d');
+  for(let i=0;i<8;i++){ sx.fillStyle=i%2?'#04050b':'#eafdff'; sx.fillRect(i*16,0,16,8); }
+  for(let i=0;i<8;i++){ sx.fillStyle=i%2?'#eafdff':'#04050b'; sx.fillRect(i*16,8,16,8); }
+  const stex=new THREE.CanvasTexture(sc);
+  const startMesh=new THREE.Mesh(startGeo,new THREE.MeshBasicMaterial({map:stex}));
+  startMesh.rotation.x=-Math.PI/2;
+  startMesh.rotation.z=Math.atan2(t0.x,t0.z);
+  startMesh.position.set(s0.p.x,0.05,s0.p.z); scene.add(startMesh);
+  // start gantry pillars
+  for(const s of [1,-1]){
+    const nx=t0.z,nz=-t0.x;
+    const pil=new THREE.Mesh(new THREE.CylinderGeometry(0.6,0.9,14,6),
+      new THREE.MeshStandardMaterial({color:0x1b2244, emissive:0x37f0ff, emissiveIntensity:0.6}));
+    pil.position.set(s0.p.x+nx*(TRACK_HALF+1)*s,7,s0.p.z+nz*(TRACK_HALF+1)*s); scene.add(pil);
+  }
+
+  // checkpoint rings + distant spires
+  CHECKPOINTS.forEach((u,i)=>{
+    const p=curve.getPointAt(u), t=curve.getTangentAt(u);
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(TRACK_HALF+1,0.35,6,24,Math.PI),
+      new THREE.MeshBasicMaterial({color:0x9b6bff}));
+    ring.position.set(p.x,0.2,p.z);
+    ring.rotation.y=Math.atan2(t.x,t.z); scene.add(ring);
+  });
+  // ambient spires around the circuit for parallax / ground-rush reference
+  for(let i=0;i<26;i++){
+    const u=i/26, p=curve.getPointAt(u), t=curve.getTangentAt(u);
+    const nx=t.z,nz=-t.x, side=(i%2?1:-1), dist=TRACK_HALF+22+Math.random()*40;
+    const h=20+Math.random()*70;
+    const spire=new THREE.Mesh(new THREE.BoxGeometry(3+Math.random()*5,h,3+Math.random()*5),
+      new THREE.MeshStandardMaterial({color:0x0a0e1e, emissive:i%3?0x102040:0x201038, emissiveIntensity:0.7, roughness:0.4, metalness:0.6}));
+    spire.position.set(p.x+nx*dist*side, h/2-4, p.z+nz*dist*side); scene.add(spire);
+  }
+}
+
+function buildShip(){
+  shipGroup=new THREE.Group();
+  // hull (wedge from a tapered box-ish shape)
+  const hull=new THREE.Mesh(
+    new THREE.ConeGeometry(1.5,5,4),
+    new THREE.MeshStandardMaterial({color:0xdfe9ff, metalness:0.85, roughness:0.25, emissive:0x09203a, emissiveIntensity:0.5})
+  );
+  hull.rotation.x=Math.PI/2; hull.scale.set(1,0.5,1); hull.position.z=0.4; shipGroup.add(hull);
+  // cockpit canopy
+  const canopy=new THREE.Mesh(new THREE.SphereGeometry(0.8,12,8,0,Math.PI*2,0,Math.PI/2),
+    new THREE.MeshStandardMaterial({color:0x37f0ff, metalness:0.4, roughness:0.1, transparent:true, opacity:0.55, emissive:0x0a4a55, emissiveIntensity:0.6}));
+  canopy.scale.set(1,0.8,1.6); canopy.position.set(0,0.45,0.2); shipGroup.add(canopy);
+  // wings
+  for(const s of [1,-1]){
+    const wing=new THREE.Mesh(new THREE.BoxGeometry(2.4,0.18,1.5),
+      new THREE.MeshStandardMaterial({color:0x7a86b8, metalness:0.8, roughness:0.3, emissive:0x101a3a, emissiveIntensity:0.4}));
+    wing.position.set(s*1.7,-0.1,-1); wing.rotation.z=s*0.18; shipGroup.add(wing);
+    const fin=new THREE.Mesh(new THREE.BoxGeometry(0.16,0.9,1.2),
+      new THREE.MeshBasicMaterial({color:s>0?0x37f0ff:0xff3df0}));
+    fin.position.set(s*2.6,0.3,-1.1); shipGroup.add(fin);
+  }
+  // thruster glow
+  thrusterMat=new THREE.MeshBasicMaterial({color:0x37f0ff, transparent:true, opacity:0.9});
+  const thr=new THREE.Mesh(new THREE.ConeGeometry(0.9,3,12), thrusterMat);
+  thr.rotation.x=-Math.PI/2; thr.position.set(0,0,-3); thr.name='thruster'; shipGroup.add(thr);
+  const eng=new THREE.PointLight(0x37f0ff,2,16); eng.position.set(0,0,-3); shipGroup.add(eng);
+  shipGroup.userData.eng=eng; shipGroup.userData.thr=thr;
+  // under-glow
+  const glow=new THREE.Mesh(new THREE.CircleGeometry(3,20),
+    new THREE.MeshBasicMaterial({color:0x37f0ff, transparent:true, opacity:0.16}));
+  glow.rotation.x=-Math.PI/2; glow.position.y=-1.2; shipGroup.add(glow);
+  scene.add(shipGroup);
+}
+
+function buildStars(count){
+  const g=new THREE.BufferGeometry(), pos=[];
+  for(let i=0;i<count;i++){
+    const r=600+Math.random()*700, th=Math.random()*Math.PI*2, ph=Math.random()*Math.PI;
+    pos.push(Math.sin(ph)*Math.cos(th)*r, Math.abs(Math.cos(ph))*r*0.7+40, Math.sin(ph)*Math.sin(th)*r);
+  }
+  g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+  stars=new THREE.Points(g,new THREE.PointsMaterial({color:0x9fb4ff,size:1.6,sizeAttenuation:false,transparent:true,opacity:0.8}));
+  scene.add(stars);
+}
+function buildGrid(){
+  const grid=new THREE.GridHelper(1600,160,0x123,0x0a1228);
+  grid.position.y=-4; grid.material.transparent=true; grid.material.opacity=0.5; scene.add(grid);
+}
+
+/* ---------------- camera rig: chase + lag + FOV kick ---------------- */
+const camState={pos:new THREE.Vector3(0,18,40), look:new THREE.Vector3()};
+function updateCamera(dt, shakeAmt){
+  if(!glOK) return;
+  const s=sim, fx=Math.sin(s.yaw), fz=Math.cos(s.yaw);
+  const spd=s.speed/TOP_SPEED;
+  const back=12+spd*4, height=5.2+spd*1.2, ahead=10+spd*16;
+  const want=new THREE.Vector3(s.pos.x-fx*back, s.pos.y+height, s.pos.z-fz*back);
+  const lookAt=new THREE.Vector3(s.pos.x+fx*ahead, s.pos.y+1.2, s.pos.z+fz*ahead);
+  // frame-rate independent smoothing
+  const aPos=1-Math.exp(-7.5*dt), aLook=1-Math.exp(-9*dt);
+  camState.pos.lerp(want,aPos); camState.look.lerp(lookAt,aLook);
+  // screen shake
+  let sk=shakeAmt*currentPreset.shake*(REDUCED?0.25:1);
+  camera.position.copy(camState.pos);
+  if(sk>0.001){
+    camera.position.x+=(Math.random()-0.5)*sk*2.2;
+    camera.position.y+=(Math.random()-0.5)*sk*2.2;
+  }
+  camera.lookAt(camState.look);
+  // FOV kick
+  const wantFov=62+spd*16;
+  camera.fov+=(wantFov-camera.fov)*Math.min(1,dt*6); camera.updateProjectionMatrix();
+}
+
+/* ---------------- ground-rush speed lines (2D overlay) ---------------- */
+const rushLines=[];
+function initRush(){
+  rushCanvas.width=innerWidth; rushCanvas.height=innerHeight;
+  rushLines.length=0;
+  for(let i=0;i<90;i++) rushLines.push({a:Math.random()*Math.PI*2, r:Math.random(), len:0.04+Math.random()*0.08});
+}
+function drawRush(spd){
+  const w=rushCanvas.width,h=rushCanvas.height,cx=w/2,cy=h/2;
+  rctx.clearRect(0,0,w,h);
+  const intensity=Math.max(0,(spd-0.35)/0.65);
+  rushCanvas.parentElement && (rushCanvas.style.opacity=String(Math.min(0.85,intensity*(REDUCED?0.3:1))));
+  if(intensity<=0) return;
+  const maxR=Math.hypot(w,h)*0.62;
+  rctx.lineCap='round';
+  for(const L of rushLines){
+    L.r+=intensity*0.045; if(L.r>1) L.r-=1;
+    const r0=(0.18+L.r*0.82)*maxR, r1=r0+L.len*maxR*(0.5+intensity);
+    const x0=cx+Math.cos(L.a)*r0, y0=cy+Math.sin(L.a)*r0;
+    const x1=cx+Math.cos(L.a)*r1, y1=cy+Math.sin(L.a)*r1;
+    const alpha=Math.min(0.5,L.r*intensity*0.7);
+    rctx.strokeStyle=`rgba(160,240,255,${alpha})`;
+    rctx.lineWidth=1+intensity*1.5;
+    rctx.beginPath(); rctx.moveTo(x0,y0); rctx.lineTo(x1,y1); rctx.stroke();
+  }
+}
+
+/* ===================================== AUDIO ===================================== */
+let audioCtx=null, engineOsc=null, engineGain=null, engineFilter=null, noiseBuf=null;
+function startAudio(){
+  if(audioCtx) return;                        // created ONLY from a user gesture
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC) return;
+  audioCtx=new AC();
+  engineGain=audioCtx.createGain(); engineGain.gain.value=0.0;
+  engineFilter=audioCtx.createBiquadFilter(); engineFilter.type='lowpass'; engineFilter.frequency.value=600;
+  engineOsc=audioCtx.createOscillator(); engineOsc.type='sawtooth'; engineOsc.frequency.value=60;
+  const sub=audioCtx.createOscillator(); sub.type='triangle'; sub.frequency.value=40;
+  const subG=audioCtx.createGain(); subG.gain.value=0.4;
+  engineOsc.connect(engineFilter); sub.connect(subG); subG.connect(engineFilter);
+  engineFilter.connect(engineGain); engineGain.connect(audioCtx.destination);
+  engineOsc.start(); sub.start();
+  // noise buffer for impacts
+  noiseBuf=audioCtx.createBuffer(1,audioCtx.sampleRate*0.4,audioCtx.sampleRate);
+  const d=noiseBuf.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);
+}
+function audioEngine(spd){
+  if(!audioCtx) return;
+  const f=60+spd*260;
+  engineOsc.frequency.setTargetAtTime(f,audioCtx.currentTime,0.05);
+  engineFilter.frequency.setTargetAtTime(500+spd*2600,audioCtx.currentTime,0.06);
+  engineGain.gain.setTargetAtTime(running?0.06+spd*0.10:0.0,audioCtx.currentTime,0.1);
+}
+function audioImpact(force){
+  if(!audioCtx) return;
+  const src=audioCtx.createBufferSource(); src.buffer=noiseBuf;
+  const g=audioCtx.createGain(); g.gain.value=Math.min(0.5,0.2+force*0.4);
+  const bp=audioCtx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=220;
+  src.connect(bp); bp.connect(g); g.connect(audioCtx.destination);
+  g.gain.setTargetAtTime(0,audioCtx.currentTime+0.02,0.12);
+  src.start();
+}
+function audioBeep(hi){
+  if(!audioCtx) return;
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type='square'; o.frequency.value=hi?880:440; g.gain.value=0.0001;
+  o.connect(g); g.connect(audioCtx.destination);
+  g.gain.setTargetAtTime(0.12,audioCtx.currentTime,0.01);
+  g.gain.setTargetAtTime(0,audioCtx.currentTime+0.12,0.06);
+  o.start(); o.stop(audioCtx.currentTime+0.3);
+}
+
+/* ===================================== GAME GLUE ===================================== */
+const sim=new Sim();
+let currentPreset=PRESETS.high, currentQ='high';
+let running=false;             // physics 'race' active
+let lastT=performance.now();
+let countdownActive=false;
+
+const el=id=>document.getElementById(id);
+const overlays={title:el('title'),countdown:el('countdown'),pause:el('pause'),results:el('results')};
+
+function showOverlay(name){
+  for(const k in overlays) overlays[k].classList.toggle('show', k===name);
+  el('hud').setAttribute('aria-hidden', name? 'true':'false');
+}
+
+/* -------- time formatting -------- */
+function fmt(t){
+  if(t==null) return '—:——.———';
+  const m=Math.floor(t/60), s=Math.floor(t%60), ms=Math.floor((t%1)*1000);
+  return `${m}:${String(s).padStart(2,'0')}.${String(ms).padStart(3,'0')}`;
+}
+
+/* -------- minimap path (built once) -------- */
+function buildMinimap(){
+  let minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;
+  const pts=curve.getSpacedPoints(120);
+  for(const p of pts){ minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minZ=Math.min(minZ,p.z);maxZ=Math.max(maxZ,p.z); }
+  const pad=8, sp=100-pad*2;
+  const sx=sp/(maxX-minX), sz=sp/(maxZ-minZ), sc=Math.min(sx,sz);
+  const ox=pad+(sp-(maxX-minX)*sc)/2, oz=pad+(sp-(maxZ-minZ)*sc)/2;
+  minimapXf=p=>[ox+(p.x-minX)*sc, oz+(p.z-minZ)*sc];
+  let d='';
+  pts.forEach((p,i)=>{ const[a,b]=minimapXf(p); d+=(i?'L':'M')+a.toFixed(1)+' '+b.toFixed(1); });
+  d+='Z';
+  const svg=el('miniSvg');
+  svg.innerHTML=
+    `<path d="${d}" fill="none" stroke="#222840" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>`+
+    `<path d="${d}" fill="none" stroke="#37f0ff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.7"/>`+
+    CHECKPOINTS.map(u=>{const[a,b]=minimapXf(curve.getPointAt(u));return `<circle cx="${a.toFixed(1)}" cy="${b.toFixed(1)}" r="2" fill="#9b6bff"/>`}).join('')+
+    (()=>{const[a,b]=minimapXf(curve.getPointAt(0));return `<circle cx="${a.toFixed(1)}" cy="${b.toFixed(1)}" r="2.6" fill="#eafdff"/>`})()+
+    `<circle id="miniShip" cx="50" cy="50" r="3.2" fill="#ff3df0" stroke="#fff" stroke-width="1"/>`;
+}
+let minimapXf=null;
+
+/* -------- HUD update -------- */
+const SPEEDO_LEN=226; // arc path length approx for dasharray
+let prevLapForDelta=null;
+function updateHUD(){
+  const s=sim.snapshot();
+  // speed
+  el('speedNum').textContent=s.kmh;
+  el('speedNum').classList.toggle('redline', s.kmh>TOP_SPEED*SPEED_TO_KMH*0.92);
+  const frac=s.speed/TOP_SPEED;
+  el('spArc').style.strokeDasharray=`${(SPEEDO_LEN*frac).toFixed(1)} ${SPEEDO_LEN}`;
+  el('spNeedle').setAttribute('transform',`rotate(${(-135+frac*270).toFixed(1)} 60 60)`);
+  // shield
+  const sh=s.shield; el('shieldNum').textContent=sh;
+  el('shClip').style.strokeDashoffset=String(100-sh);
+  const shc=sh>50?'good':(sh>22?'warn':'crit');
+  el('shieldNum').className='mono-num '+(shc==='good'?'':shc);
+  el('shClip').setAttribute('stroke', sh>50?'#46f7a0':(sh>22?'#ffc04d':'#ff476b'));
+  // laps + time
+  el('lapCur').textContent=Math.min(LAPS_TO_FINISH,s.lap+1);
+  el('curTime').textContent=fmt(s.lapTime);
+  el('bestTime').textContent=fmt(s.bestLap);
+  // delta vs best (live)
+  const dEl=el('delta');
+  if(s.bestLap!=null){
+    const d=s.lapTime-s.bestLap;
+    dEl.textContent=(d>=0?'+':'−')+Math.abs(d).toFixed(3);
+    dEl.className='n mono-num '+(d>0.02?'up':(d<-0.02?'down':'flat'));
+  } else { dEl.textContent='—'; dEl.className='n mono-num flat'; }
+  el('chipW').textContent=s.wrecks;
+  // minimap ship dot
+  if(minimapXf){ const[a,b]=minimapXf(sim.pos); const d=el('miniShip'); if(d){d.setAttribute('cx',a.toFixed(1));d.setAttribute('cy',b.toFixed(1));} }
+}
+
+/* -------- damage feedback -------- */
+let chromaTimer=0;
+function flashDamage(force){
+  const v=el('dmgVig'); v.style.opacity=String(Math.min(0.9,0.4+force*0.5));
+  setTimeout(()=>v.style.opacity='0',90);
+  chromaTimer=0.18;
+  audioImpact(force);
+}
+
+/* -------- main loop -------- */
+function frame(now){
+  requestAnimationFrame(frame);
+  let dt=(now-lastT)/1000; lastT=now;
+  if(dt>0.25) dt=0.25;
+
+  if(running) sim.step(dt);
+
+  // attract-mode slow camera on title
+  if(!running && sim.phase==='title' && glOK){
+    attractCam(dt);
+  } else {
+    updateCamera(dt, sim.shakeImpulse);
+  }
+
+  // hit event -> feedback
+  if(sim.consumeHit()) flashDamage(sim.shakeImpulse);
+
+  // sim->mesh sync
+  if(glOK && shipGroup){
+    shipGroup.position.set(sim.pos.x, sim.pos.y+Math.sin(now/300)*0.12, sim.pos.z);
+    shipGroup.rotation.y=sim.yaw; shipGroup.rotation.z=sim.bank;
+    const spd=sim.speed/TOP_SPEED;
+    const thr=shipGroup.userData.thr;
+    thr.scale.set(0.7+spd*0.8,0.7+spd*0.8,0.6+spd*2.4);
+    thrusterMat.opacity=0.4+spd*0.6;
+    thrusterMat.color.setHSL(0.5-spd*0.15,1,0.6);
+    shipGroup.userData.eng.intensity=1.4+spd*3;
+    if(trackMat&&trackMat.map){ trackMat.map.offset.y-=spd*dt*9; }
+    if(stars) stars.rotation.y+=dt*0.003;
+    if(bloomPass){ bloomPass.strength=currentPreset.bloomStrength*(0.7+spd*0.7); }
+  }
+
+  // ground-rush + chroma
+  drawRush(running?sim.speed/TOP_SPEED:0);
+  if(chromaTimer>0){ chromaTimer-=dt; sceneCanvas.style.filter=`hue-rotate(${(Math.random()-0.5)*8}deg)`; }
+  else sceneCanvas.style.filter='';
+
+  // audio
+  audioEngine(sim.speed/TOP_SPEED);
+
+  // finish detection
+  if(sim.phase==='finish' && running){ endRace(); }
+
+  if(!overlays.title.classList.contains('show')||true) updateHUD();
+
+  // render
+  if(glOK){
+    if(composer) composer.render(); else renderer.render(scene,camera);
+  }
+}
+
+let attractAngle=0;
+function attractCam(dt){
+  attractAngle+=dt*0.08;
+  const center=curve.getPointAt(0.4);
+  camera.position.set(center.x+Math.cos(attractAngle)*120, 60+Math.sin(attractAngle*0.5)*20, center.z+Math.sin(attractAngle)*120);
+  camera.lookAt(center.x,0,center.z);
+  camera.fov+=((62)-camera.fov)*Math.min(1,dt*4); camera.updateProjectionMatrix();
+}
+
+/* ===================================== STATE MACHINE ===================================== */
+function toTitle(){
+  running=false; countdownActive=false;
+  sim.reset(); sim.phase='title';
+  showOverlay('title');
+  el('playBtn').focus();
+}
+function startRace(){
+  startAudio();             // user gesture
+  sim.reset(); sim.phase='countdown';
+  running=false;
+  showOverlay('countdown');
+  el('touch').classList.toggle('on', isTouch);
+  runCountdown();
+}
+function runCountdown(){
+  countdownActive=true;
+  const seq=['3','2','1','GO'];
+  let i=0;
+  const cd=el('cdNum');
+  const tick=()=>{
+    if(!countdownActive) return;
+    if(i>=seq.length){
+      overlays.countdown.classList.remove('show');
+      sim.phase='race'; running=true; lastT=performance.now();
+      audioBeep(true);
+      return;
+    }
+    cd.textContent=seq[i];
+    cd.classList.toggle('go', seq[i]==='GO');
+    cd.classList.remove('cd-pop'); void cd.offsetWidth; if(!REDUCED) cd.classList.add('cd-pop');
+    audioBeep(seq[i]==='GO');
+    i++;
+    setTimeout(tick, 900);
+  };
+  tick();
+}
+function pauseRace(){
+  if(sim.phase!=='race'||!running) return;
+  running=false; sim.phase='pause';
+  showOverlay('pause'); el('resumeBtn').focus();
+}
+function resumeRace(){
+  if(sim.phase!=='pause') return;
+  showOverlay(null);
+  sim.phase='race'; running=true; lastT=performance.now();
+}
+function endRace(){
+  running=false;
+  // results
+  el('resBest').textContent=fmt(sim.bestLap);
+  const tb=el('resBody'); tb.innerHTML='';
+  let total=0;
+  sim.splits.forEach((t,i)=>{
+    total+=t;
+    const isBest=(t===sim.bestLap);
+    tb.insertAdjacentHTML('beforeend',
+      `<tr class="${isBest?'best':''}"><td class="${isBest?'tag':''}">Lap ${i+1}</td><td class="t">${fmt(t)}</td></tr>`);
+  });
+  el('resTotal').textContent=fmt(total);
+  el('resWreck').textContent = sim.wrecks===0 ? 'Clean run — no wall contacts.' : `${sim.wrecks} wreck${sim.wrecks>1?'s':''} — shield depleted and respawned.`;
+  showOverlay('results'); el('againBtn').focus();
+  audioBeep(true);
+}
+
+/* ===================================== INPUT ===================================== */
+const keys={};
+const isTouch=matchMedia('(pointer:coarse)').matches || ('ontouchstart' in window);
+function readKeys(){
+  sim.setInput({
+    thrust:(keys['w']||keys['arrowup']||keys['shift'])?1:0,
+    brake:(keys['s']||keys['arrowdown'])?1:0,
+    steer:((keys['d']||keys['arrowright'])?1:0)-((keys['a']||keys['arrowleft'])?1:0),
+    abL:keys['q']?1:0, abR:keys['e']?1:0,
+    respawn:0
+  });
+}
+addEventListener('keydown',e=>{
+  const k=e.key.toLowerCase();
+  if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)) e.preventDefault();
+  if(k==='escape'){ if(sim.phase==='race') pauseRace(); else if(sim.phase==='pause') resumeRace(); return; }
+  if(k==='r' && sim.phase==='race'){ sim.phase='respawn'; sim.respawnTimer=0.05; return; }
+  keys[k]=true; readKeys();
+});
+addEventListener('keyup',e=>{ keys[e.key.toLowerCase()]=false; readKeys(); });
+// Enter starts from title
+addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    if(overlays.title.classList.contains('show')) startRace();
+    else if(overlays.results.classList.contains('show')) startRace();
+  }
+});
+
+// touch buttons
+function bindHold(id,on,off){
+  const b=el(id);
+  const down=e=>{e.preventDefault();on();}; const up=e=>{e.preventDefault();off();};
+  b.addEventListener('pointerdown',down); b.addEventListener('pointerup',up);
+  b.addEventListener('pointerleave',up); b.addEventListener('pointercancel',up);
+}
+bindHold('tThrust',()=>{keys['w']=true;readKeys();},()=>{keys['w']=false;readKeys();});
+bindHold('tBrake',()=>{keys['s']=true;readKeys();},()=>{keys['s']=false;readKeys();});
+bindHold('tLeft',()=>{keys['a']=true;readKeys();},()=>{keys['a']=false;readKeys();});
+bindHold('tRight',()=>{keys['d']=true;readKeys();},()=>{keys['d']=false;readKeys();});
+
+/* ----- buttons ----- */
+el('playBtn').addEventListener('click',startRace);
+el('resumeBtn').addEventListener('click',resumeRace);
+el('restartBtn').addEventListener('click',()=>{showOverlay(null);startRace();});
+el('quitBtn').addEventListener('click',toTitle);
+el('againBtn').addEventListener('click',startRace);
+el('menuBtn').addEventListener('click',toTitle);
+
+/* ----- quality preset ----- */
+function applyQuality(q){
+  currentQ=q; currentPreset=PRESETS[q];
+  el('chipQ').textContent=q.toUpperCase();
+  el('qNote').textContent=currentPreset.label;
+  // rebuild renderer at new quality (only meaningful pre-race; we re-init lazily)
+}
+['qLow','qMid','qHigh'].forEach(id=>{
+  el(id).addEventListener('change',e=>{ if(e.target.checked) reinitQuality(e.target.value); });
+});
+let reinitPending=false;
+async function reinitQuality(q){
+  applyQuality(q);
+  // tear down + rebuild render with new preset
+  if(renderer){ try{renderer.dispose();}catch(_){} }
+  // remove old scene canvas content by recreating renderer/scene
+  scene=null; composer=null; bloomPass=null; glOK=false;
+  await initRender(currentPreset);
+}
+
+/* ===================================== BOOT ===================================== */
+function resize(){
+  if(!glOK) return;
+  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight,false);
+  if(composer) composer.setSize(innerWidth,innerHeight);
+  initRush();
+}
+addEventListener('resize',resize);
+
+(async function boot(){
+  buildMinimap();
+  applyQuality('high');
+  initRush();
+  await initRender(currentPreset);
+  toTitle();
+  requestAnimationFrame(t=>{lastT=t;frame(t);});
+})();
+
+/* ===================================== TEST HARNESS ===================================== */
+// Decoupled from GPU: lets headless Playwright assert sim, lap logic, state machine, audio gating.
+window.__RACER={
+  sim,
+  fixedStep:FIXED, topSpeed:TOP_SPEED, lapsToFinish:LAPS_TO_FINISH, trackHalf:TRACK_HALF, shipR:SHIP_R,
+  state:()=>sim.snapshot(),
+  reset:()=>{sim.reset();sim.phase='race';sim.acc=0;},
+  setInput:(o)=>sim.setInput(o),
+  step:(dt)=>sim.step(dt),
+  placeAt:(u)=>sim.placeAt(u),
+  forceWallHit:()=>{ // shove ship hard past the right wall, then one fixed step
+    sim.pos.x=LUT[0].p.x+ (LUT[0].t.z)*(TRACK_HALF+6);
+    sim.pos.z=LUT[0].p.z+ (-LUT[0].t.x)*(TRACK_HALF+6);
+    sim.speed=TOP_SPEED*0.8; sim.input.steer=0; sim.fixed(FIXED);
+  },
+  setShield:(v)=>{sim.shield=v;},
+  // accelerate along the racing line (yaw auto-aligned to track tangent) to prove the
+  // longitudinal model reaches AND holds TOP_SPEED without wall interference.
+  accelTopSpeed:(steps)=>{
+    sim.reset(); sim.phase='race'; let maxV=0, holdV=0;
+    for(let i=0;i<steps;i++){
+      const near=nearestU(sim.pos.x,sim.pos.z);
+      sim.yaw=Math.atan2(near.t.x,near.t.z);
+      sim.setInput({thrust:1,steer:0,brake:0,abL:0,abR:0});
+      sim.step(1/60);
+      if(sim.speed>maxV) maxV=sim.speed;
+      if(i>steps-30) holdV=sim.speed;
+    }
+    return {maxV, holdV, top:TOP_SPEED};
+  },
+  goPhase:(p)=>{
+    if(p==='title') toTitle();
+    else if(p==='countdown'){ sim.phase='countdown'; }
+    else if(p==='race'){ sim.phase='race'; running=true; }
+    else if(p==='pause'){ sim.phase='race'; running=true; pauseRace(); }
+    else if(p==='finish'){ sim.lap=LAPS_TO_FINISH; sim.splits=[68.4,67.9,69.1]; sim.bestLap=67.9; sim.phase='finish'; running=true; endRace(); }
+    return sim.phase;
+  },
+  startRaceFlow:()=>startRace(),
+  hasAudio:()=>audioCtx!==null,
+  glOK:()=>glOK,
+  ready:true
+};
+</script>
+</body>
+</html>

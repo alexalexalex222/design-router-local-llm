@@ -1,0 +1,2401 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="meridian">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<title>Meridian — Code Editor</title>
+<meta name="description" content="A dependency-free dark code editor with tokenized highlighting, a line-number gutter, a crisp canvas minimap, find, and a command palette." />
+<style>
+  /* ============================================================
+     MERIDIAN — design tokens (bespoke dark IDE theme)
+     ============================================================ */
+  :root {
+    color-scheme: dark;
+
+    /* --- chrome surfaces: deep blue-black "ink" ramp --- */
+    --ink-0:        #07090e;   /* activity bar / deepest */
+    --ink-1:        #0c0e15;   /* editor canvas */
+    --ink-2:        #0a0c12;   /* sidebar / panels */
+    --ink-3:        #10131c;   /* tab strip / status bar */
+    --ink-raised:   #161a26;   /* active tab / hover */
+    --ink-overlay:  #181d2a;   /* find widget / palette / menus */
+
+    --line:         #1b2130;   /* hairline border */
+    --line-strong:  #283044;   /* stronger divider */
+    --line-faint:   #141925;   /* whisper divider */
+
+    /* --- neutral text ramp (>=4 steps) --- */
+    --text:         #d7deec;   /* primary code + foreground */
+    --text-muted:   #98a2b6;   /* secondary UI text */
+    --text-subtle:  #6c768c;   /* tertiary / inactive */
+    --text-faint:   #444d63;   /* gutter idle / decorative */
+
+    /* --- signature accent: warm gold (deliberately not IDE-blue) --- */
+    --gold:         #e8b15f;
+    --gold-bright:  #f4c378;
+    --gold-soft:    rgba(232, 177, 95, 0.14);
+    --gold-line:    rgba(232, 177, 95, 0.46);
+    --caret:        #f4c378;
+
+    /* --- secondary accent: cool teal (git / info / focus partner) --- */
+    --teal:         #57d2c4;
+    --teal-soft:    rgba(87, 210, 196, 0.14);
+
+    --danger:       #f6738a;
+    --warn:         #e8b15f;
+    --ok:           #69d39b;
+
+    /* --- editor interaction colors --- */
+    --sel:          rgba(86, 130, 190, 0.34);   /* text selection band */
+    --active-line:  rgba(255, 255, 255, 0.035);  /* caret-line band */
+    --active-gn:    #cbd3e6;                      /* active line number */
+    --find-all:     rgba(232, 177, 95, 0.20);     /* all find matches */
+    --find-all-bd:  rgba(232, 177, 95, 0.40);
+    --find-cur:     rgba(232, 177, 95, 0.42);     /* current find match */
+    --find-cur-bd:  rgba(244, 195, 120, 0.95);
+    --bracket:      rgba(87, 210, 196, 0.28);
+    --bracket-bd:   rgba(87, 210, 196, 0.85);
+
+    --ring:         var(--gold);
+    --backdrop:     rgba(4, 6, 11, 0.62);
+
+    /* --- syntax token palette (warm-pastel on ink; AA-checked) --- */
+    --tok-keyword:  #cba6f7;   /* control / declarations */
+    --tok-func:     #82c2f7;   /* function names */
+    --tok-string:   #c7da82;   /* strings + templates */
+    --tok-number:   #f1ab6b;   /* numbers / units */
+    --tok-const:    #f1ab6b;   /* true / false / null */
+    --tok-type:     #ecca8a;   /* class / type / tag */
+    --tok-property: #6fdac9;   /* object keys / props */
+    --tok-operator: #aab4cb;   /* operators */
+    --tok-punct:    #8b96ad;   /* brackets / punctuation */
+    --tok-comment:  #7f8aa6;   /* comments (AA on ink) */
+    --tok-regex:    #f6967f;   /* regex / escapes */
+    --tok-attr:     #ecca8a;   /* attributes */
+    --tok-text:     var(--text);
+
+    /* --- type scale (ratio-locked ~1.2; UI body >=16px via --fs-base) --- */
+    --fs-xs:   clamp(0.6875rem, 0.66rem + 0.10vw, 0.75rem);
+    --fs-sm:   clamp(0.8125rem, 0.79rem + 0.10vw, 0.875rem);
+    --fs-base: clamp(1rem,      0.97rem + 0.14vw, 1.0625rem);
+    --fs-md:   clamp(1.125rem,  1.07rem + 0.24vw, 1.3125rem);
+    --fs-lg:   clamp(1.5rem,    1.36rem + 0.6vw,  2rem);
+
+    /* --- editor metrics (fixed px for pixel-perfect overlay alignment) --- */
+    --code-fs:   13.5px;
+    --code-lh:   21px;
+    --pad-t:     10px;
+    --pad-l:     20px;
+
+    /* --- spacing (4px base) --- */
+    --sp-1: 0.25rem; --sp-2: 0.5rem; --sp-3: 0.75rem; --sp-4: 1rem;
+    --sp-5: 1.25rem; --sp-6: 1.5rem; --sp-8: 2rem;
+
+    /* --- radii --- */
+    --r-xs: 5px; --r-sm: 7px; --r-md: 10px; --r-lg: 14px; --r-full: 999px;
+
+    /* --- elevation (<=3 tiers) --- */
+    --shadow-1: 0 1px 2px rgba(0,0,0,.5);
+    --shadow-2: 0 12px 34px -12px rgba(0,0,0,.7), 0 4px 12px -6px rgba(0,0,0,.5);
+    --shadow-3: 0 30px 80px -20px rgba(0,0,0,.82), 0 10px 28px -12px rgba(0,0,0,.6);
+
+    /* --- motion --- */
+    --dur-1: 130ms; --dur-2: 200ms; --dur-3: 240ms;
+    --ease: cubic-bezier(.22,.8,.28,1);
+    --ease-io: cubic-bezier(.6,0,.2,1);
+
+    --sidebar-w: 244px;
+    --activity-w: 52px;
+    --minimap-w: 78px;
+
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "SF Mono", "SFMono-Regular", ui-monospace, "JetBrains Mono", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  /* ============================================================
+     RESET / BASE
+     ============================================================ */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--ink-1);
+    color: var(--text);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  ::selection { background: var(--sel); }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  /* don't show the ring on the editor textarea (caret is the affordance) */
+  .code-input:focus-visible { outline: none; }
+
+  .skip-link {
+    position: absolute; left: 8px; top: -60px; z-index: 200;
+    background: var(--ink-overlay); color: var(--text);
+    padding: 10px 16px; border-radius: var(--r-sm);
+    border: 1px solid var(--line-strong); box-shadow: var(--shadow-2);
+    transition: top var(--dur-1) var(--ease);
+  }
+  .skip-link:focus { top: 8px; }
+
+  /* ============================================================
+     APP SHELL
+     ============================================================ */
+  .app {
+    height: 100dvh; width: 100vw; overflow: hidden;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    background: var(--ink-1);
+  }
+
+  /* ---- title bar ---- */
+  .titlebar {
+    display: flex; align-items: center; gap: var(--sp-3);
+    height: 44px; padding: 0 var(--sp-3) 0 var(--sp-4);
+    background: linear-gradient(180deg, var(--ink-3), var(--ink-2));
+    border-bottom: 1px solid var(--line);
+    user-select: none;
+  }
+  .brand { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; }
+  .brand-mark { width: 22px; height: 22px; flex: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
+  .brand-name {
+    font-size: var(--fs-sm); font-weight: 650; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--text);
+  }
+  .brand-name b { color: var(--gold); font-weight: 650; }
+  .workspace {
+    font-family: var(--font-mono); font-size: var(--fs-xs);
+    color: var(--text-subtle); padding-left: var(--sp-3);
+    margin-left: var(--sp-1); border-left: 1px solid var(--line-strong);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .titlebar-spacer { flex: 1 1 auto; }
+  .title-actions { display: flex; align-items: center; gap: 2px; }
+
+  .icon-btn {
+    display: inline-grid; place-items: center;
+    width: 34px; height: 34px; border-radius: var(--r-sm);
+    color: var(--text-muted);
+    transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+  }
+  .icon-btn:hover { background: var(--ink-raised); color: var(--text); }
+  .icon-btn:active { transform: translateY(.5px); }
+  .icon-btn.on { color: var(--gold); background: var(--gold-soft); }
+  .icon-btn svg { width: 17px; height: 17px; }
+
+  .palette-hint {
+    display: inline-flex; align-items: center; gap: var(--sp-2);
+    height: 30px; padding: 0 10px 0 12px; border-radius: var(--r-full);
+    background: var(--ink-1); border: 1px solid var(--line-strong);
+    color: var(--text-subtle); font-size: var(--fs-xs);
+    transition: border-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+    white-space: nowrap;
+  }
+  .palette-hint:hover { color: var(--text); border-color: var(--text-faint); }
+  .palette-hint kbd {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: .02em;
+    color: var(--text-muted); background: var(--ink-3);
+    border: 1px solid var(--line-strong); border-bottom-width: 2px;
+    border-radius: 4px; padding: 1px 5px;
+  }
+
+  /* ---- body ---- */
+  .body {
+    min-height: 0; position: relative;
+    display: grid;
+    grid-template-columns: var(--activity-w) var(--sidebar-w) 1fr;
+  }
+  .body[data-sidebar="closed"] { grid-template-columns: var(--activity-w) 0 1fr; }
+
+  /* ---- activity bar ---- */
+  .activitybar {
+    background: var(--ink-0);
+    border-right: 1px solid var(--line);
+    display: flex; flex-direction: column; align-items: center;
+    padding: var(--sp-2) 0; gap: 2px;
+  }
+  .act {
+    position: relative;
+    width: 44px; height: 44px; border-radius: var(--r-sm);
+    display: grid; place-items: center; color: var(--text-subtle);
+    transition: color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
+  }
+  .act:hover { color: var(--text); background: var(--ink-raised); }
+  .act[aria-pressed="true"] { color: var(--text); }
+  .act[aria-pressed="true"]::before {
+    content: ""; position: absolute; left: -1px; top: 9px; bottom: 9px;
+    width: 2px; border-radius: 2px; background: var(--gold);
+  }
+  .act svg { width: 21px; height: 21px; }
+  .act-spacer { flex: 1 1 auto; }
+
+  /* ---- sidebar ---- */
+  .sidebar {
+    background: var(--ink-2);
+    border-right: 1px solid var(--line);
+    min-width: 0; overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .body[data-sidebar="closed"] .sidebar { border-right: 0; }
+  .side-head {
+    flex: none; height: 38px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 var(--sp-2) 0 var(--sp-4);
+    font-size: var(--fs-xs); letter-spacing: .12em; text-transform: uppercase;
+    color: var(--text-subtle); font-weight: 600;
+  }
+  .side-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-bottom: var(--sp-4); }
+  .side-scroll::-webkit-scrollbar { width: 10px; }
+  .side-scroll::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 999px; border: 3px solid var(--ink-2); }
+
+  .group-label {
+    display: flex; align-items: center; gap: 6px;
+    padding: var(--sp-3) var(--sp-4) var(--sp-1);
+    font-size: var(--fs-xs); letter-spacing: .1em; text-transform: uppercase;
+    color: var(--text-faint); font-weight: 600;
+  }
+  .tree { list-style: none; margin: 0; padding: 0; }
+  .tree-row {
+    display: flex; align-items: center; gap: var(--sp-2);
+    width: 100%; min-height: 30px; padding: 4px var(--sp-3) 4px 22px;
+    color: var(--text-muted); font-size: var(--fs-sm); text-align: left;
+    border-left: 2px solid transparent;
+    transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+  }
+  .tree-row:hover { background: var(--ink-raised); color: var(--text); }
+  .tree-row[aria-current="true"] {
+    background: linear-gradient(90deg, var(--gold-soft), transparent 70%);
+    color: var(--text); border-left-color: var(--gold);
+  }
+  .tree-row .fi { width: 15px; height: 15px; flex: none; }
+  .tree-row .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tree-row .dot { margin-left: auto; width: 7px; height: 7px; border-radius: 999px; background: var(--gold); opacity: 0; flex: none; }
+  .tree-row[data-dirty="true"] .dot { opacity: 1; }
+
+  .sym-row {
+    display: flex; align-items: center; gap: var(--sp-2);
+    width: 100%; min-height: 28px; padding: 3px var(--sp-3) 3px 22px;
+    color: var(--text-muted); font-size: var(--fs-sm); text-align: left;
+    font-family: var(--font-mono); transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+  }
+  .sym-row:hover { background: var(--ink-raised); color: var(--text); }
+  .sym-row .kind {
+    width: 16px; height: 16px; flex: none; display: grid; place-items: center;
+    font-size: 10px; font-weight: 700; border-radius: 4px;
+  }
+  .sym-row .kind[data-k="fn"]  { color: var(--tok-func);     background: rgba(130,194,247,.13); }
+  .sym-row .kind[data-k="cls"] { color: var(--tok-type);     background: rgba(236,202,138,.13); }
+  .sym-row .kind[data-k="var"] { color: var(--tok-property); background: rgba(111,218,201,.13); }
+  .sym-row .kind[data-k="sel"] { color: var(--tok-keyword);  background: rgba(203,166,247,.13); }
+  .sym-row .kind[data-k="key"] { color: var(--tok-property); background: rgba(111,218,201,.13); }
+  .sym-row .kind[data-k="h"]   { color: var(--tok-regex);    background: rgba(246,150,127,.13); }
+  .sym-row .ln { margin-left: auto; color: var(--text-faint); font-size: var(--fs-xs); }
+
+  .side-state {
+    display: flex; flex-direction: column; align-items: center; gap: var(--sp-2);
+    padding: var(--sp-6) var(--sp-4); text-align: center; color: var(--text-subtle);
+    font-size: var(--fs-sm);
+  }
+  .side-state svg { width: 26px; height: 26px; color: var(--text-faint); }
+  .shimmer { display: grid; gap: 8px; padding: var(--sp-3) var(--sp-4); }
+  .shimmer span {
+    height: 11px; border-radius: 4px;
+    background: linear-gradient(90deg, var(--line-faint) 25%, var(--line) 37%, var(--line-faint) 63%);
+    background-size: 280% 100%; animation: sh 1.2s var(--ease-io) infinite;
+  }
+  .shimmer span:nth-child(2) { width: 78%; } .shimmer span:nth-child(3) { width: 64%; }
+  .shimmer span:nth-child(4) { width: 84%; } .shimmer span:nth-child(5) { width: 56%; }
+  @keyframes sh { 0% { background-position: 160% 0; } 100% { background-position: -60% 0; } }
+
+  /* ============================================================
+     EDITOR GROUP
+     ============================================================ */
+  .editorgroup {
+    min-width: 0; min-height: 0;
+    display: grid; grid-template-rows: auto auto 1fr;
+    background: var(--ink-1);
+  }
+
+  /* ---- tab strip ---- */
+  .tabbar {
+    grid-row: 1;
+    display: flex; align-items: stretch; height: 39px;
+    background: var(--ink-3); border-bottom: 1px solid var(--line);
+    overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+  }
+  .tabbar::-webkit-scrollbar { display: none; }
+  .tab {
+    position: relative; flex: none;
+    display: inline-flex; align-items: center; gap: var(--sp-2);
+    min-height: 44px; height: 100%; padding: 0 8px 0 14px;
+    color: var(--text-subtle); font-size: var(--fs-sm);
+    border-right: 1px solid var(--line);
+    transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+    white-space: nowrap;
+  }
+  .tab:hover { background: var(--ink-raised); color: var(--text-muted); }
+  .tab[aria-selected="true"] { background: var(--ink-1); color: var(--text); }
+  .tab[aria-selected="true"]::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px;
+    background: var(--gold);
+  }
+  .tab[aria-selected="true"]::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--ink-1);
+  }
+  .tab .fi { width: 15px; height: 15px; flex: none; }
+  .tab .x {
+    width: 20px; height: 20px; border-radius: 5px; display: grid; place-items: center;
+    color: var(--text-faint); margin-left: 2px;
+    transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease), opacity var(--dur-1) var(--ease);
+  }
+  .tab .x:hover { background: var(--line-strong); color: var(--text); }
+  .tab .x svg { width: 11px; height: 11px; }
+  .tab .x .dirty { display: none; width: 8px; height: 8px; border-radius: 999px; background: var(--gold); }
+  .tab .x.is-dirty .dirty { display: block; }
+  .tab .x.is-dirty .close-i { display: none; }
+  .tab:not(:hover):not([aria-selected="true"]) .x:not(.is-dirty) { opacity: 0; }
+  .tab .x.is-dirty:hover .close-i { display: block; }
+  .tab .x.is-dirty:hover .dirty { display: none; }
+
+  /* ---- breadcrumb ---- */
+  .breadcrumb {
+    grid-row: 2;
+    display: flex; align-items: center; gap: 6px; height: 30px;
+    padding: 0 var(--sp-4); background: var(--ink-1);
+    border-bottom: 1px solid var(--line-faint);
+    font-size: var(--fs-xs); color: var(--text-subtle);
+    font-family: var(--font-mono); overflow: hidden; white-space: nowrap;
+  }
+  .breadcrumb .crumb { display: inline-flex; align-items: center; gap: 6px; flex: none; }
+  .breadcrumb .crumb svg { width: 13px; height: 13px; opacity: .8; }
+  .breadcrumb .sep { color: var(--text-faint); }
+  .breadcrumb .crumb.sym { color: var(--tok-func); }
+
+  /* ---- the editor surface ---- */
+  .editor {
+    grid-row: 3;
+    position: relative; min-height: 0; min-width: 0;
+    display: grid; grid-template-columns: auto 1fr auto;
+    background: var(--ink-1);
+  }
+  .gutter {
+    position: relative; overflow: hidden;
+    background: var(--ink-1); user-select: none;
+    border-right: 1px solid transparent;
+  }
+  .gutter-inner { position: absolute; inset: 0; will-change: transform; }
+  .gn {
+    position: absolute; right: 0; width: 100%;
+    height: var(--code-lh); line-height: var(--code-lh);
+    padding-right: 14px; padding-left: 16px; text-align: right;
+    font-family: var(--font-mono); font-size: var(--code-fs);
+    color: var(--text-faint); font-variant-numeric: tabular-nums;
+    transition: color var(--dur-1) linear;
+  }
+  .gn.active { color: var(--active-gn); }
+
+  .code-viewport {
+    position: relative; overflow: hidden; min-width: 0;
+    background: var(--ink-1);
+    contain: strict;
+  }
+  .layer { position: absolute; inset: 0; will-change: transform; }
+  .layer-vert { z-index: 0; }
+  .layer-code { z-index: 1; }
+  .activeline {
+    position: absolute; left: 0; right: 0; height: var(--code-lh);
+    background: var(--active-line);
+    border-top: 1px solid rgba(255,255,255,.025);
+    border-bottom: 1px solid rgba(255,255,255,.025);
+  }
+  .cl {
+    position: absolute; left: var(--pad-l);
+    height: var(--code-lh); line-height: var(--code-lh);
+    font-family: var(--font-mono); font-size: var(--code-fs);
+    white-space: pre; color: var(--tok-text);
+    font-variant-ligatures: none;
+  }
+  .find-mark, .bracket-mark {
+    position: absolute; height: var(--code-lh); pointer-events: none;
+    border-radius: 3px;
+  }
+  .find-mark { background: var(--find-all); box-shadow: inset 0 0 0 1px var(--find-all-bd); }
+  .find-mark.cur { background: var(--find-cur); box-shadow: inset 0 0 0 1px var(--find-cur-bd); }
+  .bracket-mark { background: var(--bracket); box-shadow: inset 0 0 0 1px var(--bracket-bd); }
+
+  .code-input {
+    position: absolute; inset: 0; z-index: 2; resize: none;
+    margin: 0; border: 0; outline: none;
+    padding: var(--pad-t) var(--pad-l) 40vh var(--pad-l);
+    font-family: var(--font-mono); font-size: var(--code-fs); line-height: var(--code-lh);
+    white-space: pre; overflow: auto; overflow-wrap: normal; word-break: normal;
+    background: transparent; color: transparent;
+    caret-color: var(--caret);
+    -webkit-text-fill-color: transparent;
+    tab-size: 2; -moz-tab-size: 2;
+    font-variant-ligatures: none;
+  }
+  /* wrapped mode */
+  .editor[data-wrap="true"] .code-input { white-space: pre-wrap; overflow-x: hidden; word-break: break-word; }
+  .editor[data-wrap="true"] .cl { white-space: pre-wrap; right: var(--pad-l); }
+
+  .code-input::selection { background: var(--sel); -webkit-text-fill-color: transparent; }
+  .code-input::-webkit-scrollbar { width: 14px; height: 14px; }
+  .code-input::-webkit-scrollbar-thumb {
+    background: var(--line-strong); border-radius: 999px;
+    border: 4px solid var(--ink-1); background-clip: padding-box;
+  }
+  .code-input::-webkit-scrollbar-thumb:hover { background: #36405a; background-clip: padding-box; }
+  .code-input::-webkit-scrollbar-corner { background: transparent; }
+
+  /* layer paddings mirror the textarea so overlays line up */
+  .layer-code, .layer-vert { padding: var(--pad-t) 0 0 0; }
+  .cl { /* x handled by --pad-l; y set inline */ }
+
+  /* syntax token classes */
+  .t-keyword  { color: var(--tok-keyword); }
+  .t-func     { color: var(--tok-func); }
+  .t-string   { color: var(--tok-string); }
+  .t-number   { color: var(--tok-number); }
+  .t-const    { color: var(--tok-const); }
+  .t-type     { color: var(--tok-type); }
+  .t-property { color: var(--tok-property); }
+  .t-operator { color: var(--tok-operator); }
+  .t-punct    { color: var(--tok-punct); }
+  .t-comment  { color: var(--tok-comment); font-style: italic; }
+  .t-regex    { color: var(--tok-regex); }
+  .t-attr     { color: var(--tok-attr); }
+
+  /* ---- minimap ---- */
+  .minimap {
+    position: relative; width: var(--minimap-w); flex: none;
+    background: var(--ink-1); border-left: 1px solid var(--line-faint);
+    overflow: hidden; cursor: pointer; user-select: none;
+    touch-action: none;
+  }
+  .minimap-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .minimap-box {
+    position: absolute; left: 0; right: 0; min-height: 22px;
+    background: rgba(255,255,255,.05);
+    border-top: 1px solid rgba(255,255,255,.1);
+    border-bottom: 1px solid rgba(255,255,255,.1);
+    transition: background var(--dur-1) var(--ease);
+  }
+  .minimap:hover .minimap-box { background: rgba(255,255,255,.08); }
+  .minimap.dragging .minimap-box { background: var(--gold-soft); border-color: var(--gold-line); }
+  .minimap-fade { position: absolute; left: 0; right: 0; height: 26px; pointer-events: none; z-index: 2; }
+  .minimap-fade.top { top: 0; background: linear-gradient(180deg, var(--ink-1), transparent); }
+  .minimap-fade.bot { bottom: 0; background: linear-gradient(0deg, var(--ink-1), transparent); }
+
+  /* ---- empty editor state ---- */
+  .editor-empty {
+    position: absolute; inset: 0; z-index: 3; display: none;
+    place-items: center; background: var(--ink-1); text-align: center;
+  }
+  .editor[data-empty="true"] .editor-empty { display: grid; }
+  .editor[data-empty="true"] .gutter,
+  .editor[data-empty="true"] .minimap { visibility: hidden; }
+  .editor-empty .ee {
+    display: flex; flex-direction: column; align-items: center; gap: var(--sp-3);
+    color: var(--text-subtle); max-width: 320px; padding: var(--sp-6);
+  }
+  .editor-empty .ee-mark { width: 44px; height: 44px; opacity: .6; }
+  .editor-empty .ee h2 { margin: 0; font-size: var(--fs-md); color: var(--text-muted); font-weight: 600; }
+  .editor-empty .ee p { margin: 0; font-size: var(--fs-sm); line-height: 1.5; }
+  .editor-empty kbd {
+    font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);
+    background: var(--ink-3); border: 1px solid var(--line-strong); border-bottom-width: 2px;
+    border-radius: 4px; padding: 2px 7px;
+  }
+
+  /* ============================================================
+     FIND WIDGET
+     ============================================================ */
+  .find {
+    position: absolute; top: 8px; right: calc(var(--minimap-w) + 16px); z-index: 30;
+    display: none; align-items: center; gap: 6px;
+    max-width: min(440px, calc(100% - 32px));
+    padding: 6px; background: var(--ink-overlay);
+    border: 1px solid var(--line-strong); border-radius: var(--r-md);
+    box-shadow: var(--shadow-2);
+    transform: translateY(-8px); opacity: 0;
+    transition: transform var(--dur-2) var(--ease), opacity var(--dur-2) var(--ease);
+  }
+  .find.open { display: flex; transform: none; opacity: 1; }
+  .find-field {
+    display: flex; align-items: center; gap: 6px; min-width: 0;
+    background: var(--ink-1); border: 1px solid var(--line-strong);
+    border-radius: var(--r-sm); padding: 0 6px 0 10px; height: 32px;
+    transition: border-color var(--dur-1) var(--ease);
+  }
+  .find-field:focus-within { border-color: var(--gold-line); }
+  .find-field svg { width: 14px; height: 14px; color: var(--text-subtle); flex: none; }
+  .find-input {
+    flex: 1 1 auto; min-width: 60px; width: 120px;
+    background: none; border: 0; outline: none; color: var(--text);
+    font-family: var(--font-mono); font-size: var(--fs-sm);
+  }
+  .find-input::placeholder { color: var(--text-faint); }
+  .find-count {
+    font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-subtle);
+    white-space: nowrap; min-width: 56px; text-align: right; padding-right: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .find-count.none { color: var(--danger); }
+  .find-sep { width: 1px; height: 20px; background: var(--line-strong); margin: 0 2px; }
+  .find-btn {
+    width: 30px; height: 30px; border-radius: var(--r-sm); display: grid; place-items: center;
+    color: var(--text-muted);
+    transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+  }
+  .find-btn:hover:not(:disabled) { background: var(--ink-raised); color: var(--text); }
+  .find-btn:disabled { color: var(--text-faint); cursor: default; }
+  .find-btn.toggle.on { color: var(--gold); background: var(--gold-soft); }
+  .find-btn svg { width: 15px; height: 15px; }
+
+  /* ============================================================
+     STATUS BAR
+     ============================================================ */
+  .statusbar {
+    display: flex; align-items: center; height: 26px;
+    background: linear-gradient(180deg, var(--ink-3), var(--ink-2));
+    border-top: 1px solid var(--line);
+    font-size: var(--fs-xs); color: var(--text-muted);
+    padding: 0 4px; user-select: none; overflow: hidden;
+  }
+  .st { display: inline-flex; align-items: center; gap: 5px; padding: 0 9px; height: 100%;
+        white-space: nowrap; transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease); }
+  button.st:hover { background: var(--ink-raised); color: var(--text); }
+  .st svg { width: 13px; height: 13px; }
+  .st.brand-st { background: var(--gold-soft); color: var(--gold); font-weight: 600; }
+  .st .teal { color: var(--teal); }
+  .st-spacer { flex: 1 1 auto; }
+  .st.hide-sm { }
+  .st-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+  /* ============================================================
+     COMMAND PALETTE
+     ============================================================ */
+  .palette-overlay {
+    position: fixed; inset: 0; z-index: 100; display: none;
+    background: var(--backdrop);
+    padding-top: 12vh; justify-content: center;
+    opacity: 0; transition: opacity var(--dur-2) var(--ease);
+  }
+  .palette-overlay.open { display: flex; opacity: 1; }
+  .palette {
+    width: min(620px, calc(100vw - 32px)); height: max-content; max-height: 60vh;
+    display: flex; flex-direction: column;
+    background: var(--ink-overlay); border: 1px solid var(--line-strong);
+    border-radius: var(--r-lg); box-shadow: var(--shadow-3); overflow: hidden;
+    transform: translateY(-10px) scale(.985); transition: transform var(--dur-2) var(--ease);
+  }
+  .palette-overlay.open .palette { transform: none; }
+  .palette-top { display: flex; align-items: center; gap: var(--sp-3); padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  .palette-top svg { width: 17px; height: 17px; color: var(--text-subtle); flex: none; }
+  .palette-input {
+    flex: 1 1 auto; background: none; border: 0; outline: none; color: var(--text);
+    font-size: var(--fs-base); font-family: var(--font-sans);
+  }
+  .palette-input::placeholder { color: var(--text-faint); }
+  .palette-list { list-style: none; margin: 0; padding: 6px; overflow-y: auto; min-height: 0; }
+  .pcmd {
+    display: flex; align-items: center; gap: var(--sp-3);
+    width: 100%; min-height: 44px; padding: 8px 12px; border-radius: var(--r-sm);
+    text-align: left; color: var(--text-muted);
+  }
+  .pcmd .pi { width: 20px; height: 20px; flex: none; display: grid; place-items: center; color: var(--text-subtle); }
+  .pcmd .pi svg { width: 16px; height: 16px; }
+  .pcmd .pl { flex: 1 1 auto; min-width: 0; }
+  .pcmd .pt { color: var(--text); font-size: var(--fs-sm); }
+  .pcmd .pt mark { background: none; color: var(--gold); font-weight: 650; }
+  .pcmd .psub { font-size: var(--fs-xs); color: var(--text-subtle); }
+  .pcmd .pk { font-family: var(--font-mono); font-size: 10px; color: var(--text-subtle);
+              background: var(--ink-3); border: 1px solid var(--line-strong); border-radius: 4px; padding: 1px 6px; }
+  .pcmd[aria-selected="true"] { background: var(--gold-soft); color: var(--text); }
+  .pcmd[aria-selected="true"] .pi { color: var(--gold); }
+  .pcmd:hover { background: var(--ink-raised); }
+  .palette-empty { padding: var(--sp-6); text-align: center; color: var(--text-subtle); font-size: var(--fs-sm); }
+  .palette-empty b { color: var(--text-muted); font-family: var(--font-mono); }
+
+  /* ---- "go to line" inline mode reuses the palette input ---- */
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  /* sidebar becomes an overlay drawer */
+  @media (max-width: 880px) {
+    /* sidebar is an absolute overlay here, so it leaves grid flow; use a
+       2-column track (activity + editor) so the editor fills the row. */
+    .body, .body[data-sidebar="closed"], .body[data-sidebar="open"] { grid-template-columns: var(--activity-w) 1fr; }
+    .sidebar {
+      position: absolute; left: var(--activity-w); top: 0; bottom: 0; z-index: 40;
+      width: min(280px, 78vw); border-right: 1px solid var(--line);
+      box-shadow: var(--shadow-2);
+      transform: translateX(-110%); opacity: 0; visibility: hidden; pointer-events: none;
+      transition: transform var(--dur-2) var(--ease), opacity var(--dur-2) var(--ease), visibility 0s linear var(--dur-2);
+    }
+    .body[data-sidebar="open"] .sidebar {
+      transform: none; opacity: 1; visibility: visible; pointer-events: auto;
+      transition: transform var(--dur-2) var(--ease), opacity var(--dur-2) var(--ease), visibility 0s;
+    }
+    .body[data-sidebar="open"]::after {
+      content: ""; position: absolute; inset: 0 0 0 var(--activity-w); z-index: 35;
+      background: var(--backdrop);
+    }
+  }
+  @media (max-width: 680px) {
+    .minimap { display: none; }
+    .find { right: 12px; }
+    .workspace { display: none; }
+    .breadcrumb { display: none; }
+  }
+  @media (max-width: 460px) {
+    .palette-hint span { display: none; }
+    .palette-hint { padding: 0 8px; }
+    .st.hide-sm { display: none; }
+    .brand-name { letter-spacing: .08em; }
+  }
+  @media (max-width: 380px) {
+    :root { --activity-w: 46px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; animation-iteration-count: 1 !important; }
+  }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#editor-input">Skip to editor</a>
+
+<div class="app">
+  <!-- ===================== TITLE BAR ===================== -->
+  <header class="titlebar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="1.5" y="1.5" width="21" height="21" rx="6" fill="#0c0e15" stroke="#283044"/>
+        <path d="M6 16.5V8.2c0-.3.37-.45.58-.23L12 13.4l5.42-5.43c.21-.22.58-.07.58.23v8.3" stroke="#e8b15f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="12" cy="13.4" r="1.15" fill="#57d2c4"/>
+      </svg>
+      <span class="brand-name">MERI<b>DIAN</b></span>
+      <span class="workspace">~/meridian-editor</span>
+    </div>
+    <div class="titlebar-spacer"></div>
+    <div class="title-actions">
+      <button class="icon-btn" id="btn-sidebar" title="Toggle sidebar (⌘B)" aria-label="Toggle sidebar" aria-pressed="true">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M9 4v16" stroke="currentColor" stroke-width="1.7"/></svg>
+      </button>
+      <button class="icon-btn on" id="btn-minimap" title="Toggle minimap" aria-label="Toggle minimap" aria-pressed="true">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 6h9M5 10h6M5 14h8M5 18h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><rect x="17" y="5" width="3" height="14" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+      </button>
+      <button class="icon-btn" id="btn-wrap" title="Toggle word wrap (⌥Z)" aria-label="Toggle word wrap" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h13a3 3 0 0 1 0 6h-3m0 0 2-2m-2 2 2 2M4 18h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="palette-hint" id="btn-palette" title="Command palette">
+        <svg viewBox="0 0 24 24" fill="none" width="14" height="14" aria-hidden="true" style="color:var(--text-subtle)"><path d="m8 9 3 3-3 3M13 15h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="4.5" width="18" height="15" rx="2.5" stroke="currentColor" stroke-width="1.5"/></svg>
+        <span>Command</span><kbd>⌘K</kbd>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===================== BODY ===================== -->
+  <div class="body" id="body" data-sidebar="open">
+    <!-- activity bar -->
+    <nav class="activitybar" aria-label="Activity bar">
+      <button class="act" data-view="explorer" aria-pressed="true" title="Explorer" aria-label="Explorer">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6.5A1.5 1.5 0 0 1 5.5 5h4l2 2.2h7A1.5 1.5 0 0 1 20 8.7v8.8A1.5 1.5 0 0 1 18.5 19h-13A1.5 1.5 0 0 1 4 17.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="act" data-view="symbols" aria-pressed="false" title="Symbols / Outline" aria-label="Symbols and outline">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="2.4" stroke="currentColor" stroke-width="1.7"/><circle cx="17" cy="7" r="2.4" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="17" r="2.4" stroke="currentColor" stroke-width="1.7"/><path d="M8.7 8.6 11 14.8M15.3 8.6 13 14.8" stroke="currentColor" stroke-width="1.7"/></svg>
+      </button>
+      <button class="act" data-view="search" aria-pressed="false" title="Search (⌘F)" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <div class="act-spacer"></div>
+      <button class="act" data-view="git" aria-pressed="false" title="Source control" aria-label="Source control">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="7" cy="6" r="2.4" stroke="currentColor" stroke-width="1.7"/><circle cx="7" cy="18" r="2.4" stroke="currentColor" stroke-width="1.7"/><circle cx="17" cy="9" r="2.4" stroke="currentColor" stroke-width="1.7"/><path d="M7 8.4v7.2M17 11.4c0 3-2.4 3.6-5 4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </button>
+      <button class="act" data-view="settings" aria-pressed="false" title="Settings" aria-label="Settings">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/><path d="M12 3v2.5M12 18.5V21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M3 12h2.5M18.5 12H21M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </button>
+    </nav>
+
+    <!-- sidebar -->
+    <aside class="sidebar" aria-label="Side panel">
+      <div class="side-head"><span id="side-title">Explorer</span></div>
+      <div class="side-scroll" id="side-scroll">
+        <!-- explorer + symbols rendered by JS -->
+      </div>
+    </aside>
+
+    <!-- editor group -->
+    <section class="editorgroup" aria-label="Editor">
+      <div class="tabbar" id="tabbar" role="tablist" aria-label="Open files"></div>
+
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+
+      <div class="editor" id="editor" data-wrap="false" data-empty="false">
+        <div class="gutter" id="gutter" aria-hidden="true"><div class="gutter-inner" id="gutter-inner"></div></div>
+
+        <div class="code-viewport" id="viewport">
+          <div class="layer layer-vert" id="layer-vert">
+            <div class="activeline" id="activeline"></div>
+          </div>
+          <div class="layer layer-code" id="layer-code">
+            <div id="find-layer"></div>
+            <div id="bracket-layer"></div>
+            <div id="hl-lines"></div>
+          </div>
+          <textarea class="code-input" id="editor-input" spellcheck="false" autocapitalize="off"
+            autocomplete="off" autocorrect="off" wrap="off" aria-label="Code editor"></textarea>
+        </div>
+
+        <div class="minimap" id="minimap" role="scrollbar" aria-label="Minimap scrollbar" aria-controls="editor-input" aria-orientation="vertical">
+          <canvas class="minimap-canvas" id="minimap-canvas"></canvas>
+          <div class="minimap-fade top"></div>
+          <div class="minimap-fade bot"></div>
+          <div class="minimap-box" id="minimap-box"></div>
+        </div>
+
+        <!-- find widget -->
+        <div class="find" id="find" role="search" aria-label="Find in file">
+          <div class="find-field">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <input class="find-input" id="find-input" type="text" placeholder="Find" aria-label="Find text" />
+            <span class="find-count" id="find-count" aria-live="polite">0 results</span>
+          </div>
+          <button class="find-btn toggle" id="find-case" title="Match case" aria-label="Match case" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 17 8 7l4 10M5.3 14h5.4M15 11.5a2.5 2.5 0 1 1 5 0V17m0-2.5h-2.6a1.8 1.8 0 0 0 0 3.6c1.3 0 2.6-.7 2.6-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="find-sep"></div>
+          <button class="find-btn" id="find-prev" title="Previous match (⇧⏎)" aria-label="Previous match">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m7 14 5-5 5 5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="find-btn" id="find-next" title="Next match (⏎)" aria-label="Next match">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="find-btn" id="find-close" title="Close (Esc)" aria-label="Close find">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <!-- empty state -->
+        <div class="editor-empty">
+          <div class="ee">
+            <svg class="ee-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" stroke="#283044" stroke-width="1.5"/><path d="M7 16V9.5c0-.3.36-.45.57-.24L12 13.7l4.43-4.44c.2-.21.57-.06.57.24V16" stroke="#444d63" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <h2>No file open</h2>
+            <p>Open a file from the Explorer, or press <kbd>⌘K</kbd> and choose <em>“Open file”</em> to get started.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===================== STATUS BAR ===================== -->
+  <footer class="statusbar" aria-label="Status bar">
+    <button class="st" id="st-branch" title="On branch main">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="7" cy="6" r="2.2" stroke="currentColor" stroke-width="1.7"/><circle cx="7" cy="18" r="2.2" stroke="currentColor" stroke-width="1.7"/><circle cx="17" cy="9" r="2.2" stroke="currentColor" stroke-width="1.7"/><path d="M7 8.2v7.6M17 11.2c0 3-2.4 3.5-5 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      <span>main</span>
+    </button>
+    <span class="st hide-sm" id="st-problems" title="No problems detected">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5 10 17l9-10" stroke="var(--ok)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>No problems</span>
+    </span>
+    <div class="st-spacer"></div>
+    <button class="st st-mono" id="st-pos" title="Go to line (⌘G)">Ln 1, Col 1</button>
+    <span class="st st-mono hide-sm" id="st-sel"></span>
+    <button class="st hide-sm" id="st-indent">Spaces: 2</button>
+    <span class="st st-mono hide-sm">UTF-8</span>
+    <span class="st st-mono hide-sm">LF</span>
+    <button class="st" id="st-lang" title="Select language">JavaScript</button>
+    <span class="st brand-st" title="Active color theme">Meridian</span>
+  </footer>
+</div>
+
+<!-- ===================== COMMAND PALETTE ===================== -->
+<div class="palette-overlay" id="palette-overlay" role="dialog" aria-modal="true" aria-label="Command palette">
+  <div class="palette" id="palette">
+    <div class="palette-top">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" id="palette-icon"><path d="m8 9 3 3-3 3M13 15h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="4.5" width="18" height="15" rx="2.5" stroke="currentColor" stroke-width="1.5"/></svg>
+      <input class="palette-input" id="palette-input" type="text" placeholder="Type a command, or search files…"
+        role="combobox" aria-expanded="true" aria-controls="palette-list" aria-autocomplete="list" autocomplete="off" spellcheck="false" />
+    </div>
+    <ul class="palette-list" id="palette-list" role="listbox" aria-label="Commands"></ul>
+  </div>
+</div>
+
+<!-- ===================== SAMPLE FILES (raw text, no escaping needed) ===================== -->
+<script type="text/plain" data-name="editor.js" data-lang="javascript">// Meridian — editor core
+// A compact, dependency-free editing surface: tokenize → render → minimap.
+// The whole document is re-tokenized on edit (linear in characters), but only
+// the visible window is painted, so a 2,000-line file costs the same per
+// keystroke as a 50-line one.
+
+import { tokenize } from './lib/tokenizer.js';
+import { Minimap } from './ui/minimap.js';
+
+const TAB_SIZE = 2;
+const OVERSCAN = 4;
+const RE_TRAIL = /[ \t]+$/;
+
+/**
+ * The editing surface. Owns the document model, the per-line token
+ * cache, and a windowed renderer that keeps large files smooth.
+ */
+export class Editor {
+  #dirty = false;
+
+  constructor(host, { language = 'javascript', lineHeight = 21 } = {}) {
+    this.host = host;
+    this.language = language;
+    this.lineHeight = lineHeight;
+    this.lines = [''];
+    this.tokens = [];            // tokens[i] = spans for line i
+    this.scrollTop = 0;
+    this.minimap = new Minimap(this, { scale: 2, charWidth: 1 });
+    this.#mount();
+  }
+
+  get value() {
+    return this.lines.join('\n');
+  }
+
+  set value(text) {
+    this.lines = String(text).split('\n');
+    this.tokenize();
+    this.render();
+  }
+
+  // Re-tokenize the document. `state` carries across line breaks so
+  // block comments and template literals stay correct.
+  tokenize() {
+    let state = null;
+    this.tokens = this.lines.map((line) => {
+      const result = tokenize(line, this.language, state);
+      state = result.state;
+      return result.spans;
+    });
+  }
+
+  // Paint only [first, last) — the visible rows plus a little overscan.
+  render() {
+    const top = this.scrollTop;
+    const first = Math.max(0, (top / this.lineHeight | 0) - OVERSCAN);
+    const last = Math.min(this.lines.length, first + this.visibleRows + OVERSCAN * 2);
+    const frag = document.createDocumentFragment();
+    for (let i = first; i < last; i++) {
+      frag.append(this.#paintLine(i, this.tokens[i]));
+    }
+    this.host.lines.replaceChildren(frag);
+    this.minimap.invalidate();
+  }
+
+  onInput = (event) => {
+    const prevCount = this.lines.length;
+    this.value = event.target.value;
+    this.#dirty = true;
+    if (this.lines.length !== prevCount) this.renumberGutter();
+    this.emit('change', { dirty: true });
+  };
+
+  // Map a character offset to a { line, column } caret position.
+  caretAt(offset) {
+    let line = 0, last = 0;
+    for (let i = 0; i < offset; i++) {
+      if (this.value.charCodeAt(i) === 10) { line++; last = i + 1; }
+    }
+    return { line, column: offset - last };
+  }
+}
+
+const banner = `Meridian ready — ${RE_TRAIL.source} • ${0xE8 + 0b0111} tokens/ms`;
+export default Editor;
+</script>
+
+<script type="text/plain" data-name="tokenizer.js" data-lang="javascript">// A small hand-rolled scanner. Not a parser — just enough lexical context
+// to color keywords, strings, numbers, regex, and member access.
+const KEYWORDS = new Set([
+  'const', 'let', 'var', 'function', 'return', 'if', 'else', 'for', 'while',
+  'do', 'switch', 'case', 'break', 'continue', 'new', 'delete', 'typeof',
+  'instanceof', 'in', 'of', 'void', 'class', 'extends', 'super', 'this',
+  'import', 'from', 'export', 'default', 'try', 'catch', 'finally', 'throw',
+  'async', 'await', 'yield', 'static', 'get', 'set', 'as', 'satisfies',
+]);
+const ATOMS = new Set(['true', 'false', 'null', 'undefined', 'NaN', 'Infinity']);
+
+// A slash starts a regex (not division) when the previous meaningful
+// character cannot end an expression.
+function regexAllowed(prev) {
+  return prev === '' || '(,;=:[{!&|?+-*%^~<>'.includes(prev);
+}
+
+export function tokenize(line, lang, state) {
+  const spans = [];
+  let i = 0, last = 0, prev = '';
+  const n = line.length;
+
+  const emit = (start, end, type) => {
+    if (start > last) spans.push({ col: last, len: start - last, type: 'text' });
+    spans.push({ col: start, len: end - start, type });
+    last = end;
+    prev = line[end - 1];
+  };
+
+  while (i < n) {
+    const c = line[i];
+    if (c === '/' && line[i + 1] === '/') { emit(i, n, 'comment'); break; }
+    if (c === '"' || c === "'") {
+      let j = i + 1;
+      while (j < n && line[j] !== c) j += line[j] === '\\' ? 2 : 1;
+      emit(i, Math.min(j + 1, n), 'string');
+      i = j + 1; continue;
+    }
+    i++;
+  }
+  if (last < n) spans.push({ col: last, len: n - last, type: 'text' });
+  return { spans, state };
+}
+</script>
+
+<script type="text/plain" data-name="theme.css" data-lang="css">/* Meridian — a warm-gold dark theme.
+   Token colors are tuned for AA contrast on the #0c0e15 canvas. */
+:root {
+  --ink-1: #0c0e15;          /* editor canvas      */
+  --ink-3: #10131c;          /* tabs + status bar  */
+  --gold:  #e8b15f;          /* signature accent   */
+  --teal:  #57d2c4;          /* secondary accent   */
+
+  --tok-keyword:  #cba6f7;   /* control + declarations */
+  --tok-func:     #82c2f7;   /* function names         */
+  --tok-string:   #c7da82;   /* strings + templates    */
+  --tok-number:   #f1ab6b;   /* numbers + units        */
+  --tok-comment:  #7f8aa6;   /* comments               */
+}
+
+.editor {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  background: var(--ink-1);
+  font-family: "SF Mono", ui-monospace, Menlo, monospace;
+  line-height: 21px;
+}
+
+.tab[aria-selected="true"]::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--teal) 140%);
+}
+
+@media (max-width: 680px) {
+  .minimap { display: none; }     /* collapse on narrow viewports */
+}
+</script>
+
+<script type="text/plain" data-name="palette.json" data-lang="json">{
+  "name": "Meridian",
+  "type": "dark",
+  "tabSize": 2,
+  "minimap": {
+    "enabled": true,
+    "scale": 2,
+    "maxColumn": 120
+  },
+  "tokenColors": {
+    "keyword": "#cba6f7",
+    "function": "#82c2f7",
+    "string": "#c7da82",
+    "number": "#f1ab6b",
+    "type": "#ecca8a",
+    "property": "#6fdac9",
+    "comment": "#7f8aa6",
+    "regex": "#f6967f"
+  },
+  "editor": {
+    "fontFamily": "SF Mono, JetBrains Mono, monospace",
+    "fontSize": 13.5,
+    "lineHeight": 21,
+    "wordWrap": false,
+    "renderWhitespace": "selection"
+  }
+}
+</script>
+
+<script type="text/plain" data-name="README.md" data-lang="markdown"># Meridian
+
+A dependency-free code editor with a **crisp canvas minimap**, tokenized
+highlighting, and a command palette — all in a single file.
+
+## Features
+
+- Hand-rolled tokenizer for `JavaScript`, `CSS`, `JSON`, and `Markdown`
+- Windowed rendering: a 2,000-line file stays smooth while typing
+- A draggable minimap whose viewport box maps to the visible range
+- Find with match highlighting, bracket matching, and a symbols outline
+
+## Keyboard
+
+> Press `⌘K` for the command palette, `⌘F` to find, `⌘G` to go to a line.
+
+See `theme.css` for the token palette and [the docs](https://example.dev/meridian)
+for the full reference. Happy hacking!
+</script>
+
+<script>
+"use strict";
+/* ============================================================
+   MERIDIAN — application script
+   ============================================================ */
+(function () {
+  const $ = (sel, ctx) => (ctx || document).querySelector(sel);
+  const root = document.documentElement;
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- metrics (must match CSS) ----
+  const LH = 21, PAD_T = 10, PAD_L = 20;
+  let CW = 8.1; // measured below
+
+  // ---- token palette read from CSS (single source of truth) ----
+  const TYPES = ['keyword','func','string','number','const','type','property','operator','punct','comment','regex','attr','text'];
+  const TOK = {};
+  TYPES.forEach((t) => {
+    const v = getComputedStyle(root).getPropertyValue('--tok-' + t).trim();
+    TOK[t] = v || '#d7deec';
+  });
+
+  /* ============================================================
+     TOKENIZERS (one per language; each returns {spans, state})
+     spans cover the whole line contiguously (gaps filled as 'text')
+     ============================================================ */
+  const JS_KEYWORDS = new Set(('const let var function return if else for while do switch case break continue '
+    + 'new delete typeof instanceof in of void this super class extends import from export default try catch '
+    + 'finally throw async await yield static get set public private protected readonly interface type enum '
+    + 'implements namespace declare as satisfies keyof abstract override module require').split(' '));
+  const JS_ATOMS = new Set(['true','false','null','undefined','NaN','Infinity']);
+
+  function isIdStart(c){ return c && (/[A-Za-z_$]/.test(c)); }
+  function isIdPart(c){ return c && (/[A-Za-z0-9_$]/.test(c)); }
+  function regexAllowed(prev){ return prev === '' || '(,;=:[{!&|?+-*%^~<>'.includes(prev); }
+
+  function makeEmitter(line, spans){
+    const st = { last: 0, prev: '', prevType: '' };
+    return {
+      st,
+      emit(start, end, type){
+        if (start > st.last) spans.push({ col: st.last, len: start - st.last, type: 'text' });
+        spans.push({ col: start, len: end - start, type });
+        st.last = end; st.prev = line[end-1]; st.prevType = type;
+      },
+      finish(n){ if (st.last < n) spans.push({ col: st.last, len: n - st.last, type: 'text' }); }
+    };
+  }
+
+  function tokenizeJS(line, state){
+    const spans = []; const n = line.length; let i = 0;
+    const E = makeEmitter(line, spans);
+
+    if (state === 'block'){
+      const idx = line.indexOf('*/');
+      if (idx === -1){ E.emit(0, n, 'comment'); E.finish(n); return { spans, state:'block' }; }
+      E.emit(0, idx+2, 'comment'); i = idx + 2; state = null;
+    } else if (state === 'template'){
+      let j = 0; while (j < n && line[j] !== '`'){ j += line[j] === '\\' ? 2 : 1; }
+      if (j >= n){ E.emit(0, n, 'string'); E.finish(n); return { spans, state:'template' }; }
+      E.emit(0, j+1, 'string'); i = j + 1; state = null;
+    }
+
+    while (i < n){
+      const c = line[i];
+      if (c === ' ' || c === '\t'){ i++; continue; }
+      if (c === '/' && line[i+1] === '/'){ E.emit(i, n, 'comment'); i = n; break; }
+      if (c === '/' && line[i+1] === '*'){
+        const idx = line.indexOf('*/', i+2);
+        if (idx === -1){ E.emit(i, n, 'comment'); E.finish(n); return { spans, state:'block' }; }
+        E.emit(i, idx+2, 'comment'); i = idx + 2; continue;
+      }
+      if (c === '"' || c === "'"){
+        let j = i+1; while (j < n && line[j] !== c){ j += line[j] === '\\' ? 2 : 1; }
+        E.emit(i, Math.min(j+1, n), 'string'); i = j + 1; continue;
+      }
+      if (c === '`'){
+        let j = i+1; while (j < n && line[j] !== '`'){ j += line[j] === '\\' ? 2 : 1; }
+        if (j >= n){ E.emit(i, n, 'string'); E.finish(n); return { spans, state:'template' }; }
+        E.emit(i, j+1, 'string'); i = j + 1; continue;
+      }
+      if (c === '/' && regexAllowed(E.st.prev)){
+        let j = i+1, ok = false, inClass = false;
+        while (j < n){
+          const d = line[j];
+          if (d === '\\'){ j += 2; continue; }
+          if (d === '[') inClass = true;
+          else if (d === ']') inClass = false;
+          else if (d === '/' && !inClass){ ok = true; break; }
+          j++;
+        }
+        if (ok){ let k = j+1; while (k < n && /[a-z]/.test(line[k])) k++; E.emit(i, k, 'regex'); i = k; continue; }
+        E.emit(i, i+1, 'operator'); i++; continue;
+      }
+      if (/[0-9]/.test(c) || (c === '.' && /[0-9]/.test(line[i+1]||''))){
+        let j = i+1; while (j < n && /[0-9a-fA-FxXbBoO._n]/.test(line[j])) j++;
+        E.emit(i, j, 'number'); i = j; continue;
+      }
+      if (isIdStart(c)){
+        let j = i+1; while (j < n && isIdPart(line[j])) j++;
+        const word = line.slice(i, j);
+        let k = j; while (k < n && (line[k] === ' ' || line[k] === '\t')) k++;
+        let type;
+        if (JS_KEYWORDS.has(word)) type = 'keyword';
+        else if (JS_ATOMS.has(word)) type = 'const';
+        else if (line[k] === '(') type = 'func';
+        else if (E.st.prev === '.') type = 'property';
+        else if (/^[A-Z]/.test(word)) type = 'type';
+        else type = 'text';
+        E.emit(i, j, type); i = j; continue;
+      }
+      if ('{}()[];,.'.includes(c)){ E.emit(i, i+1, 'punct'); i++; continue; }
+      if ('+-*/%=<>!&|^~?:'.includes(c)){ E.emit(i, i+1, 'operator'); i++; continue; }
+      i++; // any stray char -> covered by text gap
+    }
+    E.finish(n);
+    return { spans, state: null };
+  }
+
+  function tokenizeCSS(line, state){
+    const spans = []; const n = line.length; let i = 0;
+    const E = makeEmitter(line, spans);
+    let depth = (state && state.depth) || 0;
+    if (state && state.block){
+      const idx = line.indexOf('*/');
+      if (idx === -1){ E.emit(0, n, 'comment'); E.finish(n); return { spans, state:{ block:true, depth } }; }
+      E.emit(0, idx+2, 'comment'); i = idx + 2; state = null;
+    }
+    while (i < n){
+      const c = line[i];
+      if (c === ' ' || c === '\t'){ i++; continue; }
+      if (c === '/' && line[i+1] === '*'){
+        const idx = line.indexOf('*/', i+2);
+        if (idx === -1){ E.emit(i, n, 'comment'); E.finish(n); return { spans, state:{ block:true, depth } }; }
+        E.emit(i, idx+2, 'comment'); i = idx + 2; continue;
+      }
+      if (c === '{'){ E.emit(i, i+1, 'punct'); depth++; i++; continue; }
+      if (c === '}'){ E.emit(i, i+1, 'punct'); depth = Math.max(0, depth-1); i++; continue; }
+      if (c === '"' || c === "'"){
+        let j = i+1; while (j < n && line[j] !== c){ j += line[j] === '\\' ? 2 : 1; }
+        E.emit(i, Math.min(j+1, n), 'string'); i = j + 1; continue;
+      }
+      if (c === '@'){ let j = i+1; while (j < n && /[a-z-]/i.test(line[j])) j++; E.emit(i, j, 'keyword'); i = j; continue; }
+      if (c === '#'){ let j = i+1; while (j < n && /[0-9a-fA-F]/.test(line[j])) j++;
+        E.emit(i, j, depth > 0 ? 'number' : 'type'); i = j; continue; }
+      if (/[0-9]/.test(c) || (c === '.' && /[0-9]/.test(line[i+1]||''))){
+        let j = i+1; while (j < n && /[0-9a-z%.]/i.test(line[j])) j++; E.emit(i, j, 'number'); i = j; continue; }
+      if (c === '-' && line[i+1] === '-'){ let j = i+2; while (j < n && /[\w-]/.test(line[j])) j++; E.emit(i, j, 'property'); i = j; continue; }
+      if (c === '.' || c === '&'){ let j = i+1; while (j < n && /[\w-]/.test(line[j])) j++; E.emit(i, j, 'type'); i = j; continue; }
+      if (c === ':'){ let j = i+1; while (j < n && /[a-z-]/i.test(line[j])) j++;
+        E.emit(i, i+1, 'operator'); if (j > i+1 && depth === 0) E.emit(i+1, j, 'func'); i = j; continue; }
+      if (isIdStart(c) || c === '-'){
+        let j = i+1; while (j < n && /[\w-]/.test(line[j])) j++;
+        let k = j; while (k < n && (line[k]===' '||line[k]==='\t')) k++;
+        let type;
+        if (line[k] === '(') type = 'func';
+        else if (depth > 0 && line[k] === ':') type = 'property';
+        else if (depth === 0) type = 'type';
+        else type = 'const';
+        E.emit(i, j, type); i = j; continue;
+      }
+      if ('();,'.includes(c)){ E.emit(i, i+1, 'punct'); i++; continue; }
+      i++;
+    }
+    E.finish(n);
+    return { spans, state: depth > 0 ? { block:false, depth } : null };
+  }
+
+  function tokenizeJSON(line, state){
+    const spans = []; const n = line.length; let i = 0;
+    const E = makeEmitter(line, spans);
+    while (i < n){
+      const c = line[i];
+      if (c === ' ' || c === '\t'){ i++; continue; }
+      if (c === '"'){
+        let j = i+1; while (j < n && line[j] !== '"'){ j += line[j] === '\\' ? 2 : 1; }
+        const end = Math.min(j+1, n);
+        let k = end; while (k < n && (line[k]===' '||line[k]==='\t')) k++;
+        E.emit(i, end, line[k] === ':' ? 'property' : 'string'); i = end; continue;
+      }
+      if (/[0-9-]/.test(c)){ let j = i+1; while (j < n && /[0-9.eE+-]/.test(line[j])) j++; E.emit(i, j, 'number'); i = j; continue; }
+      if (/[a-z]/.test(c)){ let j = i+1; while (j < n && /[a-z]/.test(line[j])) j++; E.emit(i, j, 'const'); i = j; continue; }
+      if ('{}[],:'.includes(c)){ E.emit(i, i+1, 'punct'); i++; continue; }
+      i++;
+    }
+    E.finish(n);
+    return { spans, state: null };
+  }
+
+  function tokenizeMD(line, state){
+    const spans = []; const n = line.length;
+    const E = makeEmitter(line, spans);
+    if (state && state.fence){
+      if (/^```/.test(line)){ E.emit(0, n, 'punct'); E.finish(n); return { spans, state: null }; }
+      E.emit(0, n, 'string'); E.finish(n); return { spans, state:{ fence:true } };
+    }
+    if (/^```/.test(line)){ E.emit(0, n, 'punct'); E.finish(n); return { spans, state:{ fence:true } }; }
+    const h = line.match(/^(#{1,6})\s/);
+    if (h){ E.emit(0, n, 'type'); E.finish(n); return { spans, state:null }; }
+    const q = line.match(/^(\s*>)/); if (q){ E.emit(0, q[1].length, 'comment'); }
+    const li = line.match(/^(\s*([-*+]|\d+\.)\s)/); if (li){ E.emit(li.index||0, li[1].length, 'keyword'); }
+    // inline: code spans, bold, links
+    let i = E.st.last;
+    while (i < n){
+      const c = line[i];
+      if (c === '`'){ const j = line.indexOf('`', i+1); if (j !== -1){ E.emit(i, j+1, 'regex'); i = j+1; continue; } }
+      if (c === '*' && line[i+1] === '*'){ const j = line.indexOf('**', i+2); if (j !== -1){ E.emit(i, j+2, 'type'); i = j+2; continue; } }
+      if (c === '['){ const close = line.indexOf(']', i); const open = line.indexOf('(', close);
+        if (close !== -1 && open === close+1){ const end = line.indexOf(')', open); if (end !== -1){
+          E.emit(i, close+1, 'func'); E.emit(open, end+1, 'string'); i = end+1; continue; } } }
+      i++;
+    }
+    E.finish(n);
+    return { spans, state: null };
+  }
+
+  const TOKENIZERS = { javascript: tokenizeJS, css: tokenizeCSS, json: tokenizeJSON, markdown: tokenizeMD };
+  const LANG_LABEL = { javascript: 'JavaScript', css: 'CSS', json: 'JSON', markdown: 'Markdown' };
+
+  /* ============================================================
+     SYMBOL EXTRACTION (per language) — feeds the outline
+     ============================================================ */
+  function extractSymbols(lines, lang){
+    const out = [];
+    if (lang === 'javascript'){
+      lines.forEach((ln, i) => {
+        let m;
+        if ((m = ln.match(/^\s*(?:export\s+)?(?:default\s+)?(?:async\s+)?class\s+([A-Za-z_$][\w$]*)/))) out.push({ name: m[1], kind: 'cls', line: i });
+        else if ((m = ln.match(/^\s*(?:export\s+)?(?:default\s+)?(?:async\s+)?function\s*\*?\s*([A-Za-z_$][\w$]*)/))) out.push({ name: m[1], kind: 'fn', line: i });
+        else if ((m = ln.match(/^\s*(?:export\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*=>/))) out.push({ name: m[1], kind: 'fn', line: i });
+        else if ((m = ln.match(/^\s*(?:export\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=/))) out.push({ name: m[1], kind: 'var', line: i });
+        else if ((m = ln.match(/^\s{2,}(?:async\s+)?(?:get\s+|set\s+|static\s+)?([A-Za-z_$#][\w$]*)\s*\([^)]*\)\s*\{/)) && !/\b(if|for|while|switch|catch|return)\b/.test(m[0])) out.push({ name: m[1], kind: 'fn', line: i });
+      });
+    } else if (lang === 'css'){
+      let depth = 0;
+      lines.forEach((ln, i) => {
+        const sel = ln.match(/^\s*([.#&@:]?[\w][\w\s.#:>,()[\]"'=^*~-]*?)\s*\{/);
+        if (sel && depth === 0) out.push({ name: sel[1].trim().slice(0, 42), kind: 'sel', line: i });
+        depth += (ln.split('{').length - 1) - (ln.split('}').length - 1);
+        if (depth < 0) depth = 0;
+      });
+    } else if (lang === 'json'){
+      let depth = 0;
+      lines.forEach((ln, i) => {
+        const k = ln.match(/^\s*"([^"]+)"\s*:/);
+        if (k && depth <= 1) out.push({ name: k[1], kind: 'key', line: i });
+        depth += (ln.split('{').length - 1) - (ln.split('}').length - 1);
+      });
+    } else if (lang === 'markdown'){
+      lines.forEach((ln, i) => {
+        const h = ln.match(/^(#{1,6})\s+(.+)/);
+        if (h) out.push({ name: h[2].replace(/[*`]/g,''), kind: 'h', line: i, depth: h[1].length });
+      });
+    }
+    return out;
+  }
+
+  /* ============================================================
+     UTIL
+     ============================================================ */
+  function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+
+  /* ============================================================
+     SAMPLE FILES + generated stress fixture
+     ============================================================ */
+  const files = [];
+  document.querySelectorAll('script[type="text/plain"][data-name]').forEach((el) => {
+    files.push({ name: el.dataset.name, lang: el.dataset.lang, content: el.textContent.replace(/\s+$/,'') + '\n', dirty: false });
+  });
+
+  // Generated stress fixture: 2,000 lines of real-syntax JS to prove that
+  // editing a large file stays lag-free. Honestly labeled, not fabricated data.
+  (function buildStress(){
+    const L = [];
+    L.push('// ──────────────────────────────────────────────────────────────');
+    L.push('// stress.js — GENERATED fixture (2,000 lines) to validate that');
+    L.push('// editing a large file echoes each keystroke with no input lag.');
+    L.push('// ──────────────────────────────────────────────────────────────');
+    L.push('');
+    L.push('import { Editor } from "./editor.js";');
+    L.push('');
+    const verbs = ['compute','resolve','collect','flatten','derive','project','reduce','expand','select','merge'];
+    const nouns = ['Token','Buffer','Cursor','Region','Segment','Palette','Gutter','Scroller','Viewport','Lexer'];
+    let n = L.length;
+    let unit = 0;
+    while (n < 2000){
+      const v = verbs[unit % verbs.length];
+      const N = nouns[(unit * 7) % nouns.length];
+      const id = 100 + unit;
+      L.push('/** ' + N + ' helper #' + id + ' — pure, side-effect free. */');
+      L.push('export function ' + v + N + '(input, options = {}) {');
+      L.push('  const { scale = ' + ((unit % 8) + 1) + ', label = "' + v + '-' + id + '" } = options;');
+      L.push('  const rows = input.filter((x) => x != null && x.weight > ' + ((unit % 5) * 0.1).toFixed(1) + ');');
+      L.push('  let total = 0; // accumulator for line ' + n);
+      L.push('  for (let i = 0; i < rows.length; i++) {');
+      L.push('    total += rows[i].weight * scale; // 0x' + (id).toString(16).toUpperCase());
+      L.push('  }');
+      L.push('  return { label, total, ok: total >= ' + (unit % 3) + ' };');
+      L.push('}');
+      L.push('');
+      n = L.length; unit++;
+    }
+    files.push({ name: 'stress.js', lang: 'javascript', content: L.slice(0, 2000).join('\n'), dirty: false, generated: true });
+  })();
+
+  const fileByName = (nm) => files.find((f) => f.name === nm);
+
+  /* ============================================================
+     FILE-TYPE ICONS (bespoke inline SVG, one per language)
+     ============================================================ */
+  function fileIcon(lang){
+    const map = {
+      javascript: '<rect x="3" y="3" width="18" height="18" rx="4" fill="rgba(241,171,107,.12)"/><path d="M10.5 8.5v5.2c0 1-.6 1.6-1.5 1.6-.7 0-1.2-.3-1.6-.9M13 14.4c.4.6 1 1 1.8 1 .9 0 1.5-.45 1.5-1.2 0-.8-.6-1.1-1.5-1.5-.9-.4-1.5-.7-1.5-1.5 0-.7.55-1.2 1.4-1.2.7 0 1.2.3 1.5.8" stroke="#f1ab6b" stroke-width="1.3" fill="none" stroke-linecap="round"/>',
+      css: '<rect x="3" y="3" width="18" height="18" rx="4" fill="rgba(111,218,201,.12)"/><path d="M8 8h8l-.7 8L12 17.3 8.7 16 8.5 13.5M9 11h6.2" stroke="#6fdac9" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+      json: '<rect x="3" y="3" width="18" height="18" rx="4" fill="rgba(203,166,247,.12)"/><path d="M10 7c-1.5 0-2 .8-2 2v1c0 1-.5 1.6-1.4 1.6.9 0 1.4.6 1.4 1.6v1c0 1.2.5 2 2 2M14 7c1.5 0 2 .8 2 2v1c0 1 .5 1.6 1.4 1.6-.9 0-1.4.6-1.4 1.6v1c0 1.2-.5 2-2 2" stroke="#cba6f7" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+      markdown: '<rect x="3" y="3" width="18" height="18" rx="4" fill="rgba(246,150,127,.12)"/><path d="M6 15V9l2.4 3L11 9v6M14.5 9v4.5M14.5 13.5 16.5 12M14.5 13.5 12.5 12" stroke="#f6967f" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+    };
+    return '<svg class="fi" viewBox="0 0 24 24" fill="none" aria-hidden="true">' + (map[lang] || map.javascript) + '</svg>';
+  }
+
+  /* ============================================================
+     APPLICATION STATE
+     ============================================================ */
+  const dom = {
+    body: $('#body'), sideScroll: $('#side-scroll'), sideTitle: $('#side-title'),
+    tabbar: $('#tabbar'), breadcrumb: $('#breadcrumb'),
+    editor: $('#editor'), gutter: $('#gutter'), gutterInner: $('#gutter-inner'),
+    viewport: $('#viewport'), input: $('#editor-input'),
+    layerVert: $('#layer-vert'), layerCode: $('#layer-code'),
+    activeline: $('#activeline'), hlLines: $('#hl-lines'),
+    findLayer: $('#find-layer'), bracketLayer: $('#bracket-layer'),
+    minimap: $('#minimap'), minimapCanvas: $('#minimap-canvas'), minimapBox: $('#minimap-box'),
+    stPos: $('#st-pos'), stSel: $('#st-sel'), stLang: $('#st-lang'),
+    find: $('#find'), findInput: $('#find-input'), findCount: $('#find-count'),
+    findCase: $('#find-case'), findPrev: $('#find-prev'), findNext: $('#find-next'), findClose: $('#find-close'),
+    paletteOverlay: $('#palette-overlay'), palette: $('#palette'), paletteInput: $('#palette-input'), paletteList: $('#palette-list'),
+  };
+
+  const state = {
+    open: ['editor.js', 'theme.css', 'palette.json', 'README.md', 'stress.js'],
+    active: 'editor.js',
+    lines: [''],
+    tokens: [],
+    caretLine: 0, caretCol: 0,
+    view: 'explorer',
+    find: { matches: [], current: -1, caseSensitive: false, query: '' },
+    minimap: { lineH: 2, contentH: 0, scroll: 0 },
+    symState: 'ready',
+  };
+
+  let mctx = dom.minimapCanvas.getContext('2d');
+  let mOff = document.createElement('canvas');
+  let mOffCtx = mOff.getContext('2d');
+
+  // ---- measure monospace char width precisely ----
+  function measureCW(){
+    const probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;font-family:var(--font-mono);font-size:var(--code-fs);line-height:var(--code-lh)';
+    probe.textContent = '0123456789abcdefABCDEF{}()[];=>'.repeat(4);
+    document.body.appendChild(probe);
+    CW = probe.getBoundingClientRect().width / probe.textContent.length;
+    probe.remove();
+  }
+
+  /* ============================================================
+     RENDER PIPELINE (rAF-coalesced; tokenize + paint windowed)
+     ============================================================ */
+  const dirty = { tokens: false, layout: false };
+  let rafId = 0;
+  function schedule(opts){
+    if (opts && opts.tokens) dirty.tokens = true;
+    dirty.layout = true;
+    if (rafId) return;
+    rafId = requestAnimationFrame(flush);
+  }
+  function flush(){
+    rafId = 0;
+    if (dirty.tokens){ tokenizeAll(); buildMinimap(); dirty.tokens = false; }
+    paint();
+    dirty.layout = false;
+  }
+
+  function tokenizeAll(){
+    const fn = TOKENIZERS[fileByName(state.active).lang] || tokenizeJS;
+    let s = null;
+    const toks = new Array(state.lines.length);
+    for (let i = 0; i < state.lines.length; i++){
+      const r = fn(state.lines[i], s);
+      s = r.state; toks[i] = r.spans;
+    }
+    state.tokens = toks;
+  }
+
+  function lineHTML(i){
+    const line = state.lines[i]; const spans = state.tokens[i];
+    if (!spans || !spans.length) return '';
+    let html = '';
+    for (let s = 0; s < spans.length; s++){
+      const sp = spans[s];
+      const text = esc(line.substr(sp.col, sp.len));
+      html += sp.type === 'text' ? text : '<span class="t-' + sp.type + '">' + text + '</span>';
+    }
+    return html;
+  }
+
+  function paint(){
+    const st = dom.input.scrollTop, sl = dom.input.scrollLeft;
+    state.minimap.scroll = 0; // recomputed in positionMinimap
+    const vh = dom.viewport.clientHeight;
+    const rows = Math.ceil(vh / LH);
+    const N = state.lines.length;
+    const first = Math.max(0, (st / LH | 0) - 4);
+    const last = Math.min(N, first + rows + 8);
+
+    // code lines
+    let codeHTML = '';
+    for (let i = first; i < last; i++){
+      codeHTML += '<div class="cl" style="top:' + (i * LH) + 'px">' + lineHTML(i) + '</div>';
+    }
+    dom.hlLines.innerHTML = codeHTML;
+
+    // gutter numbers
+    let gHTML = '';
+    for (let i = first; i < last; i++){
+      gHTML += '<div class="gn' + (i === state.caretLine ? ' active' : '') + '" style="top:' + (i * LH) + 'px">' + (i + 1) + '</div>';
+    }
+    dom.gutterInner.innerHTML = gHTML;
+
+    // transforms (mirror native textarea scroll)
+    dom.layerCode.style.transform = 'translate(' + (-sl) + 'px,' + (-st) + 'px)';
+    dom.layerVert.style.transform = 'translateY(' + (-st) + 'px)';
+    dom.gutterInner.style.transform = 'translateY(' + (-st) + 'px)';
+
+    // active line band
+    dom.activeline.style.top = (state.caretLine * LH) + 'px';
+
+    renderFindMarks(first, last);
+    renderBracket(first, last);
+    positionMinimap();
+  }
+
+  /* ============================================================
+     GUTTER WIDTH
+     ============================================================ */
+  function updateGutterWidth(){
+    const digits = String(Math.max(1, state.lines.length)).length;
+    dom.gutter.style.width = (digits * CW + 30) + 'px';
+  }
+
+  /* ============================================================
+     CARET / STATUS
+     ============================================================ */
+  function caretInfo(){
+    const pos = dom.input.selectionStart;
+    const val = dom.input.value;
+    let line = 0, lineStart = 0;
+    for (let i = 0; i < pos; i++){ if (val.charCodeAt(i) === 10){ line++; lineStart = i + 1; } }
+    return { line, col: pos - lineStart, pos };
+  }
+  function updateCaret(){
+    const ci = caretInfo();
+    state.caretLine = ci.line; state.caretCol = ci.col;
+    dom.stPos.textContent = 'Ln ' + (ci.line + 1) + ', Col ' + (ci.col + 1);
+    const selLen = Math.abs(dom.input.selectionEnd - dom.input.selectionStart);
+    dom.stSel.textContent = selLen ? '(' + selLen + ' selected)' : '';
+    dom.activeline.style.top = (ci.line * LH) + 'px';
+    // gutter active-line class is owned by paint() (regenerated each frame
+    // from state.caretLine) so it never goes stale — just schedule a repaint.
+    updateBreadcrumb();
+    schedule();
+  }
+
+  /* ============================================================
+     BRACKET MATCHING
+     ============================================================ */
+  const PAIRS = { '(' : ')', '[' : ']', '{' : '}' };
+  const OPEN = '([{', CLOSE = ')]}';
+  function findBracketMatch(){
+    const val = dom.input.value, pos = dom.input.selectionStart;
+    if (dom.input.selectionEnd !== pos) return null;
+    let idx = -1, dir = 0, open = '';
+    const before = val[pos - 1], after = val[pos];
+    if (after && OPEN.includes(after)){ idx = pos; dir = 1; open = after; }
+    else if (before && CLOSE.includes(before)){ idx = pos - 1; dir = -1; open = before; }
+    else if (before && OPEN.includes(before)){ idx = pos - 1; dir = 1; open = before; }
+    else if (after && CLOSE.includes(after)){ idx = pos; dir = -1; open = after; }
+    else return null;
+    const matchChar = dir === 1 ? PAIRS[open] : Object.keys(PAIRS).find((k) => PAIRS[k] === open);
+    let depth = 0;
+    for (let i = idx; i >= 0 && i < val.length; i += dir){
+      const c = val[i];
+      if (c === open) depth++;
+      else if (c === matchChar){ depth--; if (depth === 0) return [idx, i]; }
+    }
+    return null;
+  }
+  function offsetToLineCol(off){
+    const val = dom.input.value; let line = 0, start = 0;
+    for (let i = 0; i < off; i++){ if (val.charCodeAt(i) === 10){ line++; start = i + 1; } }
+    return { line, col: off - start };
+  }
+  function renderBracket(first, last){
+    dom.bracketLayer.innerHTML = '';
+    const m = findBracketMatch();
+    if (!m) return;
+    let html = '';
+    m.forEach((off) => {
+      const lc = offsetToLineCol(off);
+      if (lc.line < first - 2 || lc.line > last + 2) return;
+      html += '<div class="bracket-mark" style="top:' + (lc.line * LH) + 'px;left:' + (PAD_L + lc.col * CW) + 'px;width:' + Math.ceil(CW + 2) + 'px"></div>';
+    });
+    dom.bracketLayer.innerHTML = html;
+  }
+
+  /* ============================================================
+     FIND
+     ============================================================ */
+  function runFind(){
+    const q = dom.findInput.value;
+    state.find.query = q;
+    const val = dom.input.value;
+    const matches = [];
+    if (q){
+      const cs = state.find.caseSensitive;
+      const hay = cs ? val : val.toLowerCase();
+      const needle = cs ? q : q.toLowerCase();
+      let idx = hay.indexOf(needle);
+      while (idx !== -1 && matches.length < 50000){
+        matches.push(idx);
+        idx = hay.indexOf(needle, idx + Math.max(1, needle.length));
+      }
+    }
+    state.find.matches = matches;
+    if (matches.length){
+      // pick match at/after caret
+      const caret = dom.input.selectionStart;
+      let cur = matches.findIndex((m) => m >= caret);
+      if (cur === -1) cur = 0;
+      state.find.current = cur;
+    } else state.find.current = -1;
+    updateFindCount();
+    if (matches.length) revealMatch(false);
+    schedule();
+  }
+  function updateFindCount(){
+    const f = state.find;
+    if (!f.query){ dom.findCount.textContent = '0 results'; dom.findCount.classList.remove('none'); }
+    else if (!f.matches.length){ dom.findCount.textContent = 'No results'; dom.findCount.classList.add('none'); }
+    else { dom.findCount.textContent = (f.current + 1) + ' of ' + f.matches.length; dom.findCount.classList.remove('none'); }
+    const has = f.matches.length > 0;
+    dom.findPrev.disabled = !has; dom.findNext.disabled = !has;
+  }
+  function stepFind(dir){
+    const f = state.find; if (!f.matches.length) return;
+    f.current = (f.current + dir + f.matches.length) % f.matches.length;
+    updateFindCount(); revealMatch(true); schedule();
+  }
+  function revealMatch(focusSel){
+    const f = state.find; if (f.current < 0) return;
+    const off = f.matches[f.current];
+    const lc = offsetToLineCol(off);
+    const targetTop = lc.line * LH - dom.viewport.clientHeight / 2;
+    dom.input.scrollTop = clamp(targetTop, 0, dom.input.scrollHeight);
+    if (focusSel){
+      dom.input.setSelectionRange(off, off + f.query.length);
+    }
+  }
+  function renderFindMarks(first, last){
+    const f = state.find;
+    if (!f.query || !f.matches.length){ dom.findLayer.innerHTML = ''; return; }
+    let html = '';
+    const len = f.query.length;
+    for (let k = 0; k < f.matches.length; k++){
+      const lc = offsetToLineCol(f.matches[k]);
+      if (lc.line < first - 2 || lc.line > last + 2) continue;
+      html += '<div class="find-mark' + (k === f.current ? ' cur' : '') + '" style="top:' + (lc.line * LH)
+        + 'px;left:' + (PAD_L + lc.col * CW) + 'px;width:' + (len * CW) + 'px"></div>';
+    }
+    dom.findLayer.innerHTML = html;
+  }
+  function openFind(){
+    dom.find.classList.add('open');
+    const sel = dom.input.value.substring(dom.input.selectionStart, dom.input.selectionEnd);
+    if (sel && !sel.includes('\n')) dom.findInput.value = sel;
+    dom.findInput.focus(); dom.findInput.select();
+    runFind();
+  }
+  function closeFind(){
+    dom.find.classList.remove('open');
+    state.find.matches = []; state.find.query = '';
+    dom.findLayer.innerHTML = '';
+    dom.input.focus();
+    schedule();
+  }
+
+  /* ============================================================
+     MINIMAP
+     ============================================================ */
+  const MINI_MAXCOL = 110;
+  function buildMinimap(){
+    const file = fileByName(state.active);
+    if (!file) return;
+    const rect = dom.minimap.getBoundingClientRect();
+    if (rect.width < 2){ return; }
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const N = state.lines.length;
+    const trackH = rect.height;
+    const lineH = clamp(trackH / Math.max(1, N), 0.55, 3.4);
+    state.minimap.lineH = lineH;
+    const contentH = N * lineH;
+    state.minimap.contentH = contentH;
+
+    const miniCW = rect.width / MINI_MAXCOL;
+    mOff.width = Math.round(rect.width * dpr);
+    mOff.height = Math.max(1, Math.round(contentH * dpr));
+    mOffCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    mOffCtx.clearRect(0, 0, rect.width, contentH);
+    const blockH = Math.max(0.7, lineH * 0.72);
+    for (let i = 0; i < N; i++){
+      const spans = state.tokens[i]; if (!spans) continue;
+      const y = i * lineH;
+      for (let s = 0; s < spans.length; s++){
+        const sp = spans[s];
+        if (sp.type === 'text'){
+          // only draw if it's non-whitespace text
+          const seg = state.lines[i].substr(sp.col, sp.len);
+          if (!seg.trim()) continue;
+          mOffCtx.fillStyle = 'rgba(150,160,180,0.5)';
+        } else {
+          mOffCtx.globalAlpha = 0.92;
+          mOffCtx.fillStyle = TOK[sp.type] || TOK.text;
+        }
+        const x = sp.col * miniCW;
+        let w = sp.len * miniCW;
+        if (sp.col >= MINI_MAXCOL) { mOffCtx.globalAlpha = 1; continue; }
+        if (sp.col + sp.len > MINI_MAXCOL) w = (MINI_MAXCOL - sp.col) * miniCW;
+        mOffCtx.fillRect(x, y + (lineH - blockH) / 2, Math.max(miniCW * 0.6, w), blockH);
+        mOffCtx.globalAlpha = 1;
+      }
+    }
+    // size the visible canvas to its box
+    dom.minimapCanvas.width = Math.round(rect.width * dpr);
+    dom.minimapCanvas.height = Math.round(trackH * dpr);
+    positionMinimap();
+  }
+
+  function positionMinimap(){
+    const rect = dom.minimap.getBoundingClientRect();
+    if (rect.width < 2) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const trackH = rect.height;
+    const contentH = state.minimap.contentH;
+    const st = dom.input.scrollTop;
+    const sh = dom.input.scrollHeight, ch = dom.input.clientHeight;
+    const maxScroll = Math.max(1, sh - ch);
+    const overscroll = Math.max(0, contentH - trackH);
+    const mapScroll = overscroll * (st / maxScroll);
+    state.minimap.scroll = mapScroll;
+
+    // blit offscreen slice into visible canvas
+    mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    mctx.clearRect(0, 0, rect.width, trackH);
+    if (mOff.height > 1){
+      mctx.drawImage(mOff, 0, mapScroll * dpr, rect.width * dpr, trackH * dpr, 0, 0, rect.width, trackH);
+    }
+
+    // viewport box
+    const boxTop = (st / sh) * contentH - mapScroll;
+    const boxH = (ch / sh) * contentH;
+    dom.minimapBox.style.top = boxTop + 'px';
+    dom.minimapBox.style.height = Math.max(22, boxH) + 'px';
+  }
+
+  // minimap drag
+  let mapDrag = null;
+  function minimapPointerDown(e){
+    const rect = dom.minimap.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const boxTop = parseFloat(dom.minimapBox.style.top) || 0;
+    const boxH = dom.minimapBox.getBoundingClientRect().height;
+    dom.minimap.classList.add('dragging');
+    dom.minimap.setPointerCapture(e.pointerId);
+    if (y < boxTop || y > boxTop + boxH){
+      // jump: center the box on the pointer
+      jumpMinimapTo(y - boxH / 2);
+    }
+    const newBoxTop = parseFloat(dom.minimapBox.style.top) || 0;
+    mapDrag = { startY: e.clientY, startScroll: dom.input.scrollTop, grabOffset: y - newBoxTop };
+    e.preventDefault();
+  }
+  function jumpMinimapTo(boxTopWanted){
+    const sh = dom.input.scrollHeight, contentH = state.minimap.contentH || 1;
+    const mapScroll = state.minimap.scroll;
+    const targetScrollTop = ((boxTopWanted + mapScroll) / contentH) * sh;
+    dom.input.scrollTop = clamp(targetScrollTop, 0, sh);
+    positionMinimap();
+  }
+  function minimapPointerMove(e){
+    if (!mapDrag) return;
+    const rect = dom.minimap.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    jumpMinimapTo(y - mapDrag.grabOffset);
+    schedule();
+  }
+  function minimapPointerUp(e){
+    if (!mapDrag) return;
+    mapDrag = null;
+    dom.minimap.classList.remove('dragging');
+    try { dom.minimap.releasePointerCapture(e.pointerId); } catch (_) {}
+  }
+
+  /* ============================================================
+     TABS / FILE SWITCHING
+     ============================================================ */
+  function renderTabs(){
+    dom.tabbar.innerHTML = '';
+    state.open.forEach((name) => {
+      const file = fileByName(name); if (!file) return;
+      const tab = document.createElement('button');
+      tab.className = 'tab';
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-selected', String(name === state.active));
+      tab.tabIndex = name === state.active ? 0 : -1;
+      tab.dataset.name = name;
+      tab.innerHTML = fileIcon(file.lang)
+        + '<span class="nm">' + name + '</span>'
+        + '<span class="x' + (file.dirty ? ' is-dirty' : '') + '" role="button" aria-label="Close ' + name + '" tabindex="-1">'
+        + '<span class="dirty"></span>'
+        + '<svg class="close-i" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+        + '</span>';
+      dom.tabbar.append(tab);
+    });
+  }
+
+  function switchTo(name, focus){
+    if (!fileByName(name)) return;
+    // save current
+    const cur = fileByName(state.active);
+    if (cur) cur.content = dom.input.value;
+    state.active = name;
+    if (!state.open.includes(name)) state.open.push(name);
+    const file = fileByName(name);
+    dom.input.value = file.content;
+    dom.input.scrollTop = 0; dom.input.scrollLeft = 0;
+    state.lines = file.content.split('\n');
+    dom.stLang.textContent = LANG_LABEL[file.lang] || file.lang;
+    dom.editor.dataset.empty = 'false';
+    renderTabs();
+    updateGutterWidth();
+    schedule({ tokens: true });
+    setCaret(0);
+    refreshSymbols();
+    updateBreadcrumb();
+    // on mobile, picking a file dismisses the drawer so the editor is visible
+    if (focus && window.matchMedia('(max-width: 880px)').matches && dom.body.dataset.sidebar === 'open') {
+      dom.body.dataset.sidebar = 'closed';
+    }
+    if (focus) dom.input.focus();
+  }
+
+  function setCaret(pos){
+    dom.input.setSelectionRange(pos, pos);
+    updateCaret();
+  }
+
+  function closeTab(name){
+    const idx = state.open.indexOf(name);
+    if (idx === -1) return;
+    const file = fileByName(name); if (file) file.dirty = false;
+    state.open.splice(idx, 1);
+    refreshExplorerDirty();
+    if (state.active === name){
+      const next = state.open[idx] || state.open[idx - 1];
+      if (next) switchTo(next, true);
+      else showEmpty();
+    } else renderTabs();
+  }
+
+  function showEmpty(){
+    state.active = '';
+    dom.editor.dataset.empty = 'true';
+    dom.input.value = '';
+    state.lines = [''];
+    dom.hlLines.innerHTML = ''; dom.gutterInner.innerHTML = '';
+    renderTabs();
+    dom.breadcrumb.innerHTML = '';
+    dom.stLang.textContent = 'Plain Text';
+  }
+
+  /* ============================================================
+     SIDEBAR VIEWS
+     ============================================================ */
+  function setView(view){
+    state.view = view;
+    document.querySelectorAll('.act').forEach((a) => a.setAttribute('aria-pressed', String(a.dataset.view === view)));
+    const titles = { explorer: 'Explorer', symbols: 'Outline', search: 'Search', git: 'Source Control', settings: 'Settings' };
+    dom.sideTitle.textContent = titles[view] || 'Explorer';
+    // open sidebar if collapsed (mobile)
+    if (dom.body.dataset.sidebar === 'closed') dom.body.dataset.sidebar = 'open';
+    if (view === 'search'){ openFind(); }
+    renderSidebar();
+  }
+
+  function renderSidebar(){
+    const view = state.view;
+    if (view === 'explorer'){ renderExplorer(); }
+    else if (view === 'symbols'){ renderSymbols(); }
+    else if (view === 'git'){ renderGit(); }
+    else if (view === 'settings'){ renderSettings(); }
+    else if (view === 'search'){ renderSearchHint(); }
+  }
+
+  function renderExplorer(){
+    let html = '<div class="group-label"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" aria-hidden="true"><path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>meridian-editor</div>';
+    html += '<ul class="tree">';
+    files.forEach((f) => {
+      const open = state.open.includes(f.name);
+      html += '<li><button class="tree-row" data-name="' + f.name + '" data-dirty="' + f.dirty + '" '
+        + (f.name === state.active ? 'aria-current="true"' : '') + ' role="button">'
+        + fileIcon(f.lang) + '<span class="nm">' + f.name + '</span><span class="dot"></span></button></li>';
+    });
+    html += '</ul>';
+    dom.sideScroll.innerHTML = html;
+  }
+  function refreshExplorerDirty(){
+    if (state.view !== 'explorer') return;
+    dom.sideScroll.querySelectorAll('.tree-row').forEach((r) => {
+      const f = fileByName(r.dataset.name);
+      if (f) r.dataset.dirty = String(f.dirty);
+      r.toggleAttribute('aria-current', r.dataset.name === state.active);
+    });
+  }
+
+  let symTimer = 0;
+  function refreshSymbols(){
+    if (state.view !== 'symbols') return;
+    renderSymbols();
+  }
+  function renderSymbols(){
+    // brief loading state (real async parse via timeout/idle), then list/empty
+    dom.sideScroll.innerHTML = '<div class="shimmer"><span></span><span></span><span></span><span></span><span></span></div>';
+    clearTimeout(symTimer);
+    const lines = state.lines.slice();
+    const lang = fileByName(state.active) ? fileByName(state.active).lang : 'javascript';
+    const run = () => {
+      const syms = extractSymbols(lines, lang);
+      if (!syms.length){
+        dom.sideScroll.innerHTML = '<div class="side-state">'
+          + '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M9 9h6M9 13h6M9 17h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>'
+          + '<div>No symbols in this file</div></div>';
+        return;
+      }
+      let html = '<div class="group-label">' + syms.length + ' symbol' + (syms.length === 1 ? '' : 's') + '</div>';
+      const kindLabel = { fn: 'ƒ', cls: 'C', var: 'V', sel: '{}', key: 'K', h: 'H' };
+      syms.forEach((s) => {
+        const pad = s.depth ? (s.depth - 1) * 10 : 0;
+        html += '<button class="sym-row" data-line="' + s.line + '" style="padding-left:' + (22 + pad) + 'px">'
+          + '<span class="kind" data-k="' + s.kind + '">' + (kindLabel[s.kind] || '•') + '</span>'
+          + '<span class="nm">' + esc(s.name) + '</span><span class="ln">' + (s.line + 1) + '</span></button>';
+      });
+      dom.sideScroll.innerHTML = html;
+    };
+    // idle/async so the shimmer is honest for big files
+    if (window.requestIdleCallback) symTimer = requestIdleCallback(run, { timeout: 200 });
+    else symTimer = setTimeout(run, reduceMotion ? 0 : 90);
+  }
+
+  function renderGit(){
+    let html = '<div class="group-label">Changes</div><ul class="tree">';
+    const dirtyFiles = files.filter((f) => f.dirty);
+    if (!dirtyFiles.length){
+      html += '</ul><div class="side-state"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5 10 17l9-10" stroke="var(--ok)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><div>No changes — working tree clean</div></div>';
+      dom.sideScroll.innerHTML = html; return;
+    }
+    dirtyFiles.forEach((f) => {
+      html += '<li><button class="tree-row" data-name="' + f.name + '"><span class="kind" style="color:var(--warn);width:15px;text-align:center" aria-hidden="true">M</span><span class="nm">' + f.name + '</span></button></li>';
+    });
+    html += '</ul>';
+    dom.sideScroll.innerHTML = html;
+  }
+
+  function renderSettings(){
+    const file = fileByName(state.active);
+    dom.sideScroll.innerHTML = '<div class="group-label">Editor</div>'
+      + '<div style="padding:8px 16px;display:grid;gap:12px;font-size:var(--fs-sm);color:var(--text-muted)">'
+      + settingRow('Word wrap', dom.editor.dataset.wrap === 'true', 'wrap')
+      + settingRow('Minimap', dom.body.dataset.minimap !== 'off', 'minimap')
+      + '<div style="display:flex;justify-content:space-between;align-items:center"><span>Theme</span><span class="st-mono" style="color:var(--gold)">Meridian Dark</span></div>'
+      + '<div style="display:flex;justify-content:space-between;align-items:center"><span>Tab size</span><span class="st-mono">2 spaces</span></div>'
+      + '<div style="display:flex;justify-content:space-between;align-items:center"><span>Language</span><span class="st-mono">' + (file ? (LANG_LABEL[file.lang] || file.lang) : '—') + '</span></div>'
+      + '</div>';
+  }
+  function settingRow(label, on, action){
+    return '<div style="display:flex;justify-content:space-between;align-items:center">'
+      + '<span>' + label + '</span>'
+      + '<button class="set-toggle" data-action="' + action + '" role="switch" aria-checked="' + on + '" '
+      + 'style="width:38px;height:22px;border-radius:999px;position:relative;background:' + (on ? 'var(--gold-soft)' : 'var(--ink-1)') + ';border:1px solid ' + (on ? 'var(--gold-line)' : 'var(--line-strong)') + '">'
+      + '<span style="position:absolute;top:2px;left:' + (on ? '18px' : '2px') + ';width:16px;height:16px;border-radius:999px;background:' + (on ? 'var(--gold)' : 'var(--text-faint)') + ';transition:left var(--dur-1) var(--ease)"></span></button>';
+  }
+
+  function renderSearchHint(){
+    dom.sideScroll.innerHTML = '<div class="side-state" style="padding-top:32px">'
+      + '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>'
+      + '<div>Find in the current file<br><span style="color:var(--text-faint)">Press ⌘F to search</span></div></div>';
+  }
+
+  /* ============================================================
+     BREADCRUMB
+     ============================================================ */
+  function updateBreadcrumb(){
+    const file = fileByName(state.active);
+    if (!file){ dom.breadcrumb.innerHTML = ''; return; }
+    const lang = file.lang;
+    const syms = extractSymbols(state.lines, lang);
+    let sym = null;
+    for (const s of syms){ if (s.line <= state.caretLine) sym = s; else break; }
+    let html = '<span class="crumb">'
+      + '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6.5A1.5 1.5 0 0 1 5.5 5h3l1.5 2H18a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 18 18H6a1.5 1.5 0 0 1-1.5-1.5z" stroke="currentColor" stroke-width="1.6"/></svg>src</span>'
+      + '<span class="sep">›</span>'
+      + '<span class="crumb">' + file.name + '</span>';
+    if (sym){
+      html += '<span class="sep">›</span><span class="crumb sym">' + esc(sym.name) + '</span>';
+    }
+    dom.breadcrumb.innerHTML = html;
+  }
+
+  /* ============================================================
+     COMMAND PALETTE
+     ============================================================ */
+  let paletteMode = 'command'; // 'command' | 'goto'
+  const commands = [
+    { id: 'find', title: 'Find in File', sub: 'Search the current file', key: '⌘F', icon: 'search', run: () => { closePalette(); openFind(); } },
+    { id: 'goto', title: 'Go to Line…', sub: 'Jump to a line number', key: '⌘G', icon: 'goto', run: () => openGoto() },
+    { id: 'wrap', title: 'Toggle Word Wrap', sub: 'Soft-wrap long lines', icon: 'wrap', run: () => { toggleWrap(); closePalette(); } },
+    { id: 'minimap', title: 'Toggle Minimap', sub: 'Show or hide the minimap', icon: 'map', run: () => { toggleMinimap(); closePalette(); } },
+    { id: 'sidebar', title: 'Toggle Sidebar', sub: 'Show or hide the side panel', key: '⌘B', icon: 'side', run: () => { toggleSidebar(); closePalette(); } },
+    { id: 'outline', title: 'Show Symbols / Outline', sub: 'List functions and classes', icon: 'sym', run: () => { setView('symbols'); closePalette(); } },
+  ];
+  files.forEach((f) => {
+    commands.push({ id: 'open:' + f.name, title: 'Open ' + f.name, sub: LANG_LABEL[f.lang] || f.lang, icon: 'file', lang: f.lang, run: () => { switchTo(f.name, true); closePalette(); } });
+  });
+
+  function pIcon(name){
+    const I = {
+      search: '<circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
+      goto: '<path d="M5 12h11m0 0-4-4m4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
+      wrap: '<path d="M4 7h16M4 12h13a3 3 0 0 1 0 6h-3m0 0 2-2m-2 2 2 2M4 17h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
+      map: '<path d="M5 6h9M5 10h6M5 14h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><rect x="17" y="5" width="3" height="14" rx="1" stroke="currentColor" stroke-width="1.4"/>',
+      side: '<rect x="3" y="4" width="18" height="16" rx="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M9 4v16" stroke="currentColor" stroke-width="1.6"/>',
+      sym: '<circle cx="7" cy="7" r="2.2" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="7" r="2.2" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="17" r="2.2" stroke="currentColor" stroke-width="1.6"/>',
+      file: '<path d="M6 3h7l5 5v13H6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M13 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+    };
+    return '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' + (I[name] || I.file) + '</svg>';
+  }
+
+  function fuzzy(q, text){
+    if (!q) return { ok: true, score: 0, hits: [] };
+    q = q.toLowerCase(); const t = text.toLowerCase();
+    let qi = 0, score = 0, hits = [], prev = -2;
+    for (let i = 0; i < t.length && qi < q.length; i++){
+      if (t[i] === q[qi]){
+        hits.push(i);
+        score += (i === prev + 1) ? 3 : 1;
+        if (i === 0 || /[^a-z0-9]/.test(t[i-1])) score += 2;
+        prev = i; qi++;
+      }
+    }
+    return qi === q.length ? { ok: true, score, hits } : { ok: false };
+  }
+  function highlight(text, hits){
+    if (!hits || !hits.length) return esc(text);
+    let html = '', h = new Set(hits);
+    for (let i = 0; i < text.length; i++){
+      const ch = esc(text[i]);
+      html += h.has(i) ? '<mark>' + ch + '</mark>' : ch;
+    }
+    return html;
+  }
+
+  let paletteItems = [], paletteSel = 0;
+  function openPalette(){
+    paletteMode = 'command';
+    $('#palette-icon').innerHTML = '<path d="m8 9 3 3-3 3M13 15h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="4.5" width="18" height="15" rx="2.5" stroke="currentColor" stroke-width="1.5"/>';
+    dom.paletteInput.value = '';
+    dom.paletteInput.placeholder = 'Type a command, or search files…';
+    dom.paletteOverlay.classList.add('open');
+    renderPalette('');
+    requestAnimationFrame(() => dom.paletteInput.focus());
+  }
+  function openGoto(){
+    paletteMode = 'goto';
+    $('#palette-icon').innerHTML = '<path d="M5 12h11m0 0-4-4m4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>';
+    dom.paletteInput.value = '';
+    dom.paletteInput.placeholder = 'Go to line (1–' + state.lines.length + ')…';
+    dom.paletteOverlay.classList.add('open');
+    dom.paletteList.innerHTML = '<div class="palette-empty">Type a line number between <b>1</b> and <b>' + state.lines.length + '</b></div>';
+    requestAnimationFrame(() => dom.paletteInput.focus());
+  }
+  function closePalette(){
+    dom.paletteOverlay.classList.remove('open');
+    dom.input.focus();
+  }
+  function renderPalette(q){
+    if (paletteMode === 'goto'){ return; }
+    const scored = [];
+    commands.forEach((c) => {
+      const r = fuzzy(q, c.title);
+      if (r.ok) scored.push({ c, score: r.score, hits: r.hits });
+    });
+    scored.sort((a, b) => b.score - a.score);
+    paletteItems = scored;
+    paletteSel = 0;
+    if (!scored.length){
+      dom.paletteList.innerHTML = '<div class="palette-empty">No commands match <b>' + esc(q) + '</b></div>';
+      return;
+    }
+    let html = '';
+    scored.forEach((s, i) => {
+      html += '<li><button class="pcmd" role="option" data-i="' + i + '" aria-selected="' + (i === 0) + '">'
+        + '<span class="pi">' + pIcon(s.c.icon) + '</span>'
+        + '<span class="pl"><span class="pt">' + highlight(s.c.title, s.hits) + '</span><span class="psub">' + s.c.sub + '</span></span>'
+        + (s.c.key ? '<span class="pk">' + s.c.key + '</span>' : '') + '</button></li>';
+    });
+    dom.paletteList.innerHTML = html;
+  }
+  function movePalette(dir){
+    if (paletteMode === 'goto' || !paletteItems.length) return;
+    paletteSel = (paletteSel + dir + paletteItems.length) % paletteItems.length;
+    dom.paletteList.querySelectorAll('.pcmd').forEach((el, i) => {
+      const on = i === paletteSel; el.setAttribute('aria-selected', String(on));
+      if (on) el.scrollIntoView({ block: 'nearest' });
+    });
+  }
+  function runPalette(){
+    if (paletteMode === 'goto'){
+      const n = parseInt(dom.paletteInput.value, 10);
+      if (!isNaN(n)){
+        const line = clamp(n - 1, 0, state.lines.length - 1);
+        const val = dom.input.value; let off = 0, ln = 0;
+        for (let i = 0; i < val.length && ln < line; i++){ if (val.charCodeAt(i) === 10){ ln++; off = i + 1; } }
+        dom.input.scrollTop = clamp(line * LH - dom.viewport.clientHeight / 2, 0, dom.input.scrollHeight);
+        setCaret(off);
+      }
+      closePalette(); dom.input.focus(); return;
+    }
+    const item = paletteItems[paletteSel];
+    if (item) item.c.run();
+  }
+
+  /* ============================================================
+     TOGGLES
+     ============================================================ */
+  function toggleSidebar(){
+    const open = dom.body.dataset.sidebar !== 'closed' && dom.body.dataset.sidebar !== '';
+    if (window.matchMedia('(max-width: 880px)').matches){
+      dom.body.dataset.sidebar = dom.body.dataset.sidebar === 'open' ? 'closed' : 'open';
+    } else {
+      dom.body.dataset.sidebar = open ? 'closed' : 'open';
+    }
+    const isOpen = dom.body.dataset.sidebar === 'open';
+    $('#btn-sidebar').setAttribute('aria-pressed', String(isOpen));
+    $('#btn-sidebar').classList.toggle('on', isOpen);
+    requestAnimationFrame(() => { measureLayout(); schedule({ tokens: true }); });
+  }
+  function toggleMinimap(){
+    const off = dom.body.dataset.minimap === 'off';
+    dom.body.dataset.minimap = off ? 'on' : 'off';
+    dom.minimap.style.display = off ? '' : 'none';
+    $('#btn-minimap').classList.toggle('on', off);
+    $('#btn-minimap').setAttribute('aria-pressed', String(off));
+    requestAnimationFrame(() => { measureLayout(); schedule({ tokens: true }); });
+  }
+  function toggleWrap(){
+    const wrap = dom.editor.dataset.wrap === 'true';
+    dom.editor.dataset.wrap = String(!wrap);
+    $('#btn-wrap').setAttribute('aria-pressed', String(!wrap));
+    $('#btn-wrap').classList.toggle('on', !wrap);
+    requestAnimationFrame(() => schedule({ tokens: true }));
+  }
+
+  /* ============================================================
+     LAYOUT MEASUREMENT
+     ============================================================ */
+  let visibleRows = 40;
+  function measureLayout(){
+    visibleRows = Math.ceil(dom.viewport.clientHeight / LH);
+    buildMinimap();
+  }
+
+  /* ============================================================
+     EDITING HELPERS (Tab indent, auto-pairs lite)
+     ============================================================ */
+  function handleEditKeys(e){
+    const ta = dom.input;
+    if (e.key === 'Tab'){
+      e.preventDefault();
+      const s = ta.selectionStart, en = ta.selectionEnd;
+      const val = ta.value;
+      if (s !== en && val.slice(s, en).includes('\n')){
+        // indent/outdent block
+        const lineStart = val.lastIndexOf('\n', s - 1) + 1;
+        const block = val.slice(lineStart, en);
+        if (e.shiftKey){
+          const out = block.replace(/^( {1,2}|\t)/gm, '');
+          ta.value = val.slice(0, lineStart) + out + val.slice(en);
+          ta.setSelectionRange(lineStart, lineStart + out.length);
+        } else {
+          const ind = block.replace(/^/gm, '  ');
+          ta.value = val.slice(0, lineStart) + ind + val.slice(en);
+          ta.setSelectionRange(lineStart, lineStart + ind.length);
+        }
+      } else {
+        insertText('  ');
+      }
+      onInput();
+      return true;
+    }
+    if (e.key === 'Enter'){
+      // auto-indent: copy leading whitespace, add one level after {([
+      const s = ta.selectionStart, val = ta.value;
+      const lineStart = val.lastIndexOf('\n', s - 1) + 1;
+      const cur = val.slice(lineStart, s);
+      const indent = (cur.match(/^[ \t]*/) || [''])[0];
+      const extra = /[{([]$/.test(cur.trimEnd()) ? '  ' : '';
+      e.preventDefault();
+      insertText('\n' + indent + extra);
+      onInput();
+      return true;
+    }
+    return false;
+  }
+  function insertText(text){
+    const ta = dom.input, s = ta.selectionStart, en = ta.selectionEnd;
+    ta.value = ta.value.slice(0, s) + text + ta.value.slice(en);
+    const p = s + text.length;
+    ta.setSelectionRange(p, p);
+  }
+
+  /* ============================================================
+     INPUT HANDLER
+     ============================================================ */
+  function onInput(){
+    const file = fileByName(state.active);
+    state.lines = dom.input.value.split('\n');
+    if (file){
+      file.content = dom.input.value;
+      if (!file.dirty){ file.dirty = true; markDirty(); }
+    }
+    updateGutterWidth();
+    schedule({ tokens: true });
+    updateCaret();
+    if (state.find.query) runFind();
+    if (state.view === 'symbols'){ clearTimeout(symTimer); symTimer = setTimeout(renderSymbols, 250); }
+  }
+  function markDirty(){
+    renderTabs();
+    refreshExplorerDirty();
+  }
+
+  /* ============================================================
+     EVENT WIRING
+     ============================================================ */
+  function wire(){
+    // textarea
+    dom.input.addEventListener('input', onInput);
+    dom.input.addEventListener('scroll', () => schedule(), { passive: true });
+    dom.input.addEventListener('keydown', (e) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && e.key.toLowerCase() === 'f'){ e.preventDefault(); openFind(); return; }
+      if (mod && e.key.toLowerCase() === 'g'){ e.preventDefault(); openGoto(); return; }
+      if (mod && (e.key === 'k' || (e.shiftKey && e.key.toLowerCase() === 'p'))){ e.preventDefault(); openPalette(); return; }
+      if (mod && e.key.toLowerCase() === 'b'){ e.preventDefault(); toggleSidebar(); return; }
+      if (e.altKey && e.key.toLowerCase() === 'z'){ e.preventDefault(); toggleWrap(); return; }
+      if (e.key === 'Escape'){
+        if (dom.find.classList.contains('open')){ e.preventDefault(); closeFind(); return; }
+        // escape hatch: move focus to active tab (avoids Tab keyboard trap)
+        const t = dom.tabbar.querySelector('.tab[aria-selected="true"]');
+        if (t){ e.preventDefault(); t.focus(); }
+        return;
+      }
+      if (handleEditKeys(e)) return;
+    });
+    ['keyup','click','select','pointerup'].forEach((ev) =>
+      dom.input.addEventListener(ev, () => updateCaret()));
+
+    // tabs
+    dom.tabbar.addEventListener('click', (e) => {
+      const x = e.target.closest('.x');
+      const tab = e.target.closest('.tab');
+      if (!tab) return;
+      if (x){ e.stopPropagation(); closeTab(tab.dataset.name); return; }
+      switchTo(tab.dataset.name, true);
+    });
+    dom.tabbar.addEventListener('keydown', (e) => {
+      const tabs = [...dom.tabbar.querySelectorAll('.tab')];
+      const i = tabs.indexOf(document.activeElement);
+      if (i === -1) return;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft'){
+        e.preventDefault();
+        const ni = (i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+        tabs[ni].focus();
+      } else if (e.key === 'Enter' || e.key === ' '){
+        e.preventDefault(); switchTo(tabs[i].dataset.name, true);
+      } else if (e.key === 'Delete' || e.key === 'Backspace'){
+        e.preventDefault(); closeTab(tabs[i].dataset.name);
+      }
+    });
+
+    // activity bar
+    document.querySelectorAll('.act').forEach((a) =>
+      a.addEventListener('click', () => setView(a.dataset.view)));
+
+    // sidebar interactions (delegated)
+    dom.sideScroll.addEventListener('click', (e) => {
+      const tr = e.target.closest('.tree-row');
+      if (tr && tr.dataset.name){ switchTo(tr.dataset.name, true); return; }
+      const sr = e.target.closest('.sym-row');
+      if (sr){
+        const line = +sr.dataset.line;
+        const val = dom.input.value; let off = 0, ln = 0;
+        for (let i = 0; i < val.length && ln < line; i++){ if (val.charCodeAt(i) === 10){ ln++; off = i + 1; } }
+        dom.input.scrollTop = clamp(line * LH - dom.viewport.clientHeight / 2, 0, dom.input.scrollHeight);
+        setCaret(off); dom.input.focus(); return;
+      }
+      const tog = e.target.closest('.set-toggle');
+      if (tog){
+        const act = tog.dataset.action;
+        if (act === 'wrap') toggleWrap();
+        else if (act === 'minimap') toggleMinimap();
+        renderSettings();
+      }
+    });
+
+    // title bar buttons
+    $('#btn-sidebar').addEventListener('click', toggleSidebar);
+    $('#btn-minimap').addEventListener('click', toggleMinimap);
+    $('#btn-wrap').addEventListener('click', toggleWrap);
+    $('#btn-palette').addEventListener('click', openPalette);
+
+    // status bar
+    dom.stPos.addEventListener('click', openGoto);
+    $('#st-lang').addEventListener('click', openPalette);
+
+    // find widget
+    dom.findInput.addEventListener('input', runFind);
+    dom.findInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter'){ e.preventDefault(); stepFind(e.shiftKey ? -1 : 1); }
+      else if (e.key === 'Escape'){ e.preventDefault(); closeFind(); }
+    });
+    dom.findPrev.addEventListener('click', () => stepFind(-1));
+    dom.findNext.addEventListener('click', () => stepFind(1));
+    dom.findClose.addEventListener('click', closeFind);
+    dom.findCase.addEventListener('click', () => {
+      state.find.caseSensitive = !state.find.caseSensitive;
+      dom.findCase.classList.toggle('on', state.find.caseSensitive);
+      dom.findCase.setAttribute('aria-pressed', String(state.find.caseSensitive));
+      runFind();
+    });
+
+    // minimap
+    dom.minimap.addEventListener('pointerdown', minimapPointerDown);
+    dom.minimap.addEventListener('pointermove', minimapPointerMove);
+    dom.minimap.addEventListener('pointerup', minimapPointerUp);
+    dom.minimap.addEventListener('pointercancel', minimapPointerUp);
+
+    // command palette
+    dom.paletteInput.addEventListener('input', () => renderPalette(dom.paletteInput.value));
+    dom.paletteInput.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown'){ e.preventDefault(); movePalette(1); }
+      else if (e.key === 'ArrowUp'){ e.preventDefault(); movePalette(-1); }
+      else if (e.key === 'Enter'){ e.preventDefault(); runPalette(); }
+      else if (e.key === 'Escape'){ e.preventDefault(); closePalette(); }
+    });
+    dom.paletteList.addEventListener('click', (e) => {
+      const b = e.target.closest('.pcmd'); if (!b) return;
+      paletteSel = +b.dataset.i; runPalette();
+    });
+    dom.paletteList.addEventListener('pointermove', (e) => {
+      const b = e.target.closest('.pcmd'); if (!b) return;
+      paletteSel = +b.dataset.i;
+      dom.paletteList.querySelectorAll('.pcmd').forEach((el, i) => el.setAttribute('aria-selected', String(i === paletteSel)));
+    });
+    dom.paletteOverlay.addEventListener('mousedown', (e) => { if (e.target === dom.paletteOverlay) closePalette(); });
+
+    // global shortcuts (when editor not focused)
+    document.addEventListener('keydown', (e) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && (e.key === 'k' || (e.shiftKey && e.key.toLowerCase() === 'p'))){
+        if (!dom.paletteOverlay.classList.contains('open')){ e.preventDefault(); openPalette(); }
+      }
+    });
+
+    // resize
+    let rT = 0;
+    window.addEventListener('resize', () => {
+      clearTimeout(rT);
+      rT = setTimeout(() => { measureCW(); measureLayout(); schedule({ tokens: true }); }, 80);
+    });
+  }
+
+  /* ============================================================
+     BOOT
+     ============================================================ */
+  function boot(){
+    measureCW();
+    // At narrow widths the sidebar is an overlay drawer — start it closed so
+    // the editor is visible on load; it opens via the toggle / activity bar.
+    const narrow = window.matchMedia('(max-width: 880px)').matches;
+    dom.body.dataset.sidebar = narrow ? 'closed' : 'open';
+    $('#btn-sidebar').setAttribute('aria-pressed', String(!narrow));
+    $('#btn-sidebar').classList.toggle('on', !narrow);
+    renderTabs();
+    renderExplorer();
+    const first = fileByName(state.active);
+    dom.input.value = first.content;
+    dom.input.setSelectionRange(0, 0);   // open at the top, not the end
+    dom.input.scrollTop = 0;
+    state.lines = first.content.split('\n');
+    dom.stLang.textContent = LANG_LABEL[first.lang];
+    updateGutterWidth();
+    wire();
+    measureLayout();
+    schedule({ tokens: true });
+    updateCaret();
+    updateBreadcrumb();
+    // ensure first paint after fonts settle
+    if (document.fonts && document.fonts.ready){
+      document.fonts.ready.then(() => { measureCW(); updateGutterWidth(); schedule({ tokens: true }); });
+    }
+    requestAnimationFrame(() => { dom.input.focus(); dom.input.setSelectionRange(0, 0); });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+
+  // expose a tiny hook for the self-test harness (read-only introspection)
+  window.__meridian = {
+    state,
+    scrollTop: () => dom.input.scrollTop,
+    setScroll: (v) => { dom.input.scrollTop = v; schedule(); },
+    lineCount: () => state.lines.length,
+    tokenTypesOnLine: (i) => (state.tokens[i] || []).map((s) => s.type),
+    minimapBox: () => ({ top: parseFloat(dom.minimapBox.style.top) || 0, height: dom.minimapBox.getBoundingClientRect().height }),
+    activeFile: () => state.active,
+  };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Specimen — Variable Type Lab</title>
+<link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'&gt;&lt;rect width='32' height='32' rx='4' fill='%2315120c'/&gt;&lt;path d='M16 5 27 16 16 27 5 16Z' fill='none' stroke='%23df3b0a' stroke-width='2'/&gt;&lt;/svg&gt;">
+<meta name="description" content="A type-foundry specimen playground: load a variable font, read its axes from the fvar table, morph it live, and leave with the exact font-variation-settings CSS.">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<!-- opentype.js reads the real fvar table from each font binary (registered + custom axes), named instances, name table and GSUB features. Pinned. -->
+<script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js" defer></script>
+<style>
+/* ============================================================
+   DESIGN TOKENS — warm "paper" foundry specimen, ink + vermilion duotone
+   Build only from these.
+   ============================================================ */
+:root{
+  /* neutral ramp (warm) */
+  --n-900:#15120c; --n-800:#26221a; --n-700:#46402f; --n-600:#5f5847;
+  --n-500:#857c66; --n-400:#a79d83; --n-300:#cabd9f; --n-200:#e0d7c2;
+  --n-100:#ede6d6; --n-050:#f4eee1;
+  /* semantic */
+  --paper:#f3ede0; --paper-2:#ece4d3; --paper-3:#e4dac5;
+  --ink:#15120c; --ink-soft:#46402f; --muted:#5f5847; --faint:#857c66;
+  --hair:#d3c9b2; --hair-2:#c2b698;
+  --accent:#df3b0a;        /* vermilion — fills / large type / non-text */
+  --accent-ink:#b62f06;    /* darker — AA for small accent text on paper */
+  --accent-wash:#f7e3d5;
+  --good:#2f7d4f; --bad:#b62f06;
+  /* fonts — chrome is a tuned system stack so the *specimen* font is the only hero */
+  --ui:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,"Cascadia Mono",Consolas,monospace;
+  /* fluid type scale (chrome) — ratio-locked, body >=16px */
+  --t--1:clamp(11px,.5vw + 9.5px,12.5px);
+  --t-0:clamp(13px,.5vw + 11.5px,14.5px);
+  --t-1:clamp(15px,.6vw + 13px,16.5px);
+  --t-2:clamp(18px,1vw + 15px,22px);
+  --t-3:clamp(22px,2vw + 16px,30px);
+  /* spacing (4px scale) */
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:24px; --s-6:32px; --s-7:48px; --s-8:64px; --s-9:96px;
+  /* radius / elevation / motion */
+  --r-0:0; --r-1:2px; --r-2:7px;
+  --e-1:0 1px 0 var(--hair);
+  --e-2:0 14px 40px -18px rgba(21,18,12,.45),0 2px 8px -4px rgba(21,18,12,.25);
+  --d-1:150ms; --d-2:220ms; --ease:cubic-bezier(.2,.65,.25,1);
+  /* specimen live state (set by JS, inherited) */
+  --fam:serif; --fvs:normal; --ffs:normal;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+*::selection{background:var(--accent);color:var(--paper)}
+html{ -webkit-text-size-adjust:100%; }
+html,body{overflow-x:clip}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--ui);font-size:var(--t-1);line-height:1.5;
+  font-feature-settings:"kern" 1;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+
+/* paper grain / hairline grid feel via subtle background */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background:
+    linear-gradient(90deg,transparent 0,transparent calc(100% - 1px),var(--hair) 100%) 0 0/ max(140px, 14vw) 100% repeat-x,
+    radial-gradient(120% 80% at 80% -10%, rgba(223,59,10,.05), transparent 60%);
+  -webkit-mask:linear-gradient(#000,#000);
+}
+.wrap{position:relative;z-index:1;width:100%;max-width:1280px;margin:0 auto;padding-inline:clamp(16px,4.2vw,56px)}
+
+a{color:var(--accent-ink);text-underline-offset:2px}
+.mono{font-family:var(--mono);font-feature-settings:"tnum" 1}
+.kicker{font-family:var(--mono);font-size:var(--t--1);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+
+/* focus — single strong visible ring everywhere */
+:where(a,button,input,[tabindex],[contenteditable],summary,label.feat,.seg-btn):focus-visible{
+  outline:2.5px solid var(--accent);outline-offset:2px;border-radius:var(--r-1)
+}
+:where(a,button,input,[tabindex],[contenteditable]):focus{outline:none}
+
+.skip{position:fixed;left:var(--s-3);top:-60px;z-index:90;background:var(--ink);color:var(--paper);
+  padding:10px 16px;border-radius:var(--r-2);font-weight:600;transition:top var(--d-1) var(--ease)}
+.skip:focus{top:var(--s-3)}
+
+/* ============================================================ MASTHEAD ============ */
+.mast{position:sticky;top:0;z-index:40;background:color-mix(in oklab,var(--paper),transparent 8%);
+  -webkit-backdrop-filter:saturate(1.3) blur(10px);backdrop-filter:saturate(1.3) blur(10px);
+  border-bottom:1px solid var(--hair)}
+.mast-in{display:flex;align-items:center;gap:var(--s-4);min-height:62px;padding-block:var(--s-2);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:var(--s-3);margin-right:auto;text-decoration:none;color:inherit}
+.brand .mark{width:30px;height:30px;flex:0 0 auto;color:var(--ink)}
+.brand b{font-size:var(--t-2);font-weight:680;letter-spacing:-.02em;line-height:1}
+.brand .sub{display:block;margin-top:2px}
+.switch-group{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--paper-2);border:1px solid var(--hair);border-radius:var(--r-2);padding:3px;gap:3px}
+.seg-btn{appearance:none;border:0;background:transparent;color:var(--ink-soft);cursor:pointer;
+  font:inherit;font-size:var(--t-0);font-weight:600;padding:7px 12px;min-height:40px;border-radius:5px;
+  display:inline-flex;align-items:center;gap:7px;transition:background var(--d-1) var(--ease),color var(--d-1) var(--ease)}
+.seg-btn .role{font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--faint)}
+.seg-btn:hover{background:var(--paper-3)}
+.seg-btn[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.seg-btn[aria-pressed="true"] .role{color:var(--n-300)}
+.seg-btn:active{transform:translateY(1px)}
+
+.btn{appearance:none;cursor:pointer;font:inherit;font-weight:600;font-size:var(--t-0);
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;
+  border-radius:var(--r-2);border:1px solid var(--ink);background:var(--ink);color:var(--paper);
+  transition:transform var(--d-1) var(--ease),background var(--d-1) var(--ease),box-shadow var(--d-1) var(--ease)}
+.btn svg{width:16px;height:16px;flex:0 0 auto}
+.btn:hover{background:var(--n-800)}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.45;cursor:not-allowed;background:var(--n-500);border-color:var(--n-500)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--hair-2)}
+.btn.ghost:hover{background:var(--paper-2);border-color:var(--ink)}
+.btn.accent{background:var(--accent);border-color:var(--accent)}
+.btn.accent:hover{background:var(--accent-ink)}
+.btn.is-ok{background:var(--good);border-color:var(--good)}
+
+/* ============================================================ HERO ================ */
+.hero{padding-block:clamp(var(--s-6),6vw,var(--s-9)) var(--s-6);border-bottom:1px solid var(--hair)}
+.hero-grid{display:grid;grid-template-columns:1fr;gap:var(--s-6)}
+@media(min-width:900px){.hero-grid{grid-template-columns:minmax(0,1fr) 290px;gap:var(--s-7);align-items:end}}
+.hero-lead{display:flex;flex-direction:column;gap:var(--s-3);min-width:0}
+.hero-eyebrow{display:flex;gap:var(--s-3);align-items:center;flex-wrap:wrap}
+.hero-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block}
+.hero-stage{position:relative;overflow:hidden;cursor:crosshair;border-radius:var(--r-1);
+  padding-block:clamp(var(--s-2),2vw,var(--s-4))}
+.hero-word{margin:0;font-family:var(--fam-hero,var(--fam));font-variation-settings:var(--fvs-hero,var(--fvs));
+  font-size:clamp(64px,21vw,300px);line-height:.86;letter-spacing:-.02em;white-space:nowrap;
+  color:var(--ink);font-weight:normal;
+  will-change:font-variation-settings}
+.hero-hint{font-family:var(--mono);font-size:var(--t--1);color:var(--faint);display:flex;gap:8px;align-items:center}
+.hero-hint svg{width:14px;height:14px}
+
+/* spec sheet */
+.spec{border:1px solid var(--hair-2);border-radius:var(--r-2);background:
+  linear-gradient(180deg,color-mix(in oklab,var(--paper),#fff 25%),var(--paper));box-shadow:var(--e-1)}
+.spec h2{margin:0;padding:12px 16px;font-size:var(--t--1);letter-spacing:.14em;text-transform:uppercase;
+  font-family:var(--mono);color:var(--muted);border-bottom:1px solid var(--hair);display:flex;justify-content:space-between;gap:8px}
+.spec dl{margin:0;padding:6px 16px 14px}
+.spec .row{display:grid;grid-template-columns:96px 1fr;gap:10px;padding:7px 0;border-bottom:1px dotted var(--hair);align-items:baseline}
+.spec .row:last-child{border-bottom:0}
+.spec dt{font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--faint)}
+.spec dd{margin:0;font-size:var(--t-0);color:var(--ink);font-weight:560;overflow-wrap:anywhere}
+.spec dd .mono{font-size:var(--t-0)}
+.spec dd em{font-style:normal;color:var(--accent-ink)}
+
+/* ============================================================ SECTION CHROME ====== */
+section{scroll-margin-top:78px}
+.sec-head{display:flex;align-items:baseline;gap:var(--s-3);flex-wrap:wrap;
+  padding-top:clamp(var(--s-6),5vw,var(--s-8));padding-bottom:var(--s-4)}
+.sec-head .fig{font-family:var(--mono);font-size:var(--t--1);color:var(--accent-ink);letter-spacing:.1em}
+.sec-head h2{margin:0;font-size:var(--t-3);font-weight:660;letter-spacing:-.02em}
+.sec-head p{margin:0;color:var(--muted);font-size:var(--t-0);max-width:54ch;flex-basis:100%}
+.rule{height:1px;background:var(--hair);border:0;margin:0}
+
+/* ============================================================ WORKBENCH =========== */
+.work{display:grid;grid-template-columns:1fr;gap:var(--s-6);padding-bottom:var(--s-7)}
+@media(min-width:980px){.work{grid-template-columns:336px minmax(0,1fr);gap:var(--s-7);align-items:start}}
+
+/* --- control rack --- */
+.rack{display:flex;flex-direction:column;gap:var(--s-5)}
+@media(min-width:980px){.rack{position:sticky;top:78px;max-height:calc(100vh - 92px);overflow:auto;padding-right:4px;
+  scrollbar-width:thin}}
+fieldset{margin:0;padding:0;border:0;min-width:0}
+.rack legend,.block-h{display:flex;align-items:center;gap:8px;width:100%;
+  font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
+  padding-bottom:10px;margin-bottom:4px;border-bottom:1px solid var(--hair)}
+.rack legend .n{margin-left:auto;color:var(--accent-ink)}
+
+.axis{padding:10px 0}
+.axis + .axis{border-top:1px dotted var(--hair)}
+.axis-head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+.tag{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.02em;color:var(--paper);
+  background:var(--ink);padding:3px 6px;border-radius:var(--r-1);flex:0 0 auto}
+.axis-name{font-size:var(--t-0);font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.axis-val{margin-left:auto;font-family:var(--mono);font-size:var(--t-0);font-weight:600;color:var(--accent-ink);
+  font-feature-settings:"tnum" 1}
+.axis-minmax{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:5px}
+
+/* range input — full state set */
+input[type=range]{ -webkit-appearance:none;appearance:none;width:100%;height:44px;background:transparent;cursor:pointer;margin:0;display:block}
+input[type=range]:focus{outline:none}
+input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;
+  background:linear-gradient(90deg,var(--ink) var(--fill,50%),var(--hair-2) var(--fill,50%))}
+input[type=range]::-moz-range-track{height:3px;border-radius:2px;background:var(--hair-2)}
+input[type=range]::-moz-range-progress{height:3px;border-radius:2px;background:var(--ink)}
+input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none;appearance:none;width:18px;height:18px;margin-top:-7.5px;
+  border-radius:50%;background:var(--paper);border:2px solid var(--ink);box-shadow:0 1px 3px rgba(21,18,12,.3);
+  transition:transform var(--d-1) var(--ease),border-color var(--d-1) var(--ease),background var(--d-1) var(--ease)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--paper);
+  border:2px solid var(--ink);box-shadow:0 1px 3px rgba(21,18,12,.3)}
+input[type=range]:hover::-webkit-slider-thumb{border-color:var(--accent);transform:scale(1.12)}
+input[type=range]:hover::-moz-range-thumb{border-color:var(--accent)}
+input[type=range]:focus-visible::-webkit-slider-thumb{border-color:var(--accent);box-shadow:0 0 0 5px var(--accent-wash)}
+input[type=range]:focus-visible::-moz-range-thumb{border-color:var(--accent);box-shadow:0 0 0 5px var(--accent-wash)}
+input[type=range]:active::-webkit-slider-thumb{background:var(--accent);border-color:var(--accent);transform:scale(1.05)}
+input[type=range]:active::-moz-range-thumb{background:var(--accent);border-color:var(--accent)}
+input[type=range][disabled]{cursor:not-allowed;opacity:.5}
+
+/* cut controls reuse .axis layout */
+.cut .axis-name{font-weight:600}
+
+/* feature toggles */
+.feat-list{display:flex;flex-direction:column;gap:2px;margin-top:6px}
+.feat{display:flex;align-items:center;gap:10px;padding:9px 8px;min-height:44px;border-radius:var(--r-2);cursor:pointer;
+  transition:background var(--d-1) var(--ease)}
+.feat:hover{background:var(--paper-2)}
+.feat input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.feat .sw{position:relative;width:38px;height:22px;flex:0 0 auto;border-radius:999px;background:var(--n-300);
+  border:1px solid var(--hair-2);transition:background var(--d-1) var(--ease)}
+.feat .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;
+  background:var(--paper);box-shadow:0 1px 2px rgba(21,18,12,.35);transition:transform var(--d-2) var(--ease)}
+.feat input:checked + .sw{background:var(--accent)}
+.feat input:checked + .sw::after{transform:translateX(16px)}
+.feat input:focus-visible + .sw{outline:2.5px solid var(--accent);outline-offset:2px}
+.feat-tag{font-family:var(--mono);font-size:11px;color:var(--muted);flex:0 0 auto}
+.feat-name{font-size:var(--t-0);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.feat-empty{font-size:var(--t-0);color:var(--faint);padding:8px 2px;font-style:italic}
+
+/* instances / presets */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{appearance:none;cursor:pointer;font:inherit;font-size:var(--t--1);font-weight:600;color:var(--ink-soft);
+  background:var(--paper-2);border:1px solid var(--hair-2);border-radius:999px;padding:7px 12px;min-height:36px;
+  transition:all var(--d-1) var(--ease)}
+.chip:hover{border-color:var(--ink);background:var(--paper-3)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.chip:active{transform:translateY(1px)}
+
+.rack-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* --- live tester --- */
+.stage-wrap{display:flex;flex-direction:column;gap:var(--s-4);min-width:0}
+.stage{position:relative;background:linear-gradient(180deg,#fff8ec,var(--paper));border:1px solid var(--hair-2);
+  border-radius:var(--r-2);padding:clamp(var(--s-4),3vw,var(--s-6));min-height:200px;overflow:hidden;box-shadow:var(--e-1)}
+.stage-label{position:absolute;top:10px;left:14px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--faint);pointer-events:none}
+.specimen{font-family:var(--fam);font-variation-settings:var(--fvs);font-feature-settings:var(--ffs);
+  color:var(--ink);outline:none;margin:18px 0 0;line-height:1.04;letter-spacing:0;
+  word-break:normal;overflow-wrap:break-word;hyphens:none}
+.specimen:empty::before{content:attr(data-placeholder);color:var(--faint)}
+
+/* loading shimmer */
+.is-loading .specimen,.is-loading .hero-word{visibility:hidden}
+.skel{position:absolute;inset:auto 16px 16px;top:42px;display:none;flex-direction:column;gap:14px}
+.is-loading .skel{display:flex}
+.skel i{display:block;height:clamp(28px,7vw,64px);border-radius:var(--r-1);
+  background:linear-gradient(90deg,var(--paper-2) 25%,var(--paper-3) 37%,var(--paper-2) 63%);
+  background-size:400% 100%;animation:sh 1.3s ease infinite}
+.skel i:nth-child(2){width:78%}.skel i:nth-child(3){width:54%}
+@keyframes sh{0%{background-position:100% 0}100%{background-position:0 0}}
+@media(prefers-reduced-motion:reduce){.skel i{animation:none}}
+
+/* readout + actions */
+.readout{display:flex;flex-direction:column;gap:var(--s-3);background:var(--n-900);color:var(--n-100);
+  border-radius:var(--r-2);padding:var(--s-4);box-shadow:var(--e-1)}
+.readout .ro-h{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--n-400)}
+.readout .ro-h .live{margin-left:auto;display:inline-flex;align-items:center;gap:6px;color:var(--n-300)}
+.readout .ro-h .live .pulse{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 var(--accent);
+  animation:pulse 2s var(--ease) infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(223,59,10,.5)}70%{box-shadow:0 0 0 7px rgba(223,59,10,0)}100%{box-shadow:0 0 0 0 rgba(223,59,10,0)}}
+@media(prefers-reduced-motion:reduce){.readout .ro-h .live .pulse{animation:none}}
+.code{font-family:var(--mono);font-size:13px;line-height:1.7;color:var(--n-100);
+  white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;margin:0}
+.code .k{color:#8fb7ff}.code .p{color:#ffd9a0}.code .v{color:#ffb59a}.code .c{color:var(--n-500)}
+.ro-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ============================================================ WATERFALL =========== */
+.waterfall{display:flex;flex-direction:column;border-top:1px solid var(--hair);padding-bottom:var(--s-7)}
+.wf-row{display:grid;grid-template-columns:54px 1fr;gap:var(--s-4);align-items:center;
+  padding:clamp(6px,1.4vw,16px) 0;border-bottom:1px solid var(--hair)}
+.wf-size{font-family:var(--mono);font-size:11px;color:var(--faint);text-align:right;padding-top:.4em;align-self:start}
+.wf-text{font-family:var(--fam);font-variation-settings:var(--fvs);font-feature-settings:var(--ffs);
+  color:var(--ink);line-height:1;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:clip;min-width:0}
+
+/* ============================================================ GLYPHS ============== */
+.glyphbar{display:flex;align-items:center;gap:var(--s-3);flex-wrap:wrap;margin-bottom:var(--s-4)}
+.glyphbar .count{font-family:var(--mono);font-size:var(--t--1);color:var(--muted)}
+.glyphs{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(54px,9vw,84px),1fr));
+  border:1px solid var(--hair);border-radius:var(--r-2);overflow:hidden;background:var(--paper-2)}
+.glyph{position:relative;aspect-ratio:1;display:flex;align-items:center;justify-content:center;cursor:pointer;
+  background:var(--paper);border-right:1px solid var(--hair);border-bottom:1px solid var(--hair);
+  font-family:var(--fam);font-variation-settings:var(--fvs);font-feature-settings:var(--ffs);
+  font-size:clamp(24px,4vw,38px);color:var(--ink);transition:background var(--d-1) var(--ease),color var(--d-1) var(--ease);
+  border-width:0 1px 1px 0;appearance:none;padding:0;line-height:1}
+.glyph:hover{background:var(--ink);color:var(--paper)}
+.glyph:active{background:var(--accent);color:var(--paper)}
+.glyph::after{content:attr(data-cp);position:absolute;bottom:4px;left:0;right:0;text-align:center;
+  font-family:var(--mono);font-size:9px;color:var(--faint);opacity:0;transition:opacity var(--d-1) var(--ease);font-variation-settings:normal}
+.glyph:hover::after{opacity:1;color:var(--n-300)}
+
+/* ============================================================ PAIRING ============= */
+.pair{border:1px solid var(--hair-2);border-radius:var(--r-2);overflow:hidden;margin-bottom:var(--s-8);box-shadow:var(--e-1)}
+.pair-head{background:var(--ink);color:var(--paper);padding:8px 16px;font-family:var(--mono);font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;display:flex;justify-content:space-between;gap:8px}
+.pair-body{padding:clamp(var(--s-5),4vw,var(--s-7));background:linear-gradient(180deg,#fff8ec,var(--paper))}
+.pair-kicker{font-family:var(--mono);font-size:var(--t--1);letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink);margin:0 0 12px}
+.pair-display{font-family:var(--fam);font-variation-settings:var(--fvs-disp);color:var(--ink);
+  font-size:clamp(34px,6.5vw,84px);line-height:.98;letter-spacing:-.02em;margin:0 0 var(--s-4);max-width:18ch}
+.pair-col{columns:2 18rem;column-gap:var(--s-6);font-family:var(--fam);font-variation-settings:var(--fvs-text);
+  font-feature-settings:var(--ffs);font-size:clamp(15px,1.1vw,18px);line-height:1.55;color:var(--ink-soft)}
+.pair-col p{margin:0 0 1em}.pair-col p:first-child::first-letter{font-size:3.2em;line-height:.8;float:left;
+  padding:6px 10px 0 0;font-variation-settings:var(--fvs-disp);color:var(--accent-ink)}
+
+/* ============================================================ DROP / FILE ========= */
+.dropzone{border:1.5px dashed var(--hair-2);border-radius:var(--r-2);padding:var(--s-4);display:flex;
+  align-items:center;gap:var(--s-3);background:var(--paper-2);flex-wrap:wrap}
+.dropzone .di{width:34px;height:34px;color:var(--muted);flex:0 0 auto}
+.dropzone .dt{flex:1;min-width:160px}
+.dropzone .dt b{display:block;font-size:var(--t-0)}
+.dropzone .dt span{font-size:var(--t--1);color:var(--muted)}
+.file-btn{position:relative;overflow:hidden}
+.file-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+
+/* full-window drag overlay */
+.overlay{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
+  background:color-mix(in oklab,var(--ink),transparent 14%);backdrop-filter:blur(4px)}
+.overlay.show{display:flex}
+.overlay .card{background:var(--paper);border:2px dashed var(--accent);border-radius:var(--r-2);
+  padding:var(--s-8) var(--s-7);text-align:center;color:var(--ink);box-shadow:var(--e-2);max-width:90vw}
+.overlay .card svg{width:48px;height:48px;color:var(--accent);margin-bottom:var(--s-3)}
+.overlay .card b{display:block;font-size:var(--t-3);letter-spacing:-.01em}
+.overlay .card span{color:var(--muted);font-size:var(--t-0)}
+
+/* toast + a11y live status */
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,80px);z-index:85;
+  background:var(--ink);color:var(--paper);padding:13px 18px;border-radius:var(--r-2);box-shadow:var(--e-2);
+  display:flex;align-items:center;gap:10px;font-weight:560;font-size:var(--t-0);max-width:min(92vw,440px);
+  opacity:0;transition:transform var(--d-2) var(--ease),opacity var(--d-2) var(--ease);pointer-events:none}
+.toast.show{transform:translate(-50%,0);opacity:1}
+.toast svg{width:18px;height:18px;flex:0 0 auto}
+.toast.err{background:var(--bad)}.toast.ok svg{color:#7ee2a8}
+.vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ============================================================ FOOTER ============== */
+footer{border-top:1px solid var(--hair);padding-block:var(--s-6) var(--s-8);color:var(--muted);font-size:var(--t-0)}
+footer .fcols{display:grid;gap:var(--s-5);grid-template-columns:1fr}
+@media(min-width:760px){footer .fcols{grid-template-columns:1.4fr 1fr 1fr}}
+footer h3{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:0 0 10px}
+footer a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--hair-2)}
+footer a:hover{color:var(--accent-ink);border-color:var(--accent)}
+footer ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+
+@media (max-width:560px){
+  .mast-in{min-height:0;padding-block:10px;gap:10px}
+  .brand b{font-size:var(--t-1)}
+  .hero-word{font-size:clamp(58px,22vw,120px)}
+  /* switcher recomposes into a full-width wrapping sheet instead of clipping */
+  .switch-group{width:100%;gap:8px}
+  .seg{width:100%;flex-wrap:wrap}
+  .seg-btn{flex:1 1 30%;justify-content:center;padding:9px 8px}
+  .seg-btn .role{display:none}
+  #uploadBtn{width:100%}
+}
+</style>
+</head>
+<body class="is-loading">
+<a class="skip" href="#workbench">Skip to the type tester</a>
+
+<!-- ===================== MASTHEAD ===================== -->
+<header class="mast">
+  <div class="wrap mast-in">
+    <a class="brand" href="#top" aria-label="Specimen — Variable Type Lab, home">
+      <svg class="mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <rect x="1" y="1" width="30" height="30" rx="3" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M16 5 L27 16 L16 27 L5 16 Z" stroke="var(--accent)" stroke-width="1.5"/>
+        <path d="M16 5 L16 27 M5 16 L27 16" stroke="currentColor" stroke-width="1.2" opacity=".55"/>
+        <circle cx="16" cy="16" r="2.4" fill="var(--accent)"/>
+      </svg>
+      <span>
+        <b>Specimen</b>
+        <span class="kicker sub">Variable Type Lab</span>
+      </span>
+    </a>
+
+    <nav class="switch-group" aria-label="Font selection">
+      <div class="seg" id="fontSeg" role="group" aria-label="Bundled variable fonts"></div>
+      <label class="btn ghost file-btn" id="uploadBtn">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v2.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <span>Upload font</span>
+        <input type="file" id="fileInput" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" aria-label="Upload a variable font file (.ttf, .otf, .woff, .woff2)">
+      </label>
+    </nav>
+  </div>
+</header>
+
+<a id="top"></a>
+<main id="main">
+<div class="wrap">
+
+  <!-- ===================== HERO ===================== -->
+  <section class="hero" aria-labelledby="hero-h">
+    <div class="hero-grid">
+      <div class="hero-lead">
+        <div class="hero-eyebrow">
+          <span class="dot" aria-hidden="true"></span>
+          <span class="kicker">Specimen Nº01 — Living Type</span>
+        </div>
+        <h1 id="hero-h" class="vh">Variable font specimen playground</h1>
+        <div class="hero-stage" id="heroStage">
+          <p class="hero-word" id="heroWord" aria-hidden="true">Typeface</p>
+        </div>
+        <p class="hero-hint" id="heroHint">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M5 12l4-4M5 12l4 4M19 12l-4-4M19 12l-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Move across the headline — horizontal drives <b class="mono">&nbsp;wght&nbsp;</b>, vertical drives a second axis.
+        </p>
+      </div>
+
+      <aside class="spec" aria-label="Font specification sheet">
+        <h2><span>Specification</span><span id="specFormat">TTF · VF</span></h2>
+        <dl id="specSheet">
+          <div class="row"><dt>Family</dt><dd id="sFamily">—</dd></div>
+          <div class="row"><dt>Axes</dt><dd id="sAxes">—</dd></div>
+          <div class="row"><dt>Instances</dt><dd id="sInst">—</dd></div>
+          <div class="row"><dt>Glyphs</dt><dd id="sGlyphs" class="mono">—</dd></div>
+          <div class="row"><dt>Units / em</dt><dd id="sUpm" class="mono">—</dd></div>
+          <div class="row"><dt>Version</dt><dd id="sVer" class="mono">—</dd></div>
+          <div class="row"><dt>Foundry</dt><dd id="sFoundry">—</dd></div>
+          <div class="row"><dt>License</dt><dd id="sLicense">—</dd></div>
+        </dl>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ===================== WORKBENCH ===================== -->
+  <section id="workbench" aria-labelledby="wb-h">
+    <div class="sec-head">
+      <span class="fig">Fig.02</span>
+      <h2 id="wb-h">The Tester</h2>
+      <p>Every slider below is generated from the font's real <span class="mono">fvar</span> table — one per variation axis, clamped to its own min and max. Type into the specimen; the CSS updates live.</p>
+    </div>
+
+    <div class="work">
+      <!-- control rack -->
+      <form class="rack" id="rack" aria-label="Type controls" onsubmit="return false">
+        <div class="dropzone" id="dropzoneInline">
+          <svg class="di" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15V4m0 0L8 8m4-4 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="13" width="18" height="8" rx="2" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span class="dt"><b>Drop your own font</b><span>.ttf · .otf · .woff · .woff2 — read locally, never uploaded</span></span>
+        </div>
+
+        <fieldset>
+          <legend>Variation Axes <span class="n" id="axisCount">0</span></legend>
+          <div id="axisList"></div>
+          <p class="feat-empty" id="noAxes" hidden>No variation axes — this is a static font. Load a variable font (or one of the bundled families) to morph its axes.</p>
+        </fieldset>
+
+        <fieldset class="cut">
+          <legend>Cut <span class="n">size · lead · track</span></legend>
+          <div id="cutList"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>OpenType Features <span class="n" id="featCount">0</span></legend>
+          <div class="feat-list" id="featList"></div>
+        </fieldset>
+
+        <fieldset id="instWrap">
+          <legend>Named Instances <span class="n" id="instCount">0</span></legend>
+          <div class="chips" id="instList"></div>
+        </fieldset>
+
+        <div class="rack-actions">
+          <button type="button" class="btn ghost" id="resetBtn">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 11a8 8 0 1 1 .5 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M3.5 5v4h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Reset axes
+          </button>
+          <button type="button" class="btn ghost" id="animBtn" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" id="animIcon"><path d="M7 5v14l11-7z" fill="currentColor"/></svg>
+            <span id="animLabel">Animate weight</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- live specimen -->
+      <div class="stage-wrap">
+        <div class="stage" id="stage">
+          <span class="stage-label">Editable specimen</span>
+          <h2 id="specimen" class="specimen" contenteditable="true" spellcheck="false" role="textbox"
+              aria-multiline="true" aria-label="Editable specimen text — type to preview the font"
+              data-placeholder="Type something…">Variable Type</h2>
+          <div class="skel" aria-hidden="true"><i></i><i></i><i></i></div>
+        </div>
+
+        <div class="readout" aria-live="off">
+          <div class="ro-h">
+            <span>Live CSS</span>
+            <span class="live"><span class="pulse" aria-hidden="true"></span>updates as you edit</span>
+          </div>
+          <pre class="code" id="cssOut" tabindex="0" aria-label="Generated CSS"></pre>
+          <div class="ro-actions">
+            <button type="button" class="btn accent" id="copyCss">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M5 15V5a2 2 0 0 1 2-2h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+              Copy CSS
+            </button>
+            <button type="button" class="btn ghost" id="copyVfs">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+              Copy variation-settings
+            </button>
+            <button type="button" class="btn ghost" id="copyLink">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 15l6-6M10 6l1-1a4 4 0 0 1 6 6l-1 1M14 18l-1 1a4 4 0 0 1-6-6l1-1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Copy share link
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== WATERFALL ===================== -->
+  <section aria-labelledby="wf-h">
+    <div class="sec-head">
+      <span class="fig">Fig.03</span>
+      <h2 id="wf-h">Size Waterfall</h2>
+      <p>One line, descending through the sizes a paragraph actually lives at. Where the font carries an <span class="mono">opsz</span> axis, each row sets optical size to match — exactly how it was drawn to be read.</p>
+    </div>
+    <div class="waterfall" id="waterfall"></div>
+  </section>
+
+  <!-- ===================== GLYPHS ===================== -->
+  <section aria-labelledby="gl-h">
+    <div class="sec-head">
+      <span class="fig">Fig.04</span>
+      <h2 id="gl-h">Character Set</h2>
+      <p>Every cell is a glyph the loaded font actually contains, drawn at the current axis settings. Click any glyph to drop it into the specimen.</p>
+    </div>
+    <div class="glyphbar">
+      <span class="count" id="glyphCount">—</span>
+      <span class="kicker">Hover a cell for its codepoint · click to insert</span>
+    </div>
+    <div class="glyphs" id="glyphs" role="list" aria-label="Glyph set"></div>
+  </section>
+
+  <!-- ===================== PAIRING ===================== -->
+  <section aria-labelledby="pr-h">
+    <div class="sec-head">
+      <span class="fig">Fig.05</span>
+      <h2 id="pr-h">Display / Text Pairing</h2>
+      <p>The same variable font working at two scales — a heavy display cut over a calm reading cut — proof a single file can carry a whole hierarchy.</p>
+    </div>
+    <div class="pair">
+      <div class="pair-head"><span id="pairFam">—</span><span>Display + Text · one file</span></div>
+      <div class="pair-body">
+        <p class="pair-kicker">On variable type</p>
+        <p class="pair-display">A single outline, infinitely adjustable.</p>
+        <div class="pair-col">
+          <p>A variable font folds an entire family into one file. Instead of shipping separate Light, Regular and Black cuts, it stores the master outlines and the rules for interpolating between them along named axes — weight, width, optical size, slant and any custom dimension the designer chooses to expose.</p>
+          <p>The browser reads those axes from the font's <span class="mono">fvar</span> table and lets CSS address any point in the design space through <span class="mono">font-variation-settings</span>. Optical size is the quiet miracle: the same letter is drawn sturdier and more open when small, finer and higher-contrast when large, so it reads well at every size it is set.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<footer>
+  <div class="wrap fcols">
+    <div>
+      <h3>Specimen — Variable Type Lab</h3>
+      <p style="margin:0 0 10px;max-width:46ch">A foundry-style specimen tool. Load any variable font, read its real axes, find the cut you want, and copy the exact <span class="mono">font-variation-settings</span> CSS that reproduces it.</p>
+      <p class="kicker">Fonts parsed locally with opentype.js · nothing is uploaded.</p>
+    </div>
+    <div>
+      <h3>Bundled fonts</h3>
+      <ul>
+        <li><a href="https://fonts.google.com/specimen/Fraunces" target="_blank" rel="noopener">Fraunces — Undercase Type</a></li>
+        <li><a href="https://fonts.google.com/specimen/Recursive" target="_blank" rel="noopener">Recursive — Arrow Type</a></li>
+        <li><a href="https://fonts.google.com/specimen/Roboto+Flex" target="_blank" rel="noopener">Roboto Flex — Font Bureau</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3>Built with</h3>
+      <ul>
+        <li><a href="https://github.com/opentypejs/opentype.js" target="_blank" rel="noopener">opentype.js — fvar parsing</a></li>
+        <li><a href="https://developer.mozilla.org/docs/Web/API/FontFace" target="_blank" rel="noopener">FontFace API — live loading</a></li>
+        <li><span style="color:var(--faint)">Served under the SIL Open Font License 1.1</span></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<!-- drag overlay -->
+<div class="overlay" id="overlay" aria-hidden="true">
+  <div class="card">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="14" width="18" height="7" rx="2" stroke="currentColor" stroke-width="1.6"/></svg>
+    <b>Drop to load</b>
+    <span>.ttf · .otf · .woff · .woff2</span>
+  </div>
+</div>
+
+<!-- toast + status -->
+<div class="toast" id="toast" role="alert"></div>
+<div class="vh" id="status" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+(function(){
+/* ============================================================ CONFIG ============ */
+var GH = "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/";
+var BUNDLED = [
+  { key:"fraunces",  label:"Fraunces",    role:"Display Serif", foundry:"Undercase Type",
+    url: GH+"fraunces/Fraunces%5BSOFT%2CWONK%2Copsz%2Cwght%5D.ttf" },
+  { key:"recursive", label:"Recursive",   role:"Sans · 5 axes", foundry:"Arrow Type",
+    url: GH+"recursive/Recursive%5BCASL%2CCRSV%2CMONO%2Cslnt%2Cwght%5D.ttf" },
+  { key:"robotoflex",label:"Roboto Flex", role:"Grotesque · 13", foundry:"Font Bureau",
+    url: GH+"robotoflex/RobotoFlex%5BGRAD%2CXOPQ%2CXTRA%2CYOPQ%2CYTAS%2CYTDE%2CYTFI%2CYTLC%2CYTUC%2Copsz%2Cslnt%2Cwdth%2Cwght%5D.ttf" }
+];
+var REG_AXIS = { wght:"Weight", wdth:"Width", opsz:"Optical Size", slnt:"Slant", ital:"Italic" };
+var AXIS_ORDER = ["wght","wdth","opsz","slnt","ital"];
+var FEATURE_LABELS = {
+  liga:"Standard Ligatures", dlig:"Discretionary Ligatures", clig:"Contextual Ligatures",
+  calt:"Contextual Alternates", hlig:"Historical Ligatures", smcp:"Small Caps", c2sc:"Caps → Small Caps",
+  onum:"Oldstyle Figures", lnum:"Lining Figures", tnum:"Tabular Figures", pnum:"Proportional Figures",
+  zero:"Slashed Zero", frac:"Fractions", afrc:"Alt Fractions", ordn:"Ordinals", sups:"Superscript",
+  subs:"Subscript", sinf:"Scientific Inferiors", numr:"Numerators", dnom:"Denominators",
+  "case":"Case-Sensitive Forms", titl:"Titling", swsh:"Swashes", cswh:"Contextual Swashes",
+  salt:"Stylistic Alternates", hist:"Historical Forms", ital:"Italics", unic:"Unicase"
+};
+function featLabel(tag){
+  if (FEATURE_LABELS[tag]) return FEATURE_LABELS[tag];
+  var m = /^ss(\d{2})$/.exec(tag); if (m) return "Stylistic Set "+parseInt(m[1],10);
+  var c = /^cv(\d{2})$/.exec(tag); if (c) return "Character Variant "+parseInt(c[1],10);
+  return null; // unknown / non-surfaced
+}
+var DEFAULT_ON = { liga:1, clig:1, calt:1, kern:1, rlig:1 };
+var WF_SIZES = [128, 84, 56, 38, 26, 19, 14, 11];
+var GLYPH_RANGES = [[0x21,0x7e],[0xa1,0xff],[0x152,0x153],[0x178,0x178],[0x2c6,0x2c7],
+  [0x2018,0x201f],[0x2020,0x2022],[0x2026,0x2026],[0x2030,0x2030],[0x2039,0x203a],
+  [0x20ac,0x20ac],[0x2122,0x2122],[0x2202,0x2202],[0x2206,0x2206],[0x220f,0x2212]];
+
+/* ============================================================ STATE ============= */
+var state = {
+  current:null,           // active font key
+  fonts:{},               // key -> { meta, alias }
+  axes:[],                // [{tag,min,def,max,name,step}]
+  axisMap:{},             // tag -> value
+  features:{},            // tag -> bool (present features only)
+  size:140, leading:1.04, tracking:0,
+  text:"Variable Type"
+};
+var anim = { on:false, raf:0, dir:1, t:0.5 };
+var hero = { raf:0, cur:{}, tgt:{}, idle:0, active:false, axisX:"wght", axisY:null };
+var reduce = matchMedia("(prefers-reduced-motion: reduce)");
+var applyScheduled = false;
+
+/* ============================================================ HELPERS =========== */
+function $(id){ return document.getElementById(id); }
+function ce(tag,cls){ var e=document.createElement(tag); if(cls)e.className=cls; return e; }
+function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+function nm(o){ return o ? (o.en || o[Object.keys(o)[0]] || "") : ""; }
+function round(v){ return Math.round(v*100)/100; }
+function fmt(v){ var r=round(v); return (r===Math.round(r)) ? String(Math.round(r)) : String(r); }
+function axisStep(min,max){ var r=max-min; if(r<=2) return 0.01; if(r<=20) return 0.1; return 1; }
+function escapeHtml(s){ return s.replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];}); }
+
+function setStatus(msg){ $("status").textContent = msg; }
+var toastT;
+function toast(msg, kind){
+  var t=$("toast");
+  t.className="toast show "+(kind||"ok");
+  t.innerHTML = (kind==="err"
+      ? '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 7v6M12 16.5v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>')
+    + '<span></span>';
+  t.lastChild.textContent = msg;
+  clearTimeout(toastT); toastT=setTimeout(function(){ t.classList.remove("show"); }, 2600);
+  setStatus(msg);
+}
+
+/* ============================================================ STRINGS =========== */
+function fvsString(map, axes){
+  return axes.map(function(a){ return '"'+a.tag+'" '+fmt(map[a.tag]); }).join(", ");
+}
+function ffsString(feats){
+  var on=[], off=[];
+  Object.keys(feats).forEach(function(t){ (feats[t]?on:off).push('"'+t+'" '+(feats[t]?1:0)); });
+  var all = on.concat(off);
+  return all.length ? all.join(", ") : "normal";
+}
+
+/* ============================================================ FONT LOADING ====== */
+function readFvar(font){
+  var fvar = font.tables && font.tables.fvar;
+  var axes = (fvar && fvar.axes ? fvar.axes : []).map(function(a){
+    return { tag:a.tag, min:a.minValue, def:a.defaultValue, max:a.maxValue,
+             name: nm(a.name) || REG_AXIS[a.tag] || a.tag,
+             step: axisStep(a.minValue, a.maxValue) };
+  });
+  // gentle ordering: registered axes first in a sensible order, then the rest as authored
+  axes.sort(function(x,y){
+    var ix=AXIS_ORDER.indexOf(x.tag), iy=AXIS_ORDER.indexOf(y.tag);
+    if(ix<0)ix=99; if(iy<0)iy=99; return ix-iy;
+  });
+  return axes;
+}
+function readInstances(font){
+  var fvar = font.tables && font.tables.fvar;
+  return (fvar && fvar.instances ? fvar.instances : []).map(function(i){
+    return { name: nm(i.name), coords: i.coordinates };
+  });
+}
+function readFeatures(font){
+  var set={};
+  ["gsub","gpos"].forEach(function(tbl){
+    var t=font.tables&&font.tables[tbl];
+    if(t&&t.features) t.features.forEach(function(f){ if(featLabel(f.tag)) set[f.tag]=1; });
+  });
+  return Object.keys(set).sort();
+}
+function readMeta(font, fallbackLabel, foundry){
+  var n=font.names||{};
+  var fam = nm(n.preferredFamily) || nm(n.fontFamily) || fallbackLabel || "Custom font";
+  var ver = (nm(n.version)||"").replace(/^Version\s*/i,"").split(";")[0].trim();
+  return {
+    family: fam,
+    version: ver || "—",
+    foundry: nm(n.designer) || nm(n.manufacturer) || foundry || "—",
+    upm: font.unitsPerEm,
+    glyphCount: font.glyphs ? font.glyphs.length : 0,
+    axes: readFvar(font),
+    instances: readInstances(font),
+    features: readFeatures(font),
+    font: font
+  };
+}
+
+function bufSig(ab){
+  var d=new DataView(ab); if(ab.byteLength<4) return "";
+  return String.fromCharCode(d.getUint8(0),d.getUint8(1),d.getUint8(2),d.getUint8(3));
+}
+
+// Load from ArrayBuffer: parse fvar (opentype) + register FontFace (await -> no FOUT)
+function loadBuffer(ab, opt){
+  opt = opt || {};
+  return new Promise(function(resolve, reject){
+    if (typeof opentype === "undefined") { reject(new Error("Parser not ready — reload the page.")); return; }
+    if (bufSig(ab) === "wOF2") { reject(new Error("WOFF2 axis-reading isn't supported here — drop a .ttf, .otf or .woff (or pick a bundled font).")); return; }
+    var font;
+    try { font = opentype.parse(ab.slice(0)); }
+    catch(e){ reject(new Error("Couldn't parse that file as a font.")); return; }
+    var meta = readMeta(font, opt.label, opt.foundry);
+    var alias = "Spec_" + (opt.key || "custom");
+    // replace any prior FontFace under this alias (custom re-drops)
+    document.fonts.forEach(function(ff){ if(ff.family===alias) try{document.fonts.delete(ff);}catch(e){} });
+    var ff;
+    try { ff = new FontFace(alias, ab.slice(0)); }
+    catch(e){ reject(new Error("The browser refused this font file.")); return; }
+    ff.load().then(function(loaded){
+      document.fonts.add(loaded);
+      resolve({ meta:meta, alias:alias, srcUrl:opt.url||null });
+    }).catch(function(){
+      reject(new Error("The font loaded but the browser couldn't render it."));
+    });
+  });
+}
+
+function fetchBuffer(url){
+  return fetch(url, {mode:"cors"}).then(function(r){
+    if(!r.ok) throw new Error("Network error ("+r.status+") fetching font.");
+    return r.arrayBuffer();
+  });
+}
+
+// Activate a parsed font into the UI
+function activate(loaded, key){
+  state.fonts[key] = loaded;
+  state.current = key;
+  state.axes = loaded.meta.axes;
+  // axis map: opsz tracks the display size (the correct use of optical sizing); others -> fvar default
+  state.axisMap = {};
+  state.axes.forEach(function(a){
+    state.axisMap[a.tag] = (a.tag==="opsz") ? clamp(state.size, a.min, a.max) : a.def;
+  });
+  // features present -> on/off defaults
+  state.features = {};
+  loaded.meta.features.forEach(function(t){ state.features[t] = !!DEFAULT_ON[t]; });
+
+  pickHeroAxes();
+  buildSpecSheet(loaded.meta);
+  buildAxisRack();
+  buildFeatureToggles();
+  buildInstances(loaded.meta.instances);
+  buildWaterfall();
+  buildGlyphs(loaded.meta.font);
+  setFamilyVars(loaded.alias);
+  applySpecimen();
+  document.body.classList.remove("is-loading");
+  updateSegPressed();
+  setStatus("Loaded "+loaded.meta.family+" — "+state.axes.length+" axes, "+loaded.meta.features.length+" features.");
+}
+
+function setFamilyVars(alias){
+  var fam = "'"+alias+"', "+(state.current==="fraunces"?"Georgia, serif":"system-ui, sans-serif");
+  var root=document.documentElement;
+  root.style.setProperty("--fam", fam);
+  root.style.setProperty("--fam-hero", fam);
+  // pairing display/text settings derived from available axes
+  root.style.setProperty("--fvs-disp", pairingFvs(true));
+  root.style.setProperty("--fvs-text", pairingFvs(false));
+  $("pairFam").textContent = state.fonts[state.current].meta.family;
+}
+function pairingFvs(display){
+  // independent, always-flattering pairing: display = bold + large opsz; text = ~400 + text opsz
+  return state.axes.map(function(a){
+    var v=a.def;
+    if(a.tag==="wght") v = display ? clamp(620,a.min,a.max) : clamp(400,a.min,a.max);
+    else if(a.tag==="opsz") v = display ? a.max : clamp(18,a.min,a.max);
+    else if(a.tag==="slnt") v = a.def;
+    return '"'+a.tag+'" '+fmt(v);
+  }).join(", ") || "normal";
+}
+
+/* main entry: load bundled by key, or a File */
+function loadBundled(key){
+  var cfg = BUNDLED.filter(function(b){return b.key===key;})[0];
+  if(!cfg) return;
+  if(state.fonts[key]){ // cached
+    state.current=key; reactivateCached(key); return;
+  }
+  setStatus("Loading "+cfg.label+"…");
+  document.body.classList.add("is-loading");
+  fetchBuffer(cfg.url)
+    .then(function(ab){ return loadBuffer(ab, {key:key, label:cfg.label, foundry:cfg.foundry, url:cfg.url}); })
+    .then(function(loaded){ activate(loaded, key); })
+    .catch(function(err){ document.body.classList.remove("is-loading"); toast(err.message,"err"); });
+}
+function reactivateCached(key){
+  var loaded = state.fonts[key];
+  state.axes = loaded.meta.axes;
+  state.axisMap = {};
+  state.axes.forEach(function(a){ state.axisMap[a.tag] = (a.tag==="opsz")?clamp(state.size,a.min,a.max):a.def; });
+  state.features={}; loaded.meta.features.forEach(function(t){ state.features[t]=!!DEFAULT_ON[t]; });
+  pickHeroAxes(); buildSpecSheet(loaded.meta); buildAxisRack(); buildFeatureToggles();
+  buildInstances(loaded.meta.instances); buildWaterfall(); buildGlyphs(loaded.meta.font);
+  setFamilyVars(loaded.alias); applySpecimen(); updateSegPressed();
+  setStatus("Switched to "+loaded.meta.family+".");
+}
+
+function loadFile(file){
+  if(!file) return;
+  var name=(file.name||"font").toLowerCase();
+  setStatus("Reading "+file.name+"…");
+  var fr=new FileReader();
+  fr.onload=function(){
+    loadBuffer(fr.result, {key:"custom", label:file.name.replace(/\.[a-z0-9]+$/i,""), foundry:"Uploaded"})
+      .then(function(loaded){
+        activate(loaded,"custom");
+        if(state.axes.length===0) toast("Loaded a static font — no variation axes.","ok");
+        else toast("Loaded "+loaded.meta.family+" — "+state.axes.length+" axes.","ok");
+      })
+      .catch(function(err){ toast(err.message,"err"); /* previous specimen kept */ });
+  };
+  fr.onerror=function(){ toast("Couldn't read that file.","err"); };
+  fr.readAsArrayBuffer(file);
+}
+
+/* ============================================================ BUILD: SPEC SHEET = */
+function buildSpecSheet(m){
+  $("sFamily").innerHTML = '<em>'+escapeHtml(m.family)+'</em>';
+  $("sAxes").textContent = m.axes.length ? (m.axes.length + " — " + m.axes.map(function(a){return a.tag;}).join(" ")) : "0 (static)";
+  $("sInst").textContent = m.instances.length || "—";
+  $("sGlyphs").textContent = m.glyphCount ? m.glyphCount.toLocaleString() : "—";
+  $("sUpm").textContent = m.upm || "—";
+  $("sVer").textContent = m.version;
+  $("sFoundry").textContent = m.foundry;
+  $("sLicense").textContent = (state.current==="custom") ? "Local file" : "OFL 1.1";
+  $("specFormat").textContent = m.axes.length ? "TTF · VF" : "TTF · static";
+}
+
+/* ============================================================ BUILD: AXES ======= */
+function setRangeFill(input){
+  var min=+input.min, max=+input.max, v=+input.value;
+  var pct = max>min ? ((v-min)/(max-min)*100) : 50;
+  input.style.setProperty("--fill", pct+"%");
+}
+function buildAxisRack(){
+  var wrap=$("axisList"); wrap.innerHTML="";
+  $("axisCount").textContent = state.axes.length;
+  $("noAxes").hidden = state.axes.length>0;
+  state.axes.forEach(function(a){
+    var row=ce("div","axis"); row.dataset.tag=a.tag;
+    var head=ce("div","axis-head");
+    var tag=ce("span","tag"); tag.textContent=a.tag;
+    var name=ce("span","axis-name"); name.textContent=a.name;
+    var val=ce("output","axis-val"); val.id="val-"+a.tag; val.htmlFor="ax-"+a.tag; val.textContent=fmt(state.axisMap[a.tag]);
+    head.appendChild(tag); head.appendChild(name); head.appendChild(val);
+    var inp=document.createElement("input");
+    inp.type="range"; inp.id="ax-"+a.tag; inp.min=a.min; inp.max=a.max; inp.step=a.step;
+    inp.value=state.axisMap[a.tag];
+    inp.setAttribute("aria-label", a.name+" axis ("+a.tag+"), "+fmt(a.min)+" to "+fmt(a.max)+", current "+fmt(state.axisMap[a.tag]));
+    setRangeFill(inp);
+    inp.addEventListener("input", function(){
+      state.axisMap[a.tag] = +inp.value;
+      val.textContent = fmt(+inp.value);
+      inp.setAttribute("aria-label", a.name+" axis ("+a.tag+"), "+fmt(a.min)+" to "+fmt(a.max)+", current "+fmt(+inp.value));
+      setRangeFill(inp);
+      if(anim.on && a.tag===hero.axisX){ /* let manual override pause anim */ stopAnim(); }
+      clearInstanceActive();
+      scheduleApply();
+    });
+    var mm=ce("div","axis-minmax");
+    var s1=ce("span"); s1.textContent=fmt(a.min); var s2=ce("span"); s2.textContent=fmt(a.max);
+    mm.appendChild(s1); mm.appendChild(s2);
+    row.appendChild(head); row.appendChild(inp); row.appendChild(mm);
+    wrap.appendChild(row);
+  });
+  buildCutControls();
+}
+function buildCutControls(){
+  var wrap=$("cutList"); wrap.innerHTML="";
+  var defs=[
+    {tag:"size", name:"Size", unit:"px", min:12, max:320, step:1, get:function(){return state.size;}, set:function(v){state.size=v;}},
+    {tag:"leading", name:"Line height", unit:"", min:0.8, max:2, step:0.01, get:function(){return state.leading;}, set:function(v){state.leading=v;}},
+    {tag:"tracking", name:"Tracking", unit:"em", min:-0.06, max:0.3, step:0.005, get:function(){return state.tracking;}, set:function(v){state.tracking=v;}}
+  ];
+  defs.forEach(function(d){
+    var row=ce("div","axis");
+    var head=ce("div","axis-head");
+    var tag=ce("span","tag"); tag.textContent=d.tag.slice(0,4);
+    var name=ce("span","axis-name"); name.textContent=d.name;
+    var val=ce("output","axis-val"); val.textContent=fmt(d.get())+(d.unit?d.unit:"");
+    head.appendChild(tag); head.appendChild(name); head.appendChild(val);
+    var inp=document.createElement("input");
+    inp.type="range"; inp.min=d.min; inp.max=d.max; inp.step=d.step; inp.value=d.get();
+    inp.setAttribute("aria-label", d.name+", "+d.min+" to "+d.max+", current "+fmt(d.get()));
+    setRangeFill(inp);
+    inp.addEventListener("input", function(){
+      d.set(+inp.value); val.textContent=fmt(+inp.value)+(d.unit?d.unit:"");
+      inp.setAttribute("aria-label", d.name+", "+d.min+" to "+d.max+", current "+fmt(+inp.value));
+      setRangeFill(inp);
+      // size change re-tracks opsz default mapping only if user hasn't moved opsz? keep simple: don't auto-move opsz
+      scheduleApply();
+    });
+    var mm=ce("div","axis-minmax");
+    var s1=ce("span"); s1.textContent=fmt(d.min)+(d.unit||""); var s2=ce("span"); s2.textContent=fmt(d.max)+(d.unit||"");
+    mm.appendChild(s1); mm.appendChild(s2);
+    row.appendChild(head); row.appendChild(inp); row.appendChild(mm);
+    wrap.appendChild(row);
+  });
+}
+
+/* ============================================================ BUILD: FEATURES === */
+function buildFeatureToggles(){
+  var wrap=$("featList"); wrap.innerHTML="";
+  var feats=state.fonts[state.current].meta.features;
+  $("featCount").textContent=feats.length;
+  if(!feats.length){
+    var p=ce("p","feat-empty"); p.textContent="No discretionary OpenType features exposed by this font.";
+    wrap.appendChild(p); return;
+  }
+  feats.forEach(function(tag){
+    var lab=ce("label","feat");
+    var inp=document.createElement("input"); inp.type="checkbox"; inp.checked=!!state.features[tag];
+    inp.id="ft-"+tag;
+    var sw=ce("span","sw"); sw.setAttribute("aria-hidden","true");
+    var t=ce("span","feat-tag"); t.textContent=tag;
+    var nme=ce("span","feat-name"); nme.textContent=featLabel(tag)||tag;
+    lab.appendChild(inp); lab.appendChild(sw); lab.appendChild(t); lab.appendChild(nme);
+    lab.setAttribute("aria-label", (featLabel(tag)||tag)+" ("+tag+")");
+    inp.addEventListener("change", function(){ state.features[tag]=inp.checked; scheduleApply(); });
+    wrap.appendChild(lab);
+  });
+}
+
+/* ============================================================ BUILD: INSTANCES == */
+function buildInstances(insts){
+  var wrap=$("instList"); wrap.innerHTML="";
+  $("instCount").textContent=insts.length;
+  $("instWrap").hidden = insts.length===0;
+  insts.forEach(function(inst){
+    var b=ce("button","chip"); b.type="button"; b.textContent=inst.name||"Instance";
+    b.setAttribute("aria-pressed","false");
+    b.addEventListener("click", function(){
+      stopAnim();
+      state.axes.forEach(function(a){
+        if(inst.coords[a.tag]!==undefined) state.axisMap[a.tag]=clamp(inst.coords[a.tag],a.min,a.max);
+      });
+      syncAxisInputs();
+      clearInstanceActive(); b.setAttribute("aria-pressed","true");
+      applySpecimen();
+      setStatus("Applied instance "+inst.name+".");
+    });
+    wrap.appendChild(b);
+  });
+}
+function clearInstanceActive(){
+  var c=$("instList").children;
+  for(var i=0;i<c.length;i++) c[i].setAttribute("aria-pressed","false");
+}
+function syncAxisInputs(){
+  state.axes.forEach(function(a){
+    var inp=$("ax-"+a.tag), val=$("val-"+a.tag);
+    if(inp){ inp.value=state.axisMap[a.tag]; setRangeFill(inp);
+      inp.setAttribute("aria-label", a.name+" axis ("+a.tag+"), "+fmt(a.min)+" to "+fmt(a.max)+", current "+fmt(state.axisMap[a.tag])); }
+    if(val) val.textContent=fmt(state.axisMap[a.tag]);
+  });
+}
+
+/* ============================================================ BUILD: WATERFALL == */
+function buildWaterfall(){
+  var wrap=$("waterfall"); wrap.innerHTML="";
+  var sample="Sphinx of black quartz, judge my vow";
+  WF_SIZES.forEach(function(px){
+    var row=ce("div","wf-row");
+    var s=ce("div","wf-size mono"); s.textContent=px+"px";
+    var t=ce("div","wf-text"); t.textContent=sample; t.style.fontSize=px+"px";
+    t.dataset.px=px;
+    row.appendChild(s); row.appendChild(t); wrap.appendChild(row);
+  });
+}
+
+/* ============================================================ BUILD: GLYPHS ===== */
+function buildGlyphs(font){
+  var wrap=$("glyphs"); wrap.innerHTML="";
+  var chars=[], seen={};
+  GLYPH_RANGES.forEach(function(r){
+    for(var cp=r[0];cp<=r[1];cp++){
+      var ch=String.fromCodePoint(cp);
+      if(seen[ch]) continue; seen[ch]=1;
+      var gi=0; try{ gi=font.charToGlyphIndex(ch); }catch(e){ gi=0; }
+      if(gi>0) chars.push({ch:ch,cp:cp});
+    }
+  });
+  $("glyphCount").textContent = chars.length + " glyphs in latin set";
+  var frag=document.createDocumentFragment();
+  chars.forEach(function(g){
+    var b=ce("button","glyph"); b.type="button"; b.textContent=g.ch;
+    b.dataset.cp="U+"+g.cp.toString(16).toUpperCase().padStart(4,"0");
+    b.setAttribute("role","listitem");
+    b.setAttribute("aria-label", "Insert "+(g.cp>32?g.ch:"")+" "+b.dataset.cp);
+    b.addEventListener("click", function(){ insertGlyph(g.ch); });
+    frag.appendChild(b);
+  });
+  wrap.appendChild(frag);
+}
+function insertGlyph(ch){
+  var sp=$("specimen");
+  sp.textContent = (sp.textContent||"") + ch;
+  state.text = sp.textContent;
+  toast("Inserted “"+ch+"”","ok");
+  scheduleHash();
+}
+
+/* ============================================================ APPLY / RENDER ==== */
+function scheduleApply(){
+  if(applyScheduled) return; applyScheduled=true;
+  requestAnimationFrame(function(){ applyScheduled=false; applySpecimen(); });
+}
+function applySpecimen(){
+  var fvs = state.axes.length ? fvsString(state.axisMap, state.axes) : "normal";
+  var ffs = ffsString(state.features);
+  var root=document.documentElement;
+  root.style.setProperty("--fvs", fvs);
+  root.style.setProperty("--ffs", ffs);
+  // tester size/leading/tracking
+  var sp=$("specimen");
+  sp.style.fontSize=state.size+"px";
+  sp.style.lineHeight=state.leading;
+  sp.style.letterSpacing=state.tracking+"em";
+  // hero base (when not actively morphing) mirrors weight-ish; hero uses its own var
+  if(!hero.active && !hero.raf) root.style.setProperty("--fvs-hero", fvs);
+  // waterfall: per-row opsz tracking when axis present
+  var hasOpsz = state.axisMap.opsz!==undefined;
+  var rows=$("waterfall").children;
+  for(var i=0;i<rows.length;i++){
+    var txt=rows[i].lastChild;
+    if(hasOpsz){
+      var px=+txt.dataset.px;
+      var op=clampOpsz(px);
+      var rowMap={}; for(var k in state.axisMap) rowMap[k]=state.axisMap[k]; rowMap.opsz=op;
+      txt.style.fontVariationSettings = fvsString(rowMap, state.axes);
+    } else {
+      txt.style.fontVariationSettings = ""; // inherit --fvs
+    }
+  }
+  updateReadout(fvs, ffs);
+}
+function clampOpsz(px){
+  var a=null; state.axes.forEach(function(x){ if(x.tag==="opsz") a=x; });
+  if(!a) return px; return clamp(px, a.min, a.max);
+}
+
+function updateReadout(fvs, ffs){
+  var famName = state.fonts[state.current].meta.family;
+  var sel = ".specimen";
+  var html = "";
+  html += '<span class="c">/* '+escapeHtml(famName)+' — paste & it reproduces the specimen */</span>\n';
+  html += '<span class="k">'+sel+'</span> {\n';
+  html += '  <span class="p">font-family</span>: <span class="v">"'+escapeHtml(famName)+'"</span>;\n';
+  html += '  <span class="p">font-size</span>: <span class="v">'+state.size+'px</span>;\n';
+  html += '  <span class="p">line-height</span>: <span class="v">'+fmt(state.leading)+'</span>;\n';
+  html += '  <span class="p">letter-spacing</span>: <span class="v">'+fmt(state.tracking)+'em</span>;\n';
+  html += '  <span class="p">font-variation-settings</span>: <span class="v">'+escapeHtml(fvs)+'</span>;\n';
+  if(ffs!=="normal") html += '  <span class="p">font-feature-settings</span>: <span class="v">'+escapeHtml(ffs)+'</span>;\n';
+  html += '}';
+  $("cssOut").innerHTML = html;
+}
+
+// plaintext versions for clipboard
+function cssText(){
+  var m=state.fonts[state.current], fam=m.meta.family, fvs=fvsString(state.axisMap,state.axes), ffs=ffsString(state.features);
+  var s="";
+  s += "@font-face {\n  font-family: \""+fam+"\";\n";
+  if(m.srcUrl) s += "  src: url(\""+m.srcUrl+"\") format(\"truetype\");\n";
+  else s += "  src: url(\""+ (m.meta.family.replace(/\s+/g,"")) +".ttf\") format(\"truetype\"); /* supply your uploaded file */\n";
+  s += "  font-display: swap;\n}\n\n";
+  s += ".specimen {\n";
+  s += "  font-family: \""+fam+"\";\n";
+  s += "  font-size: "+state.size+"px;\n";
+  s += "  line-height: "+fmt(state.leading)+";\n";
+  s += "  letter-spacing: "+fmt(state.tracking)+"em;\n";
+  s += "  font-variation-settings: "+ (state.axes.length?fvs:"normal") +";\n";
+  if(ffs!=="normal") s += "  font-feature-settings: "+ffs+";\n";
+  s += "}";
+  return s;
+}
+function vfsText(){ return "font-variation-settings: "+(state.axes.length?fvsString(state.axisMap,state.axes):"normal")+";"; }
+
+/* ============================================================ CLIPBOARD ========= */
+function copy(text){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(text);
+  }
+  return new Promise(function(res,rej){
+    try{
+      var ta=document.createElement("textarea"); ta.value=text;
+      ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta);
+      ta.select(); document.execCommand("copy"); document.body.removeChild(ta); res();
+    }catch(e){ rej(e); }
+  });
+}
+function flashOk(btn){
+  btn.classList.add("is-ok");
+  setTimeout(function(){ btn.classList.remove("is-ok"); },1200);
+}
+
+/* ============================================================ HERO MORPH ======== */
+function pickHeroAxes(){
+  var tags=state.axes.map(function(a){return a.tag;});
+  hero.axisX = tags.indexOf("wght")>=0 ? "wght" : (tags[0]||null);
+  var second = ["opsz","slnt","wdth","CASL","SOFT","GRAD"].filter(function(t){return tags.indexOf(t)>=0 && t!==hero.axisX;})[0];
+  hero.axisY = second || (tags.filter(function(t){return t!==hero.axisX;})[0]||null);
+  hero.cur={}; hero.tgt={};
+  state.axes.forEach(function(a){ hero.cur[a.tag]=a.def; hero.tgt[a.tag]=a.def; });
+}
+function heroAxis(tag){ var f=null; state.axes.forEach(function(a){if(a.tag===tag)f=a;}); return f; }
+function setHeroTarget(nx, ny){
+  var ax=heroAxis(hero.axisX), ay=heroAxis(hero.axisY);
+  if(ax) hero.tgt[hero.axisX]=ax.min+(ax.max-ax.min)*nx;
+  if(ay) hero.tgt[hero.axisY]=ay.min+(ay.max-ay.min)*ny;
+}
+function heroTick(){
+  hero.raf=0;
+  var moved=false;
+  state.axes.forEach(function(a){
+    var c=hero.cur[a.tag], t=hero.tgt[a.tag];
+    if(Math.abs(t-c)>0.01){ hero.cur[a.tag]=c+(t-c)*(reduce.matches?1:0.16); moved=true; }
+    else hero.cur[a.tag]=t;
+  });
+  document.documentElement.style.setProperty("--fvs-hero", fvsString(hero.cur, state.axes));
+  if(moved) hero.raf=requestAnimationFrame(heroTick);
+}
+function heroKick(){ if(!hero.raf) hero.raf=requestAnimationFrame(heroTick); }
+function initHero(){
+  var stage=$("heroStage");
+  stage.addEventListener("pointermove", function(e){
+    if(!state.axes.length) return;
+    var r=stage.getBoundingClientRect();
+    var nx=clamp((e.clientX-r.left)/r.width,0,1);
+    var ny=clamp((e.clientY-r.top)/r.height,0,1);
+    hero.active=true; clearTimeout(hero.idleTO);
+    setHeroTarget(nx, 1-ny); heroKick();
+  });
+  stage.addEventListener("pointerleave", function(){
+    hero.active=false;
+    // settle to a handsome resting pose
+    if(!state.axes.length) return;
+    setHeroTarget(0.62, 0.55); heroKick();
+    if(!reduce.matches) scheduleHeroIdle();
+  });
+  // initial resting pose + gentle idle breathing (motion-allowed only)
+  setTimeout(function(){ if(state.axes.length){ setHeroTarget(0.62,0.55); heroKick(); if(!reduce.matches) scheduleHeroIdle(); } }, 400);
+}
+function scheduleHeroIdle(){
+  clearTimeout(hero.idleTO);
+  hero.idleTO=setTimeout(function tick(){
+    if(hero.active || reduce.matches) return;
+    var ax=heroAxis(hero.axisX); if(!ax){ return; }
+    // breathe weight gently around mid
+    var phase=(Math.sin(Date.now()/2600)+1)/2; // 0..1
+    setHeroTarget(0.4+phase*0.45, 0.55); heroKick();
+    hero.idleTO=setTimeout(tick, 90);
+  }, 1400);
+}
+
+/* ============================================================ ANIM (tester) ===== */
+function startAnim(){
+  if(reduce.matches){ toast("Animation off — reduced-motion is on.","ok"); return; }
+  if(!state.axes.length) return;
+  var ax=heroAxis(hero.axisX); if(!ax) return;
+  anim.on=true;
+  $("animBtn").setAttribute("aria-pressed","true");
+  $("animIcon").innerHTML='<rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/>';
+  $("animLabel").textContent="Pause";
+  var tick=function(){
+    if(!anim.on) return;
+    anim.t += anim.dir*0.012; if(anim.t>1){anim.t=1;anim.dir=-1;} if(anim.t<0){anim.t=0;anim.dir=1;}
+    var v=ax.min+(ax.max-ax.min)*anim.t;
+    state.axisMap[ax.tag]=v;
+    var inp=$("ax-"+ax.tag), val=$("val-"+ax.tag);
+    if(inp){inp.value=v; setRangeFill(inp);} if(val) val.textContent=fmt(v);
+    applySpecimen();
+    anim.raf=requestAnimationFrame(tick);
+  };
+  anim.raf=requestAnimationFrame(tick);
+}
+function stopAnim(){
+  if(!anim.on) return; anim.on=false; cancelAnimationFrame(anim.raf);
+  $("animBtn").setAttribute("aria-pressed","false");
+  $("animIcon").innerHTML='<path d="M7 5v14l11-7z" fill="currentColor"/>';
+  $("animLabel").textContent="Animate weight";
+}
+
+/* ============================================================ SHARE STATE ======= */
+var hashT;
+function scheduleHash(){ clearTimeout(hashT); hashT=setTimeout(writeHash, 400); }
+function writeHash(){
+  if(state.current==="custom") return; // can't reproduce a local file via URL
+  var parts=[];
+  parts.push("f="+state.current);
+  parts.push("s="+state.size);
+  parts.push("h="+fmt(state.leading));
+  parts.push("t="+fmt(state.tracking));
+  parts.push("a="+state.axes.map(function(a){return a.tag+":"+fmt(state.axisMap[a.tag]);}).join(","));
+  var on=Object.keys(state.features).filter(function(k){return state.features[k];});
+  if(on.length) parts.push("ft="+on.join(","));
+  var txt=$("specimen").textContent.slice(0,80);
+  if(txt) parts.push("x="+encodeURIComponent(txt));
+  history.replaceState(null,"","#"+parts.join("&"));
+}
+function readHash(){
+  var h=location.hash.replace(/^#/,""); if(!h) return null;
+  var o={}; h.split("&").forEach(function(p){ var i=p.indexOf("="); if(i<0)return; o[p.slice(0,i)]=p.slice(i+1); });
+  return o;
+}
+function applyHash(o){
+  if(!o) return;
+  if(o.s) state.size=clamp(+o.s,12,320);
+  if(o.h) state.leading=clamp(+o.h,0.8,2);
+  if(o.t) state.tracking=clamp(+o.t,-0.06,0.3);
+  if(o.a) o.a.split(",").forEach(function(pair){
+    var kv=pair.split(":"); if(kv.length===2 && state.axisMap[kv[0]]!==undefined){
+      var ax=heroAxis(kv[0]); state.axisMap[kv[0]]=clamp(+kv[1], ax.min, ax.max);
+    }
+  });
+  if(o.ft!==undefined){
+    var on={}; o.ft.split(",").forEach(function(t){on[t]=1;});
+    Object.keys(state.features).forEach(function(t){ state.features[t]=!!on[t]; });
+  }
+  if(o.x){ state.text=decodeURIComponent(o.x); $("specimen").textContent=state.text; }
+  buildAxisRack(); buildFeatureToggles(); syncAxisInputs();
+  $("specimen").style.fontSize=state.size+"px"; $("specimen").style.lineHeight=state.leading;
+  applySpecimen();
+}
+
+/* ============================================================ SEGMENTS ========== */
+function buildSeg(){
+  var seg=$("fontSeg");
+  BUNDLED.forEach(function(b){
+    var btn=ce("button","seg-btn"); btn.type="button"; btn.dataset.key=b.key;
+    btn.setAttribute("aria-pressed","false");
+    btn.innerHTML='<span>'+b.label+'</span><span class="role">'+b.role+'</span>';
+    btn.addEventListener("click", function(){ stopAnim(); location.hash=""; loadBundled(b.key); });
+    seg.appendChild(btn);
+  });
+}
+function updateSegPressed(){
+  var c=$("fontSeg").children;
+  for(var i=0;i<c.length;i++) c[i].setAttribute("aria-pressed", String(c[i].dataset.key===state.current));
+}
+
+/* ============================================================ EVENTS / DND ====== */
+function initEvents(){
+  // specimen edit — only updates text + readout target string; never touches axis state
+  var sp=$("specimen");
+  sp.addEventListener("input", function(){ state.text=sp.textContent; scheduleHash(); });
+  sp.addEventListener("focus", function(){ $("status").textContent="Editing specimen text."; });
+
+  $("copyCss").addEventListener("click", function(){
+    copy(cssText()).then(function(){ flashOk($("copyCss")); toast("CSS copied — paste it anywhere.","ok"); })
+      .catch(function(){ toast("Copy blocked — select the code box and copy manually.","err"); });
+  });
+  $("copyVfs").addEventListener("click", function(){
+    copy(vfsText()).then(function(){ toast("variation-settings copied.","ok"); }).catch(function(){ toast("Copy blocked.","err"); });
+  });
+  $("copyLink").addEventListener("click", function(){
+    if(state.current==="custom"){ toast("Share links only work for bundled fonts (a local file can't travel in a URL).","err"); return; }
+    writeHash();
+    copy(location.href).then(function(){ toast("Share link copied.","ok"); }).catch(function(){ toast("Copy blocked.","err"); });
+  });
+  $("resetBtn").addEventListener("click", function(){
+    stopAnim(); location.hash="";
+    state.axes.forEach(function(a){ state.axisMap[a.tag]=(a.tag==="opsz")?clamp(state.size,a.min,a.max):a.def; });
+    syncAxisInputs(); clearInstanceActive(); applySpecimen(); toast("Axes reset to the font's defaults.","ok");
+  });
+  $("animBtn").addEventListener("click", function(){ anim.on?stopAnim():startAnim(); });
+
+  $("fileInput").addEventListener("change", function(e){ if(e.target.files&&e.target.files[0]) loadFile(e.target.files[0]); e.target.value=""; });
+
+  // full-window drag/drop
+  var ov=$("overlay"), depth=0;
+  window.addEventListener("dragenter", function(e){ e.preventDefault(); depth++; ov.classList.add("show"); });
+  window.addEventListener("dragover", function(e){ e.preventDefault(); });
+  window.addEventListener("dragleave", function(e){ depth--; if(depth<=0){depth=0; ov.classList.remove("show");} });
+  window.addEventListener("drop", function(e){
+    e.preventDefault(); depth=0; ov.classList.remove("show");
+    var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]; if(f) loadFile(f);
+  });
+  var dzi=$("dropzoneInline");
+  dzi.addEventListener("click", function(){ $("fileInput").click(); });
+  dzi.setAttribute("tabindex","0"); dzi.setAttribute("role","button"); dzi.setAttribute("aria-label","Choose a font file to load");
+  dzi.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); $("fileInput").click(); } });
+
+  reduce.addEventListener("change", function(){ if(reduce.matches){ stopAnim(); } });
+}
+
+/* ============================================================ BOOT ============== */
+function boot(){
+  // responsive opening size — the tester opens at a size that fits the screen (slider/readout reflect the real value)
+  state.size = Math.round(clamp(window.innerWidth*0.13, 42, 140));
+  buildSeg();
+  initEvents();
+  initHero();
+  var hashObj=readHash();
+  var startKey = (hashObj && hashObj.f && BUNDLED.some(function(b){return b.key===hashObj.f;})) ? hashObj.f : "fraunces";
+  // initial font load -> then apply any hash overrides (axes/size/features/text)
+  setStatus("Loading "+startKey+"…");
+  fetchBuffer(BUNDLED.filter(function(b){return b.key===startKey;})[0].url)
+    .then(function(ab){ var c=BUNDLED.filter(function(b){return b.key===startKey;})[0];
+      return loadBuffer(ab,{key:startKey,label:c.label,foundry:c.foundry,url:c.url}); })
+    .then(function(loaded){ activate(loaded, startKey); if(hashObj) applyHash(hashObj); })
+    .catch(function(err){
+      document.body.classList.remove("is-loading");
+      $("specimen").textContent="Couldn't load the starter font.";
+      toast(err.message+" Check your connection and reload.","err");
+    });
+}
+
+// opentype.js is deferred; ensure it's present before boot
+if (document.readyState === "loading") {
+  window.addEventListener("DOMContentLoaded", function(){
+    if (typeof opentype !== "undefined") boot();
+    else { var s=document.querySelector('script[src*="opentype"]');
+      if(s) s.addEventListener("load", boot); else boot(); }
+  });
+} else { boot(); }
+
+})();
+</script>
+</body>
+</html>

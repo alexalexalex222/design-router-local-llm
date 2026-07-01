@@ -1,0 +1,236 @@
+/* =========================================================================
+   comparison_table_v1
+   Responsive feature comparison. Sticky header row (position: sticky on the
+   <th>s). On narrow screens the table keeps its shape and scrolls horizontally
+   inside a focusable region; the feature column stays pinned. The featured plan
+   column is tinted. Check/dash = inline SVG. Palette: warm paper + ink. Serif
+   display = Newsreader.
+   ========================================================================= */
+.cmp {
+  --neutral-0:   #ffffff;
+  --neutral-50:  #faf8f4;
+  --neutral-100: #f1ede5;
+  --neutral-200: #e4ddd0;
+  --neutral-300: #cbc1ad;
+  --neutral-500: #8a7f6a;
+  --neutral-700: #4c4536;
+  --neutral-900: #1f1b12;
+
+  --brand-300: #b9d4c4;
+  --brand-500: #2f7d63;
+  --brand-600: #245f4c;
+  --brand-700: #1b4839;
+  --accent-500: #c6892a;
+  --danger-400: #b9b2a3;   /* "no" marks read as muted, not alarming */
+
+  /* Semantic roles */
+  --color-bg:            var(--neutral-50);
+  --color-surface:       var(--neutral-0);
+  --color-surface-sunken:var(--neutral-100);
+  --color-border:        var(--neutral-200);
+  --color-border-strong: var(--neutral-300);
+  --color-text:          var(--neutral-900);
+  --color-text-muted:    var(--neutral-500);
+  --color-text-subtle:   var(--neutral-700);
+  --color-primary:       var(--brand-600);
+  --color-yes:           var(--brand-500);
+  --color-no:            var(--danger-400);
+  --color-featured-tint: color-mix(in srgb, var(--brand-500) 8%, var(--color-surface));
+  --color-featured-edge: color-mix(in srgb, var(--brand-500) 30%, var(--color-border));
+  --color-focus-ring:    var(--brand-600);
+
+  /* Typography */
+  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-body:    "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --text-xs:   clamp(0.75rem, 0.72rem + 0.15vw, 0.8125rem);
+  --text-sm:   clamp(0.875rem, 0.84rem + 0.18vw, 0.9375rem);
+  --text-base: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
+  --text-md:   clamp(1.125rem, 1.06rem + 0.32vw, 1.25rem);
+  --text-2xl:  clamp(2rem, 1.62rem + 1.8vw, 2.8rem);
+  --leading-tight: 1.12;
+  --leading-normal: 1.5;
+  --tracking-tight: -0.015em;
+  --tracking-caps: 0.16em;
+  --weight-regular: 400; --weight-medium: 500; --weight-semibold: 600;
+
+  /* Spacing / layout */
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+  --space-5: 1.5rem; --space-6: 2rem; --space-7: 2.5rem; --space-8: 3rem;
+  --space-9: 4rem; --space-10: 6rem;
+  --container-max: 1100px;
+  --container-pad: clamp(1.25rem, 5vw, 4rem);
+
+  --radius-sm: 8px; --radius-md: 14px; --radius-lg: 20px; --radius-pill: 999px;
+  --shadow-1: 0 1px 2px rgba(31,27,18,0.06), 0 1px 1px rgba(31,27,18,0.04);
+  --shadow-2: 0 12px 30px rgba(31,27,18,0.10);
+  --duration-base: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ring: 0 0 0 3px var(--color-surface), 0 0 0 5px var(--color-focus-ring);
+
+  box-sizing: border-box;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  padding-block: clamp(var(--space-8), 8vw, var(--space-10));
+  -webkit-font-smoothing: antialiased;
+}
+.cmp *, .cmp *::before, .cmp *::after { box-sizing: border-box; }
+
+.cmp__inner {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+}
+.cmp__head { margin-bottom: clamp(var(--space-6), 5vw, var(--space-8)); max-width: 52ch; }
+.cmp__kicker {
+  display: inline-block;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: var(--space-3);
+  font-family: var(--font-body);
+}
+.cmp__title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  margin: 0;
+}
+
+/* ---- Scroll region wraps the table; focusable for keyboard scroll ---- */
+.cmp__scroll {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-1);
+  -webkit-overflow-scrolling: touch;
+}
+.cmp__scroll:focus-visible { outline: none; box-shadow: var(--ring); }
+
+/* ---- Table ---- */
+.cmp__table {
+  width: 100%;
+  min-width: 640px;             /* forces horizontal scroll instead of squashing */
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.cmp__caption {
+  caption-side: top;
+  text-align: left;
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.cmp__col-feature  { width: 34%; }
+.cmp__col-featured { width: 22%; }
+
+/* Sticky header row */
+.cmp__th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--color-surface-sunken);
+  text-align: center;
+  vertical-align: bottom;
+  padding: var(--space-5) var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border-strong);
+}
+.cmp__th--feature {
+  text-align: left;
+  /* pin the feature column header to the top-left corner (both axes) */
+  left: 0;
+  z-index: 4;
+}
+.cmp__th--featured {
+  background: var(--color-featured-tint);
+  color: var(--color-primary);
+  border-bottom-color: var(--color-featured-edge);
+}
+.cmp__th-badge {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: var(--space-2);
+}
+
+/* Row header (feature name) — pinned to the left edge while scrolling */
+.cmp__rowhead {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--color-surface);
+  text-align: left;
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 1px 0 0 var(--color-border);   /* hairline that separates pinned col */
+}
+
+.cmp__cell {
+  text-align: center;
+  padding: var(--space-4) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-subtle);
+  vertical-align: middle;
+}
+.cmp__cell--featured {
+  background: var(--color-featured-tint);
+  border-inline: 1px solid var(--color-featured-edge);
+}
+.cmp__table tbody tr:last-child .cmp__cell,
+.cmp__table tbody tr:last-child .cmp__rowhead { border-bottom: none; }
+/* close the featured column with a bottom edge */
+.cmp__table tbody tr:last-child .cmp__cell--featured { border-bottom: 1px solid var(--color-featured-edge); border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
+
+.cmp__val--text { font-size: var(--text-sm); font-weight: var(--weight-medium); }
+
+/* ---- Inline SVG marks ---- */
+.cmp__mark { display: inline-block; vertical-align: middle; }
+.cmp__mark--yes {
+  color: var(--color-yes);
+  background: color-mix(in srgb, var(--color-yes) 12%, transparent);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+}
+.cmp__mark--no { color: var(--color-no); }
+
+/* ---- Mobile scroll hint ---- */
+.cmp__hint {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  display: none;
+}
+
+/* ---- Responsive ----
+   The table keeps its real shape and scrolls; we just tighten padding and show
+   the scroll hint. Works at 360/375px without layout breakage. */
+@media (max-width: 720px) {
+  .cmp__hint { display: block; }
+  .cmp__th, .cmp__cell { padding-inline: var(--space-3); }
+  .cmp__rowhead { padding-inline: var(--space-4); }
+}
+
+/* ---- MANDATORY reduced-motion fallback ----
+   No essential motion here; declare it for any UA smooth-scroll on the region. */
+@media (prefers-reduced-motion: reduce) {
+  .cmp__scroll { scroll-behavior: auto; }
+}

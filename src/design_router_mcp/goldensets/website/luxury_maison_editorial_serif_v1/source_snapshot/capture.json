@@ -1,0 +1,2041 @@
+{
+  "id": "maison_4321",
+  "url": "http://localhost:4321/maison",
+  "finalUrl": "http://localhost:4321/maison",
+  "httpStatus": 200,
+  "title": "Maison — Pénombre",
+  "renderedHtml": {
+    "file": "rendered.html",
+    "bytes": 68579,
+    "sha256": "ef011d4157900815528cab8a61a14126ff5c5cab4fd7a5a04aedead422453077"
+  },
+  "screenshots": [
+    {
+      "viewport": {
+        "name": "desktop-1512x812",
+        "width": 1512,
+        "height": 812
+      },
+      "path": "desktop-1512x812.png",
+      "metrics": {
+        "scrollWidth": 1512,
+        "clientWidth": 1512,
+        "bodyScrollWidth": 1512,
+        "horizontalOverflow": false,
+        "textLength": 2179
+      }
+    },
+    {
+      "viewport": {
+        "name": "mobile-390x844",
+        "width": 390,
+        "height": 844
+      },
+      "path": "mobile-390x844.png",
+      "metrics": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "bodyScrollWidth": 390,
+        "horizontalOverflow": false,
+        "textLength": 2154
+      }
+    }
+  ],
+  "resources": [
+    {
+      "url": "http://localhost:4321/maison",
+      "status": 200,
+      "resourceType": "document",
+      "contentType": "text/html",
+      "bytes": 67742,
+      "sha256": "ef05fab6c632308b058cf6fc3213b0637700919699d5e40013f5a3263025bb2a",
+      "file": "resources/01-maison.html"
+    },
+    {
+      "url": "http://localhost:4321/src/layouts/Base.astro?astro&type=script&index=0&lang.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3126,
+      "sha256": "a0d0f939dd66197bdc10e9ff5261b55fb66dc7cadf34ea7aa9f63ebd74915137",
+      "file": "resources/02-src_layouts_Base.astro.js"
+    },
+    {
+      "url": "http://localhost:4321/src/components/Header.astro?astro&type=style&index=0&lang.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 7690,
+      "sha256": "7e03ad117cf94350673493593db1b5a6e9ba0b572d63430d6c9aee4eec16bc44",
+      "file": "resources/03-src_components_Header.astro.js"
+    },
+    {
+      "url": "http://localhost:4321/@vite/client",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 247263,
+      "sha256": "ae3b5154fcdab019d193ad6b9ded9b5add71bece5016ea19e327df36e7a79755",
+      "file": "resources/04-_vite_client.js"
+    },
+    {
+      "url": "http://localhost:4321/@fs/penombre/node_modules/astro/dist/runtime/client/dev-toolbar/entrypoint.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 58241,
+      "sha256": "7c33844f87bc421294b98b4714458d182fbacf21e06bafc311a36524e9f67b8f",
+      "file": "resources/05-_fspenombre_node_modules_astro_dist_runtime_client_dev-toolbar_entrypoin.js"
+    },
+    {
+      "url": "http://localhost:4321/src/components/Atmosphere.astro?astro&type=style&index=0&lang.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 1484,
+      "sha256": "127cc684386b0ee8d501ef47826977b9de53722ffc2a2dcf31bb0937975d18fa",
+      "file": "resources/06-src_components_Atmosphere.astro.js"
+    },
+    {
+      "url": "http://localhost:4321/src/components/Footer.astro?astro&type=style&index=0&lang.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3060,
+      "sha256": "ed21a20fb9b23868090a0a75695f9f9374d7b10fae58f6156d45ec402ab6dc51",
+      "file": "resources/07-src_components_Footer.astro.js"
+    },
+    {
+      "url": "http://localhost:4321/@id/astro:scripts/page.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 608,
+      "sha256": "c847c6dc1ea41ec46290dc25ead19986a611c432f4d0d6a6f031d131ccdf6e83",
+      "file": "resources/08-_id_astro_scripts_page.js.js"
+    },
+    {
+      "url": "http://localhost:4321/src/pages/maison.astro?astro&type=style&index=0&lang.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 2566,
+      "sha256": "c32fb217472905dd27cd86d1b1d8eed2e4f0e4edbb681e50daafcf82e6a9c205",
+      "file": "resources/09-src_pages_maison.astro.js"
+    },
+    {
+      "url": "http://localhost:4321/src/scripts/main.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4694,
+      "sha256": "e44d02f8ab9ee10b8e06251d2c5b6740f30947474158bb412af62be879505380",
+      "file": "resources/10-src_scripts_main.js.js"
+    },
+    {
+      "url": "http://localhost:4321/src/layouts/Base.astro?astro&type=style&index=0&lang.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 630,
+      "sha256": "f203cd9d2f142f522c751b5c8aa95f3a5a8f77bf8eec824f02ead940492a46d9",
+      "file": "resources/11-src_layouts_Base.astro.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/vite/dist/client/env.mjs",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4715,
+      "sha256": "dc8505c061576e5cfc53aa845611541d9c732d63b2776bc8d6d71628f382e35c",
+      "file": "resources/12-node_modules_vite_dist_client_env.mjs.js"
+    },
+    {
+      "url": "http://localhost:4321/src/styles/global.css",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 18823,
+      "sha256": "6577ec1420f11a356f98757caea81a19018c70028085ed9b96af859d6844de63",
+      "file": "resources/13-src_styles_global.css.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/helpers.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 14831,
+      "sha256": "c41cec374f9842f91edb7f16d2345c45a7cfd474c76d56ad29fac2a45f83c86d",
+      "file": "resources/14-node_modules_astro_dist_runtime_client_dev-toolbar_helpers.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/settings.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 8139,
+      "sha256": "cbe0a4994278292564c16dbe1e7d6f8ac3ecff5dba5dcf2c83462b7666595899",
+      "file": "resources/15-node_modules_astro_dist_runtime_client_dev-toolbar_settings.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/virtual-modules/prefetch.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 526,
+      "sha256": "3a84180e3cd7a618d22468d1edaf7e83f2dd2acc9bf42d040344b925f2a8c2dd",
+      "file": "resources/16-node_modules_astro_dist_virtual-modules_prefetch.js.js"
+    },
+    {
+      "url": "http://localhost:4321/src/scripts/reveal.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9854,
+      "sha256": "7775af523d120e16b23eeee4e6569b6023cf53a587eba5fa2451b8551dd901ad",
+      "file": "resources/17-src_scripts_reveal.js.js"
+    },
+    {
+      "url": "http://localhost:4321/@id/__x00__astro:toolbar:internal",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 8908,
+      "sha256": "72ce49f42c36f1c8f7cbbe207ef951fd07f49847bfd94c1f111ad09792a39574",
+      "file": "resources/18-_id___x00__astro_toolbar_internal.js"
+    },
+    {
+      "url": "http://localhost:4321/src/scripts/bag.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 30819,
+      "sha256": "9ab6a7c757c2235cb5265a1debbad3ec39b26343a10224d2db2f0a2e41e01fec",
+      "file": "resources/19-src_scripts_bag.js.js"
+    },
+    {
+      "url": "http://localhost:4321/src/scripts/forms.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 15889,
+      "sha256": "ca5381f7e176f9a97f0954477d5d6f05662f0553d644844f79dd85d3fe954ec3",
+      "file": "resources/20-src_scripts_forms.js.js"
+    },
+    {
+      "url": "http://localhost:4321/src/scripts/header.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 10026,
+      "sha256": "4a8d437884ca20d64051e15d825af70ea64ae0a45e83e041de2eb2355e8fdd20",
+      "file": "resources/21-src_scripts_header.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/prefetch/index.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 35379,
+      "sha256": "986a4aa35a529d47b1e49b7859690f4542e5fbe23bd0e51c604fbeea7b58a626",
+      "file": "resources/22-node_modules_astro_dist_prefetch_index.js.js"
+    },
+    {
+      "url": "http://localhost:4321/src/scripts/util.js",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9385,
+      "sha256": "7143fe92a6b15f23bfe44071cae7285a178a99251e29d6c075bc50ff4fac74f4",
+      "file": "resources/23-src_scripts_util.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/astro.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 111951,
+      "sha256": "b8cc8665855eeb22fc0cb10cbf346b37bfe23de56139b677e0db90da7b8b47d5",
+      "file": "resources/24-node_modules_astro_dist_runtime_client_dev-toolbar_apps_astro.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/index.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 37557,
+      "sha256": "2213f41771e234cfde2215da7bfcc100391c807c0e482b324c4770dadc48b4a8",
+      "file": "resources/25-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_index.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/xray.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 31827,
+      "sha256": "2077be8853c32a6c1a48b2e1ba0cfc4c4bd59efafbb9168a733d4ccf2470fbb2",
+      "file": "resources/26-node_modules_astro_dist_runtime_client_dev-toolbar_apps_xray.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/settings.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 35502,
+      "sha256": "b08509d323f8c4e53991d0fe725df39ed90e618821310d58ab30ec47a1b8f504",
+      "file": "resources/27-node_modules_astro_dist_runtime_client_dev-toolbar_apps_settings.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/toolbar.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 92343,
+      "sha256": "f79c5c391d1f1153ecf4211534f957e7a1af6f68bcba1438fb4f3b7e7d9df29e",
+      "file": "resources/28-node_modules_astro_dist_runtime_client_dev-toolbar_toolbar.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/index.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 6689,
+      "sha256": "0d1f7bf50e734cd104c11a0eb2f1feabe06d485550771bad1aaadead7451c27c",
+      "file": "resources/29-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_index.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/utils/icons.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 5902,
+      "sha256": "d15191ec8e6edaa6b1c76e565a005923efd26f3ff907c91fc05000726e959c02",
+      "file": "resources/30-node_modules_astro_dist_runtime_client_dev-toolbar_apps_utils_icons.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/icons.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 277481,
+      "sha256": "4842ae17c724294240d057519e45b73dca195b3a17dfa5562a10f180b0d3ed5a",
+      "file": "resources/31-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_icons.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/utils/window.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 7919,
+      "sha256": "e778d2e7f1ecdb6feef03bd645d1dc9a0261201059cf4dfab624f3279cf15257",
+      "file": "resources/32-node_modules_astro_dist_runtime_client_dev-toolbar_apps_utils_window.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/utils/highlight.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 12214,
+      "sha256": "b5c4fd3b188906f2e3b1fa781386e8e1fc56da280369d1fbaf6c3285f19662d5",
+      "file": "resources/33-node_modules_astro_dist_runtime_client_dev-toolbar_apps_utils_highlight.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/rules/index.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 7299,
+      "sha256": "0ece982b3d35e3b349b0cfa829b0eb3825030143aadd5429243a0433c0babcc5",
+      "file": "resources/34-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_rules_index.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/ui/audit-list-window.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 54544,
+      "sha256": "b4528c7b1a90bcf93e1abdd649dcd8849a34ba1dd3c671ee432ca32c0f7f624c",
+      "file": "resources/35-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_ui_audit-list-window.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/ui/audit-ui.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 28504,
+      "sha256": "e3d664caab1064e39f759770dcc1e0ed1c13d7476f3374b6e8ad46cae72a515f",
+      "file": "resources/36-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_ui_audit-ui.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/html-escaper/esm/index.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 13364,
+      "sha256": "f1d4acea2e8c52bae743e4cdac70fa20f70bc8a5d4038cbe1d2ef4ac6fea2863",
+      "file": "resources/37-node_modules_html-escaper_esm_index.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/window.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 20160,
+      "sha256": "c89043757ec47ec74adfc854881d8416fa964fa1268889561d60cf487e87be1e",
+      "file": "resources/38-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_window.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/ui/audit-list-item.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 17688,
+      "sha256": "3bafce3c30ec74e8938b965fb5432e5f3ade28a8c9f01852907c559a48899a32",
+      "file": "resources/39-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_ui_audit-list-item.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/button.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 26819,
+      "sha256": "d0d520f1dd14c31b12afe4b405cf0f1a7507bf37a10f0ed217117c60bd909585",
+      "file": "resources/40-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_button.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/card.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 20603,
+      "sha256": "9ea33af2b616c6fae4ee3458c8bbb1cc7ffc93c9c824e07229db47578cecd9ba",
+      "file": "resources/41-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_card.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/highlight.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 22416,
+      "sha256": "4b05ee28b159e5a1b37c6acc3eda24090bcede85bc35a7b493e21bc2cecef2b9",
+      "file": "resources/42-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_highlight.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/icon.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 5971,
+      "sha256": "4ebccf3bb09669bfa4e758aa357bfdefe70d9a299d4bec9bf5fc2a4039ff5def",
+      "file": "resources/43-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_icon.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/badge.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 17172,
+      "sha256": "ad1b631206fd4d83d0744dbab070812cd1cb1cb41bba8c47301a9163444aa136",
+      "file": "resources/44-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_badge.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/toggle.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 19596,
+      "sha256": "ac881ff4eabbfa1f82d871003861068498c08bd621d1712b9a882bbb885b2dc7",
+      "file": "resources/45-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_toggle.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/tooltip.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 24028,
+      "sha256": "59b795e3404002c4ee6b5c21a99e8b76b14d9382da8852758aa3e66464621cb4",
+      "file": "resources/46-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_tooltip.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/radio-checkbox.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 17056,
+      "sha256": "07291f9277e001b21b996810a50c57e98b80f9aba85a71434f53202196b8d262",
+      "file": "resources/47-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_radio-checkbox.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/select.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 18569,
+      "sha256": "f7fc1f5e6251c67903dfc69c6a08c1eaaf8aee65f1de17b3e336248c5abd3f24",
+      "file": "resources/48-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_select.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/rules/a11y.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 125007,
+      "sha256": "0b3126851302af5f85e0663b3fa45030adc4a3cca62f65dfd91b72f4335c46d8",
+      "file": "resources/49-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_rules_a11y.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/rules/perf.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 22594,
+      "sha256": "d12a127aae057f766325cbc80009b2d779376ffc2f593f57b15a95a6c5ddb92e",
+      "file": "resources/50-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_rules_perf.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/.vite/deps/astro___aria-query.js?v=3c6c1f34",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 205280,
+      "sha256": "5f023514986254d5a426df19709eadbcbb7251ae7d520d986a984fb5239d6914",
+      "file": "resources/51-node_modules_.vite_deps_astro___aria-query.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/.vite/deps/astro___axobject-query.js?v=3c6c1f34",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 112534,
+      "sha256": "3fa278821fc0d033d8ce20cd807d4d60a4be3cbeada999e530e4ebf69f7592ce",
+      "file": "resources/52-node_modules_.vite_deps_astro___axobject-query.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/.vite/deps/chunk-BUSYA2B4.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 279,
+      "sha256": "a9582e69c6a1d7c5a063d0c61813ad30a0029916ff9722daeeb3fc125100d101",
+      "file": "resources/53-node_modules_.vite_deps_chunk-BUSYA2B4.js.js"
+    },
+    {
+      "url": "http://localhost:4321/@fs/penombre/node_modules/astro/dist/runtime/client/dev-toolbar/entrypoint.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 58241,
+      "sha256": "7c33844f87bc421294b98b4714458d182fbacf21e06bafc311a36524e9f67b8f",
+      "file": "resources/54-_fspenombre_node_modules_astro_dist_runtime_client_dev-toolbar_entrypoin.js"
+    },
+    {
+      "url": "http://localhost:4321/maison",
+      "status": 200,
+      "resourceType": "document",
+      "contentType": "text/html",
+      "bytes": 67742,
+      "sha256": "ef05fab6c632308b058cf6fc3213b0637700919699d5e40013f5a3263025bb2a",
+      "file": "resources/55-maison.html"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/helpers.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 14831,
+      "sha256": "c41cec374f9842f91edb7f16d2345c45a7cfd474c76d56ad29fac2a45f83c86d",
+      "file": "resources/56-node_modules_astro_dist_runtime_client_dev-toolbar_helpers.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/settings.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 8139,
+      "sha256": "cbe0a4994278292564c16dbe1e7d6f8ac3ecff5dba5dcf2c83462b7666595899",
+      "file": "resources/57-node_modules_astro_dist_runtime_client_dev-toolbar_settings.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/virtual-modules/prefetch.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 526,
+      "sha256": "3a84180e3cd7a618d22468d1edaf7e83f2dd2acc9bf42d040344b925f2a8c2dd",
+      "file": "resources/58-node_modules_astro_dist_virtual-modules_prefetch.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/prefetch/index.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 35379,
+      "sha256": "986a4aa35a529d47b1e49b7859690f4542e5fbe23bd0e51c604fbeea7b58a626",
+      "file": "resources/59-node_modules_astro_dist_prefetch_index.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/astro.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 111951,
+      "sha256": "b8cc8665855eeb22fc0cb10cbf346b37bfe23de56139b677e0db90da7b8b47d5",
+      "file": "resources/60-node_modules_astro_dist_runtime_client_dev-toolbar_apps_astro.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/index.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 37557,
+      "sha256": "2213f41771e234cfde2215da7bfcc100391c807c0e482b324c4770dadc48b4a8",
+      "file": "resources/61-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_index.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/xray.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 31827,
+      "sha256": "2077be8853c32a6c1a48b2e1ba0cfc4c4bd59efafbb9168a733d4ccf2470fbb2",
+      "file": "resources/62-node_modules_astro_dist_runtime_client_dev-toolbar_apps_xray.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/settings.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 35502,
+      "sha256": "b08509d323f8c4e53991d0fe725df39ed90e618821310d58ab30ec47a1b8f504",
+      "file": "resources/63-node_modules_astro_dist_runtime_client_dev-toolbar_apps_settings.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/toolbar.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 92343,
+      "sha256": "f79c5c391d1f1153ecf4211534f957e7a1af6f68bcba1438fb4f3b7e7d9df29e",
+      "file": "resources/64-node_modules_astro_dist_runtime_client_dev-toolbar_toolbar.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/index.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 6689,
+      "sha256": "0d1f7bf50e734cd104c11a0eb2f1feabe06d485550771bad1aaadead7451c27c",
+      "file": "resources/65-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_index.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/icons.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 277481,
+      "sha256": "4842ae17c724294240d057519e45b73dca195b3a17dfa5562a10f180b0d3ed5a",
+      "file": "resources/66-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_icons.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/utils/icons.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 5902,
+      "sha256": "d15191ec8e6edaa6b1c76e565a005923efd26f3ff907c91fc05000726e959c02",
+      "file": "resources/67-node_modules_astro_dist_runtime_client_dev-toolbar_apps_utils_icons.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/utils/window.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 7919,
+      "sha256": "e778d2e7f1ecdb6feef03bd645d1dc9a0261201059cf4dfab624f3279cf15257",
+      "file": "resources/68-node_modules_astro_dist_runtime_client_dev-toolbar_apps_utils_window.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/utils/highlight.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 12214,
+      "sha256": "b5c4fd3b188906f2e3b1fa781386e8e1fc56da280369d1fbaf6c3285f19662d5",
+      "file": "resources/69-node_modules_astro_dist_runtime_client_dev-toolbar_apps_utils_highlight.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/rules/index.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 7299,
+      "sha256": "0ece982b3d35e3b349b0cfa829b0eb3825030143aadd5429243a0433c0babcc5",
+      "file": "resources/70-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_rules_index.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/ui/audit-list-item.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 17688,
+      "sha256": "3bafce3c30ec74e8938b965fb5432e5f3ade28a8c9f01852907c559a48899a32",
+      "file": "resources/71-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_ui_audit-list-item.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/ui/audit-list-window.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 54544,
+      "sha256": "b4528c7b1a90bcf93e1abdd649dcd8849a34ba1dd3c671ee432ca32c0f7f624c",
+      "file": "resources/72-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_ui_audit-list-window.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/ui/audit-ui.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 28504,
+      "sha256": "e3d664caab1064e39f759770dcc1e0ed1c13d7476f3374b6e8ad46cae72a515f",
+      "file": "resources/73-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_ui_audit-ui.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/html-escaper/esm/index.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 13364,
+      "sha256": "f1d4acea2e8c52bae743e4cdac70fa20f70bc8a5d4038cbe1d2ef4ac6fea2863",
+      "file": "resources/74-node_modules_html-escaper_esm_index.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/window.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 20160,
+      "sha256": "c89043757ec47ec74adfc854881d8416fa964fa1268889561d60cf487e87be1e",
+      "file": "resources/75-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_window.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/badge.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 17172,
+      "sha256": "ad1b631206fd4d83d0744dbab070812cd1cb1cb41bba8c47301a9163444aa136",
+      "file": "resources/76-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_badge.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/button.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 26819,
+      "sha256": "d0d520f1dd14c31b12afe4b405cf0f1a7507bf37a10f0ed217117c60bd909585",
+      "file": "resources/77-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_button.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/card.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 20603,
+      "sha256": "9ea33af2b616c6fae4ee3458c8bbb1cc7ffc93c9c824e07229db47578cecd9ba",
+      "file": "resources/78-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_card.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/highlight.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 22416,
+      "sha256": "4b05ee28b159e5a1b37c6acc3eda24090bcede85bc35a7b493e21bc2cecef2b9",
+      "file": "resources/79-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_highlight.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/icon.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 5971,
+      "sha256": "4ebccf3bb09669bfa4e758aa357bfdefe70d9a299d4bec9bf5fc2a4039ff5def",
+      "file": "resources/80-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_icon.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/select.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 18569,
+      "sha256": "f7fc1f5e6251c67903dfc69c6a08c1eaaf8aee65f1de17b3e336248c5abd3f24",
+      "file": "resources/81-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_select.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/toggle.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 19596,
+      "sha256": "ac881ff4eabbfa1f82d871003861068498c08bd621d1712b9a882bbb885b2dc7",
+      "file": "resources/82-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_toggle.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/tooltip.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 24028,
+      "sha256": "59b795e3404002c4ee6b5c21a99e8b76b14d9382da8852758aa3e66464621cb4",
+      "file": "resources/83-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_tooltip.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/radio-checkbox.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 17056,
+      "sha256": "07291f9277e001b21b996810a50c57e98b80f9aba85a71434f53202196b8d262",
+      "file": "resources/84-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_radio-checkbox.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/rules/a11y.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 125007,
+      "sha256": "0b3126851302af5f85e0663b3fa45030adc4a3cca62f65dfd91b72f4335c46d8",
+      "file": "resources/85-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_rules_a11y.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/rules/perf.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 22594,
+      "sha256": "d12a127aae057f766325cbc80009b2d779376ffc2f593f57b15a95a6c5ddb92e",
+      "file": "resources/86-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_rules_perf.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/.vite/deps/astro___aria-query.js?v=3c6c1f34",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 205280,
+      "sha256": "5f023514986254d5a426df19709eadbcbb7251ae7d520d986a984fb5239d6914",
+      "file": "resources/87-node_modules_.vite_deps_astro___aria-query.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/.vite/deps/astro___axobject-query.js?v=3c6c1f34",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 112534,
+      "sha256": "3fa278821fc0d033d8ce20cd807d4d60a4be3cbeada999e530e4ebf69f7592ce",
+      "file": "resources/88-node_modules_.vite_deps_astro___axobject-query.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/.vite/deps/chunk-BUSYA2B4.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 279,
+      "sha256": "a9582e69c6a1d7c5a063d0c61813ad30a0029916ff9722daeeb3fc125100d101",
+      "file": "resources/89-node_modules_.vite_deps_chunk-BUSYA2B4.js.js"
+    },
+    {
+      "url": "http://localhost:4321/@fs/penombre/node_modules/astro/dist/runtime/client/dev-toolbar/entrypoint.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 58241,
+      "sha256": "7c33844f87bc421294b98b4714458d182fbacf21e06bafc311a36524e9f67b8f",
+      "file": "resources/90-_fspenombre_node_modules_astro_dist_runtime_client_dev-toolbar_entrypoin.js"
+    },
+    {
+      "url": "http://localhost:4321/maison",
+      "status": 200,
+      "resourceType": "document",
+      "contentType": "text/html",
+      "bytes": 67742,
+      "sha256": "ef05fab6c632308b058cf6fc3213b0637700919699d5e40013f5a3263025bb2a",
+      "file": "resources/91-maison.html"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/helpers.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 14831,
+      "sha256": "c41cec374f9842f91edb7f16d2345c45a7cfd474c76d56ad29fac2a45f83c86d",
+      "file": "resources/92-node_modules_astro_dist_runtime_client_dev-toolbar_helpers.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/settings.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 8139,
+      "sha256": "cbe0a4994278292564c16dbe1e7d6f8ac3ecff5dba5dcf2c83462b7666595899",
+      "file": "resources/93-node_modules_astro_dist_runtime_client_dev-toolbar_settings.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/virtual-modules/prefetch.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 526,
+      "sha256": "3a84180e3cd7a618d22468d1edaf7e83f2dd2acc9bf42d040344b925f2a8c2dd",
+      "file": "resources/94-node_modules_astro_dist_virtual-modules_prefetch.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/prefetch/index.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 35379,
+      "sha256": "986a4aa35a529d47b1e49b7859690f4542e5fbe23bd0e51c604fbeea7b58a626",
+      "file": "resources/95-node_modules_astro_dist_prefetch_index.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/astro.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 111951,
+      "sha256": "b8cc8665855eeb22fc0cb10cbf346b37bfe23de56139b677e0db90da7b8b47d5",
+      "file": "resources/96-node_modules_astro_dist_runtime_client_dev-toolbar_apps_astro.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/index.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 37557,
+      "sha256": "2213f41771e234cfde2215da7bfcc100391c807c0e482b324c4770dadc48b4a8",
+      "file": "resources/97-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_index.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/xray.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 31827,
+      "sha256": "2077be8853c32a6c1a48b2e1ba0cfc4c4bd59efafbb9168a733d4ccf2470fbb2",
+      "file": "resources/98-node_modules_astro_dist_runtime_client_dev-toolbar_apps_xray.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/settings.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 35502,
+      "sha256": "b08509d323f8c4e53991d0fe725df39ed90e618821310d58ab30ec47a1b8f504",
+      "file": "resources/99-node_modules_astro_dist_runtime_client_dev-toolbar_apps_settings.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/toolbar.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 92343,
+      "sha256": "f79c5c391d1f1153ecf4211534f957e7a1af6f68bcba1438fb4f3b7e7d9df29e",
+      "file": "resources/100-node_modules_astro_dist_runtime_client_dev-toolbar_toolbar.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/index.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 6689,
+      "sha256": "0d1f7bf50e734cd104c11a0eb2f1feabe06d485550771bad1aaadead7451c27c",
+      "file": "resources/101-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_index.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/icons.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 277481,
+      "sha256": "4842ae17c724294240d057519e45b73dca195b3a17dfa5562a10f180b0d3ed5a",
+      "file": "resources/102-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_icons.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/utils/icons.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 5902,
+      "sha256": "d15191ec8e6edaa6b1c76e565a005923efd26f3ff907c91fc05000726e959c02",
+      "file": "resources/103-node_modules_astro_dist_runtime_client_dev-toolbar_apps_utils_icons.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/utils/window.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 7919,
+      "sha256": "e778d2e7f1ecdb6feef03bd645d1dc9a0261201059cf4dfab624f3279cf15257",
+      "file": "resources/104-node_modules_astro_dist_runtime_client_dev-toolbar_apps_utils_window.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/utils/highlight.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 12214,
+      "sha256": "b5c4fd3b188906f2e3b1fa781386e8e1fc56da280369d1fbaf6c3285f19662d5",
+      "file": "resources/105-node_modules_astro_dist_runtime_client_dev-toolbar_apps_utils_highlight.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/rules/index.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 7299,
+      "sha256": "0ece982b3d35e3b349b0cfa829b0eb3825030143aadd5429243a0433c0babcc5",
+      "file": "resources/106-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_rules_index.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/ui/audit-list-item.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 17688,
+      "sha256": "3bafce3c30ec74e8938b965fb5432e5f3ade28a8c9f01852907c559a48899a32",
+      "file": "resources/107-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_ui_audit-list-item.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/ui/audit-list-window.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 54544,
+      "sha256": "b4528c7b1a90bcf93e1abdd649dcd8849a34ba1dd3c671ee432ca32c0f7f624c",
+      "file": "resources/108-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_ui_audit-list-window.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/ui/audit-ui.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 28504,
+      "sha256": "e3d664caab1064e39f759770dcc1e0ed1c13d7476f3374b6e8ad46cae72a515f",
+      "file": "resources/109-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_ui_audit-ui.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/html-escaper/esm/index.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 13364,
+      "sha256": "f1d4acea2e8c52bae743e4cdac70fa20f70bc8a5d4038cbe1d2ef4ac6fea2863",
+      "file": "resources/110-node_modules_html-escaper_esm_index.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/window.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 20160,
+      "sha256": "c89043757ec47ec74adfc854881d8416fa964fa1268889561d60cf487e87be1e",
+      "file": "resources/111-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_window.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/badge.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 17172,
+      "sha256": "ad1b631206fd4d83d0744dbab070812cd1cb1cb41bba8c47301a9163444aa136",
+      "file": "resources/112-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_badge.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/button.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 26819,
+      "sha256": "d0d520f1dd14c31b12afe4b405cf0f1a7507bf37a10f0ed217117c60bd909585",
+      "file": "resources/113-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_button.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/card.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 20603,
+      "sha256": "9ea33af2b616c6fae4ee3458c8bbb1cc7ffc93c9c824e07229db47578cecd9ba",
+      "file": "resources/114-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_card.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/highlight.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 22416,
+      "sha256": "4b05ee28b159e5a1b37c6acc3eda24090bcede85bc35a7b493e21bc2cecef2b9",
+      "file": "resources/115-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_highlight.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/icon.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 5971,
+      "sha256": "4ebccf3bb09669bfa4e758aa357bfdefe70d9a299d4bec9bf5fc2a4039ff5def",
+      "file": "resources/116-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_icon.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/select.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 18569,
+      "sha256": "f7fc1f5e6251c67903dfc69c6a08c1eaaf8aee65f1de17b3e336248c5abd3f24",
+      "file": "resources/117-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_select.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/toggle.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 19596,
+      "sha256": "ac881ff4eabbfa1f82d871003861068498c08bd621d1712b9a882bbb885b2dc7",
+      "file": "resources/118-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_toggle.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/tooltip.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 24028,
+      "sha256": "59b795e3404002c4ee6b5c21a99e8b76b14d9382da8852758aa3e66464621cb4",
+      "file": "resources/119-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_tooltip.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/radio-checkbox.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 17056,
+      "sha256": "07291f9277e001b21b996810a50c57e98b80f9aba85a71434f53202196b8d262",
+      "file": "resources/120-node_modules_astro_dist_runtime_client_dev-toolbar_ui-library_radio-checkbox.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/rules/a11y.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 125007,
+      "sha256": "0b3126851302af5f85e0663b3fa45030adc4a3cca62f65dfd91b72f4335c46d8",
+      "file": "resources/121-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_rules_a11y.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/rules/perf.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 22594,
+      "sha256": "d12a127aae057f766325cbc80009b2d779376ffc2f593f57b15a95a6c5ddb92e",
+      "file": "resources/122-node_modules_astro_dist_runtime_client_dev-toolbar_apps_audit_rules_perf.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/.vite/deps/astro___aria-query.js?v=3c6c1f34",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 205280,
+      "sha256": "5f023514986254d5a426df19709eadbcbb7251ae7d520d986a984fb5239d6914",
+      "file": "resources/123-node_modules_.vite_deps_astro___aria-query.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/.vite/deps/astro___axobject-query.js?v=3c6c1f34",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 112534,
+      "sha256": "3fa278821fc0d033d8ce20cd807d4d60a4be3cbeada999e530e4ebf69f7592ce",
+      "file": "resources/124-node_modules_.vite_deps_astro___axobject-query.js.js"
+    },
+    {
+      "url": "http://localhost:4321/node_modules/.vite/deps/chunk-BUSYA2B4.js?v=7c1b96fe",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 279,
+      "sha256": "a9582e69c6a1d7c5a063d0c61813ad30a0029916ff9722daeeb3fc125100d101",
+      "file": "resources/125-node_modules_.vite_deps_chunk-BUSYA2B4.js.js"
+    }
+  ],
+  "extraction": {
+    "title": "Maison — Pénombre",
+    "lang": "en",
+    "bodyTextLength": 2179,
+    "headings": [
+      {
+        "tag": "h1",
+        "text": "The house.",
+        "box": {
+          "x": 76,
+          "y": 223,
+          "width": 1361,
+          "height": 137
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(236, 227, 212)",
+          "fontFamily": "\"Cormorant Garamond\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "140px",
+          "fontWeight": "500",
+          "lineHeight": "137.2px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "On materials",
+        "box": {
+          "x": 190,
+          "y": 1144,
+          "width": 509,
+          "height": 60
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(236, 227, 212)",
+          "fontFamily": "\"Cormorant Garamond\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "56px",
+          "fontWeight": "500",
+          "lineHeight": "60.48px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "On slowness",
+        "box": {
+          "x": 193,
+          "y": 1728,
+          "width": 508,
+          "height": 60
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(236, 227, 212)",
+          "fontFamily": "\"Cormorant Garamond\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "56px",
+          "fontWeight": "500",
+          "lineHeight": "60.48px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "On restraint",
+        "box": {
+          "x": 192,
+          "y": 2190,
+          "width": 508,
+          "height": 60
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(236, 227, 212)",
+          "fontFamily": "\"Cormorant Garamond\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "56px",
+          "fontWeight": "500",
+          "lineHeight": "60.48px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Five hours await.",
+        "box": {
+          "x": 156,
+          "y": 3580,
+          "width": 1200,
+          "height": 137
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(236, 227, 212)",
+          "fontFamily": "\"Cormorant Garamond\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "140px",
+          "fontWeight": "500",
+          "lineHeight": "137.2px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "tag": "h2",
+        "text": "Occasional notes on new compositions, and word from the boutique. Nothing more.",
+        "box": {
+          "x": 76,
+          "y": 4173,
+          "width": 481,
+          "height": 302
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(236, 227, 212)",
+          "fontFamily": "\"Cormorant Garamond\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "56px",
+          "fontWeight": "500",
+          "lineHeight": "60.48px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      }
+    ],
+    "navLinks": [
+      {
+        "text": "PÉNOMBRE",
+        "href": "/"
+      },
+      {
+        "text": "THE COLLECTION",
+        "href": "/parfums"
+      },
+      {
+        "text": "MAISON",
+        "href": "/maison"
+      },
+      {
+        "text": "CONTACT",
+        "href": "/contact"
+      },
+      {
+        "text": "01 The Collection",
+        "href": "/parfums"
+      },
+      {
+        "text": "02 Maison",
+        "href": "/maison"
+      },
+      {
+        "text": "03 Contact",
+        "href": "/contact"
+      },
+      {
+        "text": "Aube",
+        "href": "/parfums/aube"
+      },
+      {
+        "text": "Heure Grise",
+        "href": "/parfums/heure-grise"
+      },
+      {
+        "text": "Foin Coupé",
+        "href": "/parfums/foin-coupe"
+      },
+      {
+        "text": "Vêpres",
+        "href": "/parfums/vepres"
+      },
+      {
+        "text": "Minuit",
+        "href": "/parfums/minuit"
+      },
+      {
+        "text": "Maison",
+        "href": "/maison"
+      },
+      {
+        "text": "All Parfums",
+        "href": "/parfums"
+      },
+      {
+        "text": "Contact & Orders",
+        "href": "/contact"
+      }
+    ],
+    "forms": [
+      {
+        "id": "",
+        "className": "newsletter is-visible",
+        "labels": [
+          "EMAIL ADDRESS"
+        ],
+        "fields": [
+          {
+            "tag": "input",
+            "type": "email",
+            "name": "email",
+            "placeholder": "you@example.com",
+            "text": ""
+          },
+          {
+            "tag": "button",
+            "type": "submit",
+            "name": "",
+            "placeholder": "",
+            "text": "SUBSCRIBE"
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "index": 0,
+        "tag": "header",
+        "id": "",
+        "className": "site-header",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [],
+        "buttons": [
+          "PÉNOMBRE",
+          "THE COLLECTION",
+          "MAISON",
+          "CONTACT",
+          "BAG 0 0 ITEMS IN BAG",
+          "Menu"
+        ],
+        "text": "PÉNOMBRE THE COLLECTION MAISON CONTACT BAG 0 0 ITEMS IN BAG",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 1512,
+          "height": 81
+        },
+        "styles": {
+          "display": "block",
+          "position": "fixed",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(236, 227, 212)",
+          "fontFamily": "\"Cormorant Garamond\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "19.2px",
+          "fontWeight": "400",
+          "lineHeight": "30.72px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 1,
+        "tag": "nav",
+        "id": "",
+        "className": "site-nav",
+        "role": "",
+        "ariaLabel": "Primary",
+        "headings": [],
+        "buttons": [
+          "THE COLLECTION",
+          "MAISON",
+          "CONTACT"
+        ],
+        "text": "THE COLLECTION MAISON CONTACT",
+        "box": {
+          "x": 625,
+          "y": 25,
+          "width": 386,
+          "height": 31
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(236, 227, 212)",
+          "fontFamily": "\"Cormorant Garamond\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "19.2px",
+          "fontWeight": "400",
+          "lineHeight": "30.72px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 2,
+        "tag": "nav",
+        "id": "",
+        "className": "overlay-menu__nav",
+        "role": "",
+        "ariaLabel": "Primary, full screen",
+        "headings": [],
+        "buttons": [
+          "01 The Collection",
+          "02 Maison",
+          "03 Contact"
+        ],
+        "text": "01 The Collection 02 Maison 03 Contact",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "styles": {
+          "display": "flex",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(236, 227, 212)",
+          "fontFamily": "\"Cormorant Garamond\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "19.2px",
+          "fontWeight": "400",
+          "lineHeight": "30.72px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 3,
+        "tag": "aside",
+        "id": "",
+        "className": "bag-drawer",
+        "role": "dialog",
+        "ariaLabel": "Shopping bag",
+        "headings": [],
+        "buttons": [
+          "Close",
+          "Discover the collection",
+          "Place order with the atelier"
+        ],
+        "text": "Your Bag Close Your bag is empty. Discover the collection Subtotal €0 Complimentary shipping and samples included with every order. Place order with the atelier",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "styles": {
+          "display": "none",
+          "position": "fixed",
+          "background": "rgb(21, 18, 14)",
+          "color": "rgb(236, 227, 212)",
+          "fontFamily": "\"Cormorant Garamond\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "19.2px",
+          "fontWeight": "400",
+          "lineHeight": "30.72px",
+          "borderRadius": "0px",
+          "boxShadow": "rgba(0, 0, 0, 0.92) 0px 50px 120px -50px"
+        }
+      },
+      {
+        "index": 4,
+        "tag": "main",
+        "id": "main",
+        "className": "has-offset",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h1",
+            "text": "The house."
+          },
+          {
+            "tag": "h2",
+            "text": "On materials"
+          },
+          {
+            "tag": "h2",
+            "text": "On slowness"
+          },
+          {
+            "tag": "h2",
+            "text": "On restraint"
+          },
+          {
+            "tag": "h2",
+            "text": "Five hours await."
+          }
+        ],
+        "buttons": [
+          "THE COLLECTION",
+          "WRITE TO THE HOUSE"
+        ],
+        "text": "THE MAISON The house. Pénombre keeps a small house and a long bench, and makes perfume for the half-light — the hours that belong fully neither to the day nor to the dark. We are interested in the thresholds: the cold blue before dawn, the cooling of stone at dusk, the narrow stillness at midnight. What follows is not a history. It is how we work. 01 On materials We buy few things, and we buy them well. Iris that takes years to travel from rhizome to butter. The resins — frankincense, myrrh, labdanum — and the absolutes that cannot be faked. Where a natural carries the idea, we use the natural. Where a synthetic carries it further — cleaner, steadier, kinder to the world — we use the synthetic, and we say so. A perfume is judged by how it smells, not by the romance of its parts. 02 On slowness A composition lives on the bench for months before it is named. We wear it, change it, set it down, return to it. Materials marry slowly; a formula that smells finished on Monday is rarely finish",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 1512,
+          "height": 3971
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(236, 227, 212)",
+          "fontFamily": "\"Cormorant Garamond\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "19.2px",
+          "fontWeight": "400",
+          "lineHeight": "30.72px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 5,
+        "tag": "header",
+        "id": "",
+        "className": "page-head section--top",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h1",
+            "text": "The house."
+          }
+        ],
+        "buttons": [],
+        "text": "THE MAISON The house.",
+        "box": {
+          "x": 0,
+          "y": 80,
+          "width": 1512,
+          "height": 280
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(236, 227, 212)",
+          "fontFamily": "\"Cormorant Garamond\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "19.2px",
+          "fontWeight": "400",
+          "lineHeight": "30.72px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 6,
+        "tag": "section",
+        "id": "",
+        "className": "section opening",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [],
+        "buttons": [],
+        "text": "Pénombre keeps a small house and a long bench, and makes perfume for the half-light — the hours that belong fully neither to the day nor to the dark. We are interested in the thresholds: the cold blue before dawn, the cooling of stone at dusk, the narrow stillness at midnight. What follows is not a history. It is how we work.",
+        "box": {
+          "x": 0,
+          "y": 360,
+          "width": 1512,
+          "height": 687
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(236, 227, 212)",
+          "fontFamily": "\"Cormorant Garamond\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "19.2px",
+          "fontWeight": "400",
+          "lineHeight": "30.72px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 7,
+        "tag": "section",
+        "id": "",
+        "className": "principles",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h2",
+            "text": "On materials"
+          },
+          {
+            "tag": "h2",
+            "text": "On slowness"
+          },
+          {
+            "tag": "h2",
+            "text": "On restraint"
+          }
+        ],
+        "buttons": [],
+        "text": "01 On materials We buy few things, and we buy them well. Iris that takes years to travel from rhizome to butter. The resins — frankincense, myrrh, labdanum — and the absolutes that cannot be faked. Where a natural carries the idea, we use the natural. Where a synthetic carries it further — cleaner, steadier, kinder to the world — we use the synthetic, and we say so. A perfume is judged by how it smells, not by the romance of its parts. 02 On slowness A composition lives on the bench for months before it is named. We wear it, change it, set it down, return to it. Materials marry slowly; a formula that smells finished on Monday is rarely finished by Friday. Nothing here is released to a calendar. It is released when it is right, and not before. 03 On restraint The hardest decision in a formula is what to leave out. A perfume that tries to please everyone in the room ends up smelling of no one. We would rather make something quiet and exact than something loud and approximate. Each Pénomb",
+        "box": {
+          "x": 0,
+          "y": 1047,
+          "width": 1512,
+          "height": 1703
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(236, 227, 212)",
+          "fontFamily": "\"Cormorant Garamond\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "19.2px",
+          "fontWeight": "400",
+          "lineHeight": "30.72px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 8,
+        "tag": "section",
+        "id": "",
+        "className": "maison-quote bleed",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [],
+        "buttons": [],
+        "text": "We are a small house. We intend to stay one.",
+        "box": {
+          "x": 0,
+          "y": 2750,
+          "width": 1512,
+          "height": 629
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgb(233, 225, 210)",
+          "color": "rgb(26, 22, 19)",
+          "fontFamily": "\"Cormorant Garamond\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "19.2px",
+          "fontWeight": "400",
+          "lineHeight": "30.72px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 9,
+        "tag": "section",
+        "id": "",
+        "className": "section maison-close",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h2",
+            "text": "Five hours await."
+          }
+        ],
+        "buttons": [
+          "THE COLLECTION",
+          "WRITE TO THE HOUSE"
+        ],
+        "text": "BEGIN Five hours await. THE COLLECTION WRITE TO THE HOUSE",
+        "box": {
+          "x": 0,
+          "y": 3379,
+          "width": 1512,
+          "height": 592
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(236, 227, 212)",
+          "fontFamily": "\"Cormorant Garamond\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "19.2px",
+          "fontWeight": "400",
+          "lineHeight": "30.72px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 10,
+        "tag": "footer",
+        "id": "",
+        "className": "site-footer bleed",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [
+          {
+            "tag": "h2",
+            "text": "Occasional notes on new compositions, and word from the boutique. Nothing more."
+          }
+        ],
+        "buttons": [
+          "SUBSCRIBE",
+          "Pénombre",
+          "Aube",
+          "Heure Grise",
+          "Foin Coupé",
+          "Vêpres",
+          "Minuit",
+          "Maison",
+          "All Parfums",
+          "Contact & Orders",
+          "WRITE TO THE HOUSE →"
+        ],
+        "text": "LETTERS FROM THE HOUSE Occasional notes on new compositions, and word from the boutique. Nothing more. EMAIL ADDRESS SUBSCRIBE Pénombre Maison de parfum · Paris THE COLLECTION Aube Heure Grise Foin Coupé Vêpres Minuit THE HOUSE Maison All Parfums Contact & Orders THE BOUTIQUE Orders are placed with the atelier and dispatched within two working days. Each is accompanied by samples chosen for you. Written enquiries are answered in person. WRITE TO THE HOUSE → © 2026 Pénombre. All rights reserved. Composed for the half-light.",
+        "box": {
+          "x": 0,
+          "y": 3971,
+          "width": 1512,
+          "height": 1102
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgb(6, 5, 3)",
+          "color": "rgb(236, 227, 212)",
+          "fontFamily": "\"Cormorant Garamond\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "19.2px",
+          "fontWeight": "400",
+          "lineHeight": "30.72px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 11,
+        "tag": "nav",
+        "id": "",
+        "className": "site-footer__col",
+        "role": "",
+        "ariaLabel": "The collection",
+        "headings": [],
+        "buttons": [
+          "Aube",
+          "Heure Grise",
+          "Foin Coupé",
+          "Vêpres",
+          "Minuit"
+        ],
+        "text": "THE COLLECTION Aube Heure Grise Foin Coupé Vêpres Minuit",
+        "box": {
+          "x": 479,
+          "y": 4652,
+          "width": 249,
+          "height": 259
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(236, 227, 212)",
+          "fontFamily": "\"Cormorant Garamond\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "19.2px",
+          "fontWeight": "400",
+          "lineHeight": "30.72px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 12,
+        "tag": "nav",
+        "id": "",
+        "className": "site-footer__col",
+        "role": "",
+        "ariaLabel": "The house",
+        "headings": [],
+        "buttons": [
+          "Maison",
+          "All Parfums",
+          "Contact & Orders"
+        ],
+        "text": "THE HOUSE Maison All Parfums Contact & Orders",
+        "box": {
+          "x": 784,
+          "y": 4652,
+          "width": 249,
+          "height": 259
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(236, 227, 212)",
+          "fontFamily": "\"Cormorant Garamond\", Georgia, \"Times New Roman\", serif",
+          "fontSize": "19.2px",
+          "fontWeight": "400",
+          "lineHeight": "30.72px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      }
+    ],
+    "cssVars": {
+      "--bg-sunken": "#060503",
+      "--ease-inout": "cubic-bezier(0.65, 0, 0.35, 1)",
+      "--ink-700": "#1d1813",
+      "--gold": "#c8a96a",
+      "--r-md": "2px",
+      "--line-strong": "rgba(236, 227, 212, 0.26)",
+      "--dur-xslow": "1100ms",
+      "--sp-10": "8rem",
+      "--z-base": "1",
+      "--accent": "#c8a96a",
+      "--shadow-2": "0 50px 120px -50px rgba(0, 0, 0, 0.92)",
+      "--sp-11": "12rem",
+      "--ease-soft": "cubic-bezier(0.22, 0.61, 0.36, 1)",
+      "--sp-8": "4rem",
+      "--w-text": "38rem",
+      "--sp-6": "2rem",
+      "--ink-500": "#3b3225",
+      "--success": "#b6c29a",
+      "--ink-850": "#100e0b",
+      "--w-wide": "1480px",
+      "--line": "rgba(236, 227, 212, 0.12)",
+      "--bg": "#0b0a08",
+      "--w-content": "1200px",
+      "--dur-mid": "360ms",
+      "--bone-900": "#1a1613",
+      "--z-skip": "500",
+      "--ink-800": "#15120e",
+      "--bone-000": "#f1ebdd",
+      "--accent-bright": "#ddc188",
+      "--ink-000": "#ece3d4",
+      "--fs-h3": "clamp(1.5rem, 1.25rem + 1.25vw, 2.25rem)",
+      "--sp-7": "3rem",
+      "--error": "#d98a6a",
+      "--ink-300": "#6b6150",
+      "--sp-1": "0.25rem",
+      "--sp-3": "0.75rem",
+      "--ease-out": "cubic-bezier(0.16, 1, 0.3, 1)",
+      "--ink-100": "#b8ad99",
+      "--bone-100": "#ddd4c2",
+      "--bone-700": "#3a3326",
+      "--ink-600": "#2a231b",
+      "--z-grain": "400",
+      "--sp-9": "6rem",
+      "--fs-sm": "clamp(0.875rem, 0.84rem + 0.18vw, 0.95rem)",
+      "--bone-500": "#6f6555",
+      "--dur-fast": "180ms",
+      "--fs-caption": "clamp(0.72rem, 0.69rem + 0.15vw, 0.8rem)",
+      "--font-sans": "'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
+      "--sp-4": "1rem",
+      "--dur-slow": "640ms",
+      "--fs-eyebrow": "clamp(0.68rem, 0.64rem + 0.18vw, 0.76rem)",
+      "--bone-300": "#b6ab94",
+      "--fs-body": "clamp(1.05rem, 1rem + 0.3vw, 1.2rem)",
+      "--bg-raised": "#15120e",
+      "--fs-display": "clamp(3.3rem, 1.2rem + 9.4vw, 8.75rem)",
+      "--z-nav": "100",
+      "--fs-h2": "clamp(2rem, 1.5rem + 2.5vw, 3.5rem)",
+      "--gold-bright": "#ddc188",
+      "--text": "#ece3d4",
+      "--font-serif": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+      "--text-dim": "#b8ad99",
+      "--text-faint": "#978b76",
+      "--r-pill": "100px",
+      "--ink-050": "#d6cbb6",
+      "--r-sm": "1px",
+      "--bone-050": "#e9e1d2",
+      "--z-overlay": "200",
+      "--fs-lead": "clamp(1.3rem, 1.13rem + 0.78vw, 1.7rem)",
+      "--ink-900": "#0b0a08",
+      "--gold-deep": "#8c6f3c",
+      "--section-y": "clamp(4.5rem, 3rem + 7vw, 10rem)",
+      "--fs-mega": "clamp(4.5rem, 0.5rem + 17vw, 15rem)",
+      "--shadow-1": "0 24px 60px -36px rgba(0, 0, 0, 0.85)",
+      "--sp-2": "0.5rem",
+      "--accent-soft": "rgba(200, 169, 106, 0.14)",
+      "--ink-200": "#978b76",
+      "--gutter": "clamp(1.5rem, 5vw, 5rem)",
+      "--fs-h1": "clamp(2.7rem, 1.7rem + 4.9vw, 5.25rem)",
+      "--sp-5": "1.5rem"
+    },
+    "topColors": [
+      [
+        "rgb(236, 227, 212)",
+        179
+      ],
+      [
+        "rgb(184, 173, 153)",
+        54
+      ],
+      [
+        "rgb(151, 139, 118)",
+        25
+      ],
+      [
+        "rgb(200, 169, 106)",
+        17
+      ],
+      [
+        "rgb(26, 22, 19)",
+        6
+      ],
+      [
+        "rgb(11, 10, 8)",
+        4
+      ],
+      [
+        "rgba(236, 227, 212, 0.26)",
+        4
+      ],
+      [
+        "rgb(236, 227, 212) rgb(236, 227, 212) rgba(236, 227, 212, 0.12)",
+        4
+      ],
+      [
+        "rgba(236, 227, 212, 0.12) rgb(236, 227, 212) rgb(236, 227, 212)",
+        3
+      ],
+      [
+        "rgb(6, 5, 3)",
+        2
+      ],
+      [
+        "rgb(217, 138, 106)",
+        2
+      ],
+      [
+        "rgb(182, 194, 154)",
+        2
+      ],
+      [
+        "rgb(128, 128, 128)",
+        2
+      ],
+      [
+        "rgb(0, 0, 0)",
+        2
+      ],
+      [
+        "rgb(236, 227, 212) rgb(236, 227, 212) rgba(0, 0, 0, 0)",
+        1
+      ],
+      [
+        "rgba(0, 0, 0, 0.55)",
+        1
+      ],
+      [
+        "rgb(21, 18, 14)",
+        1
+      ],
+      [
+        "rgb(236, 227, 212) rgb(236, 227, 212) rgb(236, 227, 212) rgba(236, 227, 212, 0.12)",
+        1
+      ],
+      [
+        "rgb(233, 225, 210)",
+        1
+      ],
+      [
+        "rgba(236, 227, 212, 0.12)",
+        1
+      ]
+    ],
+    "scrollWidth": 1512,
+    "clientWidth": 1512,
+    "scrollHeight": 5073
+  },
+  "consoleMessages": [],
+  "pageErrors": [],
+  "capturedAt": "2026-06-22T17:40:20.265Z"
+}

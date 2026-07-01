@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aurelia Med Spa | Macon, GA</title>
+    <style>
+        :root {
+            --pearl: #FDFDFB;
+            --obsidian: #0A0B0E;
+            --obsidian-light: #15171C;
+            --muted-rose: #BFA5A4;
+            --muted-rose-light: #E8D6D5;
+            --surgical-gold: #C5A059;
+            --font-heading: 'Playfair Display', serif;
+            --font-body: 'Inter', sans-serif;
+            --font-accent: 'Cinzel', serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--obsidian);
+            color: var(--pearl);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Nav */
+        header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2.5rem 6%;
+            z-index: 100;
+        }
+
+        .logo {
+            font-family: var(--font-heading);
+            font-size: 1.4rem;
+            font-weight: 400;
+            letter-spacing: 0.08em;
+            color: var(--pearl);
+            text-transform: uppercase;
+        }
+
+        .logo span {
+            color: var(--surgical-gold);
+            font-style: italic;
+            text-transform: lowercase;
+            letter-spacing: 0.02em;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: rgba(253, 253, 251, 0.7);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: var(--surgical-gold);
+        }
+
+        .nav-cta {
+            border: 1px solid rgba(197, 160, 89, 0.4);
+            padding: 0.75rem 2rem;
+            color: var(--surgical-gold);
+            border-radius: 1px;
+            transition: all 0.4s ease;
+            background: transparent;
+        }
+
+        .nav-cta:hover {
+            background-color: var(--surgical-gold);
+            color: var(--obsidian);
+        }
+
+        /* Hero Container */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            background-color: var(--obsidian);
+            padding-top: 6rem;
+        }
+
+        /* Editorial Split */
+        .hero-split {
+            display: flex;
+            width: 100%;
+            height: 80vh;
+            margin: 0 6%;
+            position: relative;
+        }
+
+        .content-left {
+            flex: 1.1;
+            padding-right: 6rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .visual-right {
+            flex: 0.9;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .image-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            border-radius: 2px;
+        }
+
+        .image-wrapper::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(10, 11, 14, 0.6) 0%, rgba(197, 160, 89, 0.15) 100%);
+            mix-blend-mode: overlay;
+            z-index: 2;
+        }
+
+        .visual-still {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 30% 28%, rgba(232, 214, 213, 0.95) 0%, rgba(232, 214, 213, 0.22) 18%, transparent 42%),
+                radial-gradient(circle at 68% 68%, rgba(197, 160, 89, 0.55) 0%, rgba(197, 160, 89, 0.12) 20%, transparent 46%),
+                linear-gradient(145deg, #f4dcdc 0%, #d9b1ab 24%, #57384a 52%, #1b1c24 78%, #0a0b0e 100%);
+            overflow: hidden;
+        }
+
+        .visual-still::before,
+        .visual-still::after {
+            content: '';
+            position: absolute;
+            border-radius: 999px;
+            border: 1px solid rgba(253, 253, 251, 0.16);
+            backdrop-filter: blur(2px);
+        }
+
+        .visual-still::before {
+            width: 220px;
+            height: 220px;
+            right: 12%;
+            top: 18%;
+            background: linear-gradient(180deg, rgba(253,253,251,0.3), rgba(253,253,251,0.04));
+            box-shadow: inset 0 0 28px rgba(255,255,255,0.18);
+        }
+
+        .visual-still::after {
+            width: 340px;
+            height: 340px;
+            right: 3%;
+            bottom: 6%;
+            background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.32), rgba(255,255,255,0.02) 58%, transparent 72%);
+            box-shadow: inset 0 0 40px rgba(255,255,255,0.12);
+        }
+
+        .visual-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(253,253,251,0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(253,253,251,0.06) 1px, transparent 1px);
+            background-size: 64px 64px;
+            opacity: 0.22;
+            mix-blend-mode: screen;
+        }
+
+        .visual-pill {
+            position: absolute;
+            left: 16%;
+            bottom: 14%;
+            padding: 1rem 1.1rem;
+            border: 1px solid rgba(253,253,251,0.18);
+            background: rgba(10, 11, 14, 0.34);
+            color: rgba(253,253,251,0.78);
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            font-size: 0.7rem;
+        }
+
+        /* Typography */
+        .accent-text {
+            font-family: var(--font-accent);
+            font-size: 0.8rem;
+            color: var(--surgical-gold);
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            margin-bottom: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .accent-text::before {
+            content: '';
+            width: 50px;
+            height: 1px;
+            background-color: var(--surgical-gold);
+        }
+
+        h1 {
+            font-family: var(--font-heading);
+            font-size: 5.5rem;
+            line-height: 1.05;
+            color: var(--pearl);
+            font-weight: 400;
+            margin-bottom: 2.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        h1 i {
+            color: var(--muted-rose);
+            font-weight: 300;
+            display: block;
+            margin-left: 10%;
+        }
+
+        .hero-desc {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: rgba(253, 253, 251, 0.65);
+            max-width: 480px;
+            margin-bottom: 3.5rem;
+            font-weight: 300;
+        }
+
+        /* CTA */
+        .primary-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 1.5rem;
+            background-color: var(--pearl);
+            color: var(--obsidian);
+            padding: 1.3rem 3rem;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
+            overflow: hidden;
+            align-self: flex-start;
+        }
+
+        .primary-cta::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--muted-rose);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .primary-cta:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        .primary-cta:hover {
+            background-color: var(--pearl);
+            box-shadow: 0 15px 35px rgba(191, 165, 164, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .cta-arrow {
+            display: inline-block;
+            transition: transform 0.3s ease;
+            font-weight: 300;
+            font-size: 1.2rem;
+        }
+
+        .primary-cta:hover .cta-arrow {
+            transform: translateX(6px);
+        }
+
+        /* Proof Module */
+        .proof-module {
+            position: absolute;
+            bottom: 8%;
+            left: -15%;
+            background-color: var(--obsidian-light);
+            padding: 3rem;
+            border: 1px solid rgba(197, 160, 89, 0.15);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+            width: 360px;
+            z-index: 20;
+            backdrop-filter: blur(10px);
+        }
+
+        .proof-header {
+            font-family: var(--font-accent);
+            color: rgba(253, 253, 251, 0.5);
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .proof-header::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--muted-rose);
+        }
+
+        .treatment-list {
+            list-style: none;
+        }
+
+        .treatment-list li {
+            color: var(--pearl);
+            font-size: 0.95rem;
+            letter-spacing: 0.05em;
+            margin-bottom: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            border-bottom: 1px solid rgba(253, 253, 251, 0.05);
+            padding-bottom: 0.8rem;
+        }
+
+        .treatment-list li:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .treatment-list li span {
+            font-family: var(--font-heading);
+            font-style: italic;
+            color: var(--surgical-gold);
+            font-size: 1.1rem;
+            letter-spacing: 0;
+        }
+
+        /* Decorative Elements */
+        .deco-line {
+            position: absolute;
+            bottom: 0;
+            left: 6%;
+            width: 1px;
+            height: 12vh;
+            background-color: rgba(197, 160, 89, 0.3);
+        }
+
+        .deco-text {
+            position: absolute;
+            left: 6%;
+            bottom: 15vh;
+            transform: rotate(-90deg) translateX(-50%);
+            transform-origin: left bottom;
+            font-family: var(--font-body);
+            font-size: 0.65rem;
+            letter-spacing: 0.4em;
+            color: rgba(253, 253, 251, 0.2);
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 1200px) {
+            h1 { font-size: 4.5rem; }
+            .content-left { padding-right: 3rem; }
+            .proof-module { left: -5%; width: 320px; }
+        }
+
+        @media (max-width: 992px) {
+            header {
+                padding: 1.5rem 5%;
+            }
+            nav {
+                display: none; /* Mobile menu hidden for hero concept */
+            }
+            .hero-split {
+                flex-direction: column;
+                height: auto;
+                margin: 0 5%;
+                padding-bottom: 6rem;
+            }
+            .content-left {
+                padding-right: 0;
+                margin-bottom: 4rem;
+                padding-top: 4rem;
+            }
+            .visual-right {
+                width: 100%;
+            }
+            .image-wrapper {
+                height: 60vh;
+            }
+            .proof-module {
+                left: 5%;
+                bottom: -3rem;
+                width: 90%;
+            }
+            .deco-line, .deco-text {
+                display: none;
+            }
+            h1 i {
+                margin-left: 0;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header>
+        <div class="logo">Aurelia <span>spa</span></div>
+        <nav>
+            <a href="#clinical">Clinical</a>
+            <a href="#aesthetic">Aesthetic</a>
+            <a href="#membership">Membership</a>
+            <a href="#consult" class="nav-cta">Reserve Consultation</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-split">
+            <div class="content-left">
+                <div class="accent-text">Macon, Georgia</div>
+                <h1>Medical precision.<br><i>Couture results.</i></h1>
+                <p class="hero-desc">Elevate your aesthetic journey. Aurelia Med Spa offers physician-led cosmetic interventions—from bespoke injectables to Morpheus8 and advanced laser therapy—within an intimately luxurious environment.</p>
+                <a href="#booking" class="primary-cta">
+                    Request Assessment <span class="cta-arrow">→</span>
+                </a>
+            </div>
+            
+            <div class="visual-right">
+                <div class="image-wrapper">
+                    <div class="visual-still">
+                        <div class="visual-grid"></div>
+                        <div class="visual-pill">Consult-led skin renewal</div>
+                    </div>
+                </div>
+
+                <div class="proof-module">
+                    <div class="proof-header">Signature Modalities</div>
+                    <ul class="treatment-list">
+                        <li>Neuromodulators <span>Elevate</span></li>
+                        <li>Morpheus8 RF <span>Refine</span></li>
+                        <li>Dermal Fillers <span>Restore</span></li>
+                        <li>IPL Photofacial <span>Luminate</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="deco-line"></div>
+        <div class="deco-text">Aesthetic Excellence</div>
+    </section>
+
+
+
+<style id="below-fold-patch">
+    /* Core Layout & Spacing */
+    .section-padding {
+        padding: 8rem 6%;
+        position: relative;
+    }
+
+    /* Philosophy Section */
+    .philosophy {
+        background-color: var(--obsidian);
+        border-top: 1px solid rgba(197, 160, 89, 0.1);
+        text-align: center;
+        overflow: hidden;
+    }
+
+    .philosophy-content {
+        max-width: 800px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+    }
+
+    .philosophy-accent {
+        font-family: var(--font-accent);
+        font-size: 0.75rem;
+        color: var(--muted-rose);
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        margin-bottom: 2rem;
+        display: inline-block;
+    }
+
+    .philosophy h2 {
+        font-family: var(--font-heading);
+        font-size: 3.5rem;
+        font-weight: 300;
+        color: var(--pearl);
+        line-height: 1.2;
+        margin-bottom: 2.5rem;
+    }
+
+    .philosophy h2 i {
+        color: var(--surgical-gold);
+    }
+
+    .philosophy p {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: rgba(253, 253, 251, 0.65);
+        font-weight: 300;
+    }
+
+    /* Ambient Glow for Philosophy */
+    .ambient-glow {
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(197, 160, 89, 0.05) 0%, transparent 70%);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    /* Modalities Section */
+    .modalities {
+        background-color: var(--obsidian-light);
+        border-top: 1px solid rgba(253, 253, 251, 0.05);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 5rem;
+    }
+
+    .section-title h2 {
+        font-family: var(--font-heading);
+        font-size: 2.5rem;
+        font-weight: 400;
+        color: var(--pearl);
+    }
+
+    .section-title h2 i {
+        color: var(--muted-rose);
+    }
+
+    .modalities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .modality-card {
+        border: 1px solid rgba(197, 160, 89, 0.15);
+        padding: 3rem 2rem;
+        background: rgba(10, 11, 14, 0.4);
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .modality-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(180deg, rgba(197, 160, 89, 0.05) 0%, transparent 100%);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+    }
+
+    .modality-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(197, 160, 89, 0.4);
+    }
+
+    .modality-card:hover::before {
+        opacity: 1;
+    }
+
+    .modality-number {
+        font-family: var(--font-accent);
+        font-size: 0.8rem;
+        color: rgba(197, 160, 89, 0.5);
+        margin-bottom: 2rem;
+        display: block;
+    }
+
+    .modality-title {
+        font-family: var(--font-heading);
+        font-size: 1.8rem;
+        color: var(--pearl);
+        margin-bottom: 1rem;
+        font-weight: 400;
+        position: relative;
+        z-index: 2;
+    }
+
+    .modality-desc {
+        font-size: 0.95rem;
+        line-height: 1.7;
+        color: rgba(253, 253, 251, 0.6);
+        position: relative;
+        z-index: 2;
+    }
+
+    .modality-link {
+        display: inline-block;
+        margin-top: 2rem;
+        font-family: var(--font-accent);
+        font-size: 0.75rem;
+        color: var(--surgical-gold);
+        text-decoration: none;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        position: relative;
+        z-index: 2;
+        transition: color 0.3s ease;
+    }
+
+    .modality-link:hover {
+        color: var(--pearl);
+    }
+
+    /* Efficacy / Proof Section */
+    .efficacy {
+        background-color: var(--obsidian);
+        position: relative;
+    }
+
+    .efficacy-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: center;
+    }
+
+    .efficacy-image {
+        width: 100%;
+        height: 500px;
+        background: linear-gradient(135deg, rgba(197, 160, 89, 0.1) 0%, rgba(10, 11, 14, 0.8) 100%);
+        border: 1px solid rgba(253, 253, 251, 0.08);
+        position: relative;
+    }
+
+    .efficacy-image::after {
+        content: '';
+        position: absolute;
+        inset: 20px;
+        border: 1px solid rgba(197, 160, 89, 0.2);
+    }
+
+    .quote-mark {
+        font-family: var(--font-heading);
+        font-size: 8rem;
+        color: rgba(197, 160, 89, 0.15);
+        line-height: 0;
+        margin-bottom: 2rem;
+    }
+
+    .testimonial-text {
+        font-family: var(--font-heading);
+        font-size: 2rem;
+        line-height: 1.4;
+        color: var(--pearl);
+        font-style: italic;
+        margin-bottom: 2rem;
+    }
+
+    .testimonial-author {
+        font-family: var(--font-accent);
+        font-size: 0.8rem;
+        color: var(--surgical-gold);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+    }
+
+    /* Final CTA */
+    .final-cta {
+        background-color: var(--obsidian-light);
+        text-align: center;
+        border-top: 1px solid rgba(197, 160, 89, 0.1);
+        border-bottom: 1px solid rgba(197, 160, 89, 0.1);
+    }
+
+    .final-cta h2 {
+        font-family: var(--font-heading);
+        font-size: 3rem;
+        color: var(--pearl);
+        margin-bottom: 1.5rem;
+        font-weight: 400;
+    }
+
+    .final-cta p {
+        color: rgba(253, 253, 251, 0.6);
+        margin-bottom: 3rem;
+        font-size: 1.1rem;
+    }
+
+    /* Footer */
+    footer {
+        background-color: var(--obsidian);
+        padding: 5rem 6% 2rem;
+    }
+
+    .footer-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+        gap: 4rem;
+        margin-bottom: 4rem;
+    }
+
+    .footer-brand .logo {
+        margin-bottom: 1.5rem;
+        display: inline-block;
+        font-family: var(--font-heading);
+        font-size: 1.4rem;
+        font-weight: 400;
+        letter-spacing: 0.08em;
+        color: var(--pearl);
+        text-transform: uppercase;
+    }
+
+    .footer-brand .logo span {
+        color: var(--surgical-gold);
+        font-style: italic;
+        text-transform: lowercase;
+        letter-spacing: 0.02em;
+    }
+
+    .footer-desc {
+        color: rgba(253, 253, 251, 0.5);
+        font-size: 0.9rem;
+        line-height: 1.8;
+        max-width: 300px;
+    }
+
+    .footer-col h4 {
+        font-family: var(--font-accent);
+        color: var(--pearl);
+        font-size: 0.85rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        margin-bottom: 1.5rem;
+    }
+
+    .footer-col ul {
+        list-style: none;
+    }
+
+    .footer-col ul li {
+        margin-bottom: 0.8rem;
+    }
+
+    .footer-col ul li a {
+        text-decoration: none;
+        color: rgba(253, 253, 251, 0.6);
+        font-size: 0.9rem;
+        transition: color 0.3s ease;
+    }
+
+    .footer-col ul li a:hover {
+        color: var(--surgical-gold);
+    }
+
+    .footer-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(253, 253, 251, 0.1);
+        color: rgba(253, 253, 251, 0.4);
+        font-size: 0.8rem;
+    }
+
+    @media (max-width: 992px) {
+        .efficacy-container {
+            grid-template-columns: 1fr;
+        }
+        .footer-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+        .philosophy h2 {
+            font-size: 2.5rem;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .footer-grid {
+            grid-template-columns: 1fr;
+            gap: 2.5rem;
+        }
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+    }
+</style>
+
+<section class="philosophy section-padding">
+    <div class="ambient-glow"></div>
+    <div class="philosophy-content">
+        <span class="philosophy-accent">The Aurelia Standard</span>
+        <h2>Beyond symmetry, we seek <i>harmony.</i></h2>
+        <p>Aesthetics is not merely the pursuit of youth, but the alignment of how you feel with how the world perceives you. At Aurelia Med Spa in Macon, our clinicians merge anatomical mastery with a refined editorial eye to deliver outcomes that are sophisticated, undetectable, and unmistakably yours.</p>
+    </div>
+</section>
+
+<section class="modalities section-padding" id="clinical">
+    <div class="section-header">
+        <div class="section-title">
+            <h2>Clinical <i>Interventions</i></h2>
+        </div>
+        <a href="#all-services" class="modality-link">View Complete Portfolio →</a>
+    </div>
+
+    <div class="modalities-grid">
+        <div class="modality-card">
+            <span class="modality-number">01</span>
+            <h3 class="modality-title">Architectural Fillers</h3>
+            <p class="modality-desc">Strategic placement of premium dermal fillers to restore volume, define contours, and build foundational facial structure with absolute subtlety.</p>
+            <a href="#fillers" class="modality-link">Explore Modality</a>
+        </div>
+        
+        <div class="modality-card">
+            <span class="modality-number">02</span>
+            <h3 class="modality-title">Neuromodulators</h3>
+            <p class="modality-desc">Precision-dosed wrinkle relaxers utilized not to freeze expression, but to soften the imprint of time and prevent static line formation.</p>
+            <a href="#neuro" class="modality-link">Explore Modality</a>
+        </div>
+
+        <div class="modality-card">
+            <span class="modality-number">03</span>
+            <h3 class="modality-title">Morpheus8 RF</h3>
+            <p class="modality-desc">Advanced fractional radiofrequency microneedling that remodels adipose tissue and stimulates deep collagen production for profound skin tightening.</p>
+            <a href="#morpheus" class="modality-link">Explore Modality</a>
+        </div>
+
+        <div class="modality-card">
+            <span class="modality-number">04</span>
+            <h3 class="modality-title">Laser Therapeutics</h3>
+            <p class="modality-desc">Clinical-grade light and laser systems to eradicate pigmentation, vascular lesions, and textural irregularities for a flawless, luminous complexion.</p>
+            <a href="#laser" class="modality-link">Explore Modality</a>
+        </div>
+    </div>
+</section>
+
+<section class="efficacy section-padding">
+    <div class="efficacy-container">
+        <div class="efficacy-image"></div>
+        <div class="efficacy-content">
+            <div class="quote-mark">"</div>
+            <p class="testimonial-text">The practitioners at Aurelia do not change how you look; they resurrect the vitality you thought was lost. It is clinical precision delivered with white-glove elegance.</p>
+            <span class="testimonial-author">S. Montgomery — Macon, GA</span>
+        </div>
+    </div>
+</section>
+
+<section class="final-cta section-padding" id="consult">
+    <h2>Begin Your Protocol.</h2>
+    <p>Schedule a comprehensive facial assessment and bespoke treatment blueprint.</p>
+    <a href="#booking" class="primary-cta">
+        Reserve Consultation <span class="cta-arrow">→</span>
+    </a>
+</section>
+
+<footer>
+    <div class="footer-grid">
+        <div class="footer-brand">
+            <div class="logo">Aurelia <span>spa</span></div>
+            <p class="footer-desc">Elevated aesthetic medicine and clinical skincare in the heart of Macon, Georgia. Physician-led, results-obsessed.</p>
+        </div>
+        <div class="footer-col">
+            <h4>Treatments</h4>
+            <ul>
+                <li><a href="#">Injectables</a></li>
+                <li><a href="#">Skin Rejuvenation</a></li>
+                <li><a href="#">Laser & Light</a></li>
+                <li><a href="#">Body Contouring</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Practice</h4>
+            <ul>
+                <li><a href="#">Our Clinicians</a></li>
+                <li><a href="#">Patient Philosophy</a></li>
+                <li><a href="#">Membership</a></li>
+                <li><a href="#">Financing</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Connect</h4>
+            <ul>
+                <li><a href="#">Contact Us</a></li>
+                <li><a href="#">Location & Hours</a></li>
+                <li><a href="#">Instagram</a></li>
+                <li><a href="#">Journal</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2026 Aurelia Med Spa. All rights reserved.</p>
+        <p>Macon, Georgia</p>
+    </div>
+</footer>
+
+</body>
+</html>

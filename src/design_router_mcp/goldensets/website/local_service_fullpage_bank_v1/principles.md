@@ -1,0 +1,3 @@
+- Use the donor bank to widen the design vocabulary without losing the anchor pack's center of gravity.
+- Prefer donor websites that solve a specific layout, proof, or page-depth problem the task actually has.
+- Keep the routed donor slate small and surgical, then mine sub-patterns from those donors instead of widening to the whole corpus.

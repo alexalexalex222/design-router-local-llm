@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PRISM · QR Studio — branded, still-scannable QR codes</title>
+<meta name="description" content="Design a branded QR code that still scans. Multi-stop gradients, two-tone eyes, a center logo, a scan frame, and live decode-verified PNG/SVG export.">
+<!-- Type: Space Grotesk (display/brand) + Inter (UI). font-display:swap; system fallbacks if offline. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<!-- Real QR matrix encoder (pinned). We custom-render every module ourselves. -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<!-- Live decode verifier (pinned): the rendered code is re-read on every change so the "decode-verified" badge is real, not a guess. -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<style>
+:root{
+  /* neutral ramp — dark studio */
+  --n0:#ffffff; --n1:#f4f6fb;
+  --bg:#0c0e14; --bg-2:#0a0c11;
+  --s1:#13161f; --s2:#191d29; --s3:#212636; --s4:#2a3043;
+  --line:#262c3b; --line-2:#333b50;
+  --ink:#eef1f8; --ink-2:#b3bdd2; --muted:#7c869e; --faint:#5a6379;
+  --accent:#7c8cff; --accent-2:#46e0d0; --accent-ink:#0b1020;
+  --accent-soft:rgba(124,140,255,.14);
+  --focus:#9fb0ff;
+  --danger:#ff6f7d; --danger-soft:rgba(255,111,125,.12);
+  --warn:#ffc861; --warn-soft:rgba(255,200,97,.12);
+  --ok:#56e0a6;
+  --card:#ffffff;            /* the QR sits on a real white card */
+  /* fluid type scale (body >=16) */
+  --fs-2xs:clamp(10.5px,.66rem + .1vw,11.5px);
+  --fs-xs:clamp(11.5px,.72rem + .12vw,12.5px);
+  --fs-sm:clamp(13px,.8rem + .14vw,13.5px);
+  --fs-base:clamp(15px,.92rem + .14vw,16px);
+  --fs-md:clamp(16.5px,1rem + .35vw,18px);
+  --fs-lg:clamp(19px,1.05rem + .8vw,24px);
+  --fs-xl:clamp(24px,1.3rem + 1.6vw,34px);
+  /* spacing */
+  --sp1:4px; --sp2:8px; --sp3:12px; --sp4:16px; --sp5:20px; --sp6:28px; --sp7:40px; --sp8:56px;
+  --r1:7px; --r2:10px; --r3:14px; --r4:20px; --rp:999px;
+  --e1:0 1px 2px rgba(0,0,0,.4);
+  --e2:0 10px 30px -12px rgba(0,0,0,.6), 0 2px 8px -3px rgba(0,0,0,.45);
+  --e3:0 30px 70px -24px rgba(0,0,0,.7);
+  --glow:0 0 0 1px rgba(124,140,255,.35), 0 12px 40px -12px rgba(124,140,255,.4);
+  --dur:200ms; --dur-fast:150ms; --ease:cubic-bezier(.2,.7,.2,1);
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --display:"Space Grotesk","Inter",system-ui,sans-serif;
+}
+@media (prefers-reduced-motion: reduce){ :root{ --dur:1ms; --dur-fast:1ms } *{scroll-behavior:auto !important; animation:none !important} }
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:
+    radial-gradient(120% 90% at 15% -10%, #161a2b 0%, transparent 55%),
+    radial-gradient(120% 90% at 100% 0%, #121a26 0%, transparent 50%),
+    var(--bg);
+  color:var(--ink); font-family:var(--sans); font-size:var(--fs-base); line-height:1.5;
+  -webkit-font-smoothing:antialiased; min-height:100vh;
+}
+a{color:inherit}
+:focus:not(:focus-visible){outline:none}
+:focus-visible{outline:2px solid var(--focus); outline-offset:2px; border-radius:4px}
+.skip{position:absolute; left:var(--sp3); top:-60px; background:var(--accent); color:var(--accent-ink);
+  padding:10px 14px; border-radius:var(--r1); font-weight:600; z-index:50; transition:top var(--dur) var(--ease)}
+.skip:focus{top:var(--sp3)}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ---------- shell ---------- */
+.app{max-width:1320px; margin:0 auto; padding:clamp(14px,2vw,26px)}
+header.top{
+  display:flex; align-items:center; gap:var(--sp4); justify-content:space-between;
+  padding:var(--sp2) var(--sp1) var(--sp5);
+}
+.brand{display:flex; align-items:center; gap:12px; min-width:0}
+.mark{width:38px;height:38px;flex:none;filter:drop-shadow(0 4px 12px rgba(124,140,255,.5))}
+.brand h1{font-family:var(--display); font-size:var(--fs-lg); font-weight:700; letter-spacing:-.01em; margin:0; line-height:1}
+.brand .sub{font-size:var(--fs-2xs); color:var(--muted); letter-spacing:.16em; text-transform:uppercase; font-weight:600; margin-top:3px}
+.top-actions{display:flex; align-items:center; gap:var(--sp2)}
+.hint-pill{display:none; align-items:center; gap:7px; font-size:var(--fs-xs); color:var(--ink-2);
+  background:var(--s1); border:1px solid var(--line); padding:7px 12px; border-radius:var(--rp)}
+.hint-pill svg{color:var(--accent-2)}
+@media(min-width:900px){.hint-pill{display:inline-flex}}
+
+.layout{display:grid; grid-template-columns:minmax(0,1fr) 392px; gap:clamp(14px,1.6vw,24px); align-items:start}
+@media(max-width:1000px){.layout{grid-template-columns:1fr}}
+
+/* ---------- stage / preview ---------- */
+.stage{
+  position:sticky; top:var(--sp4);
+  background:linear-gradient(180deg,var(--s1),var(--bg-2));
+  border:1px solid var(--line); border-radius:var(--r4);
+  padding:clamp(18px,2.4vw,34px); box-shadow:var(--e2); overflow:hidden;
+}
+@media(max-width:1000px){.stage{position:static}}
+.stage-head{display:flex; align-items:center; justify-content:space-between; gap:var(--sp3); margin-bottom:var(--sp5)}
+.stage-title{display:flex; align-items:center; gap:9px; font-size:var(--fs-sm); color:var(--ink-2); font-weight:600}
+.stage-title .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
+.zoom-row{display:flex; align-items:center; gap:6px}
+.canvas-wrap{
+  position:relative; margin:0 auto; width:min(100%,460px); aspect-ratio:1/1;
+  display:grid; place-items:center;
+}
+.card-shell{
+  position:relative; width:100%; height:100%; border-radius:var(--r3);
+  background:var(--card); box-shadow:var(--e3), 0 0 0 1px rgba(255,255,255,.04);
+  display:grid; place-items:center; padding:6%;
+  /* subtle checkerboard shows through transparent QR backgrounds */
+  background-image:
+    linear-gradient(45deg,#eceef4 25%,transparent 25%),
+    linear-gradient(-45deg,#eceef4 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,#eceef4 75%),
+    linear-gradient(-45deg,transparent 75%,#eceef4 75%);
+  background-size:18px 18px; background-position:0 0,0 9px,9px -9px,-9px 0; background-color:#fff;
+  transition:box-shadow var(--dur) var(--ease);
+}
+.card-shell.solidbg{background-image:none}
+#qr{width:100%;height:100%;display:block;border-radius:6px; image-rendering:auto}
+/* empty + error overlays */
+.overlay{position:absolute; inset:6%; border-radius:8px; display:none; flex-direction:column; align-items:center;
+  justify-content:center; text-align:center; gap:10px; padding:18px; background:#fff; color:#3a4254}
+.overlay.show{display:flex}
+.overlay svg{color:#aab2c6}
+.overlay h3{margin:0; font-size:var(--fs-md); color:#1c2230; font-family:var(--display)}
+.overlay p{margin:0; font-size:var(--fs-sm); color:#5a6379; max-width:24ch}
+.overlay.err svg{color:var(--danger)} .overlay.err h3{color:#b3303d}
+
+.scan-note{
+  margin-top:var(--sp5); display:flex; align-items:flex-start; gap:10px; min-height:24px;
+  font-size:var(--fs-xs); color:var(--muted);
+}
+.scan-note .badge{display:inline-flex; align-items:center; gap:7px; padding:7px 12px; border-radius:var(--rp);
+  font-weight:600; border:1px solid transparent; transition:background var(--dur) var(--ease), color var(--dur) var(--ease)}
+.scan-note .badge svg{flex:none}
+.badge.good{color:var(--ok); background:rgba(86,224,166,.1); border-color:rgba(86,224,166,.22)}
+.badge.warn{color:var(--warn); background:var(--warn-soft); border-color:rgba(255,200,97,.28)}
+.badge.danger{color:var(--danger); background:var(--danger-soft); border-color:rgba(255,111,125,.3)}
+.badge.checking{color:var(--ink-2); background:var(--s3); border-color:var(--line-2)}
+.badge.checking .spin{animation:spin 1s linear infinite; transform-origin:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulseWarn{0%{box-shadow:0 0 0 0 rgba(255,200,97,.4)}100%{box-shadow:0 0 0 10px rgba(255,200,97,0)}}
+
+/* export bar */
+.export-bar{margin-top:var(--sp5); display:flex; flex-wrap:wrap; gap:var(--sp2); align-items:center}
+.export-bar .size-mini{margin-left:auto; display:flex; align-items:center; gap:7px; font-size:var(--fs-xs); color:var(--muted)}
+
+/* ---------- controls panel ---------- */
+.panel{display:flex; flex-direction:column; gap:var(--sp3); min-width:0}
+.section{background:var(--s1); border:1px solid var(--line); border-radius:var(--r3); overflow:hidden}
+.section > summary, .section-head{
+  display:flex; align-items:center; gap:10px; width:100%; padding:14px var(--sp4);
+  font-weight:600; font-size:var(--fs-sm); color:var(--ink); cursor:pointer; user-select:none;
+  list-style:none; background:none; border:0; text-align:left; font-family:inherit;
+}
+.section > summary::-webkit-details-marker{display:none}
+.section > summary:hover{background:var(--s2)}
+.section > summary:focus-visible{outline:2px solid var(--focus); outline-offset:-2px}
+.section .ico{width:18px;height:18px;color:var(--accent);flex:none}
+.section .tag{margin-left:auto; font-size:9px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--accent-2); background:rgba(70,224,208,.1); border:1px solid rgba(70,224,208,.2);
+  padding:3px 7px; border-radius:var(--rp)}
+.section .chev{color:var(--muted); transition:transform var(--dur) var(--ease)}
+.section[open] .chev{transform:rotate(180deg)}
+.section-body{padding:2px var(--sp4) var(--sp5); display:flex; flex-direction:column; gap:var(--sp4)}
+
+label.field{display:flex; flex-direction:column; gap:7px}
+.field > .lab{font-size:var(--fs-xs); font-weight:600; color:var(--ink-2); display:flex; align-items:center; gap:6px}
+.lab .opt{color:var(--faint); font-weight:500}
+input[type=text], input[type=url], input[type=email], input[type=number], textarea, select{
+  width:100%; font:inherit; font-size:var(--fs-sm); color:var(--ink);
+  background:var(--s3); border:1px solid var(--line-2); border-radius:var(--r1);
+  padding:10px 12px; transition:border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+textarea{resize:vertical; min-height:74px; line-height:1.45}
+input:hover, textarea:hover, select:hover{border-color:#41496190}
+input:focus, textarea:focus, select:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+input::placeholder, textarea::placeholder{color:var(--faint)}
+input:disabled{opacity:.5; cursor:not-allowed}
+input[aria-invalid="true"]{border-color:var(--danger); box-shadow:0 0 0 3px var(--danger-soft)}
+.err-msg{font-size:var(--fs-xs); color:var(--danger); display:none; align-items:center; gap:6px}
+.err-msg.show{display:flex}
+.help{font-size:var(--fs-2xs); color:var(--faint); margin-top:-2px}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:var(--sp3)}
+.row2.tight{grid-template-columns:1fr auto}
+
+/* type tabs */
+.tabs{display:flex; gap:4px; background:var(--s2); padding:4px; border-radius:var(--r1); border:1px solid var(--line)}
+.tabs button{flex:1; min-width:0; font:inherit; font-size:var(--fs-xs); font-weight:600; color:var(--muted);
+  background:none; border:0; padding:9px 4px; border-radius:6px; cursor:pointer; display:flex; flex-direction:column;
+  align-items:center; gap:4px; transition:color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease)}
+.tabs button svg{width:17px;height:17px}
+.tabs button:hover{color:var(--ink-2)}
+.tabs button[aria-selected="true"]{background:var(--s4); color:var(--ink); box-shadow:var(--e1)}
+
+.payload-pane{display:none; flex-direction:column; gap:var(--sp3)}
+.payload-pane.active{display:flex}
+
+/* segmented swatch pickers */
+.seg{display:grid; gap:7px}
+.seg.c5{grid-template-columns:repeat(5,1fr)} .seg.c4{grid-template-columns:repeat(4,1fr)} .seg.c3{grid-template-columns:repeat(3,1fr)} .seg.c2{grid-template-columns:repeat(2,1fr)}
+.seg button{
+  position:relative; font:inherit; font-size:var(--fs-2xs); font-weight:600; color:var(--muted);
+  background:var(--s3); border:1px solid var(--line-2); border-radius:var(--r1); padding:9px 4px 7px;
+  cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:6px; min-height:62px;
+  transition:border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.seg button svg{width:26px;height:26px;color:var(--ink-2)}
+.seg button:hover{border-color:var(--line-2); background:var(--s4); color:var(--ink-2)}
+.seg button[aria-checked="true"]{border-color:var(--accent); color:var(--ink); background:var(--accent-soft)}
+.seg button[aria-checked="true"] svg{color:var(--accent)}
+.seg button[aria-checked="true"]::after{content:""; position:absolute; top:6px; right:6px; width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.seg.inline button{min-height:auto; flex-direction:row; padding:9px}
+.seg.inline button::after{top:50%; right:8px; transform:translateY(-50%)}
+
+/* color controls */
+.swatch{position:relative; display:flex; align-items:center; gap:10px; background:var(--s3);
+  border:1px solid var(--line-2); border-radius:var(--r1); padding:8px 10px; transition:border-color var(--dur-fast)}
+.swatch:focus-within{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+.swatch.dim{opacity:.45; pointer-events:none}
+.swatch input[type=color]{appearance:none;-webkit-appearance:none; width:30px;height:30px;flex:none; padding:0;
+  border:1px solid var(--line-2); border-radius:7px; background:none; cursor:pointer}
+.swatch input[type=color]::-webkit-color-swatch-wrapper{padding:2px}
+.swatch input[type=color]::-webkit-color-swatch{border:none;border-radius:5px}
+.swatch input[type=color]::-moz-color-swatch{border:none;border-radius:5px}
+.swatch .hex{flex:1; background:none; border:0; padding:0; font-family:var(--mono); font-size:var(--fs-sm);
+  text-transform:uppercase; letter-spacing:.02em; min-width:0; color:var(--ink)}
+.swatch .hex:focus{outline:none}
+.swatch .clab{font-size:var(--fs-xs); color:var(--muted); flex:none}
+
+/* sliders */
+.slider-row{display:flex; flex-direction:column; gap:8px}
+.slider-row .top{display:flex; justify-content:space-between; align-items:center; font-size:var(--fs-xs)}
+.slider-row .top .lab{font-weight:600; color:var(--ink-2)}
+.slider-row .top .val{font-family:var(--mono); color:var(--accent-2); font-size:var(--fs-xs)}
+input[type=range]{-webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:var(--rp);
+  background:var(--s4); cursor:pointer; margin:6px 0}
+input[type=range]:focus{outline:none}
+input[type=range]:focus-visible{box-shadow:0 0 0 3px var(--accent-soft)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:18px;height:18px;border-radius:50%;
+  background:var(--accent); border:2px solid #0c0e14; box-shadow:0 0 0 1px var(--accent), 0 2px 6px rgba(0,0,0,.5);
+  cursor:pointer; transition:transform var(--dur-fast) var(--ease)}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.12)}
+input[type=range]::-webkit-slider-thumb:active{transform:scale(.94)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--accent);
+  border:2px solid #0c0e14; box-shadow:0 0 0 1px var(--accent); cursor:pointer}
+input[type=range]:disabled{opacity:.45; cursor:not-allowed}
+
+/* ---------- gradient editor ---------- */
+.grad-bar{height:26px; border-radius:var(--r1); border:1px solid var(--line-2); position:relative; overflow:hidden}
+.grad-bar .ticks{position:absolute; inset:0; pointer-events:none}
+.grad-bar .tick{position:absolute; top:0; bottom:0; width:2px; background:rgba(255,255,255,.65); transform:translateX(-1px);
+  box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+.stop-list{display:flex; flex-direction:column; gap:8px}
+.stop-row{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center;
+  background:var(--s2); border:1px solid var(--line); border-radius:var(--r1); padding:7px 8px}
+.stop-row .swatch{flex:1; padding:5px 8px; background:var(--s3)}
+.stop-row .swatch input[type=color]{width:24px;height:24px}
+.stop-pos{display:flex; align-items:center; gap:7px; grid-column:1 / -1}
+.stop-pos input[type=range]{flex:1; margin:2px 0}
+.stop-pos .pos-val{font-family:var(--mono); font-size:var(--fs-2xs); color:var(--accent-2); min-width:34px; text-align:right}
+.rm-stop{flex:none}
+
+/* presets */
+.presets{display:grid; grid-template-columns:repeat(3,1fr); gap:9px}
+.preset{position:relative; aspect-ratio:1/1; border-radius:var(--r1); border:1px solid var(--line-2);
+  background:var(--s3); cursor:pointer; padding:8px; display:grid; place-items:center; overflow:hidden;
+  transition:border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease)}
+.preset svg{width:100%;height:100%}
+.preset:hover{border-color:var(--line-2); transform:translateY(-2px)}
+.preset[aria-pressed="true"]{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent)}
+.preset .nm{position:absolute; bottom:4px; left:0; right:0; text-align:center; font-size:9px; font-weight:600;
+  color:var(--ink-2); text-shadow:0 1px 2px rgba(0,0,0,.6)}
+
+/* saved (custom) presets */
+.save-form{display:flex; gap:8px; align-items:stretch}
+.save-form input{flex:1}
+.cust-empty{display:flex; align-items:center; gap:9px; font-size:var(--fs-xs); color:var(--muted);
+  background:var(--s2); border:1px dashed var(--line-2); border-radius:var(--r1); padding:11px 12px}
+.cust-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:9px}
+.cust-card{position:relative; border-radius:var(--r1); border:1px solid var(--line-2); background:var(--s3);
+  overflow:hidden; transition:border-color var(--dur-fast), transform var(--dur-fast)}
+.cust-card:hover{border-color:var(--accent); transform:translateY(-2px)}
+.cust-card .apply{display:block; width:100%; aspect-ratio:1/1; border:0; background:none; cursor:pointer; padding:7px}
+.cust-card .apply svg{width:100%; height:100%; display:block}
+.cust-card[aria-current="true"]{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent)}
+.cust-card .nm{position:absolute; bottom:0; left:0; right:0; padding:3px 5px; font-size:9px; font-weight:600;
+  color:var(--ink-2); background:linear-gradient(transparent,rgba(8,10,16,.85)); text-align:center;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.cust-card .del{position:absolute; top:4px; right:4px; width:20px; height:20px; border-radius:50%;
+  background:rgba(8,10,16,.82); border:1px solid var(--line-2); color:var(--muted); display:grid; place-items:center;
+  cursor:pointer; opacity:0; transition:opacity var(--dur-fast), color var(--dur-fast)}
+.cust-card:hover .del, .cust-card:focus-within .del{opacity:1}
+.cust-card .del:hover{color:var(--danger); border-color:var(--danger)}
+.cust-card .del svg{width:11px;height:11px}
+
+/* logo control */
+.dropzone{display:flex; align-items:center; gap:12px; background:var(--s3); border:1.5px dashed var(--line-2);
+  border-radius:var(--r2); padding:12px; cursor:pointer; transition:border-color var(--dur-fast), background var(--dur-fast)}
+.dropzone:hover, .dropzone.drag{border-color:var(--accent); background:var(--accent-soft)}
+.dropzone:focus-visible{outline:2px solid var(--focus); outline-offset:2px}
+.dropzone .thumb{width:46px;height:46px;flex:none;border-radius:8px;background:#fff;display:grid;place-items:center;overflow:hidden;border:1px solid var(--line-2)}
+.dropzone .thumb img{width:100%;height:100%;object-fit:contain}
+.dropzone .thumb svg{width:22px;height:22px;color:var(--muted)}
+.dropzone .dz-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.dropzone .dz-txt b{font-size:var(--fs-sm);color:var(--ink)}
+.dropzone .dz-txt span{font-size:var(--fs-2xs);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+
+/* buttons */
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; font:inherit; font-weight:600;
+  font-size:var(--fs-sm); border-radius:var(--r1); padding:0 16px; height:44px; cursor:pointer; white-space:nowrap;
+  border:1px solid transparent; transition:transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease),
+  border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease)}
+.btn svg{width:17px;height:17px;flex:none}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+.btn.primary{background:linear-gradient(135deg,var(--accent),#6f7dff); color:#0c0e1a; box-shadow:var(--e1)}
+.btn.primary:hover:not(:disabled){box-shadow:var(--glow)}
+.btn.ghost{background:var(--s3); color:var(--ink); border-color:var(--line-2)}
+.btn.ghost:hover:not(:disabled){background:var(--s4); border-color:#414961}
+.btn.sm{height:36px; padding:0 12px; font-size:var(--fs-xs)}
+.btn.icon{padding:0; width:36px; height:36px}
+.btn.icon.sm{width:30px;height:30px}
+.btn.link{background:none;border:0;color:var(--muted);height:auto;padding:4px 6px;font-size:var(--fs-xs)}
+.btn.link:hover{color:var(--danger)}
+.btn.full{width:100%}
+
+footer{margin:var(--sp7) auto var(--sp5); text-align:center; color:var(--faint); font-size:var(--fs-xs); max-width:62ch}
+footer a{color:var(--muted); text-decoration:underline; text-underline-offset:2px}
+
+/* toast */
+.toast{position:fixed; left:50%; bottom:24px; transform:translate(-50%,20px); opacity:0; pointer-events:none;
+  background:var(--s4); color:var(--ink); border:1px solid var(--line-2); border-radius:var(--rp);
+  padding:11px 18px; font-size:var(--fs-sm); font-weight:600; display:flex; align-items:center; gap:9px;
+  box-shadow:var(--e2); z-index:60; transition:transform var(--dur) var(--ease), opacity var(--dur) var(--ease)}
+.toast.show{transform:translate(-50%,0); opacity:1}
+.toast svg{color:var(--ok)}
+
+@media(max-width:1000px){
+  .stage{order:-1}
+  .panel{gap:var(--sp2)}
+}
+@media(max-width:420px){
+  .app{padding:12px}
+  .brand .sub{display:none}
+  .export-bar .btn{flex:1}
+  .export-bar .size-mini{width:100%; margin-left:0; justify-content:flex-end}
+  .seg.c4{grid-template-columns:repeat(2,1fr)}
+  .seg.c5{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+<a href="#controls" class="skip">Skip to controls</a>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="bm" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#7c8cff"/><stop offset="1" stop-color="#46e0d0"/>
+          </linearGradient>
+        </defs>
+        <rect x="2" y="2" width="14" height="14" rx="4" stroke="url(#bm)" stroke-width="2.4"/>
+        <rect x="6.5" y="6.5" width="5" height="5" rx="1.6" fill="url(#bm)"/>
+        <rect x="24" y="2" width="14" height="14" rx="4" stroke="url(#bm)" stroke-width="2.4"/>
+        <rect x="28.5" y="6.5" width="5" height="5" rx="1.6" fill="url(#bm)"/>
+        <rect x="2" y="24" width="14" height="14" rx="4" stroke="url(#bm)" stroke-width="2.4"/>
+        <rect x="6.5" y="28.5" width="5" height="5" rx="1.6" fill="url(#bm)"/>
+        <circle cx="27" cy="27" r="3" fill="url(#bm)"/>
+        <circle cx="35" cy="27" r="3" fill="url(#bm)"/>
+        <circle cx="27" cy="35" r="3" fill="url(#bm)"/>
+        <circle cx="35" cy="35" r="3" fill="url(#bm)"/>
+      </svg>
+      <div>
+        <h1>PRISM</h1>
+        <div class="sub">QR Studio</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span class="hint-pill"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="3.2"/></svg> Live decode-verified</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- ============ STAGE / PREVIEW ============ -->
+    <main class="stage" aria-label="QR preview">
+      <div class="stage-head">
+        <div class="stage-title"><span class="dot" id="liveDot"></span> Live preview</div>
+        <div class="zoom-row">
+          <button class="btn ghost icon" id="copyImg" title="Copy PNG to clipboard" aria-label="Copy PNG image to clipboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="canvas-wrap">
+        <div class="card-shell" id="cardShell">
+          <canvas id="qr" width="920" height="920" role="img" aria-label="Generated QR code preview"></canvas>
+          <div class="overlay" id="emptyState">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h3v3M20 20v.01M17 20h.01M20 17h.01"/></svg>
+            <h3>Your QR starts here</h3>
+            <p>Type a link or pick a content type to generate a scannable code.</p>
+          </div>
+          <div class="overlay err" id="errState">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>
+            <h3>Too much data</h3>
+            <p id="errText">Shorten the text or lower the error-correction level.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="scan-note" role="status" aria-live="polite">
+        <span class="badge good" id="scanBadge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          <span id="scanText">Scannable</span>
+        </span>
+      </div>
+
+      <div class="export-bar">
+        <button class="btn primary" id="dlPng" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 4 5-4M5 21h14"/></svg>
+          Download PNG
+        </button>
+        <button class="btn ghost" id="dlSvg" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
+          SVG
+        </button>
+        <label class="size-mini">
+          <span>Size</span>
+          <select id="exportSize" aria-label="PNG export size in pixels" style="width:auto;padding:7px 8px">
+            <option value="512">512px</option>
+            <option value="1024" selected>1024px</option>
+            <option value="2048">2048px</option>
+          </select>
+        </label>
+      </div>
+    </main>
+
+    <!-- ============ CONTROLS ============ -->
+    <form class="panel" id="controls" autocomplete="off" novalidate>
+      <h2 class="sr">QR code settings</h2>
+
+      <!-- CONTENT -->
+      <details class="section" open>
+        <summary>
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2M9 20h6M12 4v16"/></svg>
+          Content
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </summary>
+        <div class="section-body">
+          <div class="tabs" role="tablist" aria-label="Content type" id="typeTabs">
+            <button type="button" role="tab" data-type="url" aria-selected="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></svg>URL</button>
+            <button type="button" role="tab" data-type="text" aria-selected="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Text</button>
+            <button type="button" role="tab" data-type="wifi" aria-selected="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5a10 10 0 0 1 14 0M8 16a5 5 0 0 1 8 0M12 20h.01"/></svg>Wi-Fi</button>
+            <button type="button" role="tab" data-type="email" aria-selected="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Email</button>
+            <button type="button" role="tab" data-type="vcard" aria-selected="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2.2"/><path d="M5.5 16a3.5 3.5 0 0 1 7 0M15 9h4M15 13h4"/></svg>Card</button>
+          </div>
+
+          <!-- URL -->
+          <div class="payload-pane active" data-pane="url">
+            <label class="field">
+              <span class="lab">Destination URL</span>
+              <input type="url" id="f_url" inputmode="url" placeholder="https://prism.studio" value="https://prism.studio">
+              <span class="err-msg" id="e_url"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg> Enter a valid URL (e.g. https://example.com).</span>
+            </label>
+          </div>
+          <!-- TEXT -->
+          <div class="payload-pane" data-pane="text">
+            <label class="field">
+              <span class="lab">Plain text</span>
+              <textarea id="f_text" placeholder="Any text, a note, a coupon code…"></textarea>
+            </label>
+          </div>
+          <!-- WIFI -->
+          <div class="payload-pane" data-pane="wifi">
+            <label class="field">
+              <span class="lab">Network name (SSID)</span>
+              <input type="text" id="f_wifi_ssid" placeholder="MyNetwork">
+            </label>
+            <div class="row2">
+              <label class="field">
+                <span class="lab">Security</span>
+                <select id="f_wifi_enc"><option value="WPA">WPA/WPA2</option><option value="WEP">WEP</option><option value="nopass">None</option></select>
+              </label>
+              <label class="field">
+                <span class="lab">Password</span>
+                <input type="text" id="f_wifi_pass" placeholder="••••••••">
+              </label>
+            </div>
+            <label class="field" style="flex-direction:row;align-items:center;gap:9px">
+              <input type="checkbox" id="f_wifi_hidden" style="width:auto"> <span class="lab" style="margin:0">Hidden network</span>
+            </label>
+          </div>
+          <!-- EMAIL -->
+          <div class="payload-pane" data-pane="email">
+            <label class="field">
+              <span class="lab">Recipient</span>
+              <input type="email" id="f_email_to" placeholder="hello@example.com">
+              <span class="err-msg" id="e_email"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg> Enter a valid email address.</span>
+            </label>
+            <label class="field">
+              <span class="lab">Subject <span class="opt">· optional</span></span>
+              <input type="text" id="f_email_sub" placeholder="Hello there">
+            </label>
+            <label class="field">
+              <span class="lab">Message <span class="opt">· optional</span></span>
+              <textarea id="f_email_body" placeholder="Body text…"></textarea>
+            </label>
+          </div>
+          <!-- VCARD -->
+          <div class="payload-pane" data-pane="vcard">
+            <div class="row2">
+              <label class="field"><span class="lab">Full name</span><input type="text" id="f_vc_name" placeholder="Ada Lovelace"></label>
+              <label class="field"><span class="lab">Organization</span><input type="text" id="f_vc_org" placeholder="Analytical Engines"></label>
+            </div>
+            <div class="row2">
+              <label class="field"><span class="lab">Phone</span><input type="text" id="f_vc_phone" inputmode="tel" placeholder="+1 555 0100"></label>
+              <label class="field"><span class="lab">Email</span><input type="email" id="f_vc_email" placeholder="ada@example.com"></label>
+            </div>
+            <label class="field"><span class="lab">Website</span><input type="url" id="f_vc_url" placeholder="https://example.com"></label>
+          </div>
+        </div>
+      </details>
+
+      <!-- PRESETS -->
+      <details class="section" open>
+        <summary>
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5L12 3Z"/></svg>
+          Presets
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </summary>
+        <div class="section-body">
+          <div class="presets" id="presets" role="group" aria-label="Built-in style presets"></div>
+
+          <div class="field" style="gap:9px">
+            <span class="lab">Your saved styles</span>
+            <div class="save-form">
+              <label class="sr" for="saveName">Name this style</label>
+              <input type="text" id="saveName" placeholder="Name this style…" maxlength="28">
+              <button type="button" class="btn ghost sm" id="saveStyle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+                Save
+              </button>
+            </div>
+            <div id="custWrap"></div>
+          </div>
+        </div>
+      </details>
+
+      <!-- SHAPE -->
+      <details class="section" open>
+        <summary>
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><circle cx="17.5" cy="6.5" r="3.5"/><rect x="3" y="14" width="7" height="7" rx="3.5"/><path d="m14 14 7 7M21 14l-7 7"/></svg>
+          Shape
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </summary>
+        <div class="section-body">
+          <div class="field">
+            <span class="lab">Dot style</span>
+            <div class="seg c4" role="radiogroup" aria-label="Dot style" id="dotStyle">
+              <button type="button" role="radio" data-v="square" aria-checked="true"><svg viewBox="0 0 24 24" id="i-square"></svg>Square</button>
+              <button type="button" role="radio" data-v="rounded" aria-checked="false"><svg viewBox="0 0 24 24" id="i-rounded"></svg>Rounded</button>
+              <button type="button" role="radio" data-v="dots" aria-checked="false"><svg viewBox="0 0 24 24" id="i-dots"></svg>Dots</button>
+              <button type="button" role="radio" data-v="classy" aria-checked="false"><svg viewBox="0 0 24 24" id="i-classy"></svg>Classy</button>
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <span class="lab">Corner frame</span>
+              <div class="seg c3" role="radiogroup" aria-label="Corner frame style" id="cornerSq">
+                <button type="button" role="radio" data-v="square" aria-checked="true"><svg viewBox="0 0 24 24" id="i-csq-square"></svg>Sharp</button>
+                <button type="button" role="radio" data-v="rounded" aria-checked="false"><svg viewBox="0 0 24 24" id="i-csq-round"></svg>Round</button>
+                <button type="button" role="radio" data-v="dot" aria-checked="false"><svg viewBox="0 0 24 24" id="i-csq-dot"></svg>Ring</button>
+              </div>
+            </div>
+            <div class="field">
+              <span class="lab">Corner dot</span>
+              <div class="seg c2" role="radiogroup" aria-label="Corner dot style" id="cornerDot">
+                <button type="button" role="radio" data-v="square" aria-checked="true"><svg viewBox="0 0 24 24" id="i-cdt-square"></svg>Square</button>
+                <button type="button" role="radio" data-v="dot" aria-checked="false"><svg viewBox="0 0 24 24" id="i-cdt-dot"></svg>Dot</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- COLOR -->
+      <details class="section" open>
+        <summary>
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 22a10 10 0 1 1 0-20 8 8 0 0 1 0 16h-1.5a1.5 1.5 0 0 0-1 2.6A1 1 0 0 1 12 22Z"/></svg>
+          Color
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </summary>
+        <div class="section-body">
+          <div class="field">
+            <span class="lab">Foreground (dots)</span>
+            <div class="seg c2 inline" role="radiogroup" aria-label="Foreground fill type" id="fgType" style="margin-bottom:4px">
+              <button type="button" role="radio" data-v="solid" aria-checked="true"><span>Solid</span></button>
+              <button type="button" role="radio" data-v="gradient" aria-checked="false"><span>Gradient</span></button>
+            </div>
+            <div id="fgSolid">
+              <div class="swatch">
+                <input type="color" id="fgColor" value="#141821" aria-label="Foreground color">
+                <input type="text" class="hex" id="fgHex" value="#141821" aria-label="Foreground hex value" spellcheck="false">
+                <span class="clab">Dots</span>
+              </div>
+            </div>
+            <div id="fgGrad" style="display:none; flex-direction:column; gap:10px">
+              <div class="grad-bar" id="gradBar"><div class="ticks" id="gradTicks"></div></div>
+              <div class="stop-list" id="stopList"></div>
+              <button type="button" class="btn ghost sm" id="addStop" style="align-self:flex-start">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                Add color stop
+              </button>
+              <div class="seg c2 inline" role="radiogroup" aria-label="Gradient type" id="gradType">
+                <button type="button" role="radio" data-v="linear" aria-checked="true" style="font-size:var(--fs-xs)">Linear</button>
+                <button type="button" role="radio" data-v="radial" aria-checked="false" style="font-size:var(--fs-xs)">Radial</button>
+              </div>
+              <div class="slider-row" id="gradAngleRow">
+                <div class="top"><span class="lab">Angle</span><span class="val" id="gradAngleVal">45°</span></div>
+                <input type="range" id="gradAngle" min="0" max="360" step="5" value="45" aria-label="Gradient angle in degrees">
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="lab">Finder eyes</span>
+            <div class="seg c2 inline" role="radiogroup" aria-label="Finder eye coloring" id="eyeMode" style="margin-bottom:4px">
+              <button type="button" role="radio" data-v="match" aria-checked="true"><span>Match dots</span></button>
+              <button type="button" role="radio" data-v="custom" aria-checked="false"><span>Two-tone</span></button>
+            </div>
+            <div id="eyeCustom" class="row2" hidden>
+              <div class="swatch">
+                <input type="color" id="eyeOuter" value="#7c3aed" aria-label="Eye frame color">
+                <input type="text" class="hex" id="eyeOuterHex" value="#7C3AED" aria-label="Eye frame hex" spellcheck="false">
+                <span class="clab">Frame</span>
+              </div>
+              <div class="swatch">
+                <input type="color" id="eyeInner" value="#0891b2" aria-label="Eye pupil color">
+                <input type="text" class="hex" id="eyeInnerHex" value="#0891B2" aria-label="Eye pupil hex" spellcheck="false">
+                <span class="clab">Pupil</span>
+              </div>
+            </div>
+            <span class="help">Two-tone eyes are validated for contrast separately from the dots.</span>
+          </div>
+
+          <div class="field">
+            <span class="lab">Background</span>
+            <div class="seg c4 inline" role="radiogroup" aria-label="Background style" id="bgStyle" style="margin-bottom:4px">
+              <button type="button" role="radio" data-v="solid" aria-checked="true" style="font-size:var(--fs-2xs)">Solid</button>
+              <button type="button" role="radio" data-v="transparent" aria-checked="false" style="font-size:var(--fs-2xs)">Clear</button>
+              <button type="button" role="radio" data-v="dots" aria-checked="false" style="font-size:var(--fs-2xs)">Dots</button>
+              <button type="button" role="radio" data-v="grid" aria-checked="false" style="font-size:var(--fs-2xs)">Grid</button>
+            </div>
+            <div class="swatch" id="bgSwatch">
+              <input type="color" id="bgColor" value="#ffffff" aria-label="Background color">
+              <input type="text" class="hex" id="bgHex" value="#FFFFFF" aria-label="Background hex value" spellcheck="false">
+              <span class="clab">Field</span>
+            </div>
+            <span class="help">Patterns stay subtle so dark modules keep their contrast.</span>
+          </div>
+        </div>
+      </details>
+
+      <!-- LOGO -->
+      <details class="section">
+        <summary>
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-4.5-4.5L7 20"/></svg>
+          Logo
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </summary>
+        <div class="section-body">
+          <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload a center logo image">
+            <span class="thumb" id="logoThumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg></span>
+            <span class="dz-txt"><b id="dzTitle">Upload logo</b><span id="dzSub">PNG, SVG or JPG · centered</span></span>
+          </div>
+          <input type="file" id="logoInput" accept="image/png,image/jpeg,image/svg+xml,image/webp" class="sr">
+          <div id="logoControls" style="display:none; flex-direction:column; gap:var(--sp4)">
+            <div class="slider-row">
+              <div class="top"><span class="lab">Size</span><span class="val" id="logoSizeVal">20%</span></div>
+              <input type="range" id="logoSize" min="10" max="40" step="1" value="20" aria-label="Logo size, percent of code">
+            </div>
+            <div class="slider-row">
+              <div class="top"><span class="lab">Clear margin</span><span class="val" id="logoMarginVal">8px</span></div>
+              <input type="range" id="logoMargin" min="0" max="24" step="1" value="8" aria-label="Logo clear margin in pixels">
+            </div>
+            <button type="button" class="btn link" id="removeLogo" style="align-self:flex-start">Remove logo</button>
+          </div>
+        </div>
+      </details>
+
+      <!-- FRAME & CAPTION -->
+      <details class="section">
+        <summary>
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 16h18"/><path d="M8 19.5h8"/></svg>
+          Frame &amp; caption
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </summary>
+        <div class="section-body">
+          <div class="field">
+            <span class="lab">Scan frame</span>
+            <div class="seg c2 inline" role="radiogroup" aria-label="Scan frame" id="frameOn">
+              <button type="button" role="radio" data-v="off" aria-checked="true"><span>Off</span></button>
+              <button type="button" role="radio" data-v="on" aria-checked="false"><span>On</span></button>
+            </div>
+          </div>
+          <div id="frameFields" hidden style="display:flex; flex-direction:column; gap:var(--sp4)">
+            <label class="field">
+              <span class="lab">Caption <span class="opt">· call to action</span></span>
+              <input type="text" id="frameCaption" value="SCAN ME" maxlength="22" placeholder="SCAN ME">
+            </label>
+            <div class="field">
+              <span class="lab">Frame &amp; caption color</span>
+              <div class="swatch">
+                <input type="color" id="frameColor" value="#0c0e14" aria-label="Frame color">
+                <input type="text" class="hex" id="frameColorHex" value="#0C0E14" aria-label="Frame color hex" spellcheck="false">
+              </div>
+            </div>
+            <span class="help">The frame and caption render into both the PNG and SVG export.</span>
+          </div>
+        </div>
+      </details>
+
+      <!-- ADVANCED -->
+      <details class="section">
+        <summary>
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+          Advanced
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </summary>
+        <div class="section-body">
+          <div class="field">
+            <span class="lab">Error correction <span class="opt" id="ecAutoNote"></span></span>
+            <div class="seg c4 inline" role="radiogroup" aria-label="Error correction level" id="ecLevel">
+              <button type="button" role="radio" data-v="L" aria-checked="false">L · 7%</button>
+              <button type="button" role="radio" data-v="M" aria-checked="true">M · 15%</button>
+              <button type="button" role="radio" data-v="Q" aria-checked="false">Q · 25%</button>
+              <button type="button" role="radio" data-v="H" aria-checked="false">H · 30%</button>
+            </div>
+            <span class="help">Higher levels survive more damage &amp; bigger logos, but pack denser modules.</span>
+          </div>
+          <div class="slider-row">
+            <div class="top"><span class="lab">Quiet zone</span><span class="val" id="quietVal">4 mod</span></div>
+            <input type="range" id="quietZone" min="0" max="8" step="1" value="4" aria-label="Quiet-zone margin in modules">
+            <span class="help">The blank border. Most scanners need ≥4 modules.</span>
+          </div>
+        </div>
+      </details>
+
+      <div style="display:flex;justify-content:flex-end">
+        <button type="button" class="btn link" id="resetAll" style="color:var(--muted)">Reset all to defaults</button>
+      </div>
+    </form>
+  </div>
+
+  <footer>
+    PRISM renders a real QR matrix and re-decodes it back to your input — live — before you download.
+    Built on <a href="https://github.com/kozakdenys/qr-code-styling" rel="noopener">qr-code-styling</a>’s design language; matrix via qrcode-generator, verification via jsQR.
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span id="toastMsg">Done</span></div>
+
+<script>
+"use strict";
+(function(){
+  const $ = s => document.querySelector(s);
+  const EC_RANK = {L:0,M:1,Q:2,H:3};
+  const LS_KEY = 'prism.customPresets.v2';
+
+  // ---------- shape preview icons (injected) ----------
+  const ICONS = {
+    'i-square':`<g fill="currentColor"><rect x="3" y="3" width="6" height="6"/><rect x="11" y="3" width="6" height="6"/><rect x="3" y="11" width="6" height="6"/><rect x="11" y="11" width="6" height="6"/></g>`,
+    'i-rounded':`<g fill="currentColor"><rect x="3" y="3" width="6" height="6" rx="1.8"/><rect x="11" y="3" width="6" height="6" rx="1.8"/><rect x="3" y="11" width="6" height="6" rx="1.8"/><rect x="11" y="11" width="6" height="6" rx="1.8"/></g>`,
+    'i-dots':`<g fill="currentColor"><circle cx="6" cy="6" r="2.7"/><circle cx="14" cy="6" r="2.7"/><circle cx="6" cy="14" r="2.7"/><circle cx="14" cy="14" r="2.7"/></g>`,
+    'i-classy':`<g fill="currentColor"><path d="M3 6a3 3 0 0 1 3-3h3v3a3 3 0 0 1-3 3H3Z"/><path d="M21 6a3 3 0 0 0-3-3h-3v3a3 3 0 0 0 3 3h3Z"/><path d="M3 14a3 3 0 0 0 3 3h3v-3a3 3 0 0 0-3-3H3Z"/><path d="M21 14a3 3 0 0 1-3 3h-3v-3a3 3 0 0 1 3-3h3Z"/></g>`,
+    'i-csq-square':`<rect x="4" y="4" width="16" height="16" rx="0" fill="none" stroke="currentColor" stroke-width="2.6"/>`,
+    'i-csq-round':`<rect x="4" y="4" width="16" height="16" rx="5" fill="none" stroke="currentColor" stroke-width="2.6"/>`,
+    'i-csq-dot':`<circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2.6"/>`,
+    'i-cdt-square':`<rect x="7" y="7" width="10" height="10" fill="currentColor"/>`,
+    'i-cdt-dot':`<circle cx="12" cy="12" r="5.5" fill="currentColor"/>`
+  };
+  for(const id in ICONS){ const el = document.getElementById(id); if(el) el.innerHTML = ICONS[id]; }
+
+  // ---------- state ----------
+  const state = {
+    type:'url',
+    dotStyle:'square', cornerSq:'square', cornerDot:'square',
+    fgType:'solid', fgColor:'#141821',
+    gradStops:[{color:'#6d28d9',pos:0},{color:'#0891b2',pos:100}], gradType:'linear', gradAngle:45,
+    eyeMode:'match', eyeOuter:'#7c3aed', eyeInner:'#0891b2',
+    bgStyle:'solid', bgColor:'#ffffff',
+    logo:null, logoDataURL:null, logoSize:20, logoMargin:8,
+    frameOn:false, frameCaption:'SCAN ME', frameColor:'#0c0e14',
+    ec:'M', autoEc:false, quiet:4,
+    exportSize:1024
+  };
+
+  // ---------- payload builders ----------
+  const escWifi = s => String(s).replace(/([\\;,:"])/g,'\\$1');
+  function payload(){
+    switch(state.type){
+      case 'url': return ($('#f_url').value||'').trim();
+      case 'text': return $('#f_text').value||'';
+      case 'wifi': {
+        const ssid=$('#f_wifi_ssid').value.trim(); if(!ssid) return '';
+        const enc=$('#f_wifi_enc').value, pass=$('#f_wifi_pass').value, hidden=$('#f_wifi_hidden').checked;
+        const p = enc==='nopass' ? '' : `P:${escWifi(pass)};`;
+        return `WIFI:T:${enc};S:${escWifi(ssid)};${p}${hidden?'H:true;':''};`;
+      }
+      case 'email': {
+        const to=$('#f_email_to').value.trim(); if(!to) return '';
+        const sub=$('#f_email_sub').value, body=$('#f_email_body').value;
+        const q=[]; if(sub)q.push('subject='+encodeURIComponent(sub)); if(body)q.push('body='+encodeURIComponent(body));
+        return `mailto:${to}${q.length?'?'+q.join('&'):''}`;
+      }
+      case 'vcard': {
+        const n=$('#f_vc_name').value.trim(), org=$('#f_vc_org').value.trim(), tel=$('#f_vc_phone').value.trim(),
+              em=$('#f_vc_email').value.trim(), url=$('#f_vc_url').value.trim();
+        if(!n && !org && !tel && !em && !url) return '';
+        const L=['BEGIN:VCARD','VERSION:3.0'];
+        if(n){L.push('N:'+n.split(' ').reverse().join(';')); L.push('FN:'+n);}
+        if(org)L.push('ORG:'+org); if(tel)L.push('TEL;TYPE=CELL:'+tel);
+        if(em)L.push('EMAIL:'+em); if(url)L.push('URL:'+url);
+        L.push('END:VCARD'); return L.join('\n');
+      }
+    }
+    return '';
+  }
+
+  // ---------- validation ----------
+  function validate(){
+    let ok=true;
+    const setErr=(inp,box,bad)=>{inp.setAttribute('aria-invalid',bad?'true':'false'); box&&box.classList.toggle('show',bad);};
+    if(state.type==='url'){
+      const v=$('#f_url').value.trim();
+      const bad = v.length>0 && !/^[a-z][a-z0-9+.-]*:\/\//i.test(v) && !/^[\w-]+(\.[\w-]+)+/.test(v);
+      setErr($('#f_url'),$('#e_url'),bad); if(bad) ok=false;
+    }
+    if(state.type==='email'){
+      const v=$('#f_email_to').value.trim();
+      const bad = v.length>0 && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v);
+      setErr($('#f_email_to'),$('#e_email'),bad); if(bad) ok=false;
+    }
+    return ok;
+  }
+
+  // ---------- color helpers ----------
+  function relLum(hex){
+    const n=parseInt(hex.slice(1),16), r=(n>>16&255)/255, g=(n>>8&255)/255, b=(n&255)/255;
+    const f=c=>c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4);
+    return 0.2126*f(r)+0.7152*f(g)+0.0722*f(b);
+  }
+  function contrastRatio(a,b){ const L1=relLum(a),L2=relLum(b),hi=Math.max(L1,L2),lo=Math.min(L1,L2); return (hi+0.05)/(lo+0.05); }
+  function mix(a,b,t){
+    const pa=parseInt(a.slice(1),16),pb=parseInt(b.slice(1),16);
+    const ar=pa>>16&255,ag=pa>>8&255,ab=pa&255, br=pb>>16&255,bg=pb>>8&255,bb=pb&255;
+    const r=Math.round(ar+(br-ar)*t),g=Math.round(ag+(bg-ag)*t),bl=Math.round(ab+(bb-ab)*t);
+    return '#'+((1<<24)+(r<<16)+(g<<8)+bl).toString(16).slice(1);
+  }
+
+  // ---------- QR matrix ----------
+  let matrix=null, moduleCount=0, lastError='';
+  function buildMatrix(text, ec){
+    const qr = qrcode(0, ec);
+    qr.addData(text);
+    qr.make();
+    const n = qr.getModuleCount();
+    const m = [];
+    for(let r=0;r<n;r++){ const row=[]; for(let c=0;c<n;c++) row.push(qr.isDark(r,c)); m.push(row); }
+    return {m, n};
+  }
+  const inFinder=(r,c,n)=> (r<7&&c<7) || (r<7&&c>=n-7) || (r>=n-7&&c<7);
+
+  // ---------- geometry helpers ----------
+  function roundRectPath(ctx,x,y,w,h,r){
+    r=Math.min(r,w/2,h/2);
+    ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+  }
+  function sortedStops(){ return [...state.gradStops].sort((a,b)=>a.pos-b.pos); }
+  function fgStyle(ctx, x0, y0, side){
+    if(state.fgType==='solid') return state.fgColor;
+    const ss=sortedStops();
+    let g;
+    if(state.gradType==='radial'){
+      g=ctx.createRadialGradient(x0+side/2,y0+side/2,side*0.04,x0+side/2,y0+side/2,side*0.72);
+    } else {
+      const a=state.gradAngle*Math.PI/180, dx=Math.cos(a), dy=Math.sin(a);
+      const cx=x0+side/2, cy=y0+side/2, h=side/2;
+      g=ctx.createLinearGradient(cx-dx*h, cy-dy*h, cx+dx*h, cy+dy*h);
+    }
+    ss.forEach(s=> g.addColorStop(Math.min(1,Math.max(0,s.pos/100)), s.color));
+    return g;
+  }
+
+  // ---------- background fill + subtle pattern (canvas) ----------
+  function fillBackground(ctx, x, y, w, h, opaque){
+    const transparent = state.bgStyle==='transparent';
+    if(transparent && !opaque) return;                 // leave canvas transparent
+    const bg = transparent ? '#ffffff' : state.bgColor;
+    ctx.fillStyle = bg; ctx.fillRect(x,y,w,h);
+    if(state.bgStyle==='dots' || state.bgStyle==='grid'){
+      const pc = mix(bg, '#000000', 0.05);
+      ctx.save(); ctx.beginPath(); ctx.rect(x,y,w,h); ctx.clip();
+      const step = w/26;
+      if(state.bgStyle==='dots'){
+        ctx.fillStyle = pc;
+        for(let gy=y+step/2; gy<y+h; gy+=step) for(let gx=x+step/2; gx<x+w; gx+=step){
+          ctx.beginPath(); ctx.arc(gx,gy,step*0.16,0,Math.PI*2); ctx.fill();
+        }
+      } else {
+        ctx.strokeStyle = pc; ctx.lineWidth = Math.max(1, w*0.0035);
+        ctx.beginPath();
+        for(let gx=x; gx<=x+w+0.5; gx+=step){ ctx.moveTo(gx,y); ctx.lineTo(gx,y+h); }
+        for(let gy=y; gy<=y+h+0.5; gy+=step){ ctx.moveTo(x,gy); ctx.lineTo(x+w,gy); }
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+
+  // ---------- draw the QR matrix into an arbitrary square sub-rect ----------
+  function drawQR(ctx, ox0, oy0, qpx){
+    const n = moduleCount, quiet = state.quiet, total = n + quiet*2;
+    const cell = qpx/total, ox = ox0 + quiet*cell, oy = oy0 + quiet*cell, side = n*cell;
+    const fill = fgStyle(ctx, ox, oy, side);
+    const twoTone = state.eyeMode==='custom';
+    const cardBg = state.bgStyle==='transparent' ? '#ffffff' : state.bgColor;
+
+    // data modules (skip finder regions)
+    ctx.fillStyle = fill;
+    ctx.beginPath();
+    for(let r=0;r<n;r++) for(let c=0;c<n;c++){
+      if(!matrix[r][c] || inFinder(r,c,n)) continue;
+      const x=ox+c*cell, y=oy+r*cell;
+      if(state.dotStyle==='dots'){ ctx.moveTo(x+cell,y+cell/2); ctx.arc(x+cell/2,y+cell/2,cell*0.5,0,Math.PI*2); }
+      else if(state.dotStyle==='rounded'){ roundRectPath(ctx,x,y,cell+0.3,cell+0.3,cell*0.28); }
+      else if(state.dotStyle==='classy'){ roundRectPath(ctx,x,y,cell+0.3,cell+0.3,cell*0.46); }
+      else { ctx.rect(x,y,cell+0.4,cell+0.4); }
+    }
+    ctx.fill();
+
+    // finder patterns (eyes)
+    const corners=[[0,0],[0,n-7],[n-7,0]];
+    for(const [fr,fc] of corners){
+      const x=ox+fc*cell, y=oy+fr*cell, S=7*cell;
+      ctx.fillStyle = twoTone ? state.eyeOuter : fill;
+      ctx.beginPath();
+      if(state.cornerSq==='dot'){
+        ctx.moveTo(x+S, y+S/2); ctx.arc(x+S/2,y+S/2,S/2,0,Math.PI*2);
+        ctx.moveTo(x+S/2+cell*2.5, y+S/2); ctx.arc(x+S/2,y+S/2,cell*2.5,0,Math.PI*2,true);
+      } else {
+        const rOut = state.cornerSq==='rounded'? cell*1.7 : 0;
+        const rIn  = state.cornerSq==='rounded'? cell*0.9 : 0;
+        roundRectPath(ctx,x,y,S,S,rOut);
+        roundRectPath(ctx,x+cell,y+cell,S-2*cell,S-2*cell,rIn);
+      }
+      ctx.fill('evenodd');
+      // corner dot (inner 3x3)
+      const dx=ox+(fc+2)*cell, dy=oy+(fr+2)*cell, D=3*cell;
+      ctx.fillStyle = twoTone ? state.eyeInner : fill;
+      ctx.beginPath();
+      if(state.cornerDot==='dot'){ ctx.arc(dx+D/2,dy+D/2,D/2,0,Math.PI*2); }
+      else { roundRectPath(ctx,dx,dy,D,D, state.cornerSq==='rounded'?cell*0.6:0); }
+      ctx.fill();
+    }
+
+    // logo with quiet-zone knockout
+    if(state.logo){
+      const logoPx = side*(state.logoSize/100);
+      const mg = state.logoMargin*(qpx/1024);
+      const box = logoPx + mg*2;
+      const lx = ox + side/2 - box/2, ly = oy + side/2 - box/2;
+      ctx.fillStyle = cardBg;
+      ctx.beginPath(); roundRectPath(ctx,lx,ly,box,box,box*0.16); ctx.fill();
+      const ix=ox+side/2-logoPx/2, iy=oy+side/2-logoPx/2;
+      try{ ctx.drawImage(state.logo, ix, iy, logoPx, logoPx); }catch(e){}
+    }
+  }
+
+  // ---------- core canvas renderer — preview AND export (square, frame-aware) ----------
+  function renderCanvas(canvas, px, forceOpaqueBg){
+    const ctx = canvas.getContext('2d');
+    canvas.width = px; canvas.height = px;
+    ctx.clearRect(0,0,px,px);
+
+    if(state.frameOn){
+      const bg = state.bgStyle==='transparent' ? '#ffffff' : state.bgColor;
+      const R = px*0.05;
+      // card
+      ctx.fillStyle = bg; ctx.beginPath(); roundRectPath(ctx,0,0,px,px,R); ctx.fill();
+      // geometry: padding + caption band, QR square in the top region
+      const pad = px*0.085;
+      const hasCaption = (state.frameCaption||'').trim().length>0;
+      const capH = hasCaption ? px*0.12 : 0;
+      const qpx = px - pad*2 - capH;
+      const qx = (px - qpx)/2, qy = pad;
+      // background pattern behind the QR area only
+      fillBackground(ctx, qx, qy, qpx, qpx, true);
+      drawQR(ctx, qx, qy, qpx);
+      // caption
+      if(hasCaption){
+        ctx.fillStyle = state.frameColor;
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.font = '700 '+Math.round(capH*0.44)+'px "Space Grotesk", "Inter", system-ui, sans-serif';
+        ctx.fillText((state.frameCaption||'').toUpperCase(), px/2, pad+qpx+capH/2, px*0.84);
+      }
+      // border
+      const bw = Math.max(2, px*0.014);
+      ctx.strokeStyle = state.frameColor; ctx.lineWidth = bw;
+      ctx.beginPath(); roundRectPath(ctx, bw/2, bw/2, px-bw, px-bw, R); ctx.stroke();
+    } else {
+      fillBackground(ctx, 0, 0, px, px, forceOpaqueBg);
+      drawQR(ctx, 0, 0, px);
+    }
+  }
+
+  // QR-only opaque canvas (for the live decode verifier — tests the code itself, frame is cosmetic)
+  function qrCanvas(px){
+    const c=document.createElement('canvas'); c.width=c.height=px;
+    const ctx=c.getContext('2d');
+    fillBackground(ctx, 0,0,px,px, true);
+    drawQR(ctx, 0,0,px);
+    return c;
+  }
+
+  // ---------- effective EC + scannability guards ----------
+  function effectiveEc(){
+    if(state.logo && EC_RANK[state.ec] < EC_RANK.Q) return 'Q';
+    return state.ec;
+  }
+  function lightestFg(){
+    if(state.fgType==='gradient'){
+      let w=state.gradStops[0].color, wl=relLum(w);
+      for(const s of state.gradStops){ const l=relLum(s.color); if(l>wl){wl=l;w=s.color;} }
+      return w;
+    }
+    return state.fgColor;
+  }
+  function scanRisk(){
+    const eff = effectiveEc();
+    const bg = state.bgStyle==='transparent' ? '#ffffff' : state.bgColor;
+    // worst-case contrast across body + (when two-tone) the eyes
+    const fgCandidates = [lightestFg()];
+    if(state.eyeMode==='custom'){ fgCandidates.push(state.eyeOuter, state.eyeInner); }
+    let fgWorst = fgCandidates[0];
+    for(const c of fgCandidates){ if(relLum(c) > relLum(fgWorst)) fgWorst = c; }
+    const cr = contrastRatio(fgWorst, bg);
+    const lowContrast = cr < 3;
+    const invert = relLum(fgWorst) > relLum(bg); // light marks on dark field — scanners expect dark-on-light
+    const MAX_LOGO = {L:0.10, M:0.16, Q:0.25, H:0.32};
+    const clearedFrac = state.logo ? (state.logoSize/100 + (state.logoMargin*2)/600) : 0;
+    const logoRisk = state.logo && clearedFrac > MAX_LOGO[eff];
+    return { risk: lowContrast || logoRisk || invert, lowContrast, invert, logoRisk, cr, clearedFrac, eff };
+  }
+  function riskReason(risk){
+    return risk.invert ? 'Light marks on a dark field rarely scan — keep dark on light'
+      : risk.lowContrast ? 'Low contrast ('+risk.cr.toFixed(1)+':1) may not scan — darken the marks'
+      : risk.logoRisk ? 'Logo may break scanning — raise EC to H or shrink it'
+      : 'At risk';
+  }
+
+  // ---------- live decode verifier (jsQR) ----------
+  let verifyT;
+  const SCAN_ICONS = {
+    good:'<path d="M20 6 9 17l-5-5"/>',
+    warn:'<path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/>',
+    danger:'<circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/>',
+    checking:'<g class="spin"><path d="M12 3a9 9 0 1 0 9 9" stroke-linecap="round"/></g>'
+  };
+  function setBadge(kind, text){
+    const sb=$('#scanBadge'), st=$('#scanText'), svg=sb.querySelector('svg');
+    sb.style.display='inline-flex';
+    sb.className='badge '+kind;
+    svg.innerHTML = SCAN_ICONS[kind];
+    st.textContent = text;
+  }
+  function liveDecode(){
+    if(typeof window.jsQR!=='function' || !matrix) return undefined; // undefined = verifier not ready
+    const caps=[400,520];
+    for(const cap of caps){
+      const hi = qrCanvas(Math.max(cap, 760));
+      const s=document.createElement('canvas'); s.width=s.height=cap;
+      const sc=s.getContext('2d'); sc.imageSmoothingEnabled=true; sc.imageSmoothingQuality='high';
+      sc.fillStyle='#ffffff'; sc.fillRect(0,0,cap,cap);
+      sc.drawImage(hi,0,0,cap,cap);
+      const id=sc.getImageData(0,0,cap,cap);
+      const r=window.jsQR(id.data, cap, cap);
+      if(r) return r.data;
+    }
+    return null; // null = ran but did not decode
+  }
+  function scheduleVerify(){
+    clearTimeout(verifyT);
+    window.__prism.verifyReady=false;
+    verifyT = setTimeout(()=>{
+      if(!matrix){ window.__prism.verifyReady=true; return; }
+      const want = payload();
+      const risk = scanRisk();
+      const decoded = liveDecode();
+      if(decoded===undefined){
+        // jsQR not yet loaded — keep the heuristic badge, retry shortly
+        setTimeout(scheduleVerify, 500);
+        window.__prism.verifyReady=true;
+        return;
+      }
+      const ok = decoded!==null && decoded===want;
+      if(!ok){
+        setBadge('danger', risk.risk ? riskReason(risk) : 'Re-decode failed — adjust the styling');
+      } else if(risk.risk){
+        setBadge('warn', riskReason(risk));
+      } else {
+        setBadge('good', 'Decode-verified · '+risk.cr.toFixed(1)+':1 contrast');
+      }
+      window.__prism._decoded = decoded;
+      window.__prism._verifyOk = ok;
+      window.__prism.verifyReady = true;
+    }, 130);
+  }
+
+  // ---------- render orchestrator ----------
+  const canvas = $('#qr');
+  function render(){
+    const valid = validate();
+    const text = payload();
+    const empty = text.length===0;
+    $('#emptyState').classList.toggle('show', empty);
+    setExportEnabled(false);
+
+    if(empty || !valid){
+      $('#errState').classList.remove('show');
+      $('#scanBadge').style.display='none';
+      const ctx=canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
+      matrix=null; window.__prism.ready=true; window.__prism.verifyReady=true; return;
+    }
+
+    try{
+      const eff = effectiveEc();
+      const built = buildMatrix(text, eff);
+      matrix = built.m; moduleCount = built.n; lastError='';
+    }catch(err){
+      lastError = err.message||'overflow';
+      matrix=null;
+      $('#errState').classList.add('show');
+      $('#errText').textContent = /overflow|length/i.test(lastError)
+        ? 'Too much data for error-correction ‘'+state.ec+'’. Shorten the text or lower the level.'
+        : 'Could not encode this input.';
+      $('#scanBadge').style.display='none';
+      window.__prism.ready=true; window.__prism.verifyReady=true; return;
+    }
+    $('#errState').classList.remove('show');
+
+    // device-scaled preview
+    const dpr = Math.min(window.devicePixelRatio||1, 2.5);
+    const cssSize = canvas.getBoundingClientRect().width || 420;
+    renderCanvas(canvas, Math.round(cssSize*dpr), false);
+
+    // synchronous heuristic badge (immediately meaningful), then async live verify
+    const risk = scanRisk();
+    if(risk.risk){ setBadge('warn', riskReason(risk)); }
+    else { setBadge('checking', 'Verifying scan…'); }
+
+    $('#ecAutoNote').textContent = (state.logo && EC_RANK[state.ec]<EC_RANK.Q) ? '· auto-raised to Q for logo' : '';
+
+    setExportEnabled(true);
+    window.__prism.ready=true;
+    scheduleVerify();
+  }
+  function setExportEnabled(on){
+    $('#dlPng').disabled=!on; $('#dlSvg').disabled=!on; $('#copyImg').disabled=!on;
+  }
+
+  // ---------- SVG builder (standalone, frame-aware) ----------
+  function svgGradientDefs(idfx){
+    if(state.fgType!=='gradient') return '';
+    const stops = sortedStops().map(s=>`<stop offset="${s.pos}%" stop-color="${s.color}"/>`).join('');
+    if(state.gradType==='radial'){
+      return `<radialGradient id="g${idfx}" cx="50%" cy="50%" r="72%">${stops}</radialGradient>`;
+    }
+    const a=state.gradAngle*Math.PI/180, dx=Math.cos(a)/2, dy=Math.sin(a)/2;
+    return `<linearGradient id="g${idfx}" x1="${(0.5-dx).toFixed(4)}" y1="${(0.5-dy).toFixed(4)}" x2="${(0.5+dx).toFixed(4)}" y2="${(0.5+dy).toFixed(4)}">${stops}</linearGradient>`;
+  }
+  function rrPath(x,y,w,h,r){
+    if(r<=0) return `M${x.toFixed(2)} ${y.toFixed(2)} h${w.toFixed(2)} v${h.toFixed(2)} h${(-w).toFixed(2)} Z`;
+    r=Math.min(r,w/2,h/2);
+    return `M${(x+r).toFixed(2)} ${y.toFixed(2)} h${(w-2*r).toFixed(2)} a${r.toFixed(2)} ${r.toFixed(2)} 0 0 1 ${r.toFixed(2)} ${r.toFixed(2)} v${(h-2*r).toFixed(2)} a${r.toFixed(2)} ${r.toFixed(2)} 0 0 1 ${(-r).toFixed(2)} ${r.toFixed(2)} h${(-(w-2*r)).toFixed(2)} a${r.toFixed(2)} ${r.toFixed(2)} 0 0 1 ${(-r).toFixed(2)} ${(-r).toFixed(2)} v${(-(h-2*r)).toFixed(2)} a${r.toFixed(2)} ${r.toFixed(2)} 0 0 1 ${r.toFixed(2)} ${(-r).toFixed(2)} Z`;
+  }
+  // QR-only markup drawn into [0..Sq], no outer bg rect (caller supplies bg)
+  function qrMarkup(Sq, idfx){
+    const n=moduleCount, quiet=state.quiet, total=n+quiet*2, cell=Sq/total, ox=quiet*cell, oy=quiet*cell, side=n*cell;
+    const bodyFill = state.fgType==='solid' ? state.fgColor : `url(#g${idfx})`;
+    const twoTone = state.eyeMode==='custom';
+    let body='';
+    for(let r=0;r<n;r++) for(let c=0;c<n;c++){
+      if(!matrix[r][c]||inFinder(r,c,n)) continue;
+      const x=ox+c*cell, y=oy+r*cell;
+      if(state.dotStyle==='dots') body+=`<circle cx="${(x+cell/2).toFixed(2)}" cy="${(y+cell/2).toFixed(2)}" r="${(cell*0.5).toFixed(2)}"/>`;
+      else if(state.dotStyle==='rounded') body+=`<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${(cell+0.3).toFixed(2)}" height="${(cell+0.3).toFixed(2)}" rx="${(cell*0.28).toFixed(2)}"/>`;
+      else if(state.dotStyle==='classy') body+=`<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${(cell+0.3).toFixed(2)}" height="${(cell+0.3).toFixed(2)}" rx="${(cell*0.46).toFixed(2)}"/>`;
+      else body+=`<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${(cell+0.3).toFixed(2)}" height="${(cell+0.3).toFixed(2)}"/>`;
+    }
+    // finders
+    let frames='', pupils='';
+    const corners=[[0,0],[0,n-7],[n-7,0]];
+    for(const [fr,fc] of corners){
+      const x=ox+fc*cell, y=oy+fr*cell, Sz=7*cell;
+      if(state.cornerSq==='dot'){
+        frames+=`<path fill-rule="evenodd" d="M${x.toFixed(2)} ${(y+Sz/2).toFixed(2)} a${(Sz/2).toFixed(2)} ${(Sz/2).toFixed(2)} 0 1 0 ${Sz.toFixed(2)} 0 a${(Sz/2).toFixed(2)} ${(Sz/2).toFixed(2)} 0 1 0 ${(-Sz).toFixed(2)} 0 Z M${(x+cell*0.5).toFixed(2)} ${(y+Sz/2).toFixed(2)} a${(cell*2.5).toFixed(2)} ${(cell*2.5).toFixed(2)} 0 1 1 ${(cell*5).toFixed(2)} 0 a${(cell*2.5).toFixed(2)} ${(cell*2.5).toFixed(2)} 0 1 1 ${(-cell*5).toFixed(2)} 0 Z"/>`;
+      } else {
+        const rOut=state.cornerSq==='rounded'?cell*1.7:0, rIn=state.cornerSq==='rounded'?cell*0.9:0;
+        frames+=`<path fill-rule="evenodd" d="${rrPath(x,y,Sz,Sz,rOut)} ${rrPath(x+cell,y+cell,Sz-2*cell,Sz-2*cell,rIn)}"/>`;
+      }
+      const dx=ox+(fc+2)*cell, dy=oy+(fr+2)*cell, D=3*cell;
+      if(state.cornerDot==='dot') pupils+=`<circle cx="${(dx+D/2).toFixed(2)}" cy="${(dy+D/2).toFixed(2)}" r="${(D/2).toFixed(2)}"/>`;
+      else pupils+=`<rect x="${dx.toFixed(2)}" y="${dy.toFixed(2)}" width="${D.toFixed(2)}" height="${D.toFixed(2)}" rx="${state.cornerSq==='rounded'?(cell*0.6).toFixed(2):0}"/>`;
+    }
+    const frameFill = twoTone ? state.eyeOuter : bodyFill;
+    const pupilFill = twoTone ? state.eyeInner : bodyFill;
+    let logo='';
+    if(state.logo && state.logoDataURL){
+      const lp=side*(state.logoSize/100), mg=state.logoMargin*(Sq/1024), box=lp+mg*2;
+      const lx=ox+side/2-box/2, ly=oy+side/2-box/2, ix=ox+side/2-lp/2, iy=oy+side/2-lp/2;
+      const lbg = state.bgStyle==='transparent'?'#ffffff':state.bgColor;
+      logo=`<rect x="${lx.toFixed(2)}" y="${ly.toFixed(2)}" width="${box.toFixed(2)}" height="${box.toFixed(2)}" rx="${(box*0.16).toFixed(2)}" fill="${lbg}"/><image x="${ix.toFixed(2)}" y="${iy.toFixed(2)}" width="${lp.toFixed(2)}" height="${lp.toFixed(2)}" href="${state.logoDataURL}" preserveAspectRatio="xMidYMid meet"/>`;
+    }
+    return `<g fill="${bodyFill}">${body}</g><g fill="${frameFill}">${frames}</g><g fill="${pupilFill}">${pupils}</g>${logo}`;
+  }
+  function bgMarkup(x,y,w,h,idfx){
+    if(state.bgStyle==='transparent') return '';
+    let out=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${state.bgColor}"/>`;
+    if(state.bgStyle==='dots'||state.bgStyle==='grid'){
+      const pc=mix(state.bgColor,'#000000',0.05), step=(w/26).toFixed(2);
+      if(state.bgStyle==='dots'){
+        out+=`<pattern id="pat${idfx}" width="${step}" height="${step}" patternUnits="userSpaceOnUse"><circle cx="${(w/52).toFixed(2)}" cy="${(w/52).toFixed(2)}" r="${(w/26*0.16).toFixed(2)}" fill="${pc}"/></pattern>`;
+      } else {
+        out+=`<pattern id="pat${idfx}" width="${step}" height="${step}" patternUnits="userSpaceOnUse"><path d="M${step} 0 V${step} H0" fill="none" stroke="${pc}" stroke-width="${Math.max(1,w*0.0035).toFixed(2)}"/></pattern>`;
+      }
+      out+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#pat${idfx})"/>`;
+    }
+    return out;
+  }
+  function buildSVG(){
+    const S=1000, idfx='';
+    const defs = svgGradientDefs(idfx);
+    if(state.frameOn){
+      const R=(S*0.05).toFixed(2);
+      const bg = state.bgStyle==='transparent' ? '#ffffff' : state.bgColor;
+      const pad=S*0.085;
+      const hasCap=(state.frameCaption||'').trim().length>0;
+      const capH=hasCap? S*0.12 : 0;
+      const qpx=S-pad*2-capH, qx=(S-qpx)/2, qy=pad;
+      const bw=Math.max(2,S*0.014);
+      const cap = hasCap ? `<text x="${S/2}" y="${(pad+qpx+capH/2).toFixed(2)}" text-anchor="middle" dominant-baseline="central" font-family="Space Grotesk, Inter, system-ui, sans-serif" font-weight="700" font-size="${(capH*0.44).toFixed(2)}" fill="${state.frameColor}">${escXml((state.frameCaption||'').toUpperCase())}</text>` : '';
+      const patDefs = (state.bgStyle==='dots'||state.bgStyle==='grid') ? '' : '';
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}" viewBox="0 0 ${S} ${S}">`
+        +`<defs>${defs}</defs>`
+        +`<rect x="0" y="0" width="${S}" height="${S}" rx="${R}" fill="${bg}"/>`
+        +bgMarkup(qx.toFixed(2),qy.toFixed(2),qpx.toFixed(2),qpx.toFixed(2),'q')
+        +`<g transform="translate(${qx.toFixed(2)},${qy.toFixed(2)})">${qrMarkup(qpx, idfx)}</g>`
+        +cap
+        +`<rect x="${(bw/2).toFixed(2)}" y="${(bw/2).toFixed(2)}" width="${(S-bw).toFixed(2)}" height="${(S-bw).toFixed(2)}" rx="${R}" fill="none" stroke="${state.frameColor}" stroke-width="${bw.toFixed(2)}"/>`
+        +`</svg>`;
+    }
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}" viewBox="0 0 ${S} ${S}">`
+      +`${defs?`<defs>${defs}</defs>`:''}`
+      +bgMarkup(0,0,S,S,'q')
+      +qrMarkup(S, idfx)
+      +`</svg>`;
+  }
+  function escXml(s){ return String(s).replace(/[<>&"']/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  // ---------- exports ----------
+  function exportPNG(){
+    if(!matrix) return;
+    const px = state.exportSize;
+    const c = document.createElement('canvas');
+    renderCanvas(c, px, false);
+    c.toBlob(b=>{ downloadBlob(b, `prism-qr-${px}.png`); toast('PNG downloaded · '+px+'×'+px); }, 'image/png');
+  }
+  function exportSVG(){
+    if(!matrix) return;
+    const svg = buildSVG();
+    const blob = new Blob([svg], {type:'image/svg+xml;charset=utf-8'});
+    downloadBlob(blob, 'prism-qr.svg'); toast('SVG downloaded');
+  }
+  function downloadBlob(blob, name){
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 4000);
+  }
+  async function copyImage(){
+    if(!matrix || !navigator.clipboard || !window.ClipboardItem){ toast('Clipboard not supported',true); return; }
+    const c=document.createElement('canvas'); renderCanvas(c, 1024, false);
+    c.toBlob(async b=>{
+      try{ await navigator.clipboard.write([new ClipboardItem({'image/png':b})]); toast('Copied to clipboard'); }
+      catch(e){ toast('Copy blocked by browser',true); }
+    },'image/png');
+  }
+
+  // ---------- toast ----------
+  let toastT;
+  function toast(msg, isErr){
+    const t=$('#toast'); $('#toastMsg').textContent=msg;
+    t.querySelector('svg').style.color = isErr ? 'var(--danger)' : 'var(--ok)';
+    t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2200);
+  }
+
+  // ---------- segmented control wiring ----------
+  function wireRadio(id, key, after){
+    const grp=document.getElementById(id);
+    const btns=[...grp.querySelectorAll('[role=radio]')];
+    const pick=(b)=>{ btns.forEach(x=>x.setAttribute('aria-checked', x===b?'true':'false')); state[key]=b.dataset.v; after&&after(); render(); };
+    grp.addEventListener('click', e=>{ const b=e.target.closest('[role=radio]'); if(b) pick(b); });
+    grp.addEventListener('keydown', e=>{
+      const i=btns.indexOf(document.activeElement); if(i<0) return;
+      if(e.key==='ArrowRight'||e.key==='ArrowDown'){ e.preventDefault(); const nb=btns[(i+1)%btns.length]; nb.focus(); pick(nb); }
+      if(e.key==='ArrowLeft'||e.key==='ArrowUp'){ e.preventDefault(); const nb=btns[(i-1+btns.length)%btns.length]; nb.focus(); pick(nb); }
+    });
+  }
+  wireRadio('dotStyle','dotStyle');
+  wireRadio('cornerSq','cornerSq');
+  wireRadio('cornerDot','cornerDot');
+  wireRadio('ecLevel','ec');
+  wireRadio('fgType','fgType', ()=>{ $('#fgSolid').style.display = state.fgType==='solid'?'block':'none'; $('#fgGrad').style.display = state.fgType==='gradient'?'flex':'none'; });
+  wireRadio('gradType','gradType', ()=>{ $('#gradAngleRow').style.display = state.gradType==='linear'?'flex':'none'; updateGradPrev(); });
+  wireRadio('eyeMode','eyeMode', ()=>{ $('#eyeCustom').hidden = state.eyeMode!=='custom'; });
+  wireRadio('bgStyle','bgStyle', ()=>{
+    const tr = state.bgStyle==='transparent';
+    $('#bgColor').disabled=tr; $('#bgHex').disabled=tr; $('#bgSwatch').classList.toggle('dim', tr);
+    $('#cardShell').classList.toggle('solidbg', !tr);
+  });
+  wireRadio('frameOn','_frameOnVal', ()=>{ state.frameOn = state.frameOnVal==='on'; $('#frameFields').hidden = !state.frameOn; });
+  // keep frameOn boolean in sync (wireRadio writes to state._frameOnVal)
+  Object.defineProperty(state,'frameOnVal',{ get(){ return state._frameOnVal; }, set(v){ state._frameOnVal=v; }, configurable:true });
+  state._frameOnVal='off';
+
+  // ---------- gradient stop editor ----------
+  const stopList=$('#stopList');
+  function renderStops(){
+    stopList.innerHTML='';
+    state.gradStops.forEach((stop,i)=>{
+      const row=document.createElement('div'); row.className='stop-row';
+      row.innerHTML=
+        `<span class="swatch">
+           <input type="color" value="${stop.color}" aria-label="Stop ${i+1} color">
+           <input type="text" class="hex" value="${stop.color.toUpperCase()}" aria-label="Stop ${i+1} hex" spellcheck="false">
+         </span>
+         <button type="button" class="btn icon ghost sm rm-stop" aria-label="Remove stop ${i+1}" ${state.gradStops.length<=2?'disabled':''}>
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+         </button>
+         <label class="stop-pos">
+           <span class="sr">Stop ${i+1} position</span>
+           <input type="range" min="0" max="100" step="1" value="${stop.pos}" aria-label="Stop ${i+1} position percent">
+           <span class="pos-val">${stop.pos}%</span>
+         </label>`;
+      const colorI=row.querySelector('input[type=color]');
+      const hexI=row.querySelector('input.hex');
+      const rangeI=row.querySelector('input[type=range]');
+      const posVal=row.querySelector('.pos-val');
+      colorI.addEventListener('input',()=>{ stop.color=colorI.value; hexI.value=colorI.value.toUpperCase(); updateGradPrev(); render(); });
+      hexI.addEventListener('input',()=>{ let v=hexI.value.trim(); if(!v.startsWith('#'))v='#'+v; if(/^#[0-9a-f]{6}$/i.test(v)){ stop.color=v; colorI.value=v; updateGradPrev(); render(); } });
+      rangeI.addEventListener('input',()=>{ stop.pos=+rangeI.value; posVal.textContent=stop.pos+'%'; updateGradPrev(); render(); });
+      row.querySelector('.rm-stop').addEventListener('click',()=>{
+        if(state.gradStops.length>2){ state.gradStops.splice(i,1); renderStops(); updateGradPrev(); render(); }
+      });
+      stopList.appendChild(row);
+    });
+  }
+  $('#addStop').addEventListener('click',()=>{
+    if(state.gradStops.length>=5){ toast('Up to 5 stops',true); return; }
+    const ss=sortedStops();
+    const mid = ss.length>=2 ? mix(ss[0].color, ss[ss.length-1].color, 0.5) : '#46e0d0';
+    state.gradStops.push({color:mid, pos:50});
+    renderStops(); updateGradPrev(); render();
+  });
+  function updateGradPrev(){
+    const ss=sortedStops().map(s=>`${s.color} ${s.pos}%`).join(', ');
+    $('#gradBar').style.background = state.gradType==='radial'
+      ? `radial-gradient(circle at 50% 50%, ${ss})`
+      : `linear-gradient(${state.gradAngle}deg, ${ss})`;
+    const ticks=$('#gradTicks'); ticks.innerHTML='';
+    sortedStops().forEach(s=>{ const t=document.createElement('span'); t.className='tick'; t.style.left=s.pos+'%'; ticks.appendChild(t); });
+  }
+
+  // ---------- curated presets ----------
+  const PRESETS = [
+    {id:'classic', name:'Classic',  dot:'square',  cs:'square',  cd:'square', fg:{type:'solid', color:'#141821'}},
+    {id:'pebble',  name:'Pebble',   dot:'rounded', cs:'rounded', cd:'dot',    fg:{type:'solid', color:'#1f2937'}},
+    {id:'aurora',  name:'Aurora',   dot:'classy',  cs:'rounded', cd:'dot',    fg:{type:'gradient', stops:[{color:'#6d28d9',pos:0},{color:'#0891b2',pos:100}], gt:'linear', ga:45}, eye:{outer:'#6d28d9', inner:'#0891b2'}},
+    {id:'sunset',  name:'Sunset',   dot:'dots',    cs:'dot',     cd:'dot',    fg:{type:'gradient', stops:[{color:'#b91c1c',pos:0},{color:'#ea580c',pos:55},{color:'#c2410c',pos:100}], gt:'linear', ga:60}},
+    {id:'forest',  name:'Forest',   dot:'rounded', cs:'square',  cd:'square', fg:{type:'solid', color:'#14532d'}},
+    {id:'ink',     name:'Ink Dots', dot:'dots',    cs:'rounded', cd:'dot',    fg:{type:'solid', color:'#0b0f1a'}}
+  ];
+  function presetPreview(p){
+    const c0 = p.fg.type==='solid' ? p.fg.color : (p.fg.stops[0].color);
+    const c1 = p.fg.type==='solid' ? p.fg.color : (p.fg.stops[p.fg.stops.length-1].color);
+    const fg = p.fg.type==='solid' ? p.fg.color : `url(#pg-${p.id})`;
+    const eyeF = p.eye? p.eye.outer : fg;
+    const eyeP = p.eye? p.eye.inner : fg;
+    const defs = p.fg.type==='gradient'
+      ? `<defs><linearGradient id="pg-${p.id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c0}"/><stop offset="1" stop-color="${c1}"/></linearGradient></defs>` : '';
+    const dot=(x,y)=> p.dot==='dots' ? `<circle cx="${x+5}" cy="${y+5}" r="5" fill="${fg}"/>`
+      : p.dot==='square' ? `<rect x="${x}" y="${y}" width="10" height="10" fill="${fg}"/>`
+      : `<rect x="${x}" y="${y}" width="10" height="10" rx="${p.dot==='classy'?5:3}" fill="${fg}"/>`;
+    const frame = p.cs==='dot'
+      ? `<circle cx="22" cy="22" r="14" fill="none" stroke="${eyeF}" stroke-width="5"/>`
+      : `<rect x="9" y="9" width="26" height="26" rx="${p.cs==='rounded'?8:0}" fill="none" stroke="${eyeF}" stroke-width="5"/>`;
+    const cdot = p.cd==='dot' ? `<circle cx="22" cy="22" r="5.5" fill="${eyeP}"/>` : `<rect x="17" y="17" width="11" height="11" fill="${eyeP}"/>`;
+    return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">${defs}<rect width="64" height="64" rx="6" fill="#fff"/>${frame}${cdot}${dot(42,10)}${dot(10,42)}${dot(42,42)}${dot(28,42)}${dot(42,28)}</svg>`;
+  }
+  const presetsEl = $('#presets');
+  PRESETS.forEach(p=>{
+    const b=document.createElement('button');
+    b.type='button'; b.className='preset'; b.dataset.preset=p.id; b.setAttribute('aria-pressed','false');
+    b.setAttribute('aria-label','Apply preset '+p.name);
+    b.innerHTML = presetPreview(p) + `<span class="nm">${p.name}</span>`;
+    b.addEventListener('click', ()=>applyPreset(p));
+    presetsEl.appendChild(b);
+  });
+  function setRadioValue(groupId, value){
+    [...document.querySelectorAll('#'+groupId+' [role=radio]')].forEach(x=>x.setAttribute('aria-checked', x.dataset.v===value?'true':'false'));
+  }
+  function syncFgUi(){
+    $('#fgSolid').style.display = state.fgType==='solid'?'block':'none';
+    $('#fgGrad').style.display = state.fgType==='gradient'?'flex':'none';
+    setRadioValue('fgType',state.fgType);
+    if(state.fgType==='solid'){ $('#fgColor').value=state.fgColor; $('#fgHex').value=state.fgColor.toUpperCase(); }
+    else {
+      setRadioValue('gradType',state.gradType); $('#gradAngle').value=state.gradAngle; $('#gradAngleVal').textContent=state.gradAngle+'°';
+      $('#gradAngleRow').style.display = state.gradType==='linear'?'flex':'none';
+      renderStops(); updateGradPrev();
+    }
+  }
+  function syncEyeUi(){
+    setRadioValue('eyeMode',state.eyeMode); $('#eyeCustom').hidden = state.eyeMode!=='custom';
+    $('#eyeOuter').value=state.eyeOuter; $('#eyeOuterHex').value=state.eyeOuter.toUpperCase();
+    $('#eyeInner').value=state.eyeInner; $('#eyeInnerHex').value=state.eyeInner.toUpperCase();
+  }
+  function syncBgUi(){
+    setRadioValue('bgStyle',state.bgStyle);
+    const tr=state.bgStyle==='transparent';
+    $('#bgColor').value=state.bgColor; $('#bgHex').value=state.bgColor.toUpperCase();
+    $('#bgColor').disabled=tr; $('#bgHex').disabled=tr; $('#bgSwatch').classList.toggle('dim', tr);
+    $('#cardShell').classList.toggle('solidbg', !tr);
+  }
+  function applyPreset(p){
+    state.dotStyle=p.dot; setRadioValue('dotStyle',p.dot);
+    state.cornerSq=p.cs; setRadioValue('cornerSq',p.cs);
+    state.cornerDot=p.cd; setRadioValue('cornerDot',p.cd);
+    state.fgType=p.fg.type;
+    if(p.fg.type==='solid'){ state.fgColor=p.fg.color; }
+    else { state.gradStops=p.fg.stops.map(s=>({...s})); state.gradType=p.fg.gt; state.gradAngle=p.fg.ga; }
+    state.eyeMode = p.eye ? 'custom' : 'match';
+    if(p.eye){ state.eyeOuter=p.eye.outer; state.eyeInner=p.eye.inner; }
+    syncFgUi(); syncEyeUi();
+    [...presetsEl.children].forEach(x=>x.setAttribute('aria-pressed', x.dataset.preset===p.id?'true':'false'));
+    clearCustomCurrent();
+    render();
+  }
+
+  // ---------- saved (custom) presets — localStorage ----------
+  function loadCustom(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'[]'); }catch(e){ return []; } }
+  function saveCustomList(list){ try{ localStorage.setItem(LS_KEY, JSON.stringify(list)); }catch(e){ toast('Storage unavailable',true); } }
+  function currentStyle(){
+    return {
+      dotStyle:state.dotStyle, cornerSq:state.cornerSq, cornerDot:state.cornerDot,
+      fgType:state.fgType, fgColor:state.fgColor,
+      gradStops:state.gradStops.map(s=>({...s})), gradType:state.gradType, gradAngle:state.gradAngle,
+      eyeMode:state.eyeMode, eyeOuter:state.eyeOuter, eyeInner:state.eyeInner,
+      bgStyle:state.bgStyle, bgColor:state.bgColor,
+      frameOn:state.frameOn, frameCaption:state.frameCaption, frameColor:state.frameColor
+    };
+  }
+  function styleToPresetShape(st){
+    const fg = st.fgType==='solid' ? {type:'solid', color:st.fgColor}
+      : {type:'gradient', stops:st.gradStops, gt:st.gradType, ga:st.gradAngle};
+    const eye = st.eyeMode==='custom' ? {outer:st.eyeOuter, inner:st.eyeInner} : null;
+    return {id:'cust', name:'', dot:st.dotStyle, cs:st.cornerSq, cd:st.cornerDot, fg, eye};
+  }
+  function applyStyle(st){
+    state.dotStyle=st.dotStyle; setRadioValue('dotStyle',st.dotStyle);
+    state.cornerSq=st.cornerSq; setRadioValue('cornerSq',st.cornerSq);
+    state.cornerDot=st.cornerDot; setRadioValue('cornerDot',st.cornerDot);
+    state.fgType=st.fgType; state.fgColor=st.fgColor;
+    state.gradStops=(st.gradStops||state.gradStops).map(s=>({...s})); state.gradType=st.gradType; state.gradAngle=st.gradAngle;
+    state.eyeMode=st.eyeMode; state.eyeOuter=st.eyeOuter; state.eyeInner=st.eyeInner;
+    state.bgStyle=st.bgStyle; state.bgColor=st.bgColor;
+    state.frameOn=!!st.frameOn; state._frameOnVal=state.frameOn?'on':'off'; setRadioValue('frameOn',state._frameOnVal);
+    $('#frameFields').hidden=!state.frameOn; state.frameCaption=st.frameCaption||''; $('#frameCaption').value=state.frameCaption;
+    state.frameColor=st.frameColor||'#0c0e14'; $('#frameColor').value=state.frameColor; $('#frameColorHex').value=state.frameColor.toUpperCase();
+    syncFgUi(); syncEyeUi(); syncBgUi();
+    [...presetsEl.children].forEach(x=>x.setAttribute('aria-pressed','false'));
+    render();
+  }
+  const custWrap=$('#custWrap');
+  let currentCustomId=null;
+  function clearCustomCurrent(){ currentCustomId=null; [...custWrap.querySelectorAll('.cust-card')].forEach(c=>c.setAttribute('aria-current','false')); }
+  function renderCustom(){
+    const list=loadCustom();
+    custWrap.innerHTML='';
+    if(!list.length){
+      custWrap.innerHTML=`<div class="cust-empty"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/></svg> Save the current style to start your gallery.</div>`;
+      return;
+    }
+    const grid=document.createElement('div'); grid.className='cust-grid';
+    list.forEach(item=>{
+      const card=document.createElement('div'); card.className='cust-card';
+      card.setAttribute('aria-current', item.id===currentCustomId?'true':'false');
+      const apply=document.createElement('button');
+      apply.type='button'; apply.className='apply'; apply.setAttribute('aria-label','Apply saved style '+item.name);
+      apply.innerHTML = presetPreview(styleToPresetShape(item.style));
+      apply.addEventListener('click', ()=>{ applyStyle(item.style); currentCustomId=item.id; renderCustom(); toast('Style “'+item.name+'” applied'); });
+      const nm=document.createElement('span'); nm.className='nm'; nm.textContent=item.name;
+      const del=document.createElement('button');
+      del.type='button'; del.className='del'; del.setAttribute('aria-label','Remove saved style '+item.name);
+      del.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+      del.addEventListener('click', e=>{ e.stopPropagation(); const next=loadCustom().filter(x=>x.id!==item.id); saveCustomList(next); if(currentCustomId===item.id) currentCustomId=null; renderCustom(); toast('Removed “'+item.name+'”'); });
+      card.appendChild(apply); card.appendChild(nm); card.appendChild(del);
+      grid.appendChild(card);
+    });
+    custWrap.appendChild(grid);
+  }
+  function saveCurrent(){
+    const nameInput=$('#saveName');
+    let name=(nameInput.value||'').trim();
+    const list=loadCustom();
+    if(!name) name='My style '+(list.length+1);
+    const id='c'+Date.now().toString(36);
+    list.push({id, name, style:currentStyle()});
+    saveCustomList(list);
+    nameInput.value='';
+    currentCustomId=id; renderCustom();
+    toast('Saved “'+name+'”');
+  }
+  $('#saveStyle').addEventListener('click', saveCurrent);
+  $('#saveName').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); saveCurrent(); } });
+
+  // ---------- content tabs ----------
+  const tabs=$('#typeTabs');
+  tabs.addEventListener('click', e=>{
+    const b=e.target.closest('[role=tab]'); if(!b) return;
+    state.type=b.dataset.type;
+    [...tabs.children].forEach(x=>x.setAttribute('aria-selected', x===b?'true':'false'));
+    document.querySelectorAll('.payload-pane').forEach(p=>p.classList.toggle('active', p.dataset.pane===state.type));
+    render();
+  });
+
+  // ---------- color inputs ----------
+  function bindColor(colorId, hexId, key){
+    const ci=document.getElementById(colorId), hi=document.getElementById(hexId);
+    ci.addEventListener('input', ()=>{ state[key]=ci.value; hi.value=ci.value.toUpperCase(); updateGradPrev(); render(); });
+    hi.addEventListener('input', ()=>{ let v=hi.value.trim(); if(!v.startsWith('#'))v='#'+v;
+      if(/^#[0-9a-f]{6}$/i.test(v)){ ci.value=v; state[key]=v; updateGradPrev(); render(); } });
+  }
+  bindColor('fgColor','fgHex','fgColor');
+  bindColor('bgColor','bgHex','bgColor');
+  bindColor('eyeOuter','eyeOuterHex','eyeOuter');
+  bindColor('eyeInner','eyeInnerHex','eyeInner');
+  bindColor('frameColor','frameColorHex','frameColor');
+
+  // ---------- sliders / text ----------
+  $('#gradAngle').addEventListener('input', e=>{ state.gradAngle=+e.target.value; $('#gradAngleVal').textContent=state.gradAngle+'°'; updateGradPrev(); render(); });
+  $('#quietZone').addEventListener('input', e=>{ state.quiet=+e.target.value; $('#quietVal').textContent=state.quiet+' mod'; render(); });
+  $('#logoSize').addEventListener('input', e=>{ state.logoSize=+e.target.value; $('#logoSizeVal').textContent=state.logoSize+'%'; render(); });
+  $('#logoMargin').addEventListener('input', e=>{ state.logoMargin=+e.target.value; $('#logoMarginVal').textContent=state.logoMargin+'px'; render(); });
+  $('#exportSize').addEventListener('change', e=>{ state.exportSize=+e.target.value; });
+  $('#frameCaption').addEventListener('input', e=>{ state.frameCaption=e.target.value; render(); });
+
+  // ---------- content fields ----------
+  ['f_url','f_text','f_wifi_ssid','f_wifi_pass','f_wifi_enc','f_wifi_hidden','f_email_to','f_email_sub','f_email_body',
+   'f_vc_name','f_vc_org','f_vc_phone','f_vc_email','f_vc_url'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.addEventListener('input', render); el.addEventListener('change', render);
+  });
+
+  // ---------- logo upload ----------
+  const dz=$('#dropzone'), fileInput=$('#logoInput');
+  function loadLogoFile(file){
+    if(!file || !file.type.startsWith('image/')){ toast('Pick an image file',true); return; }
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        state.logo=img; state.logoDataURL=reader.result;
+        $('#logoThumb').innerHTML=`<img src="${reader.result}" alt="">`;
+        $('#dzTitle').textContent='Logo added'; $('#dzSub').textContent=file.name;
+        $('#logoControls').style.display='flex';
+        if(EC_RANK[state.ec]<EC_RANK.Q){ setEcButton('Q'); }
+        render();
+      };
+      img.onerror=()=>toast('Could not load that image',true);
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  }
+  function setEcButton(v){
+    state.ec=v;
+    [...document.querySelectorAll('#ecLevel [role=radio]')].forEach(b=>b.setAttribute('aria-checked', b.dataset.v===v?'true':'false'));
+  }
+  dz.addEventListener('click', ()=>fileInput.click());
+  dz.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fileInput.click(); } });
+  fileInput.addEventListener('change', e=>{ if(e.target.files[0]) loadLogoFile(e.target.files[0]); });
+  ['dragover','dragenter'].forEach(ev=>dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.remove('drag'); }));
+  dz.addEventListener('drop', e=>{ if(e.dataTransfer.files[0]) loadLogoFile(e.dataTransfer.files[0]); });
+  $('#removeLogo').addEventListener('click', ()=>{
+    state.logo=null; state.logoDataURL=null;
+    $('#logoThumb').innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>`;
+    $('#dzTitle').textContent='Upload logo'; $('#dzSub').textContent='PNG, SVG or JPG · centered';
+    $('#logoControls').style.display='none'; fileInput.value=''; render();
+  });
+
+  // ---------- export buttons ----------
+  $('#dlPng').addEventListener('click', exportPNG);
+  $('#dlSvg').addEventListener('click', exportSVG);
+  $('#copyImg').addEventListener('click', copyImage);
+
+  // ---------- reset ----------
+  $('#resetAll').addEventListener('click', ()=>{ location.reload(); });
+
+  // ---------- public API for self-test ----------
+  window.__prism = {
+    ready:false, verifyReady:false, state,
+    payload, effectiveEc, scanRisk,
+    setText(t){ state.type='url'; $('#f_url').value=t; document.querySelector('#typeTabs [data-type=url]').click(); render(); },
+    setField(id,v){ const el=document.getElementById(id); el.value=v; render(); },
+    setDot(v){ const b=document.querySelector(`#dotStyle [data-v="${v}"]`); b.click(); },
+    setEc(v){ setEcButton(v); render(); },
+    setEyeMode(v){ document.querySelector(`#eyeMode [data-v="${v}"]`).click(); },
+    setEyeColors(outer,inner){ const o=$('#eyeOuter'),i=$('#eyeInner'); o.value=outer; o.dispatchEvent(new Event('input',{bubbles:true})); i.value=inner; i.dispatchEvent(new Event('input',{bubbles:true})); },
+    setFrame(on){ document.querySelector(`#frameOn [data-v="${on?'on':'off'}"]`).click(); },
+    setCaption(t){ const el=$('#frameCaption'); el.value=t; el.dispatchEvent(new Event('input',{bubbles:true})); },
+    addGradStop(){ $('#addStop').click(); },
+    setLogo(dataURL){ return new Promise(res=>{ const img=new Image(); img.onload=()=>{ state.logo=img; state.logoDataURL=dataURL; $('#logoControls').style.display='flex'; if(EC_RANK[state.ec]<EC_RANK.Q) setEcButton('Q'); render(); res(); }; img.src=dataURL; }); },
+    setLogoSize(p){ state.logoSize=p; $('#logoSize').value=p; $('#logoSizeVal').textContent=p+'%'; render(); },
+    moduleCount(){ return moduleCount; },
+    exportCanvas(px){ const c=document.createElement('canvas'); renderCanvas(c, px, true); return c; },
+    qrCanvas,
+    svg(){ return buildSVG(); },
+    exportEnabled(){ return !$('#dlPng').disabled; },
+    warnVisible(){ return $('#scanBadge').classList.contains('warn') || $('#scanBadge').classList.contains('danger'); },
+    badgeKind(){ const cl=$('#scanBadge').classList; return cl.contains('good')?'good':cl.contains('warn')?'warn':cl.contains('danger')?'danger':cl.contains('checking')?'checking':'none'; },
+    decoded(){ return window.__prism._decoded; },
+    verifyOk(){ return window.__prism._verifyOk; },
+    saveCurrentStyle(name){ $('#saveName').value=name||''; saveCurrent(); },
+    customCount(){ return loadCustom().length; },
+    applyFirstCustom(){ const c=document.querySelector('#custWrap .cust-card .apply'); if(c){ c.click(); return true; } return false; },
+    render
+  };
+
+  // ---------- init ----------
+  syncBgUi();
+  renderStops();
+  updateGradPrev();
+  renderCustom();
+  render();
+  window.addEventListener('resize', ()=>{ clearTimeout(window.__rz); window.__rz=setTimeout(render,150); });
+})();
+</script>
+</body>
+</html>

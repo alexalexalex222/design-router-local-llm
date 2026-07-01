@@ -1,0 +1,47 @@
+<!-- foundation_design_tokens_v1 — small demo proving the tokens render.
+     The two <link> tags below are the REQUIRED font load for this foundation.
+     Copy them into <head>. Pair this file with snippet.css. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,900&family=Inter:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+
+<main class="token-demo">
+  <header>
+    <h1 class="token-demo__title">Design token foundation</h1>
+    <p class="token-demo__lead">
+      Semantic color roles, a fluid modular type scale, a 4px spacing system,
+      named radii, three elevation tiers, and motion tokens — the base every
+      other atom in this library assumes.
+    </p>
+  </header>
+
+  <section aria-label="Semantic color roles">
+    <div class="swatches">
+      <span class="swatch swatch--surface">surface</span>
+      <span class="swatch swatch--brand">primary</span>
+      <span class="swatch swatch--accent">accent</span>
+      <span class="swatch swatch--ink">ink</span>
+      <span class="swatch swatch--success">success</span>
+      <span class="swatch swatch--danger">danger</span>
+    </div>
+  </section>
+
+  <section aria-label="Elevation tiers">
+    <div class="elevations">
+      <div class="elevation elevation--1">shadow-1</div>
+      <div class="elevation elevation--2">shadow-2</div>
+      <div class="elevation elevation--3">shadow-3</div>
+    </div>
+  </section>
+
+  <section class="type-scale" aria-label="Type scale">
+    <p class="t-display">Aa</p>
+    <p class="t-xl">Fluid display & body pairing</p>
+    <p class="t-base">Body text holds at 16px minimum and scales with the viewport.</p>
+  </section>
+
+  <button class="demo-cta" type="button">Token-driven button</button>
+</main>

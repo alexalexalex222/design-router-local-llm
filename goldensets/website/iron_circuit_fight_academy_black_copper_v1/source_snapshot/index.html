@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Iron Circuit Fight Academy — adult and teen combat-sports training in striking, grappling, and MMA fundamentals. Book a trial session." />
+  <title>Iron Circuit Fight Academy — Striking, Grappling &amp; MMA Fundamentals</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="ic-skip" href="#main">Skip to content</a>
+
+  <!-- ============================ 1. STICKY NAV ============================ -->
+  <header class="ic-header" data-elevate="false">
+    <div class="ic-strip" role="note">
+      <span class="ic-strip__dot" aria-hidden="true"></span>
+      Open mat hours and trial sessions run weekly — ask about current availability.
+    </div>
+    <nav class="ic-nav" aria-label="Primary">
+      <a class="ic-brand" href="#top" aria-label="Iron Circuit Fight Academy, home">
+        <svg class="ic-brand__mark" viewBox="0 0 40 40" width="40" height="40" aria-hidden="true" focusable="false">
+          <rect x="3" y="3" width="34" height="34" rx="3" class="ic-brand__plate" />
+          <circle cx="20" cy="20" r="11" class="ic-brand__ring" />
+          <path d="M20 11 V20 L26 24" class="ic-brand__hand" />
+        </svg>
+        <span class="ic-brand__word">IRON<i>CIRCUIT</i></span>
+      </a>
+
+      <button class="ic-nav__toggle" type="button" aria-expanded="false" aria-controls="ic-nav-menu" aria-label="Open menu">
+        <span class="ic-nav__bars" aria-hidden="true"></span>
+        <span class="ic-nav__toggle-text">Menu</span>
+      </button>
+
+      <div class="ic-nav__menu" id="ic-nav-menu">
+        <ul class="ic-nav__list">
+          <li><a href="#programs">Programs</a></li>
+          <li><a href="#schedule">Schedule</a></li>
+          <li><a href="#first-visit">First Visit</a></li>
+          <li><a href="#coaches">Coaches</a></li>
+        </ul>
+        <a class="ic-btn ic-btn--solid ic-nav__cta" href="#start">Start</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <span id="top" aria-hidden="true"></span>
+
+    <!-- ============================ 2. HERO ============================ -->
+    <section class="ic-hero" aria-labelledby="ic-hero-title">
+      <!-- mat_zone_diagram_svg_v1 : bespoke mat-zone diagram, decorative -->
+      <svg class="ic-hero__mat" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+        <defs>
+          <pattern id="ic-matgrid" width="60" height="60" patternUnits="userSpaceOnUse">
+            <path d="M60 0 H0 V60" fill="none" class="ic-mat__grid" />
+          </pattern>
+        </defs>
+        <rect width="600" height="600" fill="url(#ic-matgrid)" />
+        <rect x="60" y="60" width="480" height="480" rx="6" class="ic-mat__zone ic-mat__zone--outer" />
+        <circle cx="300" cy="300" r="150" class="ic-mat__zone ic-mat__zone--center" pathLength="100" />
+        <line x1="300" y1="150" x2="300" y2="450" class="ic-mat__axis" pathLength="100" />
+        <line x1="150" y1="300" x2="450" y2="300" class="ic-mat__axis" pathLength="100" />
+        <!-- taped corners -->
+        <path d="M60 96 V60 H96" class="ic-mat__tape" />
+        <path d="M504 60 H540 V96" class="ic-mat__tape" />
+        <path d="M540 504 V540 H504" class="ic-mat__tape" />
+        <path d="M96 540 H60 V504" class="ic-mat__tape" />
+      </svg>
+
+      <div class="ic-hero__inner">
+        <p class="ic-eyebrow">Adult &amp; teen combat-sports academy</p>
+        <h1 id="ic-hero-title" class="ic-hero__title">
+          Step onto the mat.<br /><span class="ic-hero__title-em">Learn to fight</span><br />the right way.
+        </h1>
+        <p class="ic-hero__lede">
+          Striking, grappling, and MMA fundamentals taught in structured rounds —
+          coached intensity without the ego. Beginners start here.
+        </p>
+        <div class="ic-hero__actions">
+          <a class="ic-btn ic-btn--solid ic-btn--lg" href="#start">Book a trial session</a>
+          <a class="ic-btn ic-btn--ghost ic-btn--lg" href="#programs">Explore programs</a>
+        </div>
+        <dl class="ic-hero__facts">
+          <div><dt>Disciplines</dt><dd>Striking · Grappling · MMA</dd></div>
+          <div><dt>For</dt><dd>Adults &amp; teens (14+)</dd></div>
+          <div><dt>Start point</dt><dd>No experience required</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ============================ 3. PROGRAM SELECTOR ============================ -->
+    <!-- program_selector_tabs_v1 -->
+    <section class="ic-section ic-programs" id="programs" aria-labelledby="ic-programs-title">
+      <div class="ic-section__head">
+        <p class="ic-kicker"><span class="ic-kicker__num">01</span> Programs</p>
+        <h2 id="ic-programs-title" class="ic-h2">Four tracks. One progression.</h2>
+        <p class="ic-section__intro">Pick where you want to start. Most members blend tracks once the fundamentals click.</p>
+      </div>
+
+      <div class="ic-tabs" data-tabs>
+        <div class="ic-tabs__list" role="tablist" aria-label="Training programs">
+          <button class="ic-tabs__tab" role="tab" id="tab-striking" aria-selected="true" aria-controls="panel-striking" type="button">
+            <span class="ic-tabs__tab-label">Striking</span>
+            <span class="ic-tabs__tab-sub">Boxing · Muay Thai</span>
+          </button>
+          <button class="ic-tabs__tab" role="tab" id="tab-grappling" aria-selected="false" aria-controls="panel-grappling" tabindex="-1" type="button">
+            <span class="ic-tabs__tab-label">Grappling</span>
+            <span class="ic-tabs__tab-sub">BJJ · Wrestling</span>
+          </button>
+          <button class="ic-tabs__tab" role="tab" id="tab-youth" aria-selected="false" aria-controls="panel-youth" tabindex="-1" type="button">
+            <span class="ic-tabs__tab-label">Youth</span>
+            <span class="ic-tabs__tab-sub">Ages 14–17</span>
+          </button>
+          <button class="ic-tabs__tab" role="tab" id="tab-fundamentals" aria-selected="false" aria-controls="panel-fundamentals" tabindex="-1" type="button">
+            <span class="ic-tabs__tab-label">Fundamentals</span>
+            <span class="ic-tabs__tab-sub">Brand-new starters</span>
+          </button>
+        </div>
+
+        <div class="ic-tabs__panel" role="tabpanel" id="panel-striking" aria-labelledby="tab-striking" tabindex="0">
+          <div class="ic-prog">
+            <div class="ic-prog__body">
+              <h3 class="ic-prog__title">Striking</h3>
+              <p>Boxing and Muay Thai footwork, guard, and combinations drilled on pads and bags, building toward controlled partner work and light technical sparring.</p>
+              <ul class="ic-prog__list">
+                <li>Stance, distance, and defensive structure first</li>
+                <li>Pad rounds, bag work, and clinch entries</li>
+                <li>Optional controlled sparring once fundamentals are solid</li>
+              </ul>
+            </div>
+            <dl class="ic-prog__meta">
+              <div><dt>Format</dt><dd>Group rounds, 60 min</dd></div>
+              <div><dt>Contact</dt><dd>Scaled to your level</dd></div>
+              <div><dt>Gear</dt><dd>Wraps &amp; gloves (loaners available)</dd></div>
+            </dl>
+          </div>
+        </div>
+
+        <div class="ic-tabs__panel" role="tabpanel" id="panel-grappling" aria-labelledby="tab-grappling" tabindex="0" hidden>
+          <div class="ic-prog">
+            <div class="ic-prog__body">
+              <h3 class="ic-prog__title">Grappling</h3>
+              <p>Brazilian Jiu-Jitsu and wrestling fundamentals — positional control, escapes, and submission chains taught through live positional rounds at a safe pace.</p>
+              <ul class="ic-prog__list">
+                <li>Positional hierarchy, escapes, and base</li>
+                <li>Gi and no-gi options as you progress</li>
+                <li>Live rounds scaled to experience and consent</li>
+              </ul>
+            </div>
+            <dl class="ic-prog__meta">
+              <div><dt>Format</dt><dd>Group rounds, 75 min</dd></div>
+              <div><dt>Contact</dt><dd>Controlled, position-led</dd></div>
+              <div><dt>Gear</dt><dd>Rashguard or gi (ask at desk)</dd></div>
+            </dl>
+          </div>
+        </div>
+
+        <div class="ic-tabs__panel" role="tabpanel" id="panel-youth" aria-labelledby="tab-youth" tabindex="0" hidden>
+          <div class="ic-prog">
+            <div class="ic-prog__body">
+              <h3 class="ic-prog__title">Youth (14–17)</h3>
+              <p>A focused track for teens covering striking and grappling fundamentals with an emphasis on discipline, conditioning, and respectful partner work.</p>
+              <ul class="ic-prog__list">
+                <li>Age-appropriate intensity and supervision</li>
+                <li>Discipline, focus, and conditioning built in</li>
+                <li>Guardian consent required to enroll</li>
+              </ul>
+            </div>
+            <dl class="ic-prog__meta">
+              <div><dt>Format</dt><dd>Group rounds, 50 min</dd></div>
+              <div><dt>Contact</dt><dd>Supervised, technical</dd></div>
+              <div><dt>Gear</dt><dd>Guidance provided on enrollment</dd></div>
+            </dl>
+          </div>
+        </div>
+
+        <div class="ic-tabs__panel" role="tabpanel" id="panel-fundamentals" aria-labelledby="tab-fundamentals" tabindex="0" hidden>
+          <div class="ic-prog">
+            <div class="ic-prog__body">
+              <h3 class="ic-prog__title">Fundamentals</h3>
+              <p>The on-ramp for people who have never trained. Low-pressure sessions that teach movement, terminology, and gym etiquette before you join the main floor.</p>
+              <ul class="ic-prog__list">
+                <li>No experience or fitness baseline assumed</li>
+                <li>Learn the warm-up, language, and safety rules</li>
+                <li>Clear path into Striking or Grappling next</li>
+              </ul>
+            </div>
+            <dl class="ic-prog__meta">
+              <div><dt>Format</dt><dd>Small group, 45 min</dd></div>
+              <div><dt>Contact</dt><dd>None to light</dd></div>
+              <div><dt>Gear</dt><dd>Just water &amp; athletic wear</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ 4. CLASS SCHEDULE MATRIX ============================ -->
+    <!-- class_schedule_matrix_v1 -->
+    <section class="ic-section ic-schedule" id="schedule" aria-labelledby="ic-schedule-title">
+      <div class="ic-section__head">
+        <p class="ic-kicker"><span class="ic-kicker__num">02</span> Schedule</p>
+        <h2 id="ic-schedule-title" class="ic-h2">Weekly class matrix</h2>
+        <p class="ic-section__intro">A representative weekly structure. Confirm current times and open mats at the front desk — ask about current availability.</p>
+      </div>
+
+      <div class="ic-matrix" role="region" aria-label="Weekly class schedule" tabindex="0">
+        <table class="ic-matrix__table">
+          <caption class="ic-visually-hidden">Weekly class schedule by time block and day. Cells list the discipline running in that block.</caption>
+          <thead>
+            <tr>
+              <th scope="col" class="ic-matrix__corner">Block</th>
+              <th scope="col">Mon</th>
+              <th scope="col">Tue</th>
+              <th scope="col">Wed</th>
+              <th scope="col">Thu</th>
+              <th scope="col">Fri</th>
+              <th scope="col">Sat</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row"><span class="ic-matrix__time">06:30</span><span class="ic-matrix__band">Morning</span></th>
+              <td><span class="ic-cell ic-cell--strike">Striking</span></td>
+              <td><span class="ic-cell ic-cell--grap">Grappling</span></td>
+              <td><span class="ic-cell ic-cell--strike">Striking</span></td>
+              <td><span class="ic-cell ic-cell--grap">Grappling</span></td>
+              <td><span class="ic-cell ic-cell--strike">Striking</span></td>
+              <td><span class="ic-cell ic-cell--open">Open Mat</span></td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="ic-matrix__time">12:00</span><span class="ic-matrix__band">Midday</span></th>
+              <td><span class="ic-cell ic-cell--fund">Fundamentals</span></td>
+              <td class="ic-cell-empty"><span aria-hidden="true">—</span><span class="ic-visually-hidden">No class</span></td>
+              <td><span class="ic-cell ic-cell--fund">Fundamentals</span></td>
+              <td class="ic-cell-empty"><span aria-hidden="true">—</span><span class="ic-visually-hidden">No class</span></td>
+              <td><span class="ic-cell ic-cell--fund">Fundamentals</span></td>
+              <td><span class="ic-cell ic-cell--strike">Striking</span></td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="ic-matrix__time">17:30</span><span class="ic-matrix__band">Youth</span></th>
+              <td><span class="ic-cell ic-cell--youth">Youth</span></td>
+              <td><span class="ic-cell ic-cell--youth">Youth</span></td>
+              <td><span class="ic-cell ic-cell--youth">Youth</span></td>
+              <td><span class="ic-cell ic-cell--youth">Youth</span></td>
+              <td class="ic-cell-empty"><span aria-hidden="true">—</span><span class="ic-visually-hidden">No class</span></td>
+              <td><span class="ic-cell ic-cell--grap">Grappling</span></td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="ic-matrix__time">19:00</span><span class="ic-matrix__band">Evening</span></th>
+              <td><span class="ic-cell ic-cell--grap">Grappling</span></td>
+              <td><span class="ic-cell ic-cell--strike">Striking</span></td>
+              <td><span class="ic-cell ic-cell--grap">Grappling</span></td>
+              <td><span class="ic-cell ic-cell--strike">Striking</span></td>
+              <td><span class="ic-cell ic-cell--strike">Striking</span></td>
+              <td class="ic-cell-empty"><span aria-hidden="true">—</span><span class="ic-visually-hidden">No class</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="ic-legend" aria-label="Schedule legend">
+        <li><span class="ic-legend__sw ic-cell--strike" aria-hidden="true"></span> Striking</li>
+        <li><span class="ic-legend__sw ic-cell--grap" aria-hidden="true"></span> Grappling</li>
+        <li><span class="ic-legend__sw ic-cell--fund" aria-hidden="true"></span> Fundamentals</li>
+        <li><span class="ic-legend__sw ic-cell--youth" aria-hidden="true"></span> Youth</li>
+        <li><span class="ic-legend__sw ic-cell--open" aria-hidden="true"></span> Open Mat</li>
+      </ul>
+    </section>
+
+    <!-- ============================ 5. FIRST-WEEK ONBOARDING TIMELINE ============================ -->
+    <!-- first_week_timeline_v1 -->
+    <section class="ic-section ic-first" id="first-visit" aria-labelledby="ic-first-title">
+      <div class="ic-section__head">
+        <p class="ic-kicker"><span class="ic-kicker__num">03</span> First Visit</p>
+        <h2 id="ic-first-title" class="ic-h2">Your first week, mapped</h2>
+        <p class="ic-section__intro">Nobody gets thrown into sparring on day one. Here is how the first week actually goes.</p>
+      </div>
+
+      <ol class="ic-timeline">
+        <li class="ic-timeline__step">
+          <span class="ic-timeline__node" aria-hidden="true">1</span>
+          <div class="ic-timeline__card">
+            <p class="ic-timeline__tag">Before you arrive</p>
+            <h3 class="ic-timeline__title">Book &amp; brief</h3>
+            <p>Reserve a trial session below. We confirm your slot and tell you exactly what to bring — usually just water and athletic clothes.</p>
+          </div>
+        </li>
+        <li class="ic-timeline__step">
+          <span class="ic-timeline__node" aria-hidden="true">2</span>
+          <div class="ic-timeline__card">
+            <p class="ic-timeline__tag">Day one</p>
+            <h3 class="ic-timeline__title">Floor tour &amp; warm-up</h3>
+            <p>A coach walks you through the mat zones, etiquette, and the warm-up so nothing feels unfamiliar before training starts.</p>
+          </div>
+        </li>
+        <li class="ic-timeline__step">
+          <span class="ic-timeline__node" aria-hidden="true">3</span>
+          <div class="ic-timeline__card">
+            <p class="ic-timeline__tag">First sessions</p>
+            <h3 class="ic-timeline__title">Fundamentals, no pressure</h3>
+            <p>You drill core movements at your own pace. Partner work is light and supervised — consent and control come first, always.</p>
+          </div>
+        </li>
+        <li class="ic-timeline__step">
+          <span class="ic-timeline__node" aria-hidden="true">4</span>
+          <div class="ic-timeline__card">
+            <p class="ic-timeline__tag">End of week one</p>
+            <h3 class="ic-timeline__title">Pick your track</h3>
+            <p>A coach helps you choose Striking, Grappling, or both, and sets a simple weekly plan that fits your schedule and goals.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- ============================ 6. COACH ROSTER ============================ -->
+    <!-- coach_roster_proof_safe_v1 -->
+    <section class="ic-section ic-coaches" id="coaches" aria-labelledby="ic-coaches-title">
+      <div class="ic-section__head">
+        <p class="ic-kicker"><span class="ic-kicker__num">04</span> Coaches</p>
+        <h2 id="ic-coaches-title" class="ic-h2">The people on the mat with you</h2>
+        <p class="ic-section__intro">Coach profiles below are structural placeholders. Verified coach credentials can be placed here once provided.</p>
+      </div>
+
+      <ul class="ic-roster">
+        <li class="ic-coach">
+          <div class="ic-coach__portrait" aria-hidden="true">
+            <svg viewBox="0 0 100 100" width="100" height="100" focusable="false">
+              <rect width="100" height="100" rx="4" class="ic-coach__plate" />
+              <circle cx="50" cy="40" r="16" class="ic-coach__figure" />
+              <path d="M22 84 C22 64 78 64 78 84 Z" class="ic-coach__figure" />
+            </svg>
+          </div>
+          <div class="ic-coach__body">
+            <p class="ic-coach__role">Head Coach — Striking</p>
+            <h3 class="ic-coach__name">[COACH_NAME]</h3>
+            <p class="ic-coach__bio">[COACH_BIO — short background in boxing and Muay Thai. Add only verified detail.]</p>
+            <p class="ic-coach__cred">[VERIFIED_CREDENTIAL]</p>
+          </div>
+        </li>
+        <li class="ic-coach">
+          <div class="ic-coach__portrait" aria-hidden="true">
+            <svg viewBox="0 0 100 100" width="100" height="100" focusable="false">
+              <rect width="100" height="100" rx="4" class="ic-coach__plate" />
+              <circle cx="50" cy="40" r="16" class="ic-coach__figure" />
+              <path d="M22 84 C22 64 78 64 78 84 Z" class="ic-coach__figure" />
+            </svg>
+          </div>
+          <div class="ic-coach__body">
+            <p class="ic-coach__role">Head Coach — Grappling</p>
+            <h3 class="ic-coach__name">[COACH_NAME]</h3>
+            <p class="ic-coach__bio">[COACH_BIO — short background in BJJ and wrestling. Add only verified detail.]</p>
+            <p class="ic-coach__cred">[VERIFIED_CREDENTIAL]</p>
+          </div>
+        </li>
+        <li class="ic-coach">
+          <div class="ic-coach__portrait" aria-hidden="true">
+            <svg viewBox="0 0 100 100" width="100" height="100" focusable="false">
+              <rect width="100" height="100" rx="4" class="ic-coach__plate" />
+              <circle cx="50" cy="40" r="16" class="ic-coach__figure" />
+              <path d="M22 84 C22 64 78 64 78 84 Z" class="ic-coach__figure" />
+            </svg>
+          </div>
+          <div class="ic-coach__body">
+            <p class="ic-coach__role">Youth Program Lead</p>
+            <h3 class="ic-coach__name">[COACH_NAME]</h3>
+            <p class="ic-coach__bio">[COACH_BIO — short background coaching teens. Add only verified detail.]</p>
+            <p class="ic-coach__cred">[VERIFIED_CREDENTIAL]</p>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ============================ 7. FACILITY / GEAR CHECKLIST ============================ -->
+    <section class="ic-section ic-facility" id="facility" aria-labelledby="ic-facility-title">
+      <div class="ic-section__head">
+        <p class="ic-kicker"><span class="ic-kicker__num">05</span> Facility &amp; Gear</p>
+        <h2 id="ic-facility-title" class="ic-h2">What to bring, what we provide</h2>
+        <p class="ic-section__intro">Show up with the basics; we handle the rest. Loaner gear is available for trial sessions.</p>
+      </div>
+
+      <div class="ic-facility__cols">
+        <div class="ic-checklist">
+          <h3 class="ic-checklist__title">Bring this</h3>
+          <ul class="ic-checklist__list">
+            <li><svg class="ic-check" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M2 8 L6 12 L14 3" /></svg> Water bottle</li>
+            <li><svg class="ic-check" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M2 8 L6 12 L14 3" /></svg> Athletic clothing you can move in</li>
+            <li><svg class="ic-check" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M2 8 L6 12 L14 3" /></svg> A towel and clean training mindset</li>
+            <li><svg class="ic-check" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M2 8 L6 12 L14 3" /></svg> Mouthguard, if you have one</li>
+          </ul>
+        </div>
+        <div class="ic-checklist ic-checklist--alt">
+          <h3 class="ic-checklist__title">We provide</h3>
+          <ul class="ic-checklist__list">
+            <li><svg class="ic-check" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M2 8 L6 12 L14 3" /></svg> Matted training floor with defined zones</li>
+            <li><svg class="ic-check" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M2 8 L6 12 L14 3" /></svg> Loaner gloves and wraps for trials</li>
+            <li><svg class="ic-check" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M2 8 L6 12 L14 3" /></svg> Bags, pads, and grappling space</li>
+            <li><svg class="ic-check" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M2 8 L6 12 L14 3" /></svg> Changing area and secure cubbies</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ 8. TRIAL BOOKING FLOW ============================ -->
+    <!-- trial_class_booking_flow_v1 -->
+    <section class="ic-section ic-start" id="start" aria-labelledby="ic-start-title">
+      <div class="ic-start__grid">
+        <div class="ic-start__intro">
+          <p class="ic-kicker"><span class="ic-kicker__num">06</span> Start</p>
+          <h2 id="ic-start-title" class="ic-h2">Book a trial session</h2>
+          <p class="ic-section__intro">Tell us where you want to start and we will follow up to confirm a time. No commitment — just a first session.</p>
+          <ul class="ic-start__points">
+            <li><svg class="ic-check" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M2 8 L6 12 L14 3" /></svg> Beginners welcome — most people start with zero experience</li>
+            <li><svg class="ic-check" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M2 8 L6 12 L14 3" /></svg> Loaner gear provided for your trial</li>
+            <li><svg class="ic-check" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M2 8 L6 12 L14 3" /></svg> We confirm details before you arrive</li>
+          </ul>
+        </div>
+
+        <form class="ic-form" id="ic-trial-form" novalidate aria-labelledby="ic-form-title">
+          <h3 id="ic-form-title" class="ic-form__title">Trial request</h3>
+
+          <div class="ic-field">
+            <label class="ic-label" for="f-name">Full name <span class="ic-req" aria-hidden="true">*</span></label>
+            <input class="ic-input" id="f-name" name="name" type="text" autocomplete="name" required aria-required="true" aria-describedby="f-name-err" />
+            <p class="ic-error" id="f-name-err" data-error-for="f-name" hidden>Enter your name so we know who to greet.</p>
+          </div>
+
+          <div class="ic-field">
+            <label class="ic-label" for="f-email">Email <span class="ic-req" aria-hidden="true">*</span></label>
+            <input class="ic-input" id="f-email" name="email" type="email" autocomplete="email" required aria-required="true" inputmode="email" aria-describedby="f-email-err" />
+            <p class="ic-error" id="f-email-err" data-error-for="f-email" hidden>Enter a valid email, like name@example.com, so we can confirm.</p>
+          </div>
+
+          <div class="ic-field">
+            <label class="ic-label" for="f-program">Where do you want to start? <span class="ic-req" aria-hidden="true">*</span></label>
+            <div class="ic-select-wrap">
+              <select class="ic-input ic-select" id="f-program" name="program" required aria-required="true" aria-describedby="f-program-err">
+                <option value="">Choose a track…</option>
+                <option value="fundamentals">Fundamentals (brand new)</option>
+                <option value="striking">Striking</option>
+                <option value="grappling">Grappling</option>
+                <option value="youth">Youth (14–17)</option>
+                <option value="unsure">Not sure yet — help me choose</option>
+              </select>
+              <svg class="ic-select__chev" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M3 6 L8 11 L13 6" /></svg>
+            </div>
+            <p class="ic-error" id="f-program-err" data-error-for="f-program" hidden>Pick a starting point so we can match you to the right session.</p>
+          </div>
+
+          <fieldset class="ic-field ic-fieldset">
+            <legend class="ic-label">Preferred time</legend>
+            <div class="ic-radios">
+              <label class="ic-radio"><input type="radio" name="time" value="morning" /> <span>Mornings</span></label>
+              <label class="ic-radio"><input type="radio" name="time" value="midday" /> <span>Midday</span></label>
+              <label class="ic-radio"><input type="radio" name="time" value="evening" /> <span>Evenings</span></label>
+            </div>
+          </fieldset>
+
+          <div class="ic-field">
+            <label class="ic-label" for="f-notes">Anything we should know? <span class="ic-optional">(optional)</span></label>
+            <textarea class="ic-input ic-textarea" id="f-notes" name="notes" rows="3" autocomplete="off"></textarea>
+          </div>
+
+          <div class="ic-field ic-field--check">
+            <label class="ic-checkbox">
+              <input type="checkbox" id="f-consent" name="consent" required aria-required="true" aria-describedby="f-consent-err" />
+              <span>I understand training involves physical contact and I am 14 or older (or have guardian consent). <span class="ic-req" aria-hidden="true">*</span></span>
+            </label>
+            <p class="ic-error" id="f-consent-err" data-error-for="f-consent" hidden>Please confirm this so we can book you safely.</p>
+          </div>
+
+          <button class="ic-btn ic-btn--solid ic-btn--block" type="submit">Request my trial</button>
+
+          <p class="ic-form__note">By submitting you agree we may contact you about your trial. We never share your details.</p>
+
+          <p class="ic-form__success" id="ic-form-success" role="status" hidden>
+            <svg class="ic-check ic-check--lg" viewBox="0 0 16 16" width="20" height="20" aria-hidden="true" focusable="false"><path d="M2 8 L6 12 L14 3" /></svg>
+            Request received. We will follow up to confirm a time — ask about current availability if you need a fast start.
+          </p>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============================ 9. FAQ ============================ -->
+    <section class="ic-section ic-faq" id="faq" aria-labelledby="ic-faq-title">
+      <div class="ic-section__head">
+        <p class="ic-kicker"><span class="ic-kicker__num">07</span> FAQ</p>
+        <h2 id="ic-faq-title" class="ic-h2">Nervous? Read this first.</h2>
+        <p class="ic-section__intro">The questions every beginner asks before walking in. Honest answers, no pressure.</p>
+      </div>
+
+      <div class="ic-accordion" data-accordion>
+        <div class="ic-accordion__item">
+          <h3 class="ic-accordion__heading">
+            <button class="ic-accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-p1" id="faq-q1">
+              I have zero experience. Is that a problem?
+              <svg class="ic-accordion__icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M8 3 V13 M3 8 H13" /></svg>
+            </button>
+          </h3>
+          <div class="ic-accordion__panel" id="faq-p1" role="region" aria-labelledby="faq-q1">
+            <div class="ic-accordion__inner">
+              <p>Not at all — it is the norm. Most members walk in having never trained. The Fundamentals track exists specifically to teach you the basics before you join the main floor.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="ic-accordion__item">
+          <h3 class="ic-accordion__heading">
+            <button class="ic-accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-p2" id="faq-q2">
+              Will I get hit hard or hurt on my first day?
+              <svg class="ic-accordion__icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M8 3 V13 M3 8 H13" /></svg>
+            </button>
+          </h3>
+          <div class="ic-accordion__panel" id="faq-p2" role="region" aria-labelledby="faq-q2">
+            <div class="ic-accordion__inner">
+              <p>No. Day one is movement, terminology, and light drilling. Any partner work is controlled, consent-based, and scaled to your level. Sparring is optional and only after your fundamentals are solid.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="ic-accordion__item">
+          <h3 class="ic-accordion__heading">
+            <button class="ic-accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-p3" id="faq-q3">
+              Do I need to be fit before I start?
+              <svg class="ic-accordion__icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M8 3 V13 M3 8 H13" /></svg>
+            </button>
+          </h3>
+          <div class="ic-accordion__panel" id="faq-p3" role="region" aria-labelledby="faq-q3">
+            <div class="ic-accordion__inner">
+              <p>No baseline fitness is assumed. Training itself builds your conditioning. You set the pace in early sessions, and coaches scale the work to where you are today.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="ic-accordion__item">
+          <h3 class="ic-accordion__heading">
+            <button class="ic-accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-p4" id="faq-q4">
+              What should I bring to a trial session?
+              <svg class="ic-accordion__icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M8 3 V13 M3 8 H13" /></svg>
+            </button>
+          </h3>
+          <div class="ic-accordion__panel" id="faq-p4" role="region" aria-labelledby="faq-q4">
+            <div class="ic-accordion__inner">
+              <p>Just water and athletic clothing you can move in. We provide loaner gloves and wraps for trials. If you own a mouthguard, bring it — otherwise we will tell you what to pick up.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="ic-accordion__item">
+          <h3 class="ic-accordion__heading">
+            <button class="ic-accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-p5" id="faq-q5">
+              Can teens train here?
+              <svg class="ic-accordion__icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M8 3 V13 M3 8 H13" /></svg>
+            </button>
+          </h3>
+          <div class="ic-accordion__panel" id="faq-p5" role="region" aria-labelledby="faq-q5">
+            <div class="ic-accordion__inner">
+              <p>Yes. The Youth track is built for ages 14–17 with age-appropriate intensity and supervision. A parent or guardian completes consent at enrollment.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================ 10. FOOTER ============================ -->
+  <footer class="ic-footer">
+    <div class="ic-footer__inner">
+      <div class="ic-footer__brand">
+        <a class="ic-brand" href="#top" aria-label="Iron Circuit Fight Academy, home">
+          <svg class="ic-brand__mark" viewBox="0 0 40 40" width="40" height="40" aria-hidden="true" focusable="false">
+            <rect x="3" y="3" width="34" height="34" rx="3" class="ic-brand__plate" />
+            <circle cx="20" cy="20" r="11" class="ic-brand__ring" />
+            <path d="M20 11 V20 L26 24" class="ic-brand__hand" />
+          </svg>
+          <span class="ic-brand__word">IRON<i>CIRCUIT</i></span>
+        </a>
+        <p class="ic-footer__tag">Adult &amp; teen combat-sports academy. Striking, grappling, and MMA fundamentals.</p>
+      </div>
+
+      <nav class="ic-footer__nav" aria-label="Footer">
+        <div>
+          <h2 class="ic-footer__h">Train</h2>
+          <ul>
+            <li><a href="#programs">Programs</a></li>
+            <li><a href="#schedule">Schedule</a></li>
+            <li><a href="#first-visit">First Visit</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="ic-footer__h">Academy</h2>
+          <ul>
+            <li><a href="#coaches">Coaches</a></li>
+            <li><a href="#facility">Facility &amp; Gear</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="ic-footer__h">Visit</h2>
+          <ul class="ic-footer__contact">
+            <li>[ACADEMY_ADDRESS]</li>
+            <li>[PHONE_NUMBER]</li>
+            <li>[EMAIL_ADDRESS]</li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+    <div class="ic-footer__base">
+      <p>&copy; <span id="ic-year">2026</span> Iron Circuit Fight Academy (fictional). Reviews and credentials can be added after approval.</p>
+      <a class="ic-footer__totop" href="#top">Back to top</a>
+    </div>
+  </footer>
+
+  <!-- mobile_sticky_trial_cta_v1 : mobile-only persistent CTA -->
+  <a class="ic-mobilecta" href="#start">
+    <span class="ic-mobilecta__label">Book a trial</span>
+    <svg class="ic-mobilecta__arrow" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M3 8 H13 M9 4 L13 8 L9 12" /></svg>
+  </a>
+
+  <script src="script.js"></script>
+</body>
+</html>

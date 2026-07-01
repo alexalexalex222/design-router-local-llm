@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solace Medical Spa | Couture Beauty Atelier</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+    :root {
+      --charcoal: #111011;
+      --charcoal-light: #1c1a1b;
+      --champagne: #e0cfc0;
+      --champagne-glow: rgba(224, 207, 192, 0.12);
+      --mauve: #9a828b;
+      --mauve-glow: rgba(154, 130, 139, 0.15);
+      --pearl: #fdfbf8;
+      --text-muted: #a8a29f;
+      --glass-bg: rgba(22, 20, 21, 0.5);
+      
+      --font-serif: 'Cormorant Garamond', serif;
+      --font-sans: 'Inter', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body, html {
+      margin: 0;
+      padding: 0;
+      background-color: var(--charcoal);
+      color: var(--pearl);
+      font-family: var(--font-sans);
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    .hero-wrapper {
+      position: relative;
+      min-height: 1200px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Film Grain Texture Overlay */
+    .hero-wrapper::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+      z-index: 5;
+      pointer-events: none;
+      mix-blend-mode: overlay;
+    }
+
+    /* Abstract Background Art */
+    .hero-background-art {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .glow-champagne {
+      position: absolute;
+      top: -15%;
+      right: 15%;
+      width: 900px;
+      height: 900px;
+      background: radial-gradient(circle, var(--champagne-glow) 0%, transparent 65%);
+      filter: blur(80px);
+      border-radius: 50%;
+    }
+
+    .glow-mauve {
+      position: absolute;
+      bottom: -10%;
+      left: 5%;
+      width: 1000px;
+      height: 1000px;
+      background: radial-gradient(circle, var(--mauve-glow) 0%, transparent 60%);
+      filter: blur(100px);
+      border-radius: 50%;
+    }
+
+    /* Sculpted Glass Panes */
+    .sculpted-pane {
+      position: absolute;
+      top: 5%;
+      right: 8%;
+      width: 550px;
+      height: 850px;
+      transform: rotate(-12deg);
+      background: linear-gradient(135deg, rgba(224, 207, 192, 0.03), transparent);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(224, 207, 192, 0.08);
+      border-right: 1px solid rgba(224, 207, 192, 0.01);
+      border-bottom: 1px solid rgba(224, 207, 192, 0.01);
+      border-radius: 40px 150px 40px 300px;
+      box-shadow: 20px 40px 80px rgba(0,0,0,0.4), inset 0 0 40px rgba(224, 207, 192, 0.03);
+    }
+
+    .sculpted-pane-2 {
+      position: absolute;
+      bottom: 15%;
+      left: 20%;
+      width: 350px;
+      height: 600px;
+      transform: rotate(20deg);
+      background: linear-gradient(to bottom right, rgba(154, 130, 139, 0.04), transparent);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(154, 130, 139, 0.1);
+      border-radius: 200px 40px 200px 40px;
+    }
+
+    /* Header */
+    .atelier-header {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2.5rem 5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+
+    .logo {
+      font-family: var(--font-serif);
+      font-size: 1.8rem;
+      letter-spacing: 0.2em;
+      font-weight: 400;
+      color: var(--pearl);
+      text-transform: uppercase;
+    }
+
+    .atelier-header nav {
+      display: flex;
+      gap: 3.5rem;
+    }
+
+    .atelier-header nav a {
+      color: var(--pearl);
+      text-decoration: none;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 300;
+      position: relative;
+      padding-bottom: 4px;
+      transition: color 0.3s ease;
+    }
+
+    .atelier-header nav a::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 0%;
+      height: 1px;
+      background-color: var(--champagne);
+      transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .atelier-header nav a:hover {
+      color: var(--champagne);
+    }
+
+    .atelier-header nav a:hover::after {
+      width: 100%;
+    }
+
+    .btn-book-header {
+      color: var(--charcoal);
+      background-color: var(--champagne);
+      text-decoration: none;
+      padding: 0.8rem 1.75rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .btn-book-header:hover {
+      background-color: var(--pearl);
+    }
+
+    /* Main Content */
+    .hero-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      position: relative;
+      z-index: 10;
+      padding: 0 5rem;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 7rem;
+      width: 100%;
+      max-width: 1500px;
+      margin: 0 auto;
+      align-items: center;
+    }
+
+    /* Typography Column */
+    .location-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--champagne);
+      margin-bottom: 2rem;
+      border-bottom: 1px solid rgba(224, 207, 192, 0.3);
+      padding-bottom: 0.5rem;
+    }
+
+    .main-title {
+      font-family: var(--font-serif);
+      font-size: 5.5rem;
+      line-height: 1.05;
+      font-weight: 300;
+      margin: 0 0 2rem 0;
+      color: var(--pearl);
+      letter-spacing: -0.01em;
+    }
+
+    .main-title i {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--champagne);
+    }
+
+    .hero-body {
+      font-size: 1.05rem;
+      line-height: 1.9;
+      color: var(--text-muted);
+      max-width: 520px;
+      margin-bottom: 3.5rem;
+      font-weight: 300;
+    }
+
+    .cta-group {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 5rem;
+    }
+
+    .btn-primary {
+      background-color: var(--champagne);
+      color: var(--charcoal);
+      border: none;
+      padding: 1.1rem 2.5rem;
+      font-family: var(--font-sans);
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 500;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      box-shadow: 0 0 20px rgba(224, 207, 192, 0.4);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--pearl);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary:hover::after {
+      opacity: 1;
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--pearl);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 1.1rem 2.5rem;
+      font-family: var(--font-sans);
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 400;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--champagne);
+      color: var(--champagne);
+    }
+
+    /* Proof Points */
+    .proof-points {
+      display: flex;
+      gap: 3.5rem;
+    }
+
+    .point {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .point .line {
+      width: 40px;
+      height: 1px;
+      background-color: var(--mauve);
+      margin-bottom: 1.25rem;
+    }
+
+    .point strong {
+      font-family: var(--font-serif);
+      font-size: 1.3rem;
+      font-weight: 400;
+      color: var(--pearl);
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.02em;
+    }
+
+    .point span:last-child {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 300;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Consult Planner Module */
+    .interactive-column {
+      position: relative;
+      z-index: 20;
+    }
+
+    .planner-module {
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-top: 1px solid rgba(224, 207, 192, 0.2);
+      border-left: 1px solid rgba(224, 207, 192, 0.1);
+      padding: 4rem;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.6), inset 0 1px 1px rgba(224, 207, 192, 0.15);
+    }
+
+    .planner-header {
+      margin-bottom: 3rem;
+    }
+
+    .planner-header h3 {
+      font-family: var(--font-serif);
+      font-size: 2.4rem;
+      font-weight: 300;
+      margin: 0 0 0.75rem 0;
+      color: var(--champagne);
+      font-style: italic;
+    }
+
+    .planner-header p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin: 0;
+      font-weight: 300;
+      letter-spacing: 0.05em;
+    }
+
+    .planner-body {
+      display: flex;
+      flex-direction: column;
+      gap: 2.25rem;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--pearl);
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+
+    .custom-select {
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      padding: 0.5rem 0 1rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-weight: 300;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .custom-select:hover {
+      border-bottom-color: var(--champagne);
+      color: var(--pearl);
+    }
+
+    .pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .pill {
+      border: 1px solid rgba(255,255,255,0.15);
+      padding: 0.7rem 1.5rem;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-weight: 300;
+      transition: all 0.3s ease;
+    }
+
+    .pill:hover {
+      border-color: rgba(255,255,255,0.4);
+      color: var(--pearl);
+    }
+
+    .pill.active {
+      background-color: var(--champagne);
+      color: var(--charcoal);
+      border-color: var(--champagne);
+      font-weight: 500;
+    }
+
+    .planner-footer {
+      margin-top: 4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding-top: 2.5rem;
+    }
+
+    .btn-submit-planner {
+      background-color: transparent;
+      color: var(--pearl);
+      border: none;
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      padding: 0;
+      font-style: italic;
+      font-weight: 400;
+      transition: color 0.3s ease;
+    }
+
+    .btn-submit-planner::after {
+      content: '';
+      display: block;
+      width: 50px;
+      height: 1px;
+      background-color: var(--champagne);
+      transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn-submit-planner:hover {
+      color: var(--champagne);
+    }
+
+    .btn-submit-planner:hover::after {
+      width: 80px;
+    }
+
+    .secure-note {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 1300px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+        gap: 5rem;
+      }
+      .main-title {
+        font-size: 4.8rem;
+      }
+      .sculpted-pane {
+        opacity: 0.5;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero-wrapper">
+    
+    <div class="hero-background-art">
+      <div class="glow-champagne"></div>
+      <div class="glow-mauve"></div>
+      <div class="sculpted-pane"></div>
+      <div class="sculpted-pane-2"></div>
+    </div>
+
+    <header class="atelier-header">
+      <div class="logo">Solace Medical Spa</div>
+      <nav>
+        <a href="#injectables">Injectables & Skincare</a>
+        <a href="#laser">Laser & Body</a>
+        <a href="#philosophy">Our Philosophy</a>
+        <a href="#locations">Locations</a>
+      </nav>
+      <div class="header-action">
+        <a href="#book" class="btn-book-header">Book Consult</a>
+      </div>
+    </header>
+
+    <main class="hero-content">
+      <div class="content-grid">
+        
+        <div class="typography-column">
+          <div class="location-badge">Macon | Madison | Perry</div>
+          
+          <h1 class="main-title">The Art of<br><i>Subtle</i> Refinement.</h1>
+          
+          <p class="hero-body">
+            Experience natural, beautiful results in a luxurious and intimately discreet environment. Advanced injectables, precise laser therapies, and bespoke skincare—designed so you look completely refreshed, and entirely like you.
+          </p>
+          
+          <div class="cta-group">
+            <button class="btn-primary">Schedule a Consultation</button>
+            <button class="btn-secondary">Explore the Menu</button>
+          </div>
+
+          <div class="proof-points">
+            <div class="point">
+              <span class="line"></span>
+              <strong>Top 1% Provider</strong>
+              <span>Allergan Aesthetics</span>
+            </div>
+            <div class="point">
+              <span class="line"></span>
+              <strong>Board-Certified</strong>
+              <span>Expertise & Precision</span>
+            </div>
+            <div class="point">
+              <span class="line"></span>
+              <strong>Private Care</strong>
+              <span>Discreet Environment</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="interactive-column">
+          <div class="planner-module">
+            <div class="planner-header">
+              <h3>Consultation Planner</h3>
+              <p>Design your tailored experience to begin.</p>
+            </div>
+            
+            <div class="planner-body">
+              <div class="input-group">
+                <label>Primary Focus</label>
+                <div class="custom-select">
+                  <span>Enhance natural contours...</span>
+                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1L6 6L11 1" stroke="#e0cfc0" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label>Area of Interest</label>
+                <div class="pill-group">
+                  <span class="pill active">Injectables</span>
+                  <span class="pill">Laser Therapy</span>
+                  <span class="pill">Skin Rejuvenation</span>
+                  <span class="pill">Body</span>
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label>Preferred Location</label>
+                <div class="pill-group location-group">
+                  <span class="pill">Macon</span>
+                  <span class="pill">Madison</span>
+                  <span class="pill">Perry</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="planner-footer">
+              <button class="btn-submit-planner">Request Discovery Consult</button>
+              <span class="secure-note">
+                <svg width="10" height="13" viewBox="0 0 10 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 5.5V4C1 2.34315 2.79086 1 5 1C7.20914 1 9 2.34315 9 4V5.5" stroke="#a8a29f" stroke-width="1.2"/>
+                  <rect x="0.6" y="5.6" width="8.8" height="6.8" rx="1" stroke="#a8a29f" stroke-width="1.2"/>
+                </svg>
+                Secure & Confidential
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+<style id="below-fold-patch">
+  /* Base structural reset for below-fold */
+  .below-fold-section {
+    position: relative;
+    z-index: 10;
+    padding: 8rem 5rem;
+    background-color: var(--charcoal);
+  }
+  
+  /* Philosophy Section */
+  .philosophy-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border-top: 1px solid rgba(224, 207, 192, 0.1);
+    background: linear-gradient(to bottom, var(--charcoal), var(--charcoal-light));
+  }
+  
+  .section-eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--champagne);
+    margin-bottom: 1.5rem;
+  }
+  
+  .section-title {
+    font-family: var(--font-serif);
+    font-size: 3.5rem;
+    font-weight: 300;
+    color: var(--pearl);
+    margin: 0 0 2rem 0;
+    line-height: 1.1;
+    max-width: 800px;
+  }
+  
+  .section-title i {
+    font-style: italic;
+    color: var(--champagne);
+  }
+  
+  .philosophy-text {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--text-muted);
+    max-width: 600px;
+    font-weight: 300;
+  }
+
+  /* Curations / Services */
+  .curations-section {
+    position: relative;
+    padding-top: 4rem;
+  }
+  
+  .curations-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    margin-top: 5rem;
+  }
+  
+  .curation-card {
+    background: var(--glass-bg);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    border-top: 1px solid rgba(224, 207, 192, 0.15);
+    padding: 3.5rem 2.5rem;
+    transition: transform 0.4s ease, border-color 0.4s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  .curation-card:hover {
+    transform: translateY(-5px);
+    border-top-color: var(--champagne);
+  }
+  
+  .curation-number {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: var(--mauve);
+    font-style: italic;
+    margin-bottom: 1.5rem;
+    display: block;
+  }
+  
+  .curation-title {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    font-weight: 400;
+    color: var(--pearl);
+    margin: 0 0 1rem 0;
+  }
+  
+  .curation-desc {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text-muted);
+    font-weight: 300;
+    margin-bottom: 2rem;
+  }
+  
+  .curation-link {
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--champagne);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: gap 0.3s ease;
+  }
+  
+  .curation-link:hover {
+    gap: 1rem;
+  }
+
+  /* Environment Section */
+  .environment-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    padding: 0;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    background-color: var(--charcoal-light);
+  }
+  
+  .env-content {
+    padding: 8rem 5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .env-image-pane {
+    position: relative;
+    background: radial-gradient(circle at center, rgba(154, 130, 139, 0.1) 0%, transparent 70%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-left: 1px solid rgba(255,255,255,0.03);
+  }
+  
+  .env-abstract-shape {
+    width: 300px;
+    height: 450px;
+    border: 1px solid rgba(224, 207, 192, 0.2);
+    border-radius: 150px 150px 0 0;
+    background: linear-gradient(180deg, rgba(224, 207, 192, 0.05), transparent);
+    backdrop-filter: blur(8px);
+  }
+
+  /* Footer */
+  .atelier-footer {
+    padding: 6rem 5rem 3rem 5rem;
+    background-color: var(--charcoal);
+  }
+  
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 4rem;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding-bottom: 4rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  
+  .footer-brand .logo {
+    margin-bottom: 1.5rem;
+    display: block;
+  }
+  
+  .footer-brand p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    max-width: 300px;
+    font-weight: 300;
+  }
+  
+  .footer-col h4 {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    color: var(--pearl);
+    margin: 0 0 1.5rem 0;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+  }
+  
+  .footer-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .footer-col a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 300;
+    transition: color 0.3s ease;
+  }
+  
+  .footer-col a:hover {
+    color: var(--champagne);
+  }
+  
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 2rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    max-width: 1500px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 1300px) {
+    .below-fold-section {
+      padding: 6rem 3rem;
+    }
+    .curations-grid {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    .environment-section {
+      grid-template-columns: 1fr;
+    }
+    .footer-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+    }
+  }
+</style>
+
+<section class="below-fold-section philosophy-section" id="philosophy">
+  <div class="section-eyebrow">The Couture Approach</div>
+  <h2 class="section-title">Beauty is not transformed.<br>It is <i>revealed</i>.</h2>
+  <p class="philosophy-text">
+    We reject the artificial and the overdone. At Solace Medical Spa, our practice is grounded in anatomical precision and an artist's eye for proportion. Every treatment is a bespoke curation, designed to enhance your innate architecture and restore vital luminosity, ensuring you leave our atelier looking entirely like yourself—only rested, refined, and radiant.
+  </p>
+</section>
+
+<section class="below-fold-section curations-section" id="injectables">
+  <div style="text-align: center;">
+    <div class="section-eyebrow">Signature Curations</div>
+    <h2 class="section-title" style="margin-left: auto; margin-right: auto;">Our <i>Disciplines</i></h2>
+  </div>
+  
+  <div class="curations-grid">
+    <div class="curation-card">
+      <span class="curation-number">01</span>
+      <h3 class="curation-title">Advanced Injectables</h3>
+      <p class="curation-desc">Master-level administration of neuromodulators and dermal fillers. We focus on structural support, shadow reduction, and subtle lifting to harmonize facial proportions without altering your natural expression.</p>
+      <a href="#" class="curation-link">Explore Injectables <span style="font-size: 1.2em;">&rarr;</span></a>
+    </div>
+    
+    <div class="curation-card" id="laser">
+      <span class="curation-number">02</span>
+      <h3 class="curation-title">Laser & Energy</h3>
+      <p class="curation-desc">Clinical-grade modalities including fractionated resurfacing, intense pulsed light, and radiofrequency to address textural irregularities, pigmentation, and stimulate profound collagen synthesis.</p>
+      <a href="#" class="curation-link">Explore Laser Therapy <span style="font-size: 1.2em;">&rarr;</span></a>
+    </div>
+    
+    <div class="curation-card">
+      <span class="curation-number">03</span>
+      <h3 class="curation-title">Bespoke Skincare</h3>
+      <p class="curation-desc">Medical-grade chemical peels, microneedling, and curated dermal regimens tailored to your specific cellular needs. The foundation of lasting radiance and tissue health.</p>
+      <a href="#" class="curation-link">Explore Skincare <span style="font-size: 1.2em;">&rarr;</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="environment-section">
+  <div class="env-content">
+    <div class="section-eyebrow">The Experience</div>
+    <h2 class="section-title">An intimate setting for <i>discreet</i> refinement.</h2>
+    <p class="philosophy-text" style="text-align: left; margin-bottom: 2.5rem;">
+      Your comfort and privacy are our highest priorities. From our elegantly appointed consultation suites to our stringent confidentiality protocols, the Solace Medical Spa environment is designed to be a serene sanctuary away from the demands of the outside world.
+    </p>
+    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1.5rem;">
+      <li style="display: flex; align-items: flex-start; gap: 1rem;">
+        <span style="color: var(--champagne); font-size: 1.2rem;">&#10003;</span>
+        <span style="color: var(--pearl); font-size: 0.95rem; font-weight: 300;">Private entry and exit available upon request</span>
+      </li>
+      <li style="display: flex; align-items: flex-start; gap: 1rem;">
+        <span style="color: var(--champagne); font-size: 1.2rem;">&#10003;</span>
+        <span style="color: var(--pearl); font-size: 0.95rem; font-weight: 300;">Unrushed, comprehensive clinical assessments</span>
+      </li>
+      <li style="display: flex; align-items: flex-start; gap: 1rem;">
+        <span style="color: var(--champagne); font-size: 1.2rem;">&#10003;</span>
+        <span style="color: var(--pearl); font-size: 0.95rem; font-weight: 300;">Dedicated post-care concierge support</span>
+      </li>
+    </ul>
+  </div>
+  <div class="env-image-pane">
+    <div class="env-abstract-shape"></div>
+  </div>
+</section>
+
+<section class="below-fold-section" style="background-color: var(--charcoal); border-top: 1px solid rgba(255,255,255,0.05);">
+  <div style="text-align: center; max-width: 900px; margin: 0 auto 4rem auto;">
+    <div class="section-eyebrow">Treatment Pathways</div>
+    <h2 class="section-title" style="margin-left: auto; margin-right: auto;">Designed for <i>continuity</i>, not one-off appointments.</h2>
+    <p class="philosophy-text" style="margin: 0 auto;">Every Solace Medical Spa plan is structured around long-term refinement. We map the right blend of injectables, device work, maintenance cadence, and at-home support so results build gracefully over time.</p>
+  </div>
+
+  <div class="curations-grid" style="margin-top: 0;">
+    <div class="curation-card">
+      <span class="curation-number">I</span>
+      <h3 class="curation-title">Facial Balance</h3>
+      <p class="curation-desc">Neuromodulators, filler support, and skin-quality work sequenced to soften tension, restore proportion, and preserve expression.</p>
+      <a href="#injectables" class="curation-link">Injectables & skin plans <span style="font-size: 1.2em;">&rarr;</span></a>
+    </div>
+
+    <div class="curation-card">
+      <span class="curation-number">II</span>
+      <h3 class="curation-title">Texture Renewal</h3>
+      <p class="curation-desc">Laser, resurfacing, and collagen-stimulating protocols built to improve tone, pore quality, and luminosity without sacrificing natural elegance.</p>
+      <a href="#laser" class="curation-link">Energy-based therapies <span style="font-size: 1.2em;">&rarr;</span></a>
+    </div>
+
+    <div class="curation-card">
+      <span class="curation-number">III</span>
+      <h3 class="curation-title">Maintenance Rituals</h3>
+      <p class="curation-desc">Ongoing treatment timing, seasonal refresh planning, and medical-grade skincare guidance to keep results polished, stable, and understated.</p>
+      <a href="#philosophy" class="curation-link">Long-term care design <span style="font-size: 1.2em;">&rarr;</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="below-fold-section" style="background-color: var(--charcoal-light); border-top: 1px solid rgba(255,255,255,0.05);">
+  <div style="display: flex; justify-content: space-between; align-items: end; gap: 3rem; flex-wrap: wrap; max-width: 1400px; margin: 0 auto 4rem auto;">
+    <div style="max-width: 700px;">
+      <div class="section-eyebrow">Our Studios</div>
+      <h2 class="section-title" style="margin-bottom: 1.5rem;">Three Georgia settings. One <i>consistent</i> standard of care.</h2>
+      <p class="philosophy-text" style="max-width: 720px;">Whether you visit Macon, Madison, or Perry, the experience remains intentionally calm, private, and medically precise. Each location is structured around consultation-first care, elegant treatment pacing, and discreet follow-through.</p>
+    </div>
+    <div style="color: var(--text-muted); font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase;">Consultation-led • by appointment</div>
+  </div>
+
+  <div class="curations-grid" style="margin-top: 0;">
+    <div class="curation-card">
+      <span class="curation-number">Macon</span>
+      <h3 class="curation-title">Flagship Atelier</h3>
+      <p class="curation-desc">Our primary setting for injectable artistry, advanced skincare plans, and private consultations tailored around long-term aesthetic strategy.</p>
+      <a href="#locations" class="curation-link">Book in Macon <span style="font-size: 1.2em;">&rarr;</span></a>
+    </div>
+
+    <div class="curation-card">
+      <span class="curation-number">Madison</span>
+      <h3 class="curation-title">Refined Retreat</h3>
+      <p class="curation-desc">A quieter, slower-paced environment ideal for restorative appointments, maintenance visits, and high-touch treatment planning.</p>
+      <a href="#locations" class="curation-link">Book in Madison <span style="font-size: 1.2em;">&rarr;</span></a>
+    </div>
+
+    <div class="curation-card">
+      <span class="curation-number">Perry</span>
+      <h3 class="curation-title">Concierge Access</h3>
+      <p class="curation-desc">Convenient access to Solace Medical Spa’s signature approach with the same clinical rigor, privacy, and continuity of care across every visit.</p>
+      <a href="#locations" class="curation-link">Book in Perry <span style="font-size: 1.2em;">&rarr;</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="below-fold-section" style="text-align: center; padding: 10rem 5rem; border-top: 1px solid rgba(255,255,255,0.05); background: linear-gradient(to bottom, var(--charcoal-light), var(--charcoal));">
+  <div class="section-eyebrow">Begin Your Journey</div>
+  <h2 class="section-title" style="margin-left: auto; margin-right: auto; margin-bottom: 1.5rem;">Ready to discuss your <i>aesthetic</i> goals?</h2>
+  <p class="philosophy-text" style="margin: 0 auto 3rem auto; max-width: 720px;">Start with a private consultation and we’ll shape the right sequence of injectables, laser care, and skin treatments around your features, comfort level, and timeline.</p>
+  <a href="#book" class="btn-primary" style="text-decoration: none; display: inline-block;">Reserve a Consultation</a>
+</section>
+
+<footer class="atelier-footer" id="locations">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <span class="logo" style="font-size: 1.4rem;">Solace Medical Spa</span>
+      <p>A couture beauty atelier specializing in natural refinement, advanced injectables, and clinical laser therapies.</p>
+    </div>
+    
+    <div class="footer-col">
+      <h4>Treatments</h4>
+      <ul>
+        <li><a href="#">Neuromodulators</a></li>
+        <li><a href="#">Dermal Fillers</a></li>
+        <li><a href="#">Laser Resurfacing</a></li>
+        <li><a href="#">Skin Rejuvenation</a></li>
+        <li><a href="#">Body Contouring</a></li>
+      </ul>
+    </div>
+    
+    <div class="footer-col">
+      <h4>Locations</h4>
+      <ul>
+        <li><a href="#"><strong>Macon</strong><br>Mon-Fri, 9am - 5pm</a></li>
+        <li><a href="#"><strong>Madison</strong><br>Mon-Fri, 9am - 5pm</a></li>
+        <li><a href="#"><strong>Perry</strong><br>Tue-Thu, 10am - 4pm</a></li>
+      </ul>
+    </div>
+    
+    <div class="footer-col">
+      <h4>Connect</h4>
+      <ul>
+        <li><a href="#">Contact Us</a></li>
+        <li><a href="#">Patient Portal</a></li>
+        <li><a href="#">Instagram</a></li>
+        <li><a href="#">Journal</a></li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="footer-bottom">
+    <span>&copy; 2026 Solace Medical Spa. All rights reserved.</span>
+    <div style="display: flex; gap: 2rem;">
+      <a href="#" style="color: var(--text-muted); text-decoration: none;">Privacy Policy</a>
+      <a href="#" style="color: var(--text-muted); text-decoration: none;">Terms of Service</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

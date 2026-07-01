@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>CHOROS — A County Atlas of Sample Indicators</title>
+<meta name="description" content="An editorial choropleth explorer over real US county geography with seeded synthetic sample indicators." />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" />
+<style>
+/* ============================================================
+   TOKENS  — clean data-journalism cartography
+   ============================================================ */
+:root{
+  --paper:#faf7f0;
+  --paper-2:#f3eee3;
+  --paper-3:#ece5d6;
+  --ink:#1c1a16;
+  --ink-2:#4a463d;
+  --ink-3:#7c766a;
+  --ink-4:#a8a193;
+  --line:#d9d2c2;
+  --line-2:#cabfa6;
+  --surface:#fffdf8;
+  --mesh:#2a261f;
+  --hair:#ffffff;
+
+  --accent:#0f6e6a;
+  --accent-ink:#0a4c49;
+  --accent-soft:#d7ecea;
+  --focus:#0f6e6a;
+
+  --danger:#9c3b2e;
+  --danger-soft:#f5e3df;
+
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --fs-micro:clamp(.66rem,.62rem + .15vw,.72rem);
+  --fs-cap:clamp(.74rem,.7rem + .18vw,.8rem);
+  --fs-body:clamp(.875rem,.84rem + .2vw,.95rem);
+  --fs-lg:clamp(1.05rem,.98rem + .4vw,1.2rem);
+  --fs-xl:clamp(1.5rem,1.2rem + 1.4vw,2.1rem);
+  --fs-display:clamp(2.1rem,1.5rem + 3vw,3.4rem);
+  --fs-stat:clamp(2.2rem,1.7rem + 2.4vw,3rem);
+
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s8:32px; --s10:40px; --s12:48px; --s16:64px;
+
+  --r-sm:6px; --r-md:10px; --r-lg:16px; --r-pill:999px;
+
+  --e1:0 1px 2px rgba(28,26,22,.06), 0 1px 1px rgba(28,26,22,.04);
+  --e2:0 6px 16px -6px rgba(28,26,22,.18), 0 2px 6px -2px rgba(28,26,22,.10);
+  --e3:0 24px 48px -16px rgba(28,26,22,.30), 0 8px 18px -8px rgba(28,26,22,.16);
+
+  --dur:200ms; --dur-fast:150ms;
+  --ease:cubic-bezier(.2,.7,.3,1);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--sans);
+  font-size:var(--fs-body);
+  line-height:1.5;
+  color:var(--ink);
+  background:var(--paper);
+  background-image:radial-gradient(140% 100% at 0% 0%, #fdfbf5 0%, var(--paper) 46%, #f3ecdf 100%);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+.tnum{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"cv01" 1}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.01em}
+button{font-family:inherit;color:inherit}
+:focus-visible{outline:none}
+.focusable:focus-visible{box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--focus);border-radius:var(--r-sm)}
+
+.skip{position:absolute;left:var(--s4);top:-60px;z-index:120;background:var(--ink);color:var(--paper);
+  padding:10px 16px;border-radius:var(--r-sm);font-weight:600;transition:top var(--dur) var(--ease)}
+.skip:focus{top:var(--s4)}
+
+/* ============================================================ APP SHELL ============================================================ */
+.app{max-width:1320px;margin:0 auto;padding:clamp(var(--s4),3vw,var(--s10)) clamp(var(--s4),3vw,var(--s8))}
+
+.masthead{display:flex;flex-wrap:wrap;gap:var(--s4) var(--s8);align-items:flex-end;justify-content:space-between;
+  padding-bottom:var(--s5);border-bottom:1.5px solid var(--ink);margin-bottom:var(--s6)}
+.brand{display:flex;flex-direction:column;gap:var(--s2);min-width:0}
+.kicker{display:inline-flex;align-items:center;gap:var(--s2);font:600 var(--fs-micro)/1 var(--sans);
+  letter-spacing:.18em;text-transform:uppercase;color:var(--accent-ink)}
+.kicker svg{width:15px;height:15px;flex:none}
+.title{font-family:var(--serif);font-size:var(--fs-display);line-height:.98;letter-spacing:-.02em;color:var(--ink);font-weight:600}
+.title em{font-style:italic;color:var(--accent-ink)}
+.dek{font-size:var(--fs-body);color:var(--ink-2);max-width:46ch;margin-top:var(--s1)}
+.masthead-meta{display:flex;flex-direction:column;align-items:flex-end;gap:var(--s2);text-align:right}
+.sample-badge{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent-ink);
+  font:600 var(--fs-micro)/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;
+  padding:6px 10px;border-radius:var(--r-pill);border:1px solid #bfe0dd}
+.sample-badge svg{width:13px;height:13px}
+.meta-note{font-size:var(--fs-micro);color:var(--ink-3);max-width:30ch}
+
+/* ============================================================ CONTROL BAR ============================================================ */
+.controls{display:flex;flex-wrap:wrap;gap:var(--s4);align-items:flex-end;justify-content:space-between;margin-bottom:var(--s5)}
+.metric-group{display:flex;flex-direction:column;gap:var(--s2)}
+.ctl-label{font:600 var(--fs-micro)/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.segmented{display:inline-flex;background:var(--paper-2);border:1px solid var(--line);border-radius:var(--r-pill);
+  padding:3px;gap:2px;box-shadow:var(--e1) inset}
+.seg{appearance:none;border:none;background:transparent;cursor:pointer;border-radius:var(--r-pill);
+  padding:9px 16px;min-height:40px;font:600 var(--fs-cap)/1 var(--sans);color:var(--ink-2);
+  display:inline-flex;align-items:center;gap:7px;transition:color var(--dur-fast) var(--ease),background var(--dur-fast) var(--ease)}
+.seg .dot{width:9px;height:9px;border-radius:50%;flex:none;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
+.seg:hover{color:var(--ink)}
+.seg[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--e1)}
+.seg:focus-visible{box-shadow:0 0 0 2px var(--paper-2),0 0 0 4px var(--focus)}
+
+.search-wrap{position:relative;min-width:min(280px,100%)}
+.search{width:100%;height:44px;padding:0 38px 0 38px;border:1px solid var(--line);border-radius:var(--r-pill);
+  background:var(--surface);font:500 var(--fs-body)/1 var(--sans);color:var(--ink);box-shadow:var(--e1)}
+.search::placeholder{color:var(--ink-4)}
+.search:hover{border-color:var(--line-2)}
+.search:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.search-ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--ink-3);pointer-events:none}
+.search-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:28px;height:28px;border:none;
+  background:transparent;border-radius:50%;cursor:pointer;color:var(--ink-3);display:none;align-items:center;justify-content:center}
+.search-clear svg{width:15px;height:15px}
+.search-clear:hover{background:var(--paper-2);color:var(--ink)}
+.search-wrap.has-val .search-clear{display:inline-flex}
+
+/* ============================================================ MAIN GRID ============================================================ */
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:var(--s6);align-items:start}
+
+.map-card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:var(--e2);overflow:hidden}
+.map-head{display:flex;flex-wrap:wrap;gap:var(--s3) var(--s5);align-items:flex-start;justify-content:space-between;
+  padding:var(--s5) var(--s5) var(--s3)}
+.map-title-block{min-width:0}
+.map-h2{font-family:var(--serif);font-size:var(--fs-lg);font-weight:600;color:var(--ink);letter-spacing:-.01em}
+.map-sub{font-size:var(--fs-cap);color:var(--ink-3);margin-top:2px}
+.map-summary{font-size:var(--fs-cap);color:var(--ink-2);max-width:40ch;line-height:1.45}
+.map-summary b{color:var(--ink);font-weight:600}
+
+.map-frame{position:relative;width:100%;aspect-ratio:975/610;background:linear-gradient(var(--paper-2),var(--paper-2));touch-action:none;cursor:grab}
+.map-frame.dragging{cursor:grabbing}
+.map-frame svg{display:block;width:100%;height:100%}
+#geo path{shape-rendering:geometricPrecision}
+.county{stroke:var(--hair);stroke-width:.4;stroke-linejoin:round;cursor:pointer;
+  transition:fill var(--dur) var(--ease),opacity var(--dur-fast) var(--ease)}
+.no-anim .county{transition:none}
+.map-frame[data-dim="search"] .county:not(.match){opacity:.16}
+.map-frame[data-dim="band"] .county:not(.in-band){opacity:.14}
+.state-mesh{fill:none;stroke:var(--mesh);stroke-width:1;stroke-linejoin:round;stroke-linecap:round;
+  vector-effect:non-scaling-stroke;pointer-events:none;opacity:.85}
+.nation-mesh{fill:none;stroke:var(--mesh);stroke-width:1.4;vector-effect:non-scaling-stroke;pointer-events:none}
+.hl-outline{fill:none;stroke:var(--ink);stroke-width:2;vector-effect:non-scaling-stroke;pointer-events:none;stroke-linejoin:round;opacity:0}
+.pin-outline{fill:none;stroke:var(--accent-ink);stroke-width:2.4;vector-effect:non-scaling-stroke;pointer-events:none;stroke-linejoin:round;opacity:0}
+
+.zoombar{position:absolute;right:var(--s4);bottom:var(--s4);display:flex;flex-direction:column;gap:var(--s2);z-index:6}
+.zbtn{width:44px;height:44px;border:1px solid var(--line);background:var(--surface);border-radius:var(--r-md);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-2);box-shadow:var(--e1);
+  transition:background var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease),transform var(--dur-fast) var(--ease)}
+.zbtn svg{width:18px;height:18px}
+.zbtn:hover{background:var(--paper);color:var(--ink)}
+.zbtn:active{transform:scale(.94)}
+.zbtn:disabled{opacity:.4;cursor:not-allowed}
+.zbtn.reset{font:600 var(--fs-micro)/1 var(--sans);letter-spacing:.08em}
+
+.legend{padding:var(--s3) var(--s5) var(--s5);border-top:1px solid var(--line)}
+.legend-head{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s4);margin-bottom:var(--s3)}
+.legend-title{font:600 var(--fs-cap)/1.2 var(--sans);color:var(--ink);letter-spacing:.01em}
+.legend-hint{font-size:var(--fs-micro);color:var(--ink-4)}
+.ramp{display:flex;gap:0;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--line);max-width:520px}
+.ramp-cell{position:relative;flex:1;height:18px;cursor:pointer;border:none;padding:0;
+  transition:transform var(--dur-fast) var(--ease),box-shadow var(--dur-fast) var(--ease)}
+.ramp-cell:hover,.ramp-cell:focus-visible{transform:scaleY(1.34);z-index:2;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.ramp-cell[aria-pressed="true"]{transform:scaleY(1.5);z-index:3;box-shadow:0 0 0 2px var(--ink)}
+.ramp-ticks{display:flex;justify-content:space-between;max-width:520px;margin-top:var(--s2)}
+.ramp-tick{font:500 var(--fs-micro)/1 var(--sans);color:var(--ink-3);font-variant-numeric:tabular-nums}
+.legend-nd{display:flex;align-items:center;gap:7px;margin-top:var(--s3);font-size:var(--fs-micro);color:var(--ink-3)}
+.nd-swatch{width:18px;height:14px;border:1px solid var(--line);border-radius:3px;
+  background-image:repeating-linear-gradient(45deg,#cfc7b6 0 2px,#e7e0d1 2px 5px)}
+
+/* ============================================================ SIDE PANEL ============================================================ */
+.side{display:flex;flex-direction:column;gap:var(--s5);position:sticky;top:var(--s4)}
+
+.detail{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--e1);overflow:hidden}
+.detail-empty{padding:var(--s6) var(--s5);text-align:center;color:var(--ink-3)}
+.detail-empty svg{width:34px;height:34px;color:var(--ink-4);margin-bottom:var(--s3)}
+.detail-empty p{font-size:var(--fs-cap);margin:0;line-height:1.5}
+.detail-card{padding:var(--s5)}
+.detail-top{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s3)}
+.detail-name{font-family:var(--serif);font-size:var(--fs-lg);font-weight:600;color:var(--ink);line-height:1.1}
+.detail-state{font-size:var(--fs-cap);color:var(--ink-3);margin-top:2px}
+.detail-close{flex:none;width:32px;height:32px;border:1px solid var(--line);background:var(--paper);border-radius:50%;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-3)}
+.detail-close svg{width:15px;height:15px}
+.detail-close:hover{background:var(--paper-2);color:var(--ink)}
+.detail-stat{margin:var(--s4) 0 var(--s2)}
+.detail-val{font-family:var(--serif);font-size:var(--fs-stat);font-weight:600;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
+.detail-val .unit{font-size:.42em;color:var(--ink-3);font-weight:500;margin-left:4px;font-family:var(--sans)}
+.detail-metricname{font-size:var(--fs-cap);color:var(--ink-2);margin-top:6px}
+.detail-nd{font-size:var(--fs-body);color:var(--ink-3);font-style:italic;margin:var(--s2) 0}
+.rank-row{display:flex;align-items:center;gap:var(--s3);margin-top:var(--s4)}
+.rank-badge{font:600 var(--fs-cap)/1 var(--sans);background:var(--ink);color:var(--paper);padding:6px 10px;border-radius:var(--r-pill);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.rank-of{font-size:var(--fs-micro);color:var(--ink-3)}
+.pctile{margin-top:var(--s4)}
+.pctile-track{position:relative;height:8px;border-radius:var(--r-pill);overflow:hidden;border:1px solid var(--line)}
+.pctile-fill{position:absolute;inset:0;border-radius:var(--r-pill);
+  background:linear-gradient(90deg,var(--accent-soft),var(--accent));transform-origin:left;transition:transform var(--dur) var(--ease)}
+.pctile-mark{position:absolute;top:-3px;width:3px;height:14px;background:var(--ink);border-radius:2px;transform:translateX(-50%);transition:left var(--dur) var(--ease)}
+.pctile-cap{display:flex;justify-content:space-between;font-size:var(--fs-micro);color:var(--ink-3);margin-top:6px}
+.small-mult{margin-top:var(--s5);padding-top:var(--s4);border-top:1px solid var(--line);display:flex;flex-direction:column;gap:var(--s3)}
+.sm-label{font:600 var(--fs-micro)/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.sm-row{display:grid;grid-template-columns:1fr auto;gap:var(--s2) var(--s3);align-items:center}
+.sm-name{display:flex;align-items:center;gap:7px;font-size:var(--fs-cap);color:var(--ink-2)}
+.sm-name .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.sm-bar{grid-column:1/-1;height:6px;border-radius:var(--r-pill);background:var(--paper-2);overflow:hidden}
+.sm-bar > i{display:block;height:100%;border-radius:var(--r-pill);transform-origin:left;transition:transform var(--dur) var(--ease)}
+.sm-val{font:600 var(--fs-cap)/1 var(--sans);color:var(--ink);font-variant-numeric:tabular-nums}
+
+.ranklist{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--e1);
+  display:flex;flex-direction:column;min-height:0}
+.rank-head{display:flex;align-items:center;justify-content:space-between;gap:var(--s3);padding:var(--s4) var(--s5) var(--s3);border-bottom:1px solid var(--line)}
+.rank-h3{font:600 var(--fs-cap)/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.sort-toggle{display:inline-flex;background:var(--paper-2);border:1px solid var(--line);border-radius:var(--r-pill);padding:2px;gap:1px}
+.sort-btn{appearance:none;border:none;background:transparent;cursor:pointer;border-radius:var(--r-pill);
+  padding:6px 11px;min-height:32px;font:600 var(--fs-micro)/1 var(--sans);color:var(--ink-3);display:inline-flex;align-items:center;gap:4px}
+.sort-btn svg{width:12px;height:12px}
+.sort-btn[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--e1)}
+.sort-btn:focus-visible{box-shadow:0 0 0 2px var(--paper-2),0 0 0 3px var(--focus)}
+.rank-scroll{overflow-y:auto;max-height:clamp(360px,52vh,640px);scrollbar-width:thin;padding:var(--s2)}
+.rrow{display:grid;grid-template-columns:30px 1fr auto;gap:var(--s3);align-items:center;width:100%;text-align:left;
+  border:none;background:transparent;cursor:pointer;padding:9px 10px;border-radius:var(--r-md);min-height:44px;
+  transition:background var(--dur-fast) var(--ease)}
+.rrow:hover{background:var(--paper-2)}
+.rrow.active{background:var(--accent-soft);box-shadow:inset 0 0 0 1px #bfe0dd}
+.rrow:focus-visible{box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--focus)}
+.rrow .rk{font:600 var(--fs-cap)/1 var(--sans);color:var(--ink-4);font-variant-numeric:tabular-nums;text-align:right}
+.rrow.active .rk{color:var(--accent-ink)}
+.rrow .nm{min-width:0}
+.rrow .nm b{display:block;font:600 var(--fs-cap)/1.25 var(--sans);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rrow .nm span{font-size:var(--fs-micro);color:var(--ink-3)}
+.rrow .vv{display:flex;align-items:center;gap:8px;font:600 var(--fs-cap)/1 var(--sans);color:var(--ink);font-variant-numeric:tabular-nums}
+.rrow .vv .sw{width:11px;height:11px;border-radius:3px;flex:none;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
+.rrow .vv.nd{color:var(--ink-4);font-style:italic;font-weight:500}
+.rank-empty{padding:var(--s8) var(--s5);text-align:center;color:var(--ink-3);font-size:var(--fs-cap)}
+.rank-empty svg{width:30px;height:30px;color:var(--ink-4);margin-bottom:var(--s3)}
+
+/* ============================================================ TOOLTIP ============================================================ */
+.tip{position:fixed;z-index:60;pointer-events:none;background:var(--ink);color:#f7f4ec;border-radius:var(--r-md);
+  padding:9px 12px;box-shadow:var(--e3);font-size:var(--fs-cap);max-width:230px;opacity:0;transform:translateY(4px);
+  transition:opacity var(--dur-fast) var(--ease),transform var(--dur-fast) var(--ease)}
+.tip.on{opacity:1;transform:translateY(0)}
+.tip .t-name{font-weight:600;font-family:var(--serif);font-size:var(--fs-body)}
+.tip .t-state{color:#c9c2b3;font-size:var(--fs-micro);margin-bottom:5px}
+.tip .t-val{display:flex;align-items:baseline;gap:6px;font-variant-numeric:tabular-nums}
+.tip .t-val b{font-size:1.15em}
+.tip .t-rank{color:#b9d9d6;font-size:var(--fs-micro);margin-top:3px}
+.tip .t-nd{color:#d9b8b0;font-style:italic}
+
+/* ============================================================ STATE LAYERS ============================================================ */
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--s4);
+  background:var(--paper-2);z-index:8;text-align:center;padding:var(--s6)}
+.spinner{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.skeleton-map{position:absolute;inset:0;background:radial-gradient(60% 60% at 50% 45%, #e9e1d1 0%, transparent 70%);opacity:.6}
+.ov-text{font-size:var(--fs-cap);color:var(--ink-3)}
+.ov-err svg{width:38px;height:38px;color:var(--danger)}
+.ov-err h3{font-family:var(--serif);font-size:var(--fs-lg);color:var(--ink)}
+.ov-err p{font-size:var(--fs-cap);color:var(--ink-3);max-width:34ch}
+.retry-btn{margin-top:var(--s2);height:44px;padding:0 22px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);
+  border-radius:var(--r-pill);font:600 var(--fs-cap)/1 var(--sans);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.retry-btn:hover{background:var(--accent-ink);border-color:var(--accent-ink)}
+.retry-btn:active{transform:scale(.97)}
+
+.colophon{margin-top:var(--s10);padding-top:var(--s5);border-top:1px solid var(--line);
+  display:flex;flex-wrap:wrap;gap:var(--s4) var(--s8);justify-content:space-between;font-size:var(--fs-micro);color:var(--ink-3)}
+.colophon p{margin:0;max-width:60ch}
+.colophon a{color:var(--accent-ink);text-decoration:underline;text-underline-offset:2px}
+.colophon code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;background:var(--paper-2);padding:1px 5px;border-radius:4px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* ============================================================ RESPONSIVE ============================================================ */
+@media (max-width:980px){
+  .stage{grid-template-columns:1fr}
+  .side{position:static}
+  .ranklist .rank-scroll{max-height:420px}
+}
+@media (max-width:620px){
+  .masthead{flex-direction:column;align-items:flex-start;gap:var(--s3)}
+  .masthead-meta{align-items:flex-start;text-align:left}
+  .controls{flex-direction:column;align-items:stretch}
+  .segmented{overflow-x:auto;scrollbar-width:none}
+  .segmented::-webkit-scrollbar{display:none}
+  .seg{white-space:nowrap}
+  .search-wrap{min-width:0;width:100%}
+  .detail.as-sheet{position:fixed;left:0;right:0;bottom:0;z-index:90;border-radius:var(--r-lg) var(--r-lg) 0 0;
+    box-shadow:var(--e3);max-height:82vh;overflow-y:auto;animation:sheetup var(--dur) var(--ease)}
+  .sheet-grip{display:block;width:38px;height:4px;border-radius:2px;background:var(--line-2);margin:10px auto 0}
+  .scrim{position:fixed;inset:0;background:rgba(28,26,22,.34);z-index:80;animation:fade var(--dur) var(--ease)}
+}
+@media (min-width:621px){ .sheet-grip{display:none} }
+@keyframes sheetup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#ranklist">Skip to the ranked data list</a>
+
+<div class="app">
+  <header class="masthead">
+    <div class="brand">
+      <span class="kicker">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z" stroke-linejoin="round"/>
+          <path d="M9 4v13.5M15 6.5V20" stroke-linejoin="round"/>
+        </svg>
+        The County Atlas · Sample Edition
+      </span>
+      <h1 class="title">Chor<em>os</em></h1>
+      <p class="dek">A choropleth explorer over real U.S. county geography. Scan for hotspots, confirm any county's exact figure, and re-color the whole map across three indicators.</p>
+    </div>
+    <div class="masthead-meta">
+      <span class="sample-badge" title="Geography is real; metric values are synthetic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Synthetic sample data
+      </span>
+      <p class="meta-note">Real Census county boundaries · indicator values are seeded &amp; synthetic — not real statistics.</p>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="metric-group">
+      <span class="ctl-label" id="metricLabel">Indicator (sample)</span>
+      <div class="segmented" role="group" aria-labelledby="metricLabel" id="metricSeg"></div>
+    </div>
+    <div class="metric-group" style="flex:1;max-width:340px">
+      <label class="ctl-label" for="search">Find a county</label>
+      <div class="search-wrap" id="searchWrap">
+        <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2" stroke-linecap="round"/>
+        </svg>
+        <input class="search focusable" id="search" type="search" autocomplete="off" spellcheck="false"
+          placeholder="Search county or state…" aria-describedby="searchHelp" />
+        <button class="search-clear focusable" id="searchClear" type="button" aria-label="Clear search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <span id="searchHelp" class="sr-only">Type to filter the ranked list and dim non-matching counties. Press Enter to frame the top match on the map.</span>
+    </div>
+  </div>
+
+  <main class="stage">
+    <section class="map-card" aria-labelledby="mapH2">
+      <div class="map-head">
+        <div class="map-title-block">
+          <h2 class="map-h2" id="mapH2">U.S. counties, shaded by <span id="mapMetricName">indicator</span></h2>
+          <p class="map-sub" id="mapSub">3,142 counties · seeded synthetic values</p>
+        </div>
+        <p class="map-summary" id="dataSummary" aria-live="polite"></p>
+      </div>
+
+      <div class="map-frame" id="mapFrame">
+        <svg id="geo" viewBox="0 0 975 610" role="img" aria-labelledby="mapH2 dataSummary" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <pattern id="ndhatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="6" height="6" fill="#e7e0d1"/>
+              <line x1="0" y1="0" x2="0" y2="6" stroke="#c3bba8" stroke-width="2"/>
+            </pattern>
+          </defs>
+          <g id="zoomLayer">
+            <g id="countyLayer"></g>
+            <path id="stateMesh" class="state-mesh"></path>
+            <path id="nationMesh" class="nation-mesh"></path>
+            <path id="hlOutline" class="hl-outline"></path>
+            <path id="pinOutline" class="pin-outline"></path>
+          </g>
+        </svg>
+
+        <div class="zoombar">
+          <button class="zbtn focusable" id="zoomIn" type="button" aria-label="Zoom in">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+          </button>
+          <button class="zbtn focusable" id="zoomOut" type="button" aria-label="Zoom out">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14" stroke-linecap="round"/></svg>
+          </button>
+          <button class="zbtn reset focusable" id="zoomReset" type="button" aria-label="Reset map view">RESET</button>
+        </div>
+
+        <div class="overlay" id="loadingOv">
+          <div class="skeleton-map" aria-hidden="true"></div>
+          <div class="spinner" role="status" aria-label="Loading map"></div>
+          <p class="ov-text">Loading county geography…</p>
+        </div>
+
+        <div class="overlay ov-err" id="errorOv" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path d="M12 3 2 20h20L12 3z" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke-linecap="round"/></svg>
+          <h3>Couldn't load the map</h3>
+          <p id="errDetail">The county topology failed to load from its CDN. Check your connection and try again.</p>
+          <button class="retry-btn focusable" id="retryBtn" type="button">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v4h4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Retry
+          </button>
+        </div>
+      </div>
+
+      <div class="legend">
+        <div class="legend-head">
+          <span class="legend-title" id="legendTitle">Indicator value (sample)</span>
+          <span class="legend-hint">Hover a band to isolate it · click to lock</span>
+        </div>
+        <div class="ramp" id="ramp" role="group" aria-label="Color scale — hover or click a band to filter the map"></div>
+        <div class="ramp-ticks" id="rampTicks"></div>
+        <div class="legend-nd">
+          <span class="nd-swatch" aria-hidden="true"></span>
+          No sample data for this county
+        </div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div class="detail" id="detail">
+        <div class="detail-empty" id="detailEmpty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.4"/></svg>
+          <p>Hover the map to read a value.<br/>Click a county — or pick from the list — to pin its full profile here.</p>
+        </div>
+        <div class="detail-card" id="detailCard" hidden></div>
+      </div>
+
+      <section class="ranklist" id="ranklist" aria-labelledby="rankH3" tabindex="-1">
+        <div class="rank-head">
+          <h3 class="rank-h3" id="rankH3">Ranked counties</h3>
+          <div class="sort-toggle" role="group" aria-label="Sort order">
+            <button class="sort-btn focusable" id="sortHigh" type="button" aria-pressed="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M6 11l6-6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Highest
+            </button>
+            <button class="sort-btn focusable" id="sortLow" type="button" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M6 13l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Lowest
+            </button>
+          </div>
+        </div>
+        <div class="rank-scroll" id="rankScroll" role="listbox" aria-label="Counties ranked by the selected indicator"></div>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="colophon">
+    <p><strong>Geography:</strong> real U.S. county &amp; state boundaries from the public-domain U.S. Census via
+      <a href="https://github.com/topojson/us-atlas" rel="noopener" target="_blank">us-atlas</a> (<code>counties-albers-10m</code>, Albers&nbsp;USA — Alaska &amp; Hawaii as insets).</p>
+    <p><strong>Indicators:</strong> all three values are <em>synthetic</em>, produced by a seeded spatial model for this demo. They are labeled <em>sample</em> throughout and are <em>not</em> real-world statistics. Built with d3-geo + topojson-client.</p>
+  </footer>
+</div>
+
+<div class="tip" id="tip" role="status" aria-hidden="true"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3-geo@3.1.1/dist/d3-geo.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script>
+"use strict";
+/* ============================================================
+   CHOROS — choropleth explorer.  Real geography (us-atlas),
+   synthetic seeded metrics.
+   ============================================================ */
+const TOPO_URL = "https://cdn.jsdelivr.net/npm/us-atlas@3.0.1/counties-albers-10m.json";
+
+const METRICS = [
+  { id:"vitality", name:"Broadband Vitality Index", short:"Vitality", unit:"index",
+    fmt:v=>v.toFixed(1), legendTitle:"Vitality index (sample, 0–100)",
+    ramp:["#e8f1ee","#c9e3dd","#a3d0c7","#6fb6aa","#3f9588","#1f7468","#0c534a"] },
+  { id:"heat", name:"Summer Heat Days", short:"Heat", unit:"days/yr",
+    fmt:v=>String(Math.round(v)), legendTitle:"Days above 90°F (sample)",
+    ramp:["#fbeede","#f7d9b0","#f2bd7e","#e89c4f","#d97a2e","#bd591b","#8f3d12"] },
+  { id:"flow", name:"Net Migration Flow", short:"Migration", unit:"per 1k",
+    fmt:v=>(v>=0?"+":"")+v.toFixed(1), legendTitle:"Net migration per 1,000 (sample)",
+    ramp:["#ece7f3","#d3c8e6","#b3a1d4","#9079bf","#6d52a6","#4e388a","#33246a"] },
+];
+const BINS = 7;
+
+function hashStr(s){ let h=2166136261>>>0; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
+function mulberry32(a){ return function(){ a|=0;a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function clamp(v,a,b){ return v<a?a:v>b?b:v; }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+const S = {
+  topo:null,
+  nameById:new Map(), stateById:new Map(),
+  pathById:new Map(), centroidById:new Map(),
+  values:{}, metric:METRICS[0], breaks:null,
+  ranks:null, rankPos:new Map(),
+  sort:"high", query:"", matchSet:null,
+  hovered:null, pinned:null,
+  bandLock:null, bandHover:null,
+  zoom:{k:1,x:0,y:0}, _tipFips:null,
+};
+const VB = {w:975,h:610};
+const ZMIN=1, ZMAX=9;
+const reduceMotion = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+const el = id => document.getElementById(id);
+const geo=el("geo"), zoomLayer=el("zoomLayer"), countyLayer=el("countyLayer");
+const stateMeshEl=el("stateMesh"), nationMeshEl=el("nationMesh");
+const hlOutline=el("hlOutline"), pinOutline=el("pinOutline");
+const mapFrame=el("mapFrame"), tip=el("tip");
+const loadingOv=el("loadingOv"), errorOv=el("errorOv");
+const rankScroll=el("rankScroll"), detailCard=el("detailCard"), detailEmpty=el("detailEmpty"), detailEl=el("detail");
+const ramp=el("ramp"), rampTicks=el("rampTicks");
+
+/* ---------- synthetic metric generation (seeded spatial model) ---------- */
+function buildMetricValues(){
+  const ids=[...S.nameById.keys()];
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  S.centroidById.forEach(([x,y])=>{ if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y; });
+  const nx=x=>(x-minX)/(maxX-minX||1), ny=y=>(y-minY)/(maxY-minY||1);
+  for(const m of METRICS){
+    const map=new Map(); const seed=hashStr(m.id);
+    for(const id of ids){
+      const c=S.centroidById.get(id);
+      if(!c){ map.set(id,null); continue; }
+      const X=nx(c[0]), Y=ny(c[1]);
+      const r=mulberry32(seed ^ hashStr(id));
+      if(mulberry32(hashStr("nd"+id))() < 0.03){ map.set(id,null); continue; }
+      let v;
+      if(m.id==="vitality"){
+        const coastal=Math.pow(Math.abs(X-0.5)*2,1.3), lat=1-Y;
+        v=clamp(28+46*(0.55*coastal+0.25*lat+0.20*r())+(r()-0.5)*14, 2, 99);
+      } else if(m.id==="heat"){
+        const south=Math.pow(Y,1.25), sw=Math.max(0,0.8-Math.hypot(X-0.18,Y-0.78));
+        v=clamp(6+150*(0.7*south+0.18*sw+0.12*r())+(r()-0.5)*22, 0, 178);
+      } else {
+        const sun=0.6*Y+0.4*(1-Math.abs(X-0.7)), hub=Math.max(0,0.7-Math.hypot(X-0.62,Y-0.55))*2;
+        v=clamp(-22+60*(0.55*sun+0.2*hub+0.25*r())+(r()-0.5)*16, -28, 48);
+      }
+      map.set(id,v);
+    }
+    S.values[m.id]=map;
+  }
+}
+
+function computeBreaks(metricId){
+  const vals=[]; S.values[metricId].forEach(v=>{ if(v!=null) vals.push(v); });
+  vals.sort((a,b)=>a-b); const n=vals.length;
+  const q=p=>{ const i=(n-1)*p, lo=Math.floor(i), hi=Math.ceil(i); return vals[lo]+(vals[hi]-vals[lo])*(i-lo); };
+  const edges=[]; for(let i=0;i<=BINS;i++) edges.push(q(i/BINS));
+  for(let i=1;i<edges.length;i++) if(edges[i]<=edges[i-1]) edges[i]=edges[i-1]+1e-6;
+  return { edges, min:vals[0], max:vals[n-1], count:n };
+}
+function binOf(v,edges){
+  if(v==null) return -1;
+  for(let i=0;i<BINS;i++){ if(v<=edges[i+1] || i===BINS-1) return i; }
+  return BINS-1;
+}
+
+/* ---------- boot / data load ---------- */
+function showError(detail){
+  loadingOv.hidden=true; loadingOv.style.display="none";
+  errorOv.hidden=false; errorOv.style.display="flex";
+  if(detail) el("errDetail").textContent=detail;
+}
+async function boot(){
+  errorOv.hidden=true; errorOv.style.display="none";
+  loadingOv.hidden=false; loadingOv.style.display="flex";
+  if(typeof topojson==="undefined" || typeof d3==="undefined" || !d3.geoPath){
+    showError("A required mapping library failed to load from its CDN. Check your connection and retry."); return;
+  }
+  try{
+    const res=await fetch(TOPO_URL,{cache:"force-cache"});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const topo=await res.json();
+    if(!topo||!topo.objects||!topo.objects.counties) throw new Error("Unexpected topology shape");
+    S.topo=topo;
+    renderGeography(topo);
+    buildMetricValues();
+    buildMetricControl();
+    buildRampDelegation();
+    setMetric(S.metric.id,true);
+    loadingOv.hidden=true; loadingOv.style.display="none";
+  }catch(err){
+    showError("The county topology failed to load ("+err.message+"). Check your connection and try again.");
+  }
+}
+
+function renderGeography(topo){
+  const path=d3.geoPath(); // pre-projected (Albers USA baked in) → identity
+  const counties=topojson.feature(topo,topo.objects.counties);
+  topo.objects.states.geometries.forEach(g=>{ if(g.id!=null) S.stateById.set(String(g.id).padStart(2,"0"), (g.properties&&g.properties.name)||""); });
+  const frag=document.createDocumentFragment();
+  for(const f of counties.features){
+    const id=String(f.id).padStart(5,"0");
+    const d=path(f); if(!d) continue;
+    const p=document.createElementNS("http://www.w3.org/2000/svg","path");
+    p.setAttribute("d",d); p.setAttribute("class","county"); p.setAttribute("data-id",id); p.setAttribute("fill","url(#ndhatch)");
+    frag.appendChild(p);
+    S.pathById.set(id,p);
+    S.nameById.set(id,(f.properties&&f.properties.name)||"—");
+    const c=path.centroid(f);
+    if(c && isFinite(c[0]) && isFinite(c[1])) S.centroidById.set(id,c);
+  }
+  countyLayer.appendChild(frag);
+  stateMeshEl.setAttribute("d", path(topojson.mesh(topo,topo.objects.states,(a,b)=>a!==b)));
+  nationMeshEl.setAttribute("d", path(topojson.mesh(topo,topo.objects.nation)));
+}
+
+/* ---------- metric control + switch ---------- */
+function buildMetricControl(){
+  const seg=el("metricSeg"); seg.innerHTML="";
+  METRICS.forEach(m=>{
+    const b=document.createElement("button");
+    b.className="seg focusable"; b.type="button"; b.dataset.metric=m.id;
+    b.setAttribute("aria-pressed",String(m.id===S.metric.id));
+    b.innerHTML=`<span class="dot" style="background:${m.ramp[5]}"></span>${m.short}`;
+    b.addEventListener("click",()=>setMetric(m.id));
+    seg.appendChild(b);
+  });
+}
+function buildRampDelegation(){
+  ramp.addEventListener("mouseleave",()=>{ S.bandHover=null; applyBandFilter(); });
+}
+function setMetric(id){
+  const m=METRICS.find(x=>x.id===id); if(!m) return;
+  S.metric=m;
+  document.querySelectorAll("#metricSeg .seg").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.metric===id)));
+  const br=computeBreaks(id); S.breaks=br;
+  const vals=S.values[id];
+  for(const [fips,p] of S.pathById){
+    const v=vals.get(fips);
+    if(v==null){ p.setAttribute("fill","url(#ndhatch)"); p.dataset.bin="nd"; }
+    else { const bi=binOf(v,br.edges); p.setAttribute("fill",m.ramp[bi]); p.dataset.bin=String(bi); }
+  }
+  computeRanks(id);
+  el("mapMetricName").textContent=m.name+" (sample)";
+  el("legendTitle").textContent=m.legendTitle;
+  updateRamp(br); updateSummary(br); buildRankList();
+  if(S.pinned) renderDetail(S.pinned);
+  S.bandLock=null; S.bandHover=null; applyBandFilter();
+  document.querySelectorAll(".ramp-cell").forEach(c=>c.setAttribute("aria-pressed","false"));
+}
+function computeRanks(id){
+  const vals=S.values[id]; const arr=[];
+  vals.forEach((v,fips)=>{ if(v!=null) arr.push({id:fips,v}); });
+  arr.sort((a,b)=>b.v-a.v); S.ranks=arr;
+  const pos=new Map(); arr.forEach((d,i)=>pos.set(d.id,i+1)); S.rankPos=pos;
+}
+
+/* ---------- legend ramp ---------- */
+function updateRamp(br){
+  const m=S.metric; ramp.innerHTML="";
+  for(let i=0;i<BINS;i++){
+    const b=document.createElement("button");
+    b.className="ramp-cell focusable"; b.type="button"; b.dataset.bin=String(i); b.style.background=m.ramp[i];
+    b.setAttribute("aria-label",`Band ${i+1}: ${m.fmt(br.edges[i])} to ${m.fmt(br.edges[i+1])} ${m.unit}. Filter map to this band.`);
+    b.setAttribute("aria-pressed","false");
+    b.addEventListener("mouseenter",()=>{ S.bandHover=i; applyBandFilter(); });
+    b.addEventListener("focus",()=>{ S.bandHover=i; applyBandFilter(); });
+    b.addEventListener("blur",()=>{ S.bandHover=null; applyBandFilter(); });
+    b.addEventListener("click",()=>toggleBandLock(i));
+    ramp.appendChild(b);
+  }
+  rampTicks.innerHTML="";
+  [0,2,4,6,7].forEach(i=>{ const s=document.createElement("span"); s.className="ramp-tick"; s.textContent=m.fmt(br.edges[i]); rampTicks.appendChild(s); });
+}
+function toggleBandLock(i){
+  S.bandLock=(S.bandLock===i)?null:i;
+  document.querySelectorAll(".ramp-cell").forEach(c=>c.setAttribute("aria-pressed",String(Number(c.dataset.bin)===S.bandLock)));
+  applyBandFilter();
+}
+function applyBandFilter(){
+  const active=(S.bandLock!=null)?S.bandLock:S.bandHover;
+  if(active==null){
+    mapFrame.removeAttribute("data-dim");
+    if(S.matchSet) mapFrame.setAttribute("data-dim","search");
+    S.pathById.forEach(p=>p.classList.remove("in-band")); return;
+  }
+  S.pathById.forEach(p=>p.classList.toggle("in-band",Number(p.dataset.bin)===active));
+  mapFrame.setAttribute("data-dim","band");
+}
+
+function updateSummary(br){
+  const m=S.metric;
+  const topN=S.ranks.slice(0,3).map(d=>S.nameById.get(d.id)).join(", ");
+  const nd=S.pathById.size-br.count;
+  el("dataSummary").innerHTML=`<b>${m.name}</b> (sample). Range ${m.fmt(br.min)}–${m.fmt(br.max)} ${m.unit} across ${br.count.toLocaleString()} counties; ${nd} have no sample data. Highest: ${escapeHtml(topN)}.`;
+}
+
+/* ---------- ranked list ---------- */
+function buildRankList(){
+  const m=S.metric;
+  let list=S.ranks.slice();
+  if(S.sort==="low") list=list.slice().reverse();
+  if(S.matchSet) list=list.filter(d=>S.matchSet.has(d.id));
+  rankScroll.innerHTML="";
+  if(list.length===0){
+    rankScroll.innerHTML=`<div class="rank-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3" stroke-linecap="round"/></svg>No counties match “${escapeHtml(S.query)}”.<br/>Try a different name.</div>`;
+    return;
+  }
+  const frag=document.createDocumentFragment();
+  list.forEach(d=>{
+    const fips=d.id, name=S.nameById.get(fips), st=S.stateById.get(fips.slice(0,2))||"";
+    const rk=S.rankPos.get(fips), bi=binOf(d.v,S.breaks.edges);
+    const row=document.createElement("button");
+    row.className="rrow focusable"; row.type="button"; row.dataset.id=fips; row.setAttribute("role","option");
+    row.setAttribute("aria-selected",String(S.pinned===fips));
+    if(S.pinned===fips) row.classList.add("active");
+    row.innerHTML=`<span class="rk">${rk}</span><span class="nm"><b>${escapeHtml(name)}</b><span>${escapeHtml(st)}</span></span><span class="vv"><span class="sw" style="background:${m.ramp[bi]}"></span>${m.fmt(d.v)}</span>`;
+    row.addEventListener("click",()=>{ pinCounty(fips); frameCounty(fips); });
+    row.addEventListener("mouseenter",()=>hoverCounty(fips,false));
+    row.addEventListener("mouseleave",()=>hoverCounty(null,false));
+    frag.appendChild(row);
+  });
+  rankScroll.appendChild(frag);
+}
+el("sortHigh").addEventListener("click",()=>setSort("high"));
+el("sortLow").addEventListener("click",()=>setSort("low"));
+function setSort(s){
+  S.sort=s;
+  el("sortHigh").setAttribute("aria-pressed",String(s==="high"));
+  el("sortLow").setAttribute("aria-pressed",String(s==="low"));
+  buildRankList();
+}
+
+/* ---------- hover + tooltip ---------- */
+function metricLine(fips){
+  const m=S.metric, v=S.values[m.id].get(fips);
+  if(v==null) return {nd:true};
+  return {nd:false, txt:m.fmt(v), unit:m.unit, rank:S.rankPos.get(fips), total:S.ranks.length};
+}
+function showTip(fips,cx,cy){
+  const name=S.nameById.get(fips), st=S.stateById.get(fips.slice(0,2))||"";
+  const info=metricLine(fips);
+  const body=info.nd?`<div class="t-nd">No sample data</div>`
+    :`<div class="t-val"><b>${info.txt}</b><span>${info.unit}</span></div><div class="t-rank">Rank #${info.rank} of ${info.total.toLocaleString()}</div>`;
+  tip.innerHTML=`<div class="t-name">${escapeHtml(name)}</div><div class="t-state">${escapeHtml(st)} · sample</div>${body}`;
+  tip.classList.add("on"); tip.setAttribute("aria-hidden","false");
+  positionTip(cx,cy);
+}
+function positionTip(cx,cy){
+  const r=tip.getBoundingClientRect(), pad=14;
+  let x=cx+pad, y=cy+pad;
+  if(x+r.width>window.innerWidth-8) x=cx-r.width-pad;
+  if(y+r.height>window.innerHeight-8) y=cy-r.height-pad;
+  tip.style.left=Math.max(8,x)+"px"; tip.style.top=Math.max(8,y)+"px";
+}
+function hideTip(){ tip.classList.remove("on"); tip.setAttribute("aria-hidden","true"); }
+function hoverCounty(fips,fromMap){
+  S.hovered=fips;
+  if(fips){ const p=S.pathById.get(fips); if(p){ hlOutline.setAttribute("d",p.getAttribute("d")); hlOutline.style.opacity="1"; } }
+  else { hlOutline.style.opacity="0"; if(!fromMap) hideTip(); }
+}
+
+mapFrame.addEventListener("pointermove",(e)=>{
+  if(drag.active){
+    const r=geo.getBoundingClientRect(), sx=VB.w/r.width, sy=VB.h/r.height;
+    const dx=(e.clientX-drag.sx)*sx, dy=(e.clientY-drag.sy)*sy;
+    if(Math.abs(e.clientX-drag.sx)+Math.abs(e.clientY-drag.sy)>3){ drag.moved=true; hideTip(); }
+    S.zoom.x=drag.ox+dx; S.zoom.y=drag.oy+dy; clampPan(); applyZoom(false);
+    return;
+  }
+  const t=e.target;
+  if(t && t.classList && t.classList.contains("county")){
+    const fips=t.dataset.id;
+    if(fips!==S._tipFips){ S._tipFips=fips; hoverCounty(fips,true); }
+    showTip(fips,e.clientX,e.clientY);
+  } else { S._tipFips=null; hoverCounty(null,false); }
+});
+mapFrame.addEventListener("pointerleave",()=>{ S._tipFips=null; hoverCounty(null,false); });
+geo.addEventListener("click",(e)=>{
+  const t=e.target;
+  if(t && t.classList && t.classList.contains("county")) pinCounty(t.dataset.id);
+});
+
+/* ---------- detail panel ---------- */
+function pinCounty(fips){
+  S.pinned=fips; renderDetail(fips);
+  document.querySelectorAll(".rrow").forEach(r=>{ const on=r.dataset.id===fips; r.classList.toggle("active",on); r.setAttribute("aria-selected",String(on)); });
+  const active=rankScroll.querySelector(".rrow.active");
+  if(active) active.scrollIntoView({block:"nearest",behavior:reduceMotion?"auto":"smooth"});
+  const p=S.pathById.get(fips); if(p){ pinOutline.setAttribute("d",p.getAttribute("d")); pinOutline.style.opacity="1"; }
+}
+function renderDetail(fips){
+  const name=S.nameById.get(fips), st=S.stateById.get(fips.slice(0,2))||"";
+  const m=S.metric, v=S.values[m.id].get(fips);
+  detailEmpty.hidden=true; detailCard.hidden=false;
+  const isMobile=window.matchMedia("(max-width:620px)").matches;
+  let statHtml;
+  if(v==null){ statHtml=`<p class="detail-nd">No sample data for this county on this indicator.</p>`; }
+  else {
+    const rk=S.rankPos.get(fips), total=S.ranks.length, pct=1-(rk-1)/(total-1||1);
+    statHtml=`<div class="detail-stat"><div class="detail-val">${m.fmt(v)}<span class="unit">${m.unit}</span></div><div class="detail-metricname">${escapeHtml(m.name)} · sample</div></div>
+      <div class="rank-row"><span class="rank-badge tnum">#${rk}</span><span class="rank-of">of ${total.toLocaleString()} counties with data</span></div>
+      <div class="pctile" aria-label="Percentile ${Math.round(pct*100)}"><div class="pctile-track"><div class="pctile-fill" style="transform:scaleX(${pct.toFixed(3)})"></div><div class="pctile-mark" style="left:${(pct*100).toFixed(1)}%"></div></div>
+      <div class="pctile-cap"><span>Lowest</span><span>${Math.round(pct*100)}th percentile</span><span>Highest</span></div></div>`;
+  }
+  let sm=`<div class="small-mult"><span class="sm-label">All three indicators (sample)</span>`;
+  for(const mm of METRICS){
+    const vv=S.values[mm.id].get(fips);
+    const br=(mm===S.metric)?S.breaks:computeBreaks(mm.id);
+    if(vv==null){
+      sm+=`<div class="sm-row"><span class="sm-name"><span class="dot" style="background:${mm.ramp[4]}"></span>${mm.short}</span><span class="sm-val" style="color:var(--ink-4);font-style:italic;font-weight:500">no data</span></div><div class="sm-bar"><i style="transform:scaleX(0)"></i></div>`;
+    } else {
+      const frac=clamp((vv-br.min)/((br.max-br.min)||1),0,1), bi=binOf(vv,br.edges);
+      sm+=`<div class="sm-row"><span class="sm-name"><span class="dot" style="background:${mm.ramp[bi]}"></span>${mm.short}</span><span class="sm-val">${mm.fmt(vv)} <small style="color:var(--ink-4);font-weight:500">${mm.unit}</small></span></div><div class="sm-bar"><i style="background:${mm.ramp[bi]};transform:scaleX(${frac.toFixed(3)})"></i></div>`;
+    }
+  }
+  sm+=`</div>`;
+  detailCard.innerHTML=`${isMobile?'<span class="sheet-grip" aria-hidden="true"></span>':''}
+    <div class="detail-top"><div><div class="detail-name">${escapeHtml(name)}</div><div class="detail-state">${escapeHtml(st)} · FIPS ${fips}</div></div>
+    <button class="detail-close focusable" id="detailClose" type="button" aria-label="Close detail panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/></svg></button></div>
+    ${statHtml}${sm}`;
+  el("detailClose").addEventListener("click",unpin);
+  document.querySelectorAll(".scrim").forEach(s=>s.remove());
+  if(isMobile){
+    detailEl.classList.add("as-sheet");
+    const scrim=document.createElement("div"); scrim.className="scrim"; scrim.addEventListener("click",unpin); document.body.appendChild(scrim);
+  } else { detailEl.classList.remove("as-sheet"); }
+}
+function unpin(){
+  S.pinned=null; detailCard.hidden=true; detailEmpty.hidden=false;
+  detailEl.classList.remove("as-sheet");
+  document.querySelectorAll(".scrim").forEach(s=>s.remove());
+  pinOutline.style.opacity="0";
+  document.querySelectorAll(".rrow").forEach(r=>{ r.classList.remove("active"); r.setAttribute("aria-selected","false"); });
+}
+
+/* ---------- search ---------- */
+const searchInput=el("search"), searchWrap=el("searchWrap"), searchClear=el("searchClear");
+let searchT=null;
+searchInput.addEventListener("input",()=>{ searchWrap.classList.toggle("has-val",searchInput.value.length>0); clearTimeout(searchT); searchT=setTimeout(runSearch,110); });
+searchInput.addEventListener("keydown",(e)=>{
+  if(e.key==="Enter"){ e.preventDefault(); const top=firstMatch(); if(top){ pinCounty(top); frameCounty(top); } }
+  if(e.key==="Escape"){ searchInput.value=""; searchWrap.classList.remove("has-val"); runSearch(); }
+});
+searchClear.addEventListener("click",()=>{ searchInput.value=""; searchWrap.classList.remove("has-val"); runSearch(); searchInput.focus(); });
+function runSearch(){
+  const q=searchInput.value.trim().toLowerCase(); S.query=q;
+  if(!q){ S.matchSet=null; S.pathById.forEach(p=>p.classList.remove("match")); mapFrame.removeAttribute("data-dim"); applyBandFilter(); buildRankList(); return; }
+  const set=new Set();
+  for(const [fips,name] of S.nameById){
+    const st=(S.stateById.get(fips.slice(0,2))||"").toLowerCase();
+    if(name.toLowerCase().includes(q)||st.includes(q)) set.add(fips);
+  }
+  S.matchSet=set;
+  S.pathById.forEach((p,fips)=>p.classList.toggle("match",set.has(fips)));
+  if(S.bandLock==null && S.bandHover==null) mapFrame.setAttribute("data-dim","search");
+  buildRankList();
+}
+function firstMatch(){
+  if(!S.matchSet||S.matchSet.size===0) return null;
+  for(const d of S.ranks){ if(S.matchSet.has(d.id)) return d.id; }
+  return [...S.matchSet][0];
+}
+
+/* ---------- zoom / pan ---------- */
+function applyZoom(animate){
+  const {k,x,y}=S.zoom;
+  zoomLayer.style.transition=(animate&&!reduceMotion)?`transform var(--dur) var(--ease)`:"none";
+  zoomLayer.style.transformOrigin="0 0";
+  zoomLayer.setAttribute("transform",`translate(${x} ${y}) scale(${k})`);
+  el("zoomIn").disabled=k>=ZMAX-0.001;
+  el("zoomOut").disabled=k<=ZMIN+0.001;
+}
+function clampPan(){
+  const {k}=S.zoom;
+  S.zoom.x=clamp(S.zoom.x, VB.w-VB.w*k, 0);
+  S.zoom.y=clamp(S.zoom.y, VB.h-VB.h*k, 0);
+}
+function zoomAt(factor,px,py,animate){
+  const k0=S.zoom.k, k1=clamp(k0*factor,ZMIN,ZMAX); if(k1===k0) return;
+  S.zoom.x=px-(px-S.zoom.x)*(k1/k0); S.zoom.y=py-(py-S.zoom.y)*(k1/k0); S.zoom.k=k1;
+  clampPan(); applyZoom(animate);
+}
+function clientToVB(clientX,clientY){
+  const r=geo.getBoundingClientRect();
+  return [(clientX-r.left)*(VB.w/r.width),(clientY-r.top)*(VB.h/r.height)];
+}
+el("zoomIn").addEventListener("click",()=>zoomAt(1.6,VB.w/2,VB.h/2,true));
+el("zoomOut").addEventListener("click",()=>zoomAt(1/1.6,VB.w/2,VB.h/2,true));
+el("zoomReset").addEventListener("click",()=>{ S.zoom={k:1,x:0,y:0}; applyZoom(true); });
+mapFrame.addEventListener("wheel",(e)=>{ e.preventDefault(); const [vx,vy]=clientToVB(e.clientX,e.clientY); zoomAt(e.deltaY<0?1.18:1/1.18,vx,vy,false); },{passive:false});
+
+const drag={active:false,sx:0,sy:0,ox:0,oy:0,moved:false};
+mapFrame.addEventListener("pointerdown",(e)=>{
+  if(e.button!==0) return;
+  drag.active=true; drag.moved=false; drag.sx=e.clientX; drag.sy=e.clientY; drag.ox=S.zoom.x; drag.oy=S.zoom.y;
+  mapFrame.classList.add("dragging"); try{mapFrame.setPointerCapture(e.pointerId);}catch(_){}
+});
+function endDrag(e){ if(!drag.active) return; drag.active=false; mapFrame.classList.remove("dragging"); try{mapFrame.releasePointerCapture(e.pointerId);}catch(_){} }
+mapFrame.addEventListener("pointerup",endDrag);
+mapFrame.addEventListener("pointercancel",endDrag);
+geo.addEventListener("click",(e)=>{ if(drag.moved){ e.stopImmediatePropagation(); drag.moved=false; } },true);
+
+function frameCounty(fips){
+  const c=S.centroidById.get(fips); if(!c) return;
+  const k=4.2; S.zoom.k=k; S.zoom.x=VB.w/2-c[0]*k; S.zoom.y=VB.h/2-c[1]*k;
+  clampPan(); applyZoom(true);
+}
+
+/* ---------- resize ---------- */
+let rzT=null;
+window.addEventListener("resize",()=>{ clearTimeout(rzT); rzT=setTimeout(()=>{ if(S.pinned) renderDetail(S.pinned); },120); });
+
+el("retryBtn").addEventListener("click",boot);
+document.addEventListener("keydown",(e)=>{ if(e.key==="Escape" && S.pinned && document.activeElement!==searchInput) unpin(); });
+
+boot();
+</script>
+</body>
+</html>

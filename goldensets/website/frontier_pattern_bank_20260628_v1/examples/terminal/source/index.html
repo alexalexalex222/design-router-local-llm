@@ -1,0 +1,1908 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark light" />
+<title>Lumen — a modern web terminal</title>
+<meta name="description" content="Lumen: a sleek, keyboard-first browser terminal with a real in-memory filesystem, piped commands, ANSI color, tab-completion and command history." />
+<!-- Apply persisted theme before first paint to avoid a flash of the wrong theme -->
+<script>
+  try {
+    var t = localStorage.getItem('lumen.theme');
+    if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) document.documentElement.dataset.theme = 'light';
+  } catch (e) {}
+</script>
+<style>
+/* ============================================================
+   LUMEN — design tokens
+   ============================================================ */
+:root {
+  color-scheme: dark;
+
+  /* desktop backdrop behind the floating window */
+  --backdrop-a: #06070d;
+  --backdrop-b: #0a0c16;
+  --backdrop-glow: rgba(124, 122, 255, .14);
+
+  /* window surfaces */
+  --chrome:       #0b0e17;
+  --screen:       #0d101a;
+  --screen-2:     #10131f;
+  --block-hover:  #121726;
+  --status:       #090c14;
+
+  /* borders (soft → strong) */
+  --line:         #1a2030;
+  --line-soft:    #141a28;
+  --line-strong:  #28304409;
+  --line-strong:  #283044;
+
+  /* neutral text ramp (4 steps + dim) */
+  --text:         #e7ebf5;
+  --text-muted:   #9aa4ba;
+  --text-subtle:  #6f7a92;
+  --text-faint:   #4a5468;
+
+  /* brand accent (iris) + secondary glow (cyan) */
+  --accent:       #9d8cff;
+  --accent-2:     #58e2c8;
+  --accent-strong:#b6a9ff;
+  --accent-soft:  #1c1c33;
+  --accent-line:  #322f55;
+  --accent-ink:   #0a0a14;
+
+  --ok:           #6fe0a0;
+  --warn:         #ffcf8a;
+  --err:          #ff8198;
+
+  --sel:          rgba(157,140,255,.30);
+  --caret:        #b6a9ff;
+
+  /* ANSI 16 — dark (Lumen palette, AA-tuned on --screen) */
+  --a-black:#3b4255;   --a-red:#ff6e87;     --a-green:#8fe388;   --a-yellow:#f0c674;
+  --a-blue:#7aa2ff;    --a-magenta:#c79bff; --a-cyan:#67d9e8;    --a-white:#c7cee0;
+  --a-bblack:#5a6379;  --a-bred:#ff95a6;    --a-bgreen:#aff0a0;  --a-byellow:#ffd98c;
+  --a-bblue:#9cbcff;   --a-bmagenta:#d8bcff;--a-bcyan:#92e9f4;   --a-bwhite:#f1f4fb;
+
+  /* mono + ui type */
+  --font-mono: "SFMono-Regular", ui-monospace, "JetBrains Mono", "Cascadia Code", "Fira Code", "Menlo", "Consolas", monospace;
+  --font-ui:   ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+
+  /* fluid type scale (~1.2). Terminal mono is intentionally dense (≥14px). */
+  --fs-term: clamp(0.875rem, 0.83rem + 0.2vw, 0.9375rem); /* 14 → 15px */
+  --fs-xs:   clamp(0.6875rem, 0.66rem + 0.1vw, 0.75rem);
+  --fs-sm:   clamp(0.75rem, 0.72rem + 0.12vw, 0.8125rem);
+  --fs-ui:   clamp(0.8125rem, 0.78rem + 0.14vw, 0.875rem);
+  --fs-lg:   clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+
+  /* spacing (4px base) */
+  --sp-1:.25rem; --sp-2:.5rem; --sp-3:.75rem; --sp-4:1rem; --sp-5:1.25rem; --sp-6:1.5rem; --sp-8:2rem;
+
+  /* radii */
+  --r-xs:.25rem; --r-sm:.375rem; --r-md:.625rem; --r-lg:.875rem; --r-xl:1.125rem; --r-full:999px;
+
+  /* elevation (3 tiers) */
+  --e1: 0 1px 2px rgba(0,0,0,.4);
+  --e2: 0 8px 24px -10px rgba(0,0,0,.6), 0 2px 6px -2px rgba(0,0,0,.5);
+  --e3: 0 40px 80px -24px rgba(0,0,0,.7), 0 16px 40px -16px rgba(0,0,0,.55);
+
+  /* motion */
+  --dur-1:130ms; --dur-2:190ms; --dur-3:240ms;
+  --ease: cubic-bezier(.22,.8,.3,1);
+  --ease-io: cubic-bezier(.6,0,.25,1);
+
+  --line-h: 1.55;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --backdrop-a: #e7e8f1;
+  --backdrop-b: #dfe1ee;
+  --backdrop-glow: rgba(90,75,214,.10);
+
+  --chrome:       #f4f5fa;
+  --screen:       #ffffff;
+  --screen-2:     #f7f8fc;
+  --block-hover:  #f3f3fb;
+  --status:       #eef0f7;
+
+  --line:         #e2e4ee;
+  --line-soft:    #edeef5;
+  --line-strong:  #cdd1df;
+
+  --text:         #1b1e2a;
+  --text-muted:   #555d70;
+  --text-subtle:  #717a8d;
+  --text-faint:   #a0a7b8;
+
+  --accent:       #5a4bd6;
+  --accent-2:     #0c8f86;
+  --accent-strong:#4a3bc4;
+  --accent-soft:  #efedfb;
+  --accent-line:  #ddd8f6;
+  --accent-ink:   #ffffff;
+
+  --ok:           #1f8a55;
+  --warn:         #9a6b00;
+  --err:          #c4314b;
+
+  --sel:          rgba(90,75,214,.22);
+  --caret:        #5a4bd6;
+
+  /* ANSI 16 — light (darkened, AA-tuned on white) */
+  --a-black:#2c303d;   --a-red:#c4314b;     --a-green:#2f8f4e;   --a-yellow:#8a6400;
+  --a-blue:#2f5fd0;    --a-magenta:#8a3fce; --a-cyan:#0c7c8c;    --a-white:#4b5160;
+  --a-bblack:#565d6e;  --a-bred:#b02540;    --a-bgreen:#247a3f;  --a-byellow:#7a5800;
+  --a-bblue:#274fbb;   --a-bmagenta:#7634b8;--a-bcyan:#0a6675;   --a-bwhite:#2c303d;
+
+  --e1: 0 1px 2px rgba(20,22,40,.06);
+  --e2: 0 10px 28px -12px rgba(30,32,60,.22), 0 2px 6px -2px rgba(30,32,60,.12);
+  --e3: 0 36px 80px -28px rgba(30,32,60,.30), 0 14px 36px -18px rgba(30,32,60,.20);
+}
+
+/* ============================================================
+   reset / base
+   ============================================================ */
+*,*::before,*::after { box-sizing:border-box; }
+html,body { height:100%; }
+body {
+  margin:0;
+  font-family:var(--font-ui);
+  color:var(--text);
+  background:
+    radial-gradient(120% 90% at 78% -8%, var(--backdrop-glow), transparent 60%),
+    linear-gradient(160deg, var(--backdrop-a), var(--backdrop-b));
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow:hidden;
+}
+::selection { background:var(--sel); }
+button { font:inherit; color:inherit; }
+:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:var(--r-xs); }
+
+.sr-only {
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+}
+.skip {
+  position:absolute; left:50%; top:-3rem; transform:translateX(-50%);
+  background:var(--accent); color:var(--accent-ink); padding:.5rem .9rem;
+  border-radius:var(--r-md); z-index:50; transition:top var(--dur-2) var(--ease); font-size:var(--fs-ui); font-weight:600;
+}
+.skip:focus { top:.6rem; }
+
+/* ============================================================
+   window shell
+   ============================================================ */
+.app {
+  height:100dvh; width:100vw;
+  display:grid; place-items:center;
+  padding:clamp(0px, 2.2vw, 28px);
+}
+.win {
+  width:min(1180px, 100%);
+  height:min(880px, 100%);
+  display:flex; flex-direction:column;
+  background:var(--screen);
+  border:1px solid var(--line);
+  border-radius:var(--r-xl);
+  box-shadow:var(--e3);
+  overflow:hidden;
+  position:relative;
+  isolation:isolate;
+}
+
+/* top chrome / tab bar */
+.chrome {
+  flex:0 0 auto;
+  display:flex; align-items:center; gap:var(--sp-3);
+  padding:0 var(--sp-3);
+  height:46px;
+  background:var(--chrome);
+  border-bottom:1px solid var(--line);
+}
+.dots { display:flex; gap:8px; padding:0 var(--sp-1); }
+.dots i { width:12px; height:12px; border-radius:var(--r-full); display:block; box-shadow:inset 0 0 0 1px rgba(0,0,0,.18); }
+.dots i:nth-child(1){ background:#ff5f57; }
+.dots i:nth-child(2){ background:#febc2e; }
+.dots i:nth-child(3){ background:#28c840; }
+
+.tab {
+  display:flex; align-items:center; gap:var(--sp-2);
+  font-size:var(--fs-sm); color:var(--text-muted);
+  background:var(--screen-2);
+  border:1px solid var(--line);
+  border-radius:var(--r-md);
+  padding:.32rem .7rem;
+  max-width:min(60%, 420px);
+}
+.tab .lambda { color:var(--accent); flex:0 0 auto; }
+.tab .tab-path { font-family:var(--font-mono); color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tab .tab-name { color:var(--text-subtle); flex:0 0 auto; }
+.spacer { flex:1 1 auto; }
+
+.chrome-actions { display:flex; align-items:center; gap:var(--sp-1); }
+.icbtn {
+  display:grid; place-items:center;
+  min-width:34px; min-height:34px; width:34px; height:34px;
+  border:1px solid transparent; border-radius:var(--r-md);
+  background:transparent; color:var(--text-subtle); cursor:pointer;
+  transition:background var(--dur-1) var(--ease), color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
+}
+.icbtn:hover { background:var(--screen-2); color:var(--text); border-color:var(--line); }
+.icbtn:active { transform:translateY(1px); }
+.icbtn svg { width:17px; height:17px; }
+
+/* ============================================================
+   screen / scrollback
+   ============================================================ */
+.screen {
+  flex:1 1 auto; min-height:0;
+  overflow-y:auto; overflow-x:hidden;
+  background:linear-gradient(180deg, var(--screen), var(--screen));
+  scrollbar-width:thin; scrollbar-color:var(--line-strong) transparent;
+  scroll-behavior:auto;
+  cursor:text;
+}
+.screen::-webkit-scrollbar { width:11px; }
+.screen::-webkit-scrollbar-thumb { background:var(--line-strong); border-radius:99px; border:3px solid var(--screen); }
+.screen::-webkit-scrollbar-thumb:hover { background:var(--text-faint); }
+
+.scrollback {
+  padding:var(--sp-4) var(--sp-5) var(--sp-3);
+  font-family:var(--font-mono);
+  font-size:var(--fs-term);
+  line-height:var(--line-h);
+  font-variant-ligatures:none;
+}
+
+/* command block (Warp-style) */
+.block {
+  margin:0 0 var(--sp-2);
+  border:1px solid transparent;
+  border-radius:var(--r-md);
+  transition:background var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease);
+  scroll-margin-top:var(--sp-4);
+}
+.block:hover { background:var(--block-hover); border-color:var(--line-soft); }
+.block:focus-within { background:var(--block-hover); border-color:var(--accent-line); }
+.block.is-running { border-color:var(--accent-line); }
+
+.block-head {
+  display:flex; align-items:center; gap:var(--sp-2);
+  padding:.34rem var(--sp-2) .34rem .4rem;
+}
+.gutter { flex:0 0 auto; width:16px; display:grid; place-items:center; }
+.dot { width:7px; height:7px; border-radius:var(--r-full); background:var(--text-faint); box-shadow:0 0 0 0 transparent; }
+.dot.ok { background:var(--ok); }
+.dot.err { background:var(--err); }
+.dot.run { background:var(--warn); animation:pulse 1.1s var(--ease-io) infinite; }
+@keyframes pulse { 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+
+.cmdline { flex:1 1 auto; min-width:0; display:flex; align-items:baseline; gap:.5ch; flex-wrap:wrap; }
+.echo-cmd { color:var(--text); white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; }
+
+.block-meta { flex:0 0 auto; display:flex; align-items:center; gap:var(--sp-2); font-family:var(--font-ui); font-size:var(--fs-xs); color:var(--text-faint); }
+.block-meta .dur { font-variant-numeric:tabular-nums; }
+
+.block-actions { flex:0 0 auto; display:flex; gap:2px; opacity:0; transition:opacity var(--dur-1) var(--ease); }
+.block:hover .block-actions, .block:focus-within .block-actions { opacity:1; }
+.minibtn {
+  display:grid; place-items:center; width:26px; height:26px;
+  border:1px solid transparent; border-radius:var(--r-sm);
+  background:transparent; color:var(--text-subtle); cursor:pointer;
+  transition:background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+.minibtn:hover { background:var(--screen-2); color:var(--text); }
+.minibtn svg { width:14px; height:14px; }
+
+.block-body {
+  padding:0 var(--sp-2) .45rem 2.05rem;
+  overflow:hidden;
+}
+.block.collapsed .block-body { display:none; }
+.out {
+  margin:0; font-family:var(--font-mono); font-size:var(--fs-term); line-height:var(--line-h);
+  color:var(--text-muted);
+  white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word;
+}
+.out .err { color:var(--err); }
+
+/* prompt segments (shared by blocks + live input) */
+.pmt { display:inline-flex; align-items:center; gap:.45ch; white-space:nowrap; flex:0 1 auto; min-width:0; }
+.seg-path {
+  color:var(--accent-strong); font-weight:500;
+  max-width:46ch; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.seg-git { display:inline-flex; align-items:center; gap:.4ch; color:var(--ok); }
+.seg-git svg { width:11px; height:11px; }
+.chev { color:var(--accent); font-weight:700; }
+
+/* welcome / MOTD block */
+.welcome {
+  margin:0 0 var(--sp-4); padding:var(--sp-4);
+  border:1px solid var(--line); border-radius:var(--r-lg);
+  background:
+    radial-gradient(120% 140% at 100% 0%, var(--accent-soft), transparent 55%),
+    var(--screen-2);
+}
+.welcome .brand { display:flex; align-items:center; gap:var(--sp-3); margin-bottom:var(--sp-3); }
+.welcome .mark { flex:0 0 auto; color:var(--accent); filter:drop-shadow(0 4px 14px rgba(124,122,255,.35)); }
+.welcome h1 { margin:0; font-size:var(--fs-lg); letter-spacing:-.01em; color:var(--text); }
+.welcome .ver { font-family:var(--font-mono); font-size:var(--fs-xs); color:var(--text-subtle); margin-top:2px; }
+.welcome p { margin:.2rem 0 0; font-size:var(--fs-ui); color:var(--text-muted); line-height:1.55; max-width:62ch; }
+.welcome .kbd { color:var(--accent-strong); font-family:var(--font-mono); }
+.chips { display:flex; flex-wrap:wrap; gap:var(--sp-2); margin-top:var(--sp-4); }
+.chip {
+  font-family:var(--font-mono); font-size:var(--fs-sm);
+  color:var(--text-muted); background:var(--screen);
+  border:1px solid var(--line); border-radius:var(--r-full);
+  padding:.32rem .7rem; cursor:pointer;
+  transition:border-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease), background var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
+}
+.chip:hover { color:var(--text); border-color:var(--accent-line); background:var(--accent-soft); }
+.chip:active { transform:translateY(1px); }
+.chip b { color:var(--accent-strong); font-weight:600; }
+
+/* ============================================================
+   composer (keybar + input line)
+   ============================================================ */
+.composer { flex:0 0 auto; background:var(--screen); border-top:1px solid var(--line); }
+
+.keybar {
+  display:flex; align-items:center; gap:var(--sp-1);
+  padding:.4rem var(--sp-4);
+  overflow-x:auto; scrollbar-width:none;
+  border-bottom:1px solid var(--line-soft);
+}
+.keybar::-webkit-scrollbar { display:none; }
+.keybar .kbgroup { display:flex; gap:var(--sp-1); }
+.keybar .sep { width:1px; height:18px; background:var(--line); margin:0 var(--sp-1); flex:0 0 auto; }
+.softkey {
+  flex:0 0 auto;
+  font-family:var(--font-mono); font-size:var(--fs-xs); line-height:1;
+  color:var(--text-subtle); background:var(--screen-2);
+  border:1px solid var(--line); border-radius:var(--r-sm);
+  padding:.4rem .55rem; min-height:30px; cursor:pointer; white-space:nowrap;
+  transition:color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
+}
+.softkey:hover { color:var(--text); border-color:var(--accent-line); }
+.softkey:active { background:var(--accent-soft); }
+.softkey[aria-pressed="true"] { color:var(--accent-strong); border-color:var(--accent-line); background:var(--accent-soft); }
+
+.inputline {
+  display:flex; align-items:flex-start; gap:.55ch;
+  padding:.65rem var(--sp-5) .8rem;
+  font-family:var(--font-mono); font-size:var(--fs-term); line-height:var(--line-h);
+}
+.inputline.is-busy { opacity:.55; }
+.input-wrap { position:relative; flex:1 1 auto; min-width:0; }
+#cmdin {
+  width:100%; border:0; margin:0; padding:0; background:transparent;
+  font-family:inherit; font-size:inherit; line-height:inherit; color:var(--text);
+  caret-color:transparent; /* custom block caret drawn below */
+  outline:none; resize:none; overflow:hidden; white-space:pre;
+}
+#cmdin::placeholder { color:var(--text-faint); }
+.ghost {
+  position:absolute; left:0; top:0; pointer-events:none;
+  font-family:inherit; font-size:inherit; line-height:inherit;
+  color:var(--text-faint); white-space:pre; opacity:.7;
+}
+.bcaret {
+  position:absolute; top:.08em; left:0; width:.62ch; height:1.18em;
+  background:var(--caret); border-radius:1px; opacity:.92;
+  transform:translateX(0); pointer-events:none;
+  animation:blink 1.05s steps(1,end) infinite;
+}
+.bcaret.hidden { display:none; }
+@keyframes blink { 0%,49%{opacity:.92;} 50%,100%{opacity:0;} }
+
+/* reverse-search bar (replaces prompt while active) */
+.rsearch { display:none; align-items:center; gap:.5ch; flex:0 0 auto; color:var(--text-muted); white-space:nowrap; }
+.inputline.searching .pmt { display:none; }
+.inputline.searching .rsearch { display:inline-flex; }
+.rsearch .rs-label { color:var(--accent-strong); }
+.rsearch .rs-q { color:var(--text); }
+.rsearch .rs-q::after { content:"_"; color:var(--text-faint); }
+
+/* ============================================================
+   status bar
+   ============================================================ */
+.statusbar {
+  flex:0 0 auto;
+  display:flex; align-items:center; gap:var(--sp-3);
+  height:30px; padding:0 var(--sp-4);
+  background:var(--status); border-top:1px solid var(--line);
+  font-family:var(--font-ui); font-size:var(--fs-xs); color:var(--text-subtle);
+}
+.statusbar .si { display:inline-flex; align-items:center; gap:.45ch; white-space:nowrap; }
+.statusbar .si svg { width:12px; height:12px; }
+.statusbar .si.branch { color:var(--ok); }
+.statusbar .si.path { color:var(--text-muted); font-family:var(--font-mono); overflow:hidden; text-overflow:ellipsis; }
+.statusbar .accentdot { width:7px; height:7px; border-radius:99px; background:var(--accent); box-shadow:0 0 8px var(--accent); }
+.statusbar .si.clock { font-variant-numeric:tabular-nums; }
+
+/* toast */
+.toast {
+  position:absolute; bottom:48px; left:50%; transform:translateX(-50%) translateY(8px);
+  background:var(--text); color:var(--screen); font-size:var(--fs-sm); font-weight:600;
+  padding:.45rem .8rem; border-radius:var(--r-md); box-shadow:var(--e2);
+  opacity:0; pointer-events:none; transition:opacity var(--dur-2) var(--ease), transform var(--dur-2) var(--ease);
+  z-index:30; display:flex; align-items:center; gap:.5ch;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.toast svg { width:14px; height:14px; color:var(--ok); }
+
+/* block reveal motion */
+.block.reveal { animation:rise var(--dur-3) var(--ease) both; }
+@keyframes rise { from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+
+/* ANSI helpers */
+.b{font-weight:700;} .dim{opacity:.62;} .it{font-style:italic;} .un{text-decoration:underline;}
+.inv{} /* inverse handled inline */
+
+/* ============================================================
+   responsive
+   ============================================================ */
+@media (max-width:720px) {
+  .app { padding:0; }
+  .win { width:100vw; height:100dvh; border-radius:0; border:0; }
+  .scrollback { padding:var(--sp-3) var(--sp-3) var(--sp-2); }
+  .inputline { padding:.6rem var(--sp-3) .7rem; }
+  .keybar { padding:.4rem var(--sp-3); }
+  .statusbar { padding:0 var(--sp-3); gap:var(--sp-2); }
+  .tab { display:none; }
+  .block-body { padding-left:1.7rem; }
+  .seg-path { max-width:32ch; }
+  .hide-sm { display:none !important; }
+}
+@media (pointer:coarse) {
+  .softkey { min-height:44px; padding:.5rem .7rem; }
+  .icbtn { min-width:44px; min-height:44px; width:44px; height:44px; }
+  .block-actions { opacity:1; } /* no hover on touch */
+  .minibtn { width:34px; height:34px; }
+}
+@media (max-width:380px) {
+  .seg-path { max-width:18ch; }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  *,*::before,*::after { animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important; }
+  .bcaret { animation:none; opacity:.92; }
+  .dot.run { animation:none; }
+}
+</style>
+</head>
+<body>
+<a href="#cmdin" class="skip">Skip to terminal input</a>
+
+<div class="app">
+  <section class="win" role="application" aria-label="Lumen web terminal" aria-roledescription="terminal emulator">
+    <!-- top chrome -->
+    <header class="chrome">
+      <div class="dots" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="tab" aria-hidden="true">
+        <span class="lambda" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M7 4h3.4l5.2 13.2M17 20l-2.1-5.3M9.6 11.8 6.5 20" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="tab-path" id="tabPath">~/projects/lumen</span>
+        <span class="tab-name">— lumen</span>
+      </div>
+      <div class="spacer"></div>
+      <nav class="chrome-actions" aria-label="Terminal controls">
+        <button class="icbtn" id="btnTheme" type="button" aria-label="Toggle light and dark theme" title="Toggle theme (⇧⌘L)"></button>
+        <button class="icbtn" id="btnSearch" type="button" aria-label="Search command history" title="Reverse-search history (Ctrl+R)">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.6-3.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <button class="icbtn" id="btnClear" type="button" aria-label="Clear the terminal" title="Clear (Ctrl+L)">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M10 7V5.5A1.5 1.5 0 0 1 11.5 4h1A1.5 1.5 0 0 1 14 5.5V7m3 0-.7 11a2 2 0 0 1-2 1.9H8.7a2 2 0 0 1-2-1.9L6 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="icbtn" id="btnHelp" type="button" aria-label="Show help" title="Help (type: help)">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.8"/><path d="M9.6 9.4a2.4 2.4 0 0 1 4.6.9c0 1.6-2.2 1.9-2.2 3.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="16.6" r="1" fill="currentColor"/></svg>
+        </button>
+      </nav>
+    </header>
+
+    <!-- scrollback -->
+    <main class="screen" id="screen">
+      <div class="scrollback" id="scrollback" role="log" aria-live="polite" aria-label="Terminal output" aria-atomic="false"></div>
+    </main>
+
+    <!-- composer -->
+    <div class="composer">
+      <div class="keybar" id="keybar" role="toolbar" aria-label="On-screen keys and shortcuts">
+        <div class="kbgroup">
+          <button class="softkey" type="button" data-key="tab" title="Tab — complete">Tab ⇥</button>
+          <button class="softkey" type="button" data-key="ctrl" id="kCtrl" aria-pressed="false" title="Hold Ctrl for the next key">Ctrl</button>
+        </div>
+        <span class="sep" aria-hidden="true"></span>
+        <div class="kbgroup">
+          <button class="softkey" type="button" data-key="up" title="Previous command">↑</button>
+          <button class="softkey" type="button" data-key="down" title="Next command">↓</button>
+          <button class="softkey" type="button" data-key="left" title="Move left">←</button>
+          <button class="softkey" type="button" data-key="right" title="Move right / accept suggestion">→</button>
+        </div>
+        <span class="sep" aria-hidden="true"></span>
+        <div class="kbgroup">
+          <button class="softkey" type="button" data-ins="|" title="Pipe">|</button>
+          <button class="softkey" type="button" data-ins="~" title="Home">~</button>
+          <button class="softkey" type="button" data-ins="/" title="Slash">/</button>
+          <button class="softkey" type="button" data-ins="-" title="Dash">-</button>
+        </div>
+        <span class="sep" aria-hidden="true"></span>
+        <div class="kbgroup">
+          <button class="softkey" type="button" data-key="cancel" title="Cancel line (Ctrl+C)">^C</button>
+          <button class="softkey" type="button" data-key="search" title="Search history (Ctrl+R)">^R</button>
+          <button class="softkey" type="button" data-key="clear" title="Clear (Ctrl+L)">^L</button>
+        </div>
+      </div>
+
+      <form class="inputline" id="inputline" autocomplete="off">
+        <span class="pmt" id="livePrompt" aria-hidden="true"></span>
+        <span class="rsearch" id="rsearch" aria-hidden="true">
+          <span class="rs-label">(reverse-i-search)</span><span>`</span><span class="rs-q" id="rsQ"></span><span>`:</span>&nbsp;<span class="rs-match" id="rsMatch"></span>
+        </span>
+        <label class="sr-only" for="cmdin">Terminal command input</label>
+        <span class="input-wrap">
+          <span class="ghost" id="ghost" aria-hidden="true"></span>
+          <input id="cmdin" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+                 enterkeyhint="send" aria-describedby="srhint" />
+          <span class="bcaret" id="bcaret" aria-hidden="true"></span>
+        </span>
+      </form>
+      <span class="sr-only" id="srhint">Type a command and press Enter. Up and Down recall history. Tab completes. Ctrl+L clears.</span>
+    </div>
+
+    <!-- status bar -->
+    <footer class="statusbar" aria-hidden="true">
+      <span class="si branch"><svg viewBox="0 0 24 24" fill="none"><circle cx="6.5" cy="6" r="2.4" stroke="currentColor" stroke-width="1.8"/><circle cx="6.5" cy="18" r="2.4" stroke="currentColor" stroke-width="1.8"/><circle cx="17.5" cy="6" r="2.4" stroke="currentColor" stroke-width="1.8"/><path d="M6.5 8.4v7.2M17.5 8.4v1.6a4 4 0 0 1-4 4H8.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span id="stBranch">main</span></span>
+      <span class="si path" id="stPath">~/projects/lumen</span>
+      <span class="spacer"></span>
+      <span class="si hide-sm"><span id="stCmds">0</span>&nbsp;cmds</span>
+      <span class="si hide-sm">lumensh</span>
+      <span class="si"><span class="accentdot"></span><span id="stTheme">dark</span></span>
+      <span class="si clock" id="stClock">00:00</span>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- tiny DOM helpers ---------- */
+  var $ = function (id) { return document.getElementById(id); };
+  var screenEl = $("screen"), sb = $("scrollback"), input = $("cmdin");
+  var ghostEl = $("ghost"), bcaret = $("bcaret"), livePrompt = $("livePrompt");
+  var inputline = $("inputline"), toastEl = $("toast");
+  var prefersReduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
+    });
+  }
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+
+  /* ============================================================
+     THEME
+     ============================================================ */
+  var SUN = '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.9"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>';
+  var MOON = '<svg viewBox="0 0 24 24" fill="none"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.4 6.4 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+  function curTheme() { return document.documentElement.dataset.theme === "light" ? "light" : "dark"; }
+  function applyTheme(t, persist) {
+    document.documentElement.dataset.theme = t;
+    $("btnTheme").innerHTML = t === "light" ? MOON : SUN;
+    $("stTheme").textContent = t;
+    if (persist) lsSet("lumen.theme", t);
+  }
+
+  /* ============================================================
+     VIRTUAL FILESYSTEM
+     ============================================================ */
+  var HOME = ["home", "dev"];
+  function now() { return Date.now(); }
+
+  function seedFS() {
+    var t = now();
+    function f(content) { return { type: "file", content: content, mtime: t }; }
+    function d(children) { return { type: "dir", children: children, mtime: t }; }
+    return d({
+      home: d({
+        dev: d({
+          "welcome.txt": f(
+            "Welcome to Lumen — a modern terminal that runs entirely in your browser.\n" +
+            "Everything here is real: the filesystem, the commands, the pipes.\n" +
+            "Try:  ls -l   ·   cat projects/lumen/README.md   ·   neofetch\n"
+          ),
+          projects: d({
+            lumen: d({
+              "README.md": f(
+                "# Lumen\n\n" +
+                "A sleek, keyboard-first web terminal with a real in-memory filesystem,\n" +
+                "a piped command registry, ANSI color, tab-completion and history.\n\n" +
+                "## Try it\n" +
+                "  ls -l            list this directory in long form\n" +
+                "  ls | grep .js    pipe output into grep\n" +
+                "  echo hi > out.txt  redirect stdout to a file\n" +
+                "  tree             see the whole tree\n" +
+                "  color            render the ANSI palette\n\n" +
+                "This is a demo project. Files live in your browser's localStorage.\n"
+              ),
+              "package.json": f(
+                '{\n  "name": "lumen",\n  "version": "1.0.0",\n  "type": "module",\n' +
+                '  "bin": { "lumen": "src/main.js" },\n  "scripts": { "start": "lumen" },\n' +
+                '  "license": "MIT"\n}\n'
+              ),
+              ".gitignore": f("node_modules/\ndist/\n*.log\n.DS_Store\n"),
+              src: d({
+                "main.js": f(
+                  "// Lumen entrypoint (demo source)\n" +
+                  "import { boot } from './shell.js';\n" +
+                  "import { parseAnsi } from './ansi.js';\n\n" +
+                  "boot({ prompt: '\\u276f', ansi: parseAnsi });\n"
+                ),
+                "ansi.js": f(
+                  "// Minimal SGR parser (demo source)\n" +
+                  "export function parseAnsi(s){\n  return s.replace(/\\x1b\\[[0-9;]*m/g, '');\n}\n"
+                ),
+                "shell.js": f("// shell loop (demo source)\nexport function boot(cfg){ /* ... */ }\n")
+              })
+            }),
+            sandbox: d({
+              "notes.txt": f("- block caret feels great\n- ship the light theme\n- add reverse-search\n")
+            })
+          }),
+          docs: d({
+            "guide.md": f("# Guide\n\nType `help` for the command list, or `man <cmd>` for details.\n"),
+            "keys.md": f(
+              "# Keyboard\n\n" +
+              "Enter       run the current line\n" +
+              "Up / Down   walk command history\n" +
+              "Tab         complete a command or path\n" +
+              "Right/End   accept the ghost suggestion\n" +
+              "Ctrl+R      reverse-search history\n" +
+              "Ctrl+L      clear the screen\n" +
+              "Ctrl+C      cancel the current line\n" +
+              "Ctrl+A / E  jump to start / end of line\n"
+            )
+          })
+        })
+      })
+    });
+  }
+
+  var fs, cwd;
+  function loadFS() {
+    var raw = lsGet("lumen.fs");
+    if (raw) { try { fs = JSON.parse(raw); } catch (e) { fs = seedFS(); } }
+    else fs = seedFS();
+    var c = lsGet("lumen.cwd");
+    cwd = c ? JSON.parse(c) : HOME.concat(["projects", "lumen"]);
+    // validate cwd still exists
+    if (!nodeAt(cwd)) cwd = HOME.slice();
+  }
+  function saveFS() { lsSet("lumen.fs", JSON.stringify(fs)); lsSet("lumen.cwd", JSON.stringify(cwd)); }
+
+  function nodeAt(parts) {
+    var n = fs;
+    for (var i = 0; i < parts.length; i++) {
+      if (!n || n.type !== "dir" || !n.children) return null;
+      n = n.children[parts[i]];
+    }
+    return n || null;
+  }
+  // Normalize a path string into absolute parts (no existence check)
+  function toParts(p) {
+    var parts;
+    if (p === "~" || p === "") parts = (p === "~") ? HOME.slice() : cwd.slice();
+    else if (p[0] === "/") parts = p.split("/").filter(Boolean);
+    else if (p === "~" ) parts = HOME.slice();
+    else if (p.slice(0, 2) === "~/") parts = HOME.concat(p.slice(2).split("/").filter(Boolean));
+    else parts = cwd.concat(p.split("/").filter(Boolean));
+    var out = [];
+    for (var i = 0; i < parts.length; i++) {
+      var seg = parts[i];
+      if (seg === "." ) continue;
+      if (seg === "..") { out.pop(); continue; }
+      out.push(seg);
+    }
+    return out;
+  }
+  function dispPath(parts) {
+    if (parts.length >= HOME.length && parts.slice(0, HOME.length).join("/") === HOME.join("/")) {
+      var rest = parts.slice(HOME.length);
+      return "~" + (rest.length ? "/" + rest.join("/") : "");
+    }
+    return "/" + parts.join("/");
+  }
+  function basename(parts) { return parts.length ? parts[parts.length - 1] : "/"; }
+
+  /* ============================================================
+     ANSI → HTML (SGR + 256-color)
+     ============================================================ */
+  var ANSI16 = ["--a-black","--a-red","--a-green","--a-yellow","--a-blue","--a-magenta","--a-cyan","--a-white",
+                "--a-bblack","--a-bred","--a-bgreen","--a-byellow","--a-bblue","--a-bmagenta","--a-bcyan","--a-bwhite"];
+  function color256(n) {
+    if (n < 16) return "var(" + ANSI16[n] + ")";
+    if (n >= 232) { var g = 8 + (n - 232) * 10; return "rgb(" + g + "," + g + "," + g + ")"; }
+    n -= 16;
+    var r = Math.floor(n / 36), gi = Math.floor((n % 36) / 6), b = n % 6;
+    var conv = function (v) { return v ? v * 40 + 55 : 0; };
+    return "rgb(" + conv(r) + "," + conv(gi) + "," + conv(b) + ")";
+  }
+  // wrap escaped text; input MUST already be html-escaped
+  function ansiToHtml(escaped) {
+    var re = /\x1b\[([0-9;]*)m/g, out = "", last = 0, m;
+    var st = { fg: null, bg: null, bold: false, dim: false, it: false, un: false, inv: false };
+    var open = false;
+    function spanFor() {
+      var cls = [], style = [];
+      var fg = st.fg, bg = st.bg;
+      if (st.inv) { var t = fg; fg = bg || "var(--screen)"; bg = t || "var(--text)"; }
+      if (fg) style.push("color:" + fg);
+      if (bg) style.push("background:" + bg);
+      if (st.bold) cls.push("b");
+      if (st.dim) cls.push("dim");
+      if (st.it) cls.push("it");
+      if (st.un) cls.push("un");
+      return '<span' + (cls.length ? ' class="' + cls.join(" ") + '"' : "") + (style.length ? ' style="' + style.join(";") + '"' : "") + '>';
+    }
+    function flush(txt) {
+      if (!txt) return;
+      var plain = st.fg == null && st.bg == null && !st.bold && !st.dim && !st.it && !st.un && !st.inv;
+      out += plain ? txt : (spanFor() + txt + "</span>");
+    }
+    while ((m = re.exec(escaped))) {
+      flush(escaped.slice(last, m.index));
+      last = re.lastIndex;
+      var codes = m[1] === "" ? [0] : m[1].split(";").map(Number);
+      for (var i = 0; i < codes.length; i++) {
+        var c = codes[i];
+        if (c === 0) { st = { fg: null, bg: null, bold: false, dim: false, it: false, un: false, inv: false }; }
+        else if (c === 1) st.bold = true;
+        else if (c === 2) st.dim = true;
+        else if (c === 3) st.it = true;
+        else if (c === 4) st.un = true;
+        else if (c === 7) st.inv = true;
+        else if (c === 22) { st.bold = false; st.dim = false; }
+        else if (c === 23) st.it = false;
+        else if (c === 24) st.un = false;
+        else if (c === 27) st.inv = false;
+        else if (c >= 30 && c <= 37) st.fg = "var(" + ANSI16[c - 30] + ")";
+        else if (c >= 90 && c <= 97) st.fg = "var(" + ANSI16[c - 90 + 8] + ")";
+        else if (c >= 40 && c <= 47) st.bg = "var(" + ANSI16[c - 40] + ")";
+        else if (c >= 100 && c <= 107) st.bg = "var(" + ANSI16[c - 100 + 8] + ")";
+        else if (c === 39) st.fg = null;
+        else if (c === 49) st.bg = null;
+        else if (c === 38 || c === 48) {
+          var mode = codes[i + 1];
+          if (mode === 5) { var idx = codes[i + 2]; (c === 38 ? st.fg = color256(idx) : st.bg = color256(idx)); i += 2; }
+          else if (mode === 2) { var col = "rgb(" + (codes[i+2]|0) + "," + (codes[i+3]|0) + "," + (codes[i+4]|0) + ")"; (c === 38 ? st.fg = col : st.bg = col); i += 4; }
+        }
+      }
+    }
+    flush(escaped.slice(last));
+    return out;
+  }
+  // SGR shortcuts for building colored output programmatically
+  var E = "\x1b[";
+  function paint(code, s) { return E + code + "m" + s + E + "0m"; }
+
+  /* ============================================================
+     INLINE SVGS
+     ============================================================ */
+  var ICON = {
+    copy: '<svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="11" height="11" rx="2.2" stroke="currentColor" stroke-width="1.7"/><path d="M15 9V6.2A2.2 2.2 0 0 0 12.8 4H6.2A2.2 2.2 0 0 0 4 6.2v6.6A2.2 2.2 0 0 0 6.2 15H9" stroke="currentColor" stroke-width="1.7"/></svg>',
+    rerun: '<svg viewBox="0 0 24 24" fill="none"><path d="M5 12a7 7 0 1 1 2.1 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7 20v-4H3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    chev: '<svg viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none"><path d="m5 12.5 4.2 4.2L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    git: '<svg viewBox="0 0 24 24" fill="none"><circle cx="6.5" cy="6" r="2.4" stroke="currentColor" stroke-width="1.8"/><circle cx="6.5" cy="18" r="2.4" stroke="currentColor" stroke-width="1.8"/><circle cx="17.5" cy="6" r="2.4" stroke="currentColor" stroke-width="1.8"/><path d="M6.5 8.4v7.2M17.5 8.4v1.6a4 4 0 0 1-4 4H8.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
+  };
+  function promptSegmentsHTML(parts) {
+    var p = dispPath(parts);
+    return '<span class="pmt">' +
+             '<span class="seg-path">' + esc(p) + '</span>' +
+             '<span class="seg-git">' + ICON.git + 'main</span>' +
+             '<span class="chev">❯</span>' +
+           '</span>';
+  }
+
+  /* ============================================================
+     COMMAND PIPELINE
+     ============================================================ */
+  // tokenize a single stage into argv with quote handling; returns array of {v, sq}
+  function tokenize(stage) {
+    var toks = [], i = 0, n = stage.length;
+    while (i < n) {
+      while (i < n && /\s/.test(stage[i])) i++;
+      if (i >= n) break;
+      var v = "", sq = false, started = true;
+      while (i < n && !/\s/.test(stage[i])) {
+        var ch = stage[i];
+        if (ch === "'") { sq = true; i++; while (i < n && stage[i] !== "'") v += stage[i++]; i++; }
+        else if (ch === '"') { i++; while (i < n && stage[i] !== '"') { if (stage[i] === "\\" && i + 1 < n) { v += stage[i+1]; i += 2; } else v += stage[i++]; } i++; }
+        else if (ch === "\\" && i + 1 < n) { v += stage[i+1]; i += 2; }
+        else { v += ch; i++; }
+      }
+      toks.push({ v: v, sq: sq });
+    }
+    return toks;
+  }
+  function expand(tok) {
+    var v = tok.v;
+    if (tok.sq) return v; // single quotes: literal
+    if (v === "~" ) return dispToAbs("~");
+    if (v.slice(0, 2) === "~/") v = dispPath(HOME) + v.slice(1);
+    v = v.replace(/\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)/g, function (_, a, b) {
+      var k = a || b; return ENV[k] != null ? ENV[k] : "";
+    });
+    return v;
+  }
+  function dispToAbs(p) { return dispPath(toParts(p)); }
+
+  // split a full command line by top-level pipes, capture trailing redirect
+  function parseLine(line) {
+    var stages = [], cur = "", q = null;
+    for (var i = 0; i < line.length; i++) {
+      var ch = line[i];
+      if (q) { cur += ch; if (ch === q) q = null; continue; }
+      if (ch === "'" || ch === '"') { q = ch; cur += ch; continue; }
+      if (ch === "|") { stages.push(cur); cur = ""; continue; }
+      cur += ch;
+    }
+    stages.push(cur);
+    // redirect from final stage
+    var redirect = null, lastStage = stages[stages.length - 1];
+    var rm = lastStage.match(/(>>|>)\s*([^>|\s]+)\s*$/);
+    if (rm) {
+      redirect = { file: rm[2], append: rm[1] === ">>" };
+      stages[stages.length - 1] = lastStage.slice(0, rm.index);
+    }
+    var parsed = [];
+    for (var s = 0; s < stages.length; s++) {
+      var toks = tokenize(stages[s]);
+      if (!toks.length) continue;
+      var argv = toks.map(expand);
+      parsed.push(argv);
+    }
+    return { stages: parsed, redirect: redirect };
+  }
+
+  var ENV = {};
+  function refreshEnv() {
+    ENV.USER = "dev"; ENV.HOME = dispPath(HOME); ENV.SHELL = "/bin/lumensh";
+    ENV.TERM = "lumen-256color"; ENV.PWD = dispPath(cwd); ENV.HOSTNAME = "lumen"; ENV.LANG = "en_US.UTF-8";
+  }
+
+  /* ---------- command registry ---------- */
+  var CMDS = {};
+  function reg(name, def) { CMDS[name] = def; }
+
+  function fmtSize(b) {
+    if (b < 1024) return b + "B";
+    if (b < 1048576) return (b / 1024).toFixed(b < 10240 ? 1 : 0) + "K";
+    return (b / 1048576).toFixed(1) + "M";
+  }
+  function fmtMtime(t) {
+    var d = new Date(t), mo = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()];
+    var dd = ("  " + d.getDate()).slice(-2), hh = ("0"+d.getHours()).slice(-2), mi = ("0"+d.getMinutes()).slice(-2);
+    return mo + " " + dd + " " + hh + ":" + mi;
+  }
+  function nodeSize(n) { return n.type === "file" ? (n.content ? n.content.length : 0) : (Object.keys(n.children||{}).length); }
+  function colorName(name, node) {
+    if (node.type === "dir") return paint(34, name) + "/";
+    if (name[0] === ".") return paint(2, name);
+    if (/\.(md|txt)$/.test(name)) return name;
+    if (/\.(js|mjs|json|css|html)$/.test(name)) return paint(36, name);
+    return name;
+  }
+
+  reg("help", {
+    usage: "help [command]",
+    desc: "list commands, or show help for one",
+    run: function (a) {
+      if (a[0]) {
+        var c = CMDS[a[0]];
+        if (!c) return { err: "help: no such command: " + a[0], code: 1 };
+        var out = paint(1, a[0]) + " — " + c.desc + "\n\n  " + paint(36, "usage: ") + esc2(c.usage);
+        if (c.man) out += "\n\n" + c.man;
+        return out;
+      }
+      var groups = [
+        ["filesystem", ["ls","cd","pwd","cat","tree","mkdir","touch","mv","rm"]],
+        ["text & pipes", ["echo","grep","wc","head","tail","seq","cat"]],
+        ["session", ["history","clear","theme","date","whoami","env","export","reset"]],
+        ["delight", ["neofetch","cowsay","color","sleep","man","about"]]
+      ];
+      var out = paint(1, "Lumen") + " — type a command. Pipe with " + paint(36,"|") + ", redirect with " + paint(36,">") + ".\n";
+      groups.forEach(function (g) {
+        out += "\n" + paint("38;5;141", g[1] && g[0]) + "\n";
+        g[1].forEach(function (name) {
+          if (CMDS[name]) out += "  " + paint(32, pad(name, 10)) + paint(2, CMDS[name].desc) + "\n";
+        });
+      });
+      out += "\n" + paint(2, "Tab completes · ↑/↓ history · Ctrl+R search · Ctrl+L clear · → accepts suggestion");
+      return out.replace(/\n$/, "");
+    }
+  });
+  function pad(s, n) { s = String(s); while (s.length < n) s += " "; return s; }
+  function esc2(s) { return s; } // usage strings are plain
+
+  reg("man", { usage: "man <command>", desc: "show the manual for a command",
+    run: function (a) { return CMDS.help.run(a); } });
+
+  reg("ls", {
+    usage: "ls [-l] [-a] [-1] [path...]",
+    desc: "list directory contents",
+    man: "  -l  long format (perms, size, date)\n  -a  include dotfiles\n  -1  one entry per line",
+    run: function (a, _stdin, flags) {
+      var long = flags.l, all = flags.a, one = flags["1"];
+      var targets = a.length ? a : ["."];
+      var blocks = [], errs = [];
+      targets.forEach(function (tp) {
+        var parts = toParts(tp), node = nodeAt(parts);
+        if (!node) { errs.push("ls: " + tp + ": No such file or directory"); return; }
+        var names, base;
+        if (node.type === "file") { names = [basename(parts)]; base = node; var single = true;
+          blocks.push((long ? lsLong(parts.slice(0,-1), names) : names.join("  "))); return; }
+        names = Object.keys(node.children).sort(function (x, y) { return x.localeCompare(y); });
+        if (!all) names = names.filter(function (n) { return n[0] !== "."; });
+        if (targets.length > 1) blocks.push(paint(1, tp + ":"));
+        if (!names.length) { blocks.push(""); return; }
+        if (long) blocks.push(lsLong(parts, names));
+        else if (one) blocks.push(names.map(function (n){ return colorName(n, node.children[n]); }).join("\n"));
+        else blocks.push(names.map(function (n){ return colorName(n, node.children[n]); }).join("   "));
+      });
+      var out = blocks.join("\n");
+      if (errs.length) return { out: out, err: errs.join("\n"), code: 1 };
+      return out;
+    }
+  });
+  function lsLong(parentParts, names) {
+    var parent = nodeAt(parentParts);
+    return names.map(function (n) {
+      var node = parent.children[n];
+      var isDir = node.type === "dir";
+      var perms = (isDir ? "d" : "-") + "rw" + (isDir ? "x" : "-") + "r--r--";
+      var sz = isDir ? Object.keys(node.children||{}).length + "" : (node.content ? node.content.length : 0) + "";
+      return paint(2, perms) + " " + pad(ENV.USER, 5) + " " + lpad(sz, 5) + " " +
+             paint(2, fmtMtime(node.mtime)) + " " + colorName(n, node);
+    }).join("\n");
+  }
+  function lpad(s, n) { s = String(s); while (s.length < n) s = " " + s; return s; }
+
+  reg("cd", {
+    usage: "cd [path]", desc: "change the working directory",
+    man: "  cd ~   home      cd ..  up      cd -   previous dir",
+    run: function (a) {
+      var tgt = a[0] || "~";
+      if (tgt === "-") { if (!PREV_CWD) return { err: "cd: OLDPWD not set", code: 1 }; tgt = dispPath(PREV_CWD); }
+      var parts = toParts(tgt), node = nodeAt(parts);
+      if (!node) return { err: "cd: no such file or directory: " + a[0], code: 1 };
+      if (node.type !== "dir") return { err: "cd: not a directory: " + a[0], code: 1 };
+      PREV_CWD = cwd.slice(); cwd = parts; refreshEnv(); updateChrome(); saveFS();
+      return "";
+    }
+  });
+  var PREV_CWD = null;
+
+  reg("pwd", { usage: "pwd", desc: "print the working directory", run: function () { return dispPath(cwd); } });
+
+  reg("cat", {
+    usage: "cat <file...>", desc: "print file contents",
+    run: function (a) {
+      if (!a.length) return { err: "cat: missing file operand", code: 1 };
+      var out = [], errs = [];
+      a.forEach(function (tp) {
+        var parts = toParts(tp), node = nodeAt(parts);
+        if (!node) errs.push("cat: " + tp + ": No such file or directory");
+        else if (node.type === "dir") errs.push("cat: " + tp + ": Is a directory");
+        else out.push(node.content || "");
+      });
+      var res = out.join("");
+      if (res.length && res[res.length - 1] === "\n") res = res.slice(0, -1);
+      return errs.length ? { out: res, err: errs.join("\n"), code: 1 } : res;
+    }
+  });
+
+  reg("echo", {
+    usage: "echo [-n] [text...]", desc: "print text (supports $VARS and ~)",
+    run: function (a, _s, flags) { return { out: a.join(" "), code: 0, noNL: !!flags.n }; }
+  });
+
+  reg("mkdir", {
+    usage: "mkdir [-p] <dir...>", desc: "create directories",
+    run: function (a, _s, flags) {
+      if (!a.length) return { err: "mkdir: missing operand", code: 1 };
+      var errs = [];
+      a.forEach(function (tp) {
+        var parts = toParts(tp), name = parts[parts.length - 1], parent = nodeAt(parts.slice(0, -1));
+        if (flags.p) { ensureDir(parts); return; }
+        if (!parent || parent.type !== "dir") { errs.push("mkdir: cannot create '" + tp + "': No such file or directory"); return; }
+        if (parent.children[name]) { errs.push("mkdir: cannot create '" + tp + "': File exists"); return; }
+        parent.children[name] = { type: "dir", children: {}, mtime: now() };
+      });
+      saveFS(); refreshCompletionCache();
+      return errs.length ? { err: errs.join("\n"), code: 1 } : "";
+    }
+  });
+  function ensureDir(parts) {
+    var n = fs;
+    for (var i = 0; i < parts.length; i++) {
+      if (!n.children[parts[i]]) n.children[parts[i]] = { type: "dir", children: {}, mtime: now() };
+      n = n.children[parts[i]];
+      if (n.type !== "dir") return false;
+    }
+    return true;
+  }
+
+  reg("touch", {
+    usage: "touch <file...>", desc: "create files or update timestamps",
+    run: function (a) {
+      if (!a.length) return { err: "touch: missing file operand", code: 1 };
+      var errs = [];
+      a.forEach(function (tp) {
+        var parts = toParts(tp), name = parts[parts.length - 1], parent = nodeAt(parts.slice(0, -1));
+        if (!parent || parent.type !== "dir") { errs.push("touch: cannot touch '" + tp + "': No such file or directory"); return; }
+        if (parent.children[name]) parent.children[name].mtime = now();
+        else parent.children[name] = { type: "file", content: "", mtime: now() };
+      });
+      saveFS(); refreshCompletionCache();
+      return errs.length ? { err: errs.join("\n"), code: 1 } : "";
+    }
+  });
+
+  reg("rm", {
+    usage: "rm [-r] [-f] <path...>", desc: "remove files or directories",
+    man: "  -r  recurse into directories\n  -f  ignore missing files",
+    run: function (a, _s, flags) {
+      if (!a.length) return { err: "rm: missing operand", code: 1 };
+      var errs = [];
+      a.forEach(function (tp) {
+        var parts = toParts(tp), name = parts[parts.length - 1], parent = nodeAt(parts.slice(0, -1));
+        if (!parent || !parent.children || !parent.children[name]) { if (!flags.f) errs.push("rm: " + tp + ": No such file or directory"); return; }
+        var node = parent.children[name];
+        if (node.type === "dir" && Object.keys(node.children).length && !flags.r) { errs.push("rm: " + tp + ": is a directory (use -r)"); return; }
+        delete parent.children[name];
+      });
+      saveFS(); refreshCompletionCache();
+      return errs.length ? { err: errs.join("\n"), code: 1 } : "";
+    }
+  });
+
+  reg("mv", {
+    usage: "mv <src> <dst>", desc: "move or rename a file/directory",
+    run: function (a) {
+      if (a.length < 2) return { err: "mv: missing destination operand", code: 1 };
+      var sp = toParts(a[0]), sName = sp[sp.length - 1], sParent = nodeAt(sp.slice(0, -1));
+      if (!sParent || !sParent.children[sName]) return { err: "mv: " + a[0] + ": No such file or directory", code: 1 };
+      var node = sParent.children[sName];
+      var dp = toParts(a[1]), dNode = nodeAt(dp), dName, dParent;
+      if (dNode && dNode.type === "dir") { dParent = dNode; dName = sName; }
+      else { dName = dp[dp.length - 1]; dParent = nodeAt(dp.slice(0, -1)); }
+      if (!dParent || dParent.type !== "dir") return { err: "mv: " + a[1] + ": No such file or directory", code: 1 };
+      delete sParent.children[sName]; dParent.children[dName] = node; node.mtime = now();
+      saveFS(); refreshCompletionCache(); return "";
+    }
+  });
+
+  reg("tree", {
+    usage: "tree [path]", desc: "print the directory tree",
+    run: function (a) {
+      var parts = toParts(a[0] || "."), node = nodeAt(parts);
+      if (!node) return { err: "tree: " + (a[0]||".") + ": No such file or directory", code: 1 };
+      if (node.type !== "dir") return colorName(basename(parts), node);
+      var lines = [paint(34, dispPath(parts))], counts = { d: 0, f: 0 };
+      (function walk(n, prefix) {
+        var names = Object.keys(n.children).filter(function (x){ return x[0] !== "."; }).sort();
+        names.forEach(function (name, i) {
+          var last = i === names.length - 1, child = n.children[name];
+          lines.push(prefix + paint(2, last ? "└─ " : "├─ ") + colorName(name, child));
+          if (child.type === "dir") { counts.d++; walk(child, prefix + (last ? "   " : paint(2,"│  "))); }
+          else counts.f++;
+        });
+      })(node, "");
+      lines.push("\n" + paint(2, counts.d + " director" + (counts.d===1?"y":"ies") + ", " + counts.f + " file" + (counts.f===1?"":"s")));
+      return lines.join("\n");
+    }
+  });
+
+  reg("grep", {
+    usage: "grep [-i] [-n] [-v] <pattern> [file]", desc: "filter lines matching a pattern",
+    man: "  -i  case-insensitive\n  -n  show line numbers\n  -v  invert (non-matching)\nReads stdin when no file is given:  ls | grep .js",
+    run: function (a, stdin, flags) {
+      if (!a.length) return { err: "grep: missing pattern", code: 1 };
+      var pat = a[0], text;
+      if (a[1]) { var node = nodeAt(toParts(a[1])); if (!node || node.type !== "file") return { err: "grep: " + a[1] + ": No such file", code: 1 }; text = node.content || ""; }
+      else if (stdin != null) text = stripAnsi(stdin);
+      else return { err: "grep: no input (provide a file or pipe in)", code: 1 };
+      var rx; try { rx = new RegExp(escapeRx(pat), flags.i ? "i" : ""); } catch (e) { rx = null; }
+      var lines = text.split("\n"), out = [], matched = 0;
+      lines.forEach(function (ln, i) {
+        var hit = rx ? rx.test(ln) : (flags.i ? ln.toLowerCase().indexOf(pat.toLowerCase()) >= 0 : ln.indexOf(pat) >= 0);
+        if (flags.v) hit = !hit;
+        if (hit) {
+          matched++;
+          var disp = (!flags.v && rx) ? ln.replace(rx, function (mm) { return paint("1;33", mm); }) : ln;
+          out.push((flags.n ? paint(32, (i + 1) + "") + ":" : "") + disp);
+        }
+      });
+      return { out: out.join("\n"), code: matched ? 0 : 1 };
+    }
+  });
+  function escapeRx(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+  function stripAnsi(s) { return s.replace(/\x1b\[[0-9;]*m/g, ""); }
+
+  reg("wc", {
+    usage: "wc [-l] [-w] [-c] [file]", desc: "count lines, words, characters",
+    run: function (a, stdin, flags) {
+      var text;
+      var fileArg = a[0];
+      if (fileArg) { var node = nodeAt(toParts(fileArg)); if (!node || node.type !== "file") return { err: "wc: " + fileArg + ": No such file", code: 1 }; text = node.content || ""; }
+      else if (stdin != null) text = stripAnsi(stdin);
+      else return { err: "wc: no input", code: 1 };
+      var lines = text === "" ? 0 : text.replace(/\n$/, "").split("\n").length;
+      var words = (text.match(/\S+/g) || []).length;
+      var chars = text.length;
+      var parts = [];
+      if (flags.l) parts.push(lines);
+      if (flags.w) parts.push(words);
+      if (flags.c) parts.push(chars);
+      if (!parts.length) parts = [lines, words, chars];
+      return parts.map(function (x){ return lpad(x, 6); }).join(" ") + (fileArg ? " " + fileArg : "");
+    }
+  });
+
+  reg("head", { usage: "head [-n N] [file]", desc: "first N lines (default 10)", run: function (a, stdin, flags) { return headTail(a, stdin, flags, true); } });
+  reg("tail", { usage: "tail [-n N] [file]", desc: "last N lines (default 10)", run: function (a, stdin, flags) { return headTail(a, stdin, flags, false); } });
+  function headTail(a, stdin, flags, isHead) {
+    var n = flags.n ? parseInt(flags.n, 10) : 10;
+    if (isNaN(n) || n < 0) n = 10;
+    var fileArg = a.find ? a.find(function (x){ return x; }) : a[0];
+    var text;
+    if (fileArg) { var node = nodeAt(toParts(fileArg)); if (!node || node.type !== "file") return { err: (isHead?"head":"tail") + ": " + fileArg + ": No such file", code: 1 }; text = node.content || ""; }
+    else if (stdin != null) text = stdin;
+    else return { err: "no input", code: 1 };
+    var lines = text.replace(/\n$/, "").split("\n");
+    return (isHead ? lines.slice(0, n) : lines.slice(-n)).join("\n");
+  }
+
+  reg("seq", {
+    usage: "seq <last> | seq <first> <last>", desc: "print a sequence of numbers",
+    run: function (a) {
+      var first = 1, last;
+      if (a.length === 1) last = parseInt(a[0], 10);
+      else { first = parseInt(a[0], 10); last = parseInt(a[1], 10); }
+      if (isNaN(last)) return { err: "seq: invalid argument", code: 1 };
+      if (Math.abs(last - first) > 10000) return { err: "seq: range too large (max 10000)", code: 1 };
+      var out = [], step = last >= first ? 1 : -1;
+      for (var i = first; step > 0 ? i <= last : i >= last; i += step) out.push(i);
+      return out.join("\n");
+    }
+  });
+
+  reg("history", {
+    usage: "history [-c]", desc: "show or clear command history",
+    run: function (a, _s, flags) {
+      if (flags.c) { history = []; lsSet("lumen.hist", "[]"); return ""; }
+      return history.map(function (h, i){ return lpad(i + 1, 4) + "  " + h; }).join("\n");
+    }
+  });
+
+  reg("clear", { usage: "clear", desc: "clear the screen (also Ctrl+L)", run: function () { return { clear: true }; } });
+
+  reg("theme", {
+    usage: "theme [dark|light|toggle]", desc: "switch color theme",
+    run: function (a) {
+      var t = a[0];
+      if (!t) return "current theme: " + paint(1, curTheme()) + "\navailable: " + paint(36, "dark") + ", " + paint(36, "light") + ", " + paint(36, "toggle");
+      if (t === "toggle") t = curTheme() === "dark" ? "light" : "dark";
+      if (t !== "dark" && t !== "light") return { err: "theme: unknown theme '" + a[0] + "' (try dark, light, toggle)", code: 1 };
+      applyTheme(t, true);
+      return "theme set to " + paint(1, t);
+    }
+  });
+
+  reg("date", { usage: "date", desc: "print the current date and time",
+    run: function () {
+      var d = new Date();
+      var days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"], mo = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      function p(x){ return ("0"+x).slice(-2); }
+      var tz = (-d.getTimezoneOffset()/60); tz = (tz>=0?"+":"") + tz;
+      return days[d.getDay()] + " " + mo[d.getMonth()] + " " + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds()) + " UTC" + tz + " " + d.getFullYear();
+    } });
+
+  reg("whoami", { usage: "whoami", desc: "print the current user", run: function () { return ENV.USER; } });
+
+  reg("env", { usage: "env", desc: "print environment variables",
+    run: function () { return Object.keys(ENV).sort().map(function (k){ return paint(36, k) + "=" + ENV[k]; }).join("\n"); } });
+
+  reg("export", { usage: "export NAME=value", desc: "set an environment variable",
+    run: function (a) {
+      if (!a.length) return CMDS.env.run([]);
+      a.forEach(function (kv) { var eq = kv.indexOf("="); if (eq > 0) ENV[kv.slice(0, eq)] = kv.slice(eq + 1); });
+      return "";
+    } });
+
+  reg("reset", { usage: "reset", desc: "restore the demo filesystem & history",
+    run: function () {
+      fs = seedFS(); cwd = HOME.concat(["projects", "lumen"]); history = []; PREV_CWD = null;
+      lsDel("lumen.fs"); lsDel("lumen.cwd"); lsSet("lumen.hist", "[]");
+      refreshEnv(); updateChrome(); saveFS(); refreshCompletionCache();
+      return paint(32, "✓") + " filesystem and history reset to defaults";
+    } });
+
+  reg("color", {
+    usage: "color", desc: "render the ANSI color palette",
+    run: function () {
+      var names = ["blk","red","grn","yel","blu","mag","cyn","wht"];
+      var out = paint(1, "ANSI 16") + "\n";
+      var row1 = "", row2 = "";
+      for (var i = 0; i < 8; i++) { row1 += E + (40 + i) + ";" + (i === 0 ? 37 : 30) + "m " + pad(names[i], 4) + E + "0m "; }
+      for (var j = 0; j < 8; j++) { row2 += E + (100 + j) + ";30m " + pad(names[j], 4) + E + "0m "; }
+      out += row1 + "\n" + row2 + "\n\n" + paint(1, "256-color cube") + "\n";
+      var cube = "";
+      for (var k = 16; k < 232; k++) { cube += E + "48;5;" + k + "m  " + E + "0m"; if ((k - 15) % 36 === 0) cube += "\n"; }
+      out += cube + "\n" + paint(2, "styles: ") + paint(1, "bold") + " " + E + "2mdim\x1b[0m " + E + "3mitalic\x1b[0m " + E + "4munderline\x1b[0m " + E + "7minverse\x1b[0m";
+      return out;
+    }
+  });
+
+  reg("cowsay", {
+    usage: "cowsay <text>", desc: "an ASCII cow says your message",
+    run: function (a) {
+      var msg = a.join(" ") || "moo";
+      var lines = wrapText(msg, 38);
+      var w = 0; lines.forEach(function (l){ w = Math.max(w, l.length); });
+      var top = " " + repeat("_", w + 2);
+      var bottom = " " + repeat("-", w + 2);
+      var body;
+      if (lines.length === 1) body = "< " + lines[0] + " >";
+      else body = lines.map(function (l, i) {
+        var L = i === 0 ? "/" : i === lines.length - 1 ? "\\" : "|";
+        var R = i === 0 ? "\\" : i === lines.length - 1 ? "/" : "|";
+        return L + " " + pad(l, w) + " " + R;
+      }).join("\n");
+      var cow = "        \\   ^__^\n         \\  (oo)\\_______\n            (__)\\       )\\/\\\n                ||----w |\n                ||     ||";
+      return paint(36, top + "\n" + body + "\n" + bottom) + "\n" + cow;
+    }
+  });
+  function repeat(c, n) { return new Array(Math.max(0, n) + 1).join(c); }
+  function wrapText(s, max) {
+    var words = s.split(/\s+/), lines = [], cur = "";
+    words.forEach(function (w) {
+      if (!cur) cur = w;
+      else if ((cur + " " + w).length <= max) cur += " " + w;
+      else { lines.push(cur); cur = w; }
+    });
+    if (cur) lines.push(cur);
+    return lines.length ? lines : [""];
+  }
+
+  reg("neofetch", {
+    usage: "neofetch", desc: "show real system & session info",
+    run: function () {
+      var logo = [
+        paint("38;5;141","      .__."),
+        paint("38;5;141","   ./ |  |\\."),
+        paint("38;5;177","  /   |  |  \\"),
+        paint("38;5;177"," |    |__|   |   ") + paint(1, "lumen"),
+        paint("38;5;183"," |   .|  |.  |   ") + paint(2, "modern web terminal"),
+        paint("38;5;183","  \\  |  |  |/"),
+        paint("38;5;225","   \\_|  |_/"),
+        paint("38;5;225","     |__|")
+      ];
+      var ua = navigator.userAgent, browser = "browser";
+      var bm = ua.match(/(Firefox|Edg|OPR|Chrome|Safari)\/([\d.]+)/);
+      if (bm) browser = ({ Edg: "Edge", OPR: "Opera" }[bm[1]] || bm[1]) + " " + bm[2].split(".")[0];
+      var fileCount = 0, dirCount = 0;
+      (function count(n){ Object.keys(n.children||{}).forEach(function (k){ var c = n.children[k]; if (c.type === "dir") { dirCount++; count(c); } else fileCount++; }); })(fs);
+      var up = Math.floor((now() - BOOT) / 1000);
+      var upStr = up < 60 ? up + "s" : Math.floor(up / 60) + "m " + (up % 60) + "s";
+      var info = [
+        paint(1, ENV.USER) + paint(2, "@") + paint(1, ENV.HOSTNAME),
+        paint(2, "─────────────────"),
+        kv("os", navigator.platform || "web"),
+        kv("host", browser),
+        kv("shell", "lumensh 1.0.0"),
+        kv("resolution", window.innerWidth + "x" + window.innerHeight + " @" + (window.devicePixelRatio || 1) + "x"),
+        kv("theme", curTheme()),
+        kv("cores", (navigator.hardwareConcurrency || "?") + ""),
+        kv("memory", (navigator.deviceMemory ? navigator.deviceMemory + " GB" : "—")),
+        kv("fs", fileCount + " files, " + dirCount + " dirs"),
+        kv("uptime", upStr),
+        "",
+        "  " + [196,202,220,46,51,21,201,240].map(function (n){ return E + "48;5;" + n + "m  " + E + "0m"; }).join("")
+      ];
+      var rows = Math.max(logo.length, info.length), out = [];
+      for (var i = 0; i < rows; i++) out.push(("  " + (logo[i] || padVisible("", 18))) + "   " + (info[i] || ""));
+      return out.join("\n");
+    }
+  });
+  function kv(k, v) { return paint("38;5;141", pad(k, 11)) + paint(2, "· ") + v; }
+  function padVisible(s, n) { return pad(s, n); }
+
+  reg("about", { usage: "about", desc: "about Lumen", run: function () { printWelcome(); return ""; } });
+  reg("motd", { usage: "motd", desc: "show the welcome banner", run: function () { printWelcome(); return ""; } });
+
+  reg("sleep", {
+    usage: "sleep <seconds>", desc: "wait, then continue (Ctrl+C cancels)",
+    run: function (a, _s, _f, ctx) {
+      var secs = parseFloat(a[0]);
+      if (isNaN(secs) || secs < 0) return { err: "sleep: invalid time interval '" + (a[0]||"") + "'", code: 1 };
+      secs = Math.min(secs, 8);
+      return new Promise(function (resolve) {
+        var to = setTimeout(function () { resolve(""); }, secs * 1000);
+        ctx.onCancel = function () { clearTimeout(to); resolve({ err: paint(33, "^C") + " sleep interrupted", code: 130 }); };
+      });
+    }
+  });
+
+  /* ---------- flag parsing ---------- */
+  // split argv into positional args + flags. Combined short flags (-la) and -n VALUE supported.
+  var VALUE_FLAGS = { n: 1 };
+  function parseFlags(argv) {
+    var args = [], flags = {};
+    for (var i = 1; i < argv.length; i++) {
+      var t = argv[i];
+      if (t === "--") { args = args.concat(argv.slice(i + 1)); break; }
+      if (t.length > 1 && t[0] === "-" && t !== "-" && !/^-\d/.test(t)) {
+        var body = t.slice(1);
+        for (var j = 0; j < body.length; j++) {
+          var ch = body[j];
+          if (VALUE_FLAGS[ch]) {
+            var rest = body.slice(j + 1);
+            if (rest) { flags[ch] = rest; }
+            else if (argv[i + 1] != null) { flags[ch] = argv[++i]; }
+            else flags[ch] = true;
+            break;
+          } else flags[ch] = true;
+        }
+      } else args.push(t);
+    }
+    return { args: args, flags: flags };
+  }
+
+  /* ============================================================
+     EXECUTION
+     ============================================================ */
+  var BOOT = now();
+  var history = [];
+  var cmdCount = 0;
+  var runningCtx = null;
+
+  function loadHistory() { var raw = lsGet("lumen.hist"); if (raw) { try { history = JSON.parse(raw) || []; } catch (e) { history = []; } } }
+  function pushHistory(line) {
+    if (!line.trim()) return;
+    if (history[history.length - 1] !== line) history.push(line);
+    if (history.length > 500) history = history.slice(-500);
+    lsSet("lumen.hist", JSON.stringify(history));
+  }
+
+  function suggestCmd(name) {
+    var best = null, bestD = 3;
+    Object.keys(CMDS).forEach(function (c) {
+      var d = lev(name, c);
+      if (d < bestD) { bestD = d; best = c; }
+    });
+    return best;
+  }
+  function lev(a, b) {
+    var m = a.length, n = b.length, dp = [];
+    for (var i = 0; i <= m; i++) dp[i] = [i];
+    for (var j = 0; j <= n; j++) dp[0][j] = j;
+    for (i = 1; i <= m; i++) for (j = 1; j <= n; j++)
+      dp[i][j] = Math.min(dp[i-1][j] + 1, dp[i][j-1] + 1, dp[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+    return dp[m][n];
+  }
+
+  // run a full line; returns a Promise resolving to {out, err, code, clear}
+  function runLine(rawLine) {
+    refreshEnv();
+    var parsed = parseLine(rawLine);
+    if (!parsed.stages.length) return Promise.resolve({ out: "", code: 0 });
+
+    var stdin = null, code = 0, finalOut = "", anyErr = "", doClear = false;
+    var ctx = { onCancel: null };
+    runningCtx = ctx;
+
+    var chain = Promise.resolve();
+    parsed.stages.forEach(function (argv, idx) {
+      chain = chain.then(function () {
+        var name = argv[0], def = CMDS[name];
+        if (!def) {
+          var sug = suggestCmd(name);
+          anyErr += (anyErr ? "\n" : "") + "lumen: command not found: " + name + (sug ? "  (did you mean " + paint(36, sug) + "?)" : "");
+          code = 127; stdin = ""; return;
+        }
+        var pf = parseFlags(argv);
+        var r = def.run(pf.args, stdin, pf.flags, ctx);
+        return Promise.resolve(r).then(function (res) {
+          if (typeof res === "string") res = { out: res, code: 0 };
+          res = res || { out: "", code: 0 };
+          if (res.clear) doClear = true;
+          code = res.code != null ? res.code : 0;
+          if (res.err) anyErr += (anyErr ? "\n" : "") + res.err;
+          var so = res.out != null ? res.out : "";
+          if (res.noNL === false || res.noNL == null) {} // echo -n handled at render
+          stdin = so;
+          finalOut = so;
+          finalOut_noNL = res.noNL;
+        });
+      });
+    });
+
+    return chain.then(function () {
+      runningCtx = null;
+      if (doClear) return { clear: true, code: 0 };
+      // redirect: write finalOut to file instead of printing
+      if (parsed.redirect && !anyErr) {
+        var rp = toParts(parsed.redirect.file), name = rp[rp.length - 1], parent = nodeAt(rp.slice(0, -1));
+        if (!parent || parent.type !== "dir") return { err: "lumen: " + parsed.redirect.file + ": No such file or directory", code: 1 };
+        var content = stripAnsi(finalOut); if (content && content[content.length-1] !== "\n") content += "\n";
+        if (parsed.redirect.append && parent.children[name] && parent.children[name].type === "file") parent.children[name].content += content;
+        else parent.children[name] = { type: "file", content: content, mtime: now() };
+        saveFS(); refreshCompletionCache();
+        return { out: "", err: anyErr, code: code };
+      }
+      var out = finalOut;
+      if (finalOut_noNL) {} // no trailing newline semantics are visual only
+      return { out: out, err: anyErr, code: code };
+    });
+  }
+  var finalOut_noNL = false;
+
+  /* ============================================================
+     RENDERING
+     ============================================================ */
+  function atBottom() { return screenEl.scrollTop + screenEl.clientHeight >= screenEl.scrollHeight - 4; }
+  function scrollBottom() { screenEl.scrollTop = screenEl.scrollHeight; }
+
+  function renderOutput(res) {
+    var html = "";
+    if (res.err) html += '<span class="err">' + ansiToHtml(esc(res.err)) + "</span>";
+    if (res.out != null && res.out !== "") { if (html) html += "\n"; html += ansiToHtml(esc(res.out)); }
+    return html;
+  }
+
+  function addBlock(rawLine, res, durMs) {
+    cmdCount++; $("stCmds").textContent = cmdCount;
+    var code = res.code || 0;
+    var dotCls = code === 0 ? "ok" : "err";
+    var block = document.createElement("article");
+    block.className = "block reveal" + (prefersReduce ? "" : "");
+    block.setAttribute("role", "group");
+    block.setAttribute("aria-label", "command: " + rawLine);
+    block.dataset.cmd = rawLine;
+
+    var t = new Date();
+    var ts = ("0"+t.getHours()).slice(-2) + ":" + ("0"+t.getMinutes()).slice(-2) + ":" + ("0"+t.getSeconds()).slice(-2);
+    var bodyHTML = renderOutput(res);
+
+    block.innerHTML =
+      '<div class="block-head">' +
+        '<span class="gutter"><span class="dot ' + dotCls + '" title="exit ' + code + '"></span></span>' +
+        '<div class="cmdline">' + promptSegmentsHTML(cwdAtRun) + '<span class="echo-cmd">' + esc(rawLine) + '</span></div>' +
+        '<div class="block-meta"><span class="dur">' + durMs + 'ms</span><time>' + ts + '</time></div>' +
+        '<div class="block-actions">' +
+          '<button class="minibtn act-collapse" type="button" title="Collapse output" aria-label="Collapse output">' + ICON.chev + '</button>' +
+          '<button class="minibtn act-copy" type="button" title="Copy output" aria-label="Copy output">' + ICON.copy + '</button>' +
+          '<button class="minibtn act-rerun" type="button" title="Run again" aria-label="Run again">' + ICON.rerun + '</button>' +
+        '</div>' +
+      '</div>' +
+      (bodyHTML !== "" ? '<div class="block-body"><pre class="out">' + bodyHTML + '</pre></div>' : "");
+
+    sb.appendChild(block);
+    if (prefersReduce) block.classList.remove("reveal");
+    // wire actions
+    block.querySelector(".act-collapse").addEventListener("click", function (e) {
+      e.stopPropagation();
+      var collapsed = block.classList.toggle("collapsed");
+      this.style.transform = collapsed ? "rotate(-90deg)" : "";
+      this.setAttribute("aria-label", collapsed ? "Expand output" : "Collapse output");
+    });
+    var copyBtn = block.querySelector(".act-copy");
+    if (copyBtn) copyBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var txt = (res.err ? res.err + (res.out ? "\n" : "") : "") + stripAnsi(res.out || "");
+      copyText(txt || rawLine, "Output copied");
+    });
+    block.querySelector(".act-rerun").addEventListener("click", function (e) {
+      e.stopPropagation(); input.value = rawLine; submit();
+    });
+    scrollBottom();
+  }
+  var cwdAtRun = cwd;
+
+  function printWelcome() {
+    var w = document.createElement("div");
+    w.className = "welcome";
+    w.setAttribute("role", "group");
+    w.setAttribute("aria-label", "Welcome to Lumen");
+    w.innerHTML =
+      '<div class="brand">' +
+        '<span class="mark" aria-hidden="true"><svg width="40" height="40" viewBox="0 0 48 48" fill="none">' +
+          '<rect x="3.5" y="3.5" width="41" height="41" rx="11" stroke="currentColor" stroke-width="2.4" opacity=".4"/>' +
+          '<path d="M14 16h6.6l9.4 22M33 41l-3.8-9.6M19 25l-5.4 16" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '</svg></span>' +
+        '<div><h1>Lumen</h1><div class="ver">lumensh 1.0.0 · ' + (window.innerWidth <= 720 ? 'mobile' : 'desktop') + ' session</div></div>' +
+      '</div>' +
+      '<p>A modern terminal that runs entirely in your browser — a real in-memory filesystem, piped commands, ANSI color and a history you can search. Type <span class="kbd">help</span> to begin, or tap a suggestion below.</p>' +
+      '<div class="chips" id="welcomeChips">' +
+        chip("help") + chip("ls -l") + chip("cat projects/lumen/README.md") + chip("neofetch") + chip("color") + chip('cowsay hello') +
+      '</div>';
+    sb.appendChild(w);
+    w.querySelectorAll(".chip").forEach(function (c) {
+      c.addEventListener("click", function () { input.value = this.dataset.cmd; focusInput(); submit(); });
+    });
+    scrollBottom();
+  }
+  function chip(cmd) {
+    var parts = cmd.split(" ");
+    return '<button class="chip" type="button" data-cmd="' + esc(cmd) + '"><b>' + esc(parts[0]) + '</b>' + (parts.length > 1 ? " " + esc(parts.slice(1).join(" ")) : "") + '</button>';
+  }
+
+  /* ============================================================
+     SUBMIT
+     ============================================================ */
+  function submit() {
+    var line = input.value;
+    cwdAtRun = cwd.slice();
+    pushHistory(line);
+    histIndex = null; draft = "";
+    input.value = ""; updateGhost(); updateCaret();
+    if (!line.trim()) {
+      // blank line still echoes a prompt-only block? Real shells just newline. Keep minimal: show an empty block-less prompt.
+      var b = document.createElement("article");
+      b.className = "block"; b.innerHTML = '<div class="block-head"><span class="gutter"><span class="dot"></span></span><div class="cmdline">' + promptSegmentsHTML(cwdAtRun) + '</div></div>';
+      sb.appendChild(b); scrollBottom(); return;
+    }
+    inputline.classList.add("is-busy"); input.setAttribute("readonly", "readonly");
+    var t0 = performance.now();
+    runLine(line).then(function (res) {
+      var dur = Math.max(0, Math.round(performance.now() - t0));
+      inputline.classList.remove("is-busy"); input.removeAttribute("readonly");
+      if (res.clear) { sb.innerHTML = ""; focusInput(); updateChrome(); return; }
+      addBlock(line, res, dur);
+      focusInput();
+    });
+  }
+
+  /* ============================================================
+     INPUT: caret, ghost suggestion, completion, history
+     ============================================================ */
+  var charW = 8.4, draft = "", histIndex = null;
+
+  function measureCharW() {
+    var span = document.createElement("span");
+    span.style.cssText = "position:absolute;visibility:hidden;white-space:pre;font-family:var(--font-mono);font-size:" + getComputedStyle(input).fontSize;
+    span.textContent = "0000000000";
+    document.body.appendChild(span);
+    charW = span.getBoundingClientRect().width / 10;
+    document.body.removeChild(span);
+  }
+
+  function updateCaret() {
+    if (document.activeElement !== input || mode === "rsearch") { bcaret.classList.add("hidden"); return; }
+    var pos = input.selectionStart, end = input.selectionEnd;
+    if (pos !== end) { bcaret.classList.add("hidden"); return; }
+    bcaret.classList.remove("hidden");
+    var x = pos * charW - input.scrollLeft;
+    if (x < 0) { bcaret.classList.add("hidden"); return; }
+    bcaret.style.transform = "translateX(" + x + "px)";
+    // restart blink
+    if (!prefersReduce) { bcaret.style.animation = "none"; void bcaret.offsetWidth; bcaret.style.animation = ""; }
+  }
+
+  function ghostSuggestion() {
+    var v = input.value;
+    if (!v || input.selectionStart !== v.length) return "";
+    for (var i = history.length - 1; i >= 0; i--) {
+      if (history[i].length > v.length && history[i].slice(0, v.length) === v) return history[i].slice(v.length);
+    }
+    return "";
+  }
+  function updateGhost() {
+    var g = mode === "normal" ? ghostSuggestion() : "";
+    ghostEl.textContent = g ? input.value + g : "";
+    ghostEl.style.opacity = g ? "" : "0";
+  }
+
+  function acceptGhost() {
+    var g = ghostSuggestion();
+    if (g) { input.value += g; setCaret(input.value.length); updateGhost(); updateCaret(); return true; }
+    return false;
+  }
+  function setCaret(p) { input.setSelectionRange(p, p); }
+
+  /* ---------- tab completion ---------- */
+  function complete() {
+    var v = input.value, pos = input.selectionStart;
+    var head = v.slice(0, pos), tail = v.slice(pos);
+    // token under cursor (split by spaces, respecting we just complete the last whitespace-delimited token of head)
+    var m = head.match(/(\S*)$/), token = m[1], start = head.length - token.length;
+    var isFirst = /^\s*$/.test(head.slice(0, start)) && head.slice(0, start).indexOf("|") === -1
+                  ? true
+                  : /(^|\|)\s*\S*$/.test(head) && !/\s\S*$/.test(head.replace(/.*\|/, "")) ;
+    // simpler: first token of the current pipeline stage?
+    var stageHead = head.split("|").pop();
+    var firstTokenInStage = /^\s*\S*$/.test(stageHead);
+
+    var candidates, replaceStart = start, prefix = token, addTrailing = "";
+    if (firstTokenInStage) {
+      candidates = Object.keys(CMDS).filter(function (c){ return c.slice(0, token.length) === token; }).sort();
+      addTrailing = " ";
+    } else {
+      // path completion
+      var slash = token.lastIndexOf("/");
+      var dirPart = slash >= 0 ? token.slice(0, slash + 1) : "";
+      var frag = slash >= 0 ? token.slice(slash + 1) : token;
+      var baseParts = dirPart ? toParts(dirPart.replace(/\/$/, "") || "/") : cwd.slice();
+      if (dirPart === "/") baseParts = [];
+      var dirNode = nodeAt(baseParts);
+      if (!dirNode || dirNode.type !== "dir") return;
+      var entries = Object.keys(dirNode.children).filter(function (n){ return n.slice(0, frag.length) === frag && (frag[0] === "." || n[0] !== "."); }).sort();
+      candidates = entries.map(function (n){ return dirPart + n; });
+      replaceStart = start;
+      prefix = token;
+      // trailing slash/space decided per match below
+      if (candidates.length === 1) {
+        var only = entries[0], node = dirNode.children[only];
+        addTrailing = node.type === "dir" ? "/" : " ";
+      }
+    }
+
+    if (!candidates.length) return;
+    if (candidates.length === 1) {
+      var completed = candidates[0] + addTrailing;
+      input.value = head.slice(0, replaceStart) + completed + tail;
+      setCaret(replaceStart + completed.length);
+    } else {
+      var common = longestCommonPrefix(candidates);
+      if (common.length > prefix.length) {
+        input.value = head.slice(0, replaceStart) + common + tail;
+        setCaret(replaceStart + common.length);
+      } else {
+        // list candidates as a transient, non-persistent line
+        listCandidates(firstTokenInStage ? candidates : candidates.map(function (c){ var node = nodeAt(toParts(c)); return node && node.type === "dir" ? c.split("/").pop() + "/" : c.split("/").pop(); }));
+      }
+    }
+    updateGhost(); updateCaret();
+  }
+  function longestCommonPrefix(arr) {
+    if (!arr.length) return "";
+    var p = arr[0];
+    for (var i = 1; i < arr.length; i++) { while (arr[i].slice(0, p.length) !== p) p = p.slice(0, -1); }
+    return p;
+  }
+  function listCandidates(list) {
+    var b = document.createElement("article");
+    b.className = "block";
+    b.innerHTML = '<div class="block-body" style="padding-left:var(--sp-2)"><pre class="out">' +
+      list.map(function (c){ return ansiToHtml(esc(c)); }).join("   ") + '</pre></div>';
+    sb.appendChild(b); scrollBottom();
+  }
+
+  // completion cache invalidation hook (no-op placeholder kept simple; FS read live each time)
+  function refreshCompletionCache() {}
+
+  /* ============================================================
+     REVERSE SEARCH (Ctrl+R)
+     ============================================================ */
+  var mode = "normal", rsQuery = "", rsResults = [], rsIdx = 0, rsSaved = "";
+  function enterRSearch() {
+    mode = "rsearch"; rsSaved = input.value; rsQuery = ""; input.value = "";
+    inputline.classList.add("searching");
+    $("rsQ").textContent = ""; $("rsMatch").textContent = "";
+    updateRSearch(); updateGhost(); updateCaret();
+  }
+  function exitRSearch(accept) {
+    inputline.classList.remove("searching"); mode = "normal";
+    if (accept && rsResults.length) input.value = rsResults[rsIdx];
+    else input.value = rsSaved;
+    setCaret(input.value.length); updateGhost(); updateCaret(); focusInput();
+  }
+  function updateRSearch() {
+    rsResults = rsQuery ? history.filter(function (h){ return h.indexOf(rsQuery) >= 0; }).reverse() : [];
+    if (rsIdx >= rsResults.length) rsIdx = Math.max(0, rsResults.length - 1);
+    $("rsQ").textContent = rsQuery;
+    var match = rsResults[rsIdx] || "";
+    var hi = match;
+    if (rsQuery && match) { var i = match.indexOf(rsQuery); hi = esc(match.slice(0, i)) + '<b style="color:var(--warn)">' + esc(rsQuery) + '</b>' + esc(match.slice(i + rsQuery.length)); }
+    else hi = esc(match);
+    $("rsMatch").innerHTML = hi || '<span style="color:var(--text-faint)">(no match)</span>';
+  }
+
+  /* ============================================================
+     HISTORY NAV
+     ============================================================ */
+  function histPrev() {
+    if (!history.length) return;
+    if (histIndex === null) { draft = input.value; histIndex = history.length; }
+    if (histIndex > 0) histIndex--;
+    input.value = history[histIndex] || "";
+    setCaret(input.value.length); updateGhost(); updateCaret();
+  }
+  function histNext() {
+    if (histIndex === null) return;
+    histIndex++;
+    if (histIndex >= history.length) { histIndex = null; input.value = draft; }
+    else input.value = history[histIndex];
+    setCaret(input.value.length); updateGhost(); updateCaret();
+  }
+
+  /* ============================================================
+     COPY + TOAST
+     ============================================================ */
+  var toastTimer;
+  function showToast(msg) {
+    toastEl.innerHTML = ICON.check + "<span>" + esc(msg) + "</span>";
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 1600);
+  }
+  function copyText(txt, label) {
+    var done = function () { showToast(label || "Copied"); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(done, function () { fallbackCopy(txt, done); });
+    } else fallbackCopy(txt, done);
+  }
+  function fallbackCopy(txt, done) {
+    var ta = document.createElement("textarea"); ta.value = txt;
+    ta.style.cssText = "position:fixed;opacity:0;top:0;left:0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); done(); } catch (e) { showToast("Copy failed"); }
+    document.body.removeChild(ta);
+  }
+
+  /* ============================================================
+     CHROME / STATUS
+     ============================================================ */
+  function updateChrome() {
+    var p = dispPath(cwd);
+    $("tabPath").textContent = p; $("stPath").textContent = p;
+    livePrompt.innerHTML = promptSegmentsHTML(cwd);
+  }
+  function tickClock() {
+    var d = new Date();
+    $("stClock").textContent = ("0"+d.getHours()).slice(-2) + ":" + ("0"+d.getMinutes()).slice(-2);
+  }
+
+  /* ============================================================
+     KEY HANDLING
+     ============================================================ */
+  function focusInput() { input.focus({ preventScroll: true }); updateCaret(); }
+
+  input.addEventListener("keydown", function (e) {
+    if (mode === "rsearch") {
+      if (e.key === "Enter") { e.preventDefault(); exitRSearch(true); if (input.value.trim()) submit(); return; }
+      if (e.key === "Escape") { e.preventDefault(); exitRSearch(false); return; }
+      if (e.key === "Backspace") { e.preventDefault(); rsQuery = rsQuery.slice(0, -1); rsIdx = 0; updateRSearch(); return; }
+      if ((e.ctrlKey && (e.key === "r" || e.key === "R"))) { e.preventDefault(); if (rsIdx < rsResults.length - 1) rsIdx++; updateRSearch(); return; }
+      if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) { e.preventDefault(); rsQuery += e.key; rsIdx = 0; updateRSearch(); return; }
+      return;
+    }
+
+    // global-ish shortcuts
+    if (e.ctrlKey && (e.key === "l" || e.key === "L")) { e.preventDefault(); sb.innerHTML = ""; return; }
+    if (e.ctrlKey && (e.key === "r" || e.key === "R")) { e.preventDefault(); enterRSearch(); return; }
+    if (e.ctrlKey && (e.key === "c" || e.key === "C")) {
+      if (input.selectionStart === input.selectionEnd) { // not copying a selection
+        e.preventDefault(); cancelLine(); return;
+      }
+    }
+    if (e.ctrlKey && (e.key === "a" || e.key === "A")) { e.preventDefault(); setCaret(0); updateCaret(); return; }
+    if (e.ctrlKey && (e.key === "e" || e.key === "E")) { e.preventDefault(); setCaret(input.value.length); updateCaret(); return; }
+    if (e.ctrlKey && (e.key === "u" || e.key === "U")) { e.preventDefault(); input.value = input.value.slice(input.selectionStart); setCaret(0); updateGhost(); updateCaret(); return; }
+    if (e.ctrlKey && (e.key === "k" || e.key === "K")) { e.preventDefault(); input.value = input.value.slice(0, input.selectionStart); updateGhost(); updateCaret(); return; }
+    if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === "l" || e.key === "L")) { e.preventDefault(); applyTheme(curTheme() === "dark" ? "light" : "dark", true); return; }
+
+    if (e.key === "Enter") { e.preventDefault(); submit(); return; }
+    if (e.key === "Tab") { e.preventDefault(); complete(); return; }
+    if (e.key === "ArrowUp") { e.preventDefault(); histPrev(); return; }
+    if (e.key === "ArrowDown") { e.preventDefault(); histNext(); return; }
+    if (e.key === "ArrowRight" || e.key === "End") {
+      if (input.selectionStart === input.value.length && input.selectionStart === input.selectionEnd) {
+        if (acceptGhost()) { e.preventDefault(); return; }
+      }
+    }
+    if (e.key === "Escape") { input.value = ""; updateGhost(); updateCaret(); return; }
+  });
+
+  function cancelLine() {
+    if (runningCtx && runningCtx.onCancel) { runningCtx.onCancel(); return; }
+    // echo a ^C interrupt block, clear the line
+    var b = document.createElement("article");
+    b.className = "block";
+    b.innerHTML = '<div class="block-head"><span class="gutter"><span class="dot"></span></span><div class="cmdline">' +
+      promptSegmentsHTML(cwd) + '<span class="echo-cmd">' + esc(input.value) + paint && esc("") + '</span><span style="color:var(--warn)">^C</span></div></div>';
+    sb.appendChild(b);
+    input.value = ""; histIndex = null; draft = ""; updateGhost(); updateCaret(); scrollBottom();
+  }
+
+  input.addEventListener("input", function () { histIndex = null; updateGhost(); updateCaret(); });
+  input.addEventListener("click", updateCaret);
+  input.addEventListener("keyup", updateCaret);
+  input.addEventListener("select", updateCaret);
+  input.addEventListener("scroll", updateCaret);
+  input.addEventListener("focus", function () { updateCaret(); });
+  input.addEventListener("blur", function () { bcaret.classList.add("hidden"); });
+
+  // keep focus in the input when clicking the screen (unless selecting text or hitting a control)
+  screenEl.addEventListener("mousedown", function (e) {
+    if (e.target.closest("button, a")) return;
+    setTimeout(function () {
+      var sel = window.getSelection();
+      if (sel && sel.toString().length) return; // user is selecting
+      focusInput();
+    }, 0);
+  });
+
+  /* ---------- soft keys ---------- */
+  var ctrlArmed = false;
+  $("keybar").addEventListener("click", function (e) {
+    var btn = e.target.closest("button"); if (!btn) return;
+    var ins = btn.getAttribute("data-ins");
+    if (ins != null) { insertAtCaret(ins); ctrlArmed = false; syncCtrl(); focusInput(); return; }
+    var key = btn.getAttribute("data-key");
+    if (key === "ctrl") { ctrlArmed = !ctrlArmed; syncCtrl(); focusInput(); return; }
+    if (key === "tab") { complete(); }
+    else if (key === "up") { histPrev(); }
+    else if (key === "down") { histNext(); }
+    else if (key === "left") { setCaret(Math.max(0, input.selectionStart - 1)); updateCaret(); }
+    else if (key === "right") { if (!acceptGhost()) { setCaret(Math.min(input.value.length, input.selectionStart + 1)); updateCaret(); } }
+    else if (key === "cancel") { cancelLine(); }
+    else if (key === "search") { enterRSearch(); }
+    else if (key === "clear") { sb.innerHTML = ""; }
+    focusInput();
+  });
+  function syncCtrl() { $("kCtrl").setAttribute("aria-pressed", ctrlArmed ? "true" : "false"); }
+  function insertAtCaret(txt) {
+    var s = input.selectionStart, e2 = input.selectionEnd;
+    input.value = input.value.slice(0, s) + txt + input.value.slice(e2);
+    setCaret(s + txt.length); updateGhost(); updateCaret();
+  }
+
+  /* ---------- chrome buttons ---------- */
+  $("btnTheme").addEventListener("click", function () { applyTheme(curTheme() === "dark" ? "light" : "dark", true); focusInput(); });
+  $("btnClear").addEventListener("click", function () { sb.innerHTML = ""; focusInput(); });
+  $("btnSearch").addEventListener("click", function () { focusInput(); enterRSearch(); });
+  $("btnHelp").addEventListener("click", function () { input.value = "help"; submit(); });
+
+  // prevent form submit reload
+  inputline.addEventListener("submit", function (e) { e.preventDefault(); });
+
+  window.addEventListener("resize", function () { measureCharW(); updateCaret(); });
+
+  /* ============================================================
+     BOOT
+     ============================================================ */
+  function boot() {
+    applyTheme(curTheme(), false);
+    loadFS(); loadHistory(); refreshEnv(); updateChrome();
+    measureCharW();
+    printWelcome();
+    tickClock(); setInterval(tickClock, 15000);
+    updateGhost();
+    // focus after layout settles
+    requestAnimationFrame(function () { focusInput(); updateCaret(); });
+  }
+  boot();
+
+  // expose a tiny hook for verification (read-only); no console noise
+  window.__lumen = {
+    run: function (line) { input.value = line; submit(); },
+    state: function () { return { cwd: dispPath(cwd), theme: curTheme(), blocks: sb.querySelectorAll(".block").length, history: history.slice() }; }
+  };
+})();
+</script>
+</body>
+</html>

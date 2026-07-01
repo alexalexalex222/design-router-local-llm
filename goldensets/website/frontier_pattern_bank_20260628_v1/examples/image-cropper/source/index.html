@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Frame — Image Cropper</title>
+<meta name="description" content="A precise image cropper: aspect-ratio presets, rotate, flip, straighten, zoom, rule-of-thirds overlay, live output readout, and PNG/JPEG export. Hand-rolled, zero dependencies." />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#0b0d12" />
+<style>
+  /* ===================================================== TOKENS ===================================================== */
+  :root{
+    --n-0:#fff; --n-50:#f5f7fb; --n-100:#e6eaf2; --n-200:#c5cbda; --n-300:#9aa2b6;
+    --n-400:#6f7890; --n-500:#525a70; --n-600:#3a4255; --n-700:#272d3c; --n-800:#181c27; --n-900:#10131b; --n-950:#0b0d12;
+    --bg:var(--n-950); --surface:#12151e; --surface-2:#171b26; --surface-3:#1e2331;
+    --panel:rgba(15,18,26,.94); --line:rgba(255,255,255,.08); --line-strong:rgba(255,255,255,.15);
+    --text:var(--n-100); --text-dim:var(--n-300); --text-faint:var(--n-400);
+    --accent:#5db4ff; --accent-hi:#8fccff; --accent-ink:#04121f; --accent-soft:rgba(93,180,255,.14); --accent-line:rgba(93,180,255,.42);
+    --focus:#7cc1ff; --danger:#ff7b86; --danger-soft:rgba(255,123,134,.14); --ok:#62d39a;
+    --crop-line:#ffffff; --crop-shadow:rgba(0,0,0,.55); --mask:rgba(7,9,14,.62);
+    --fs-2xs:clamp(.66rem,.64rem + .08vw,.71rem); --fs-xs:clamp(.72rem,.70rem + .10vw,.78rem);
+    --fs-sm:clamp(.82rem,.79rem + .16vw,.90rem); --fs-base:clamp(1rem,.97rem + .16vw,1.05rem);
+    --fs-lg:clamp(1.14rem,1.05rem + .42vw,1.32rem); --fs-xl:clamp(1.4rem,1.18rem + 1vw,1.95rem);
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-7:28px; --sp-8:32px;
+    --r-xs:6px; --r-sm:9px; --r-md:12px; --r-lg:16px; --r-full:999px;
+    --e-1:0 1px 2px rgba(0,0,0,.5); --e-2:0 10px 28px rgba(0,0,0,.42),0 2px 8px rgba(0,0,0,.3);
+    --e-3:0 26px 60px rgba(0,0,0,.55),0 6px 18px rgba(0,0,0,.4);
+    --dur-1:150ms; --dur-2:220ms; --ease:cubic-bezier(.2,.7,.2,1); --ease-io:cubic-bezier(.6,.05,.3,.95);
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    --rail-w:clamp(308px,27vw,372px); --handle:13px; --hit:24px;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;min-height:100dvh;background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:var(--fs-base);line-height:1.5;overflow:hidden;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  h1,h2,h3,p{margin:0}
+  button{font:inherit;color:inherit;cursor:pointer}
+  input,select,textarea{font:inherit;color:inherit}
+  ::selection{background:var(--accent-soft)}
+  .mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  :where(a,button,input,select,[tabindex]):focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:var(--r-xs)}
+  .skip{position:fixed;top:var(--sp-3);left:var(--sp-3);z-index:300;background:var(--accent);color:var(--accent-ink);padding:var(--sp-2) var(--sp-4);border-radius:var(--r-md);font-size:var(--fs-sm);font-weight:680;text-decoration:none;transform:translateY(-180%);transition:transform var(--dur-1) var(--ease)}
+  .skip:focus{transform:translateY(0)}
+
+  /* ===================================================== SHELL ===================================================== */
+  .app{display:grid;grid-template-rows:auto 1fr;height:100dvh;min-width:0;min-height:0}
+  .topbar{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) clamp(var(--sp-3),2vw,var(--sp-5));border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);min-height:58px}
+  .brand{display:flex;align-items:center;gap:var(--sp-3);min-width:0}
+  .brand .mark{flex:none;display:block}
+  .brand-text{min-width:0;line-height:1}
+  .brand-name{font-size:var(--fs-lg);font-weight:700;letter-spacing:-.02em}
+  .brand-sub{font-size:var(--fs-2xs);color:var(--text-faint);letter-spacing:.14em;text-transform:uppercase;margin-top:4px;white-space:nowrap}
+  .topbar-spacer{flex:1 1 auto;min-width:var(--sp-2)}
+  .topbar-actions{display:flex;align-items:center;gap:var(--sp-2);flex:none}
+
+  .main{display:grid;grid-template-columns:minmax(0,1fr) var(--rail-w);min-width:0;min-height:0}
+
+  /* ===================================================== STAGE ===================================================== */
+  .stage{position:relative;min-width:0;min-height:0;overflow:hidden;
+    background:
+      conic-gradient(from 90deg at 50% 50%,rgba(255,255,255,.022) 25%,transparent 0 50%,rgba(255,255,255,.022) 0 75%,transparent 0) 0 0/22px 22px,
+      radial-gradient(120% 120% at 50% 0%,#13161f,#0b0d12 70%);
+    display:grid;place-items:center;padding:clamp(var(--sp-4),3.5vw,var(--sp-8))}
+  .viewport{position:relative;touch-action:none;user-select:none;-webkit-user-select:none;line-height:0;box-shadow:var(--e-3);border-radius:2px}
+  .viewport[hidden]{display:none}
+  /* the source image (transformed) */
+  .src{display:block;transform-origin:center center;image-rendering:auto;border-radius:2px;will-change:transform}
+  /* dimmed mask + crop frame live in an overlay sized to the displayed image box */
+  .overlay{position:absolute;inset:0;pointer-events:none}
+  .mask{position:absolute;inset:0;background:var(--mask);clip-path:var(--mask-clip,none);transition:opacity var(--dur-1) var(--ease)}
+
+  .crop{position:absolute;pointer-events:auto;cursor:move;touch-action:none;
+    box-shadow:0 0 0 1px var(--crop-shadow),0 0 0 1.5px var(--crop-line) inset, var(--e-2)}
+  .crop:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+  /* corner accents */
+  .crop::before,.crop::after{content:"";position:absolute;width:18px;height:18px;border:2.5px solid var(--crop-line);pointer-events:none;filter:drop-shadow(0 1px 1px var(--crop-shadow))}
+  .crop::before{top:-1.5px;left:-1.5px;border-right:0;border-bottom:0;border-top-left-radius:1px}
+  .crop::after{bottom:-1.5px;right:-1.5px;border-left:0;border-top:0;border-bottom-right-radius:1px}
+
+  /* rule-of-thirds / golden grid */
+  .grid-lines{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity var(--dur-1) var(--ease)}
+  .crop[data-grid="thirds"] .grid-lines.thirds,
+  .crop[data-grid="golden"] .grid-lines.golden{opacity:1}
+  .grid-lines i{position:absolute;background:rgba(255,255,255,.42);box-shadow:0 0 0 .5px rgba(0,0,0,.3)}
+  .grid-lines i.v{top:0;bottom:0;width:1px}
+  .grid-lines i.h{left:0;right:0;height:1px}
+
+  /* handles */
+  .handle{position:absolute;width:var(--hit);height:var(--hit);display:grid;place-items:center;pointer-events:auto;z-index:2;background:transparent;border:0;padding:0}
+  .handle::after{content:"";display:block;width:var(--handle);height:var(--handle);background:var(--n-0);border-radius:3px;box-shadow:0 0 0 1.5px rgba(0,0,0,.5),0 1px 2px rgba(0,0,0,.5);transition:transform var(--dur-1) var(--ease),background var(--dur-1) var(--ease)}
+  .handle:hover::after{transform:scale(1.22)}
+  .handle:active::after,.handle.is-active::after{background:var(--accent-hi);transform:scale(1.15)}
+  .handle:focus-visible{outline:0}
+  .handle:focus-visible::after{outline:2px solid var(--focus);outline-offset:3px;background:var(--accent-hi)}
+  /* edge handles render a thin bar instead of a dot */
+  .handle.edge::after{border-radius:var(--r-full)}
+  .handle.e-n::after,.handle.e-s::after{width:30px;height:6px}
+  .handle.e-e::after,.handle.e-w::after{width:6px;height:30px}
+  .handle.h-nw{top:0;left:0;transform:translate(-50%,-50%);cursor:nwse-resize}
+  .handle.h-ne{top:0;right:0;transform:translate(50%,-50%);cursor:nesw-resize}
+  .handle.h-se{bottom:0;right:0;transform:translate(50%,50%);cursor:nwse-resize}
+  .handle.h-sw{bottom:0;left:0;transform:translate(-50%,50%);cursor:nesw-resize}
+  .handle.e-n{top:0;left:50%;transform:translate(-50%,-50%);cursor:ns-resize}
+  .handle.e-s{bottom:0;left:50%;transform:translate(-50%,50%);cursor:ns-resize}
+  .handle.e-e{right:0;top:50%;transform:translate(50%,-50%);cursor:ew-resize}
+  .handle.e-w{left:0;top:50%;transform:translate(-50%,-50%);cursor:ew-resize}
+
+  /* floating size readout pinned to the crop box */
+  .crop-readout{position:absolute;top:-9px;left:50%;transform:translate(-50%,-100%);background:rgba(8,11,17,.86);backdrop-filter:blur(6px);border:1px solid var(--line-strong);color:var(--text);font-size:var(--fs-2xs);padding:4px 9px;border-radius:var(--r-full);white-space:nowrap;pointer-events:none;box-shadow:var(--e-1);letter-spacing:.02em}
+  .crop-readout::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:rgba(8,11,17,.86)}
+
+  /* ===================================================== EMPTY / DROP ===================================================== */
+  .dropzone{position:absolute;inset:clamp(var(--sp-4),4vw,var(--sp-8));border:1.5px dashed var(--line-strong);border-radius:var(--r-lg);display:grid;place-items:center;text-align:center;padding:var(--sp-6);transition:border-color var(--dur-2) var(--ease),background var(--dur-2) var(--ease)}
+  .dropzone[hidden]{display:none}
+  .stage.is-dragover .dropzone{border-color:var(--accent);background:var(--accent-soft)}
+  .dz-inner{max-width:380px;display:grid;gap:var(--sp-4);justify-items:center}
+  .dz-icon{color:var(--accent);opacity:.9}
+  .dz-title{font-size:var(--fs-lg);font-weight:680;letter-spacing:-.01em}
+  .dz-text{font-size:var(--fs-sm);color:var(--text-dim);line-height:1.55}
+  .dz-actions{display:flex;gap:var(--sp-3);flex-wrap:wrap;justify-content:center;margin-top:var(--sp-1)}
+
+  /* loading veil */
+  .veil{position:absolute;inset:0;display:grid;place-items:center;background:rgba(8,10,15,.72);backdrop-filter:blur(3px);z-index:20}
+  .veil[hidden]{display:none}
+  .spinner{width:34px;height:34px;border-radius:50%;border:3px solid rgba(255,255,255,.16);border-top-color:var(--accent);animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ===================================================== RAIL ===================================================== */
+  .rail{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .rail-scroll{overflow-y:auto;overscroll-behavior:contain;padding:var(--sp-4);display:flex;flex-direction:column;gap:var(--sp-5);scrollbar-width:thin;scrollbar-color:var(--surface-3) transparent}
+  .rail-scroll::-webkit-scrollbar{width:9px}
+  .rail-scroll::-webkit-scrollbar-thumb{background:var(--surface-3);border-radius:var(--r-full);border:3px solid transparent;background-clip:padding-box}
+
+  .group{display:flex;flex-direction:column;gap:var(--sp-3)}
+  .group-head{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-2xs);font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint)}
+  .group-head svg{flex:none;color:var(--accent);opacity:.85}
+
+  .preset-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-2)}
+  .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:3px}
+  .seg button{background:transparent;border:0;border-radius:var(--r-sm);padding:8px 6px;font-size:var(--fs-xs);font-weight:600;color:var(--text-dim);min-height:38px;transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease)}
+  .seg button:hover{color:var(--text);background:rgba(255,255,255,.04)}
+  .seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-hi);box-shadow:inset 0 0 0 1px var(--accent-line)}
+
+  .chip{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:9px 4px;font-size:var(--fs-xs);font-weight:600;color:var(--text-dim);min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease)}
+  .chip small{font-size:9px;font-weight:600;letter-spacing:.06em;color:var(--text-faint);text-transform:uppercase}
+  .chip:hover{color:var(--text);border-color:var(--line-strong);background:var(--surface-2)}
+  .chip[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-hi);border-color:var(--accent-line)}
+  .chip[aria-pressed="true"] small{color:var(--accent)}
+
+  .custom{display:grid;grid-template-columns:1fr auto 1fr auto;align-items:center;gap:var(--sp-2)}
+  .custom .num{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:9px var(--sp-2);font-size:var(--fs-sm);text-align:center;min-height:42px;-moz-appearance:textfield}
+  .custom .num::-webkit-outer-spin-button,.custom .num::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .custom .num:focus{border-color:var(--accent-line);background:var(--surface-2)}
+  .custom .colon{color:var(--text-faint);font-weight:700}
+  .custom .apply{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-sm);width:42px;height:42px;display:grid;place-items:center;color:var(--text-dim);transition:all var(--dur-1) var(--ease)}
+  .custom .apply:hover{color:var(--accent-hi);border-color:var(--accent-line)}
+
+  .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2)}
+  .btn-row.three{grid-template-columns:repeat(3,1fr)}
+  .tbtn{display:flex;align-items:center;justify-content:center;gap:var(--sp-2);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:0 var(--sp-2);min-height:44px;font-size:var(--fs-sm);font-weight:600;color:var(--text-dim);transition:all var(--dur-1) var(--ease)}
+  .tbtn svg{flex:none}
+  .tbtn:hover{color:var(--text);border-color:var(--line-strong);background:var(--surface-2)}
+  .tbtn:active{transform:translateY(1px)}
+  .tbtn[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-hi);border-color:var(--accent-line)}
+
+  .slider-row{display:grid;gap:var(--sp-2)}
+  .slider-top{display:flex;align-items:baseline;justify-content:space-between}
+  .slider-top label{font-size:var(--fs-sm);color:var(--text-dim);font-weight:600}
+  .slider-val{font-size:var(--fs-sm);color:var(--text);min-width:54px;text-align:right}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;cursor:pointer}
+  input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:var(--r-full);background:linear-gradient(90deg,var(--accent) var(--fill,0%),var(--track,rgba(255,255,255,.12)) var(--fill,0%))}
+  input[type=range]::-moz-range-track{height:5px;border-radius:var(--r-full);background:rgba(255,255,255,.12)}
+  input[type=range]::-moz-range-progress{height:5px;border-radius:var(--r-full);background:var(--accent)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--n-0);box-shadow:0 1px 3px rgba(0,0,0,.5),0 0 0 1px rgba(0,0,0,.3);margin-top:-6.5px;transition:transform var(--dur-1) var(--ease)}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border:0;border-radius:50%;background:var(--n-0);box-shadow:0 1px 3px rgba(0,0,0,.5)}
+  input[type=range]:hover::-webkit-slider-thumb,input[type=range]:focus-visible::-webkit-slider-thumb{transform:scale(1.18)}
+  input[type=range]:focus-visible{outline:0}
+  input[type=range]:focus-visible::-webkit-slider-thumb{outline:2px solid var(--focus);outline-offset:2px}
+  .straighten-tick{display:flex;justify-content:center;margin-top:-2px}
+  .straighten-tick button{background:transparent;border:0;color:var(--text-faint);font-size:var(--fs-2xs);font-weight:600;padding:2px 8px;border-radius:var(--r-full)}
+  .straighten-tick button:hover{color:var(--accent-hi)}
+
+  /* output readout panel */
+  .readout{display:grid;gap:var(--sp-3);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--sp-4)}
+  .ro-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
+  .ro-cell{display:grid;gap:2px}
+  .ro-k{font-size:var(--fs-2xs);text-transform:uppercase;letter-spacing:.1em;color:var(--text-faint);font-weight:700}
+  .ro-v{font-size:var(--fs-lg);font-weight:680;letter-spacing:-.01em;line-height:1.1}
+  .ro-v small{font-size:.62em;color:var(--text-faint);font-weight:600}
+  .ro-sub{font-size:var(--fs-xs);color:var(--text-dim);display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap}
+  .ro-bar{grid-column:1/-1;height:6px;border-radius:var(--r-full);background:var(--surface-3);overflow:hidden;position:relative}
+  .ro-bar i{position:absolute;inset:0;background:linear-gradient(90deg,var(--accent),var(--accent-hi));transform-origin:left;transition:transform var(--dur-2) var(--ease)}
+
+  /* export */
+  .export-head{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2)}
+  .fmt{display:grid;grid-auto-flow:column;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:3px}
+  .fmt button{background:transparent;border:0;border-radius:var(--r-sm);padding:6px 12px;font-size:var(--fs-xs);font-weight:650;color:var(--text-dim);min-height:34px}
+  .fmt button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-hi);box-shadow:inset 0 0 0 1px var(--accent-line)}
+  .quality-row[hidden]{display:none}
+  .btn-primary{width:100%;display:flex;align-items:center;justify-content:center;gap:var(--sp-2);background:linear-gradient(180deg,var(--accent-hi),var(--accent));color:var(--accent-ink);border:0;border-radius:var(--r-md);min-height:50px;font-size:var(--fs-base);font-weight:720;letter-spacing:-.01em;box-shadow:0 1px 0 rgba(255,255,255,.25) inset,var(--e-2);transition:transform var(--dur-1) var(--ease),filter var(--dur-1) var(--ease)}
+  .btn-primary:hover{filter:brightness(1.06)}
+  .btn-primary:active{transform:translateY(1px)}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;filter:grayscale(.3)}
+
+  .btn-ghost{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);min-height:44px;padding:0 var(--sp-4);font-size:var(--fs-sm);font-weight:600;color:var(--text-dim);display:inline-flex;align-items:center;gap:var(--sp-2);transition:all var(--dur-1) var(--ease)}
+  .btn-ghost:hover{color:var(--text);border-color:var(--line-strong);background:var(--surface-2)}
+  .btn-ghost.danger:hover{color:var(--danger);border-color:var(--danger);background:var(--danger-soft)}
+
+  .sample-badge{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-2xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-hi);background:var(--accent-soft);border:1px solid var(--accent-line);padding:4px 9px;border-radius:var(--r-full)}
+  .sample-badge[hidden]{display:none}
+
+  .hint{font-size:var(--fs-xs);color:var(--text-faint);line-height:1.5}
+
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,140%);background:var(--surface-3);border:1px solid var(--line-strong);color:var(--text);padding:var(--sp-3) var(--sp-4);border-radius:var(--r-md);box-shadow:var(--e-3);display:flex;align-items:center;gap:var(--sp-3);font-size:var(--fs-sm);z-index:400;transition:transform var(--dur-2) var(--ease-io);max-width:min(92vw,440px)}
+  .toast.show{transform:translate(-50%,0)}
+  .toast svg{flex:none;color:var(--ok)}
+  .toast .t-link{color:var(--accent-hi);text-decoration:underline;text-underline-offset:2px;font-weight:650}
+
+  .icon-btn{width:42px;height:42px;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);color:var(--text-dim);transition:all var(--dur-1) var(--ease)}
+  .icon-btn:hover{color:var(--text);border-color:var(--line-strong);background:var(--surface-2)}
+
+  /* ===================================================== RESPONSIVE ===================================================== */
+  @media (max-width:880px){
+    :root{--rail-w:0}
+    .main{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}
+    .stage{padding:var(--sp-3)}
+    .rail{border-left:0;border-top:1px solid var(--line);max-height:46dvh}
+    .rail-scroll{padding:var(--sp-3);gap:var(--sp-4);padding-bottom:max(var(--sp-3),env(safe-area-inset-bottom))}
+    .brand-sub{display:none}
+  }
+  @media (max-width:420px){
+    .preset-grid{grid-template-columns:repeat(4,1fr)}
+    .custom{grid-template-columns:1fr auto 1fr auto}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+    .spinner{animation:spin 1.2s linear infinite !important}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#rail">Skip to controls</a>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <svg class="mark" width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <rect x="2.5" y="2.5" width="27" height="27" rx="5" stroke="var(--accent)" stroke-width="2"/>
+        <path d="M10 2.5v27M22 2.5v27M2.5 10h27M2.5 22h27" stroke="var(--accent)" stroke-width="1.4" opacity=".55"/>
+        <rect x="10" y="10" width="12" height="12" rx="2" fill="var(--accent)" opacity=".22"/>
+      </svg>
+      <div class="brand-text">
+        <div class="brand-name">Frame</div>
+        <div class="brand-sub">Precision crop studio</div>
+      </div>
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-actions">
+      <span class="sample-badge" id="sampleBadge"><svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4v5M8 11.4v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Sample image</span>
+      <button class="icon-btn" id="uploadBtnTop" aria-label="Open an image" title="Open image">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="main">
+    <!-- ============ STAGE ============ -->
+    <section class="stage" id="stage" aria-label="Crop workspace">
+      <div class="viewport" id="viewport" hidden>
+        <canvas class="src" id="src" width="2" height="2"></canvas>
+        <div class="overlay">
+          <div class="mask" id="mask"></div>
+        </div>
+        <div class="crop" id="crop" tabindex="0" role="group" aria-label="Crop region. Arrow keys move, Shift+Arrow resizes." data-grid="thirds">
+          <div class="crop-readout mono" id="cropReadout">—</div>
+          <div class="grid-lines thirds" aria-hidden="true">
+            <i class="v" style="left:33.333%"></i><i class="v" style="left:66.666%"></i>
+            <i class="h" style="top:33.333%"></i><i class="h" style="top:66.666%"></i>
+          </div>
+          <div class="grid-lines golden" aria-hidden="true">
+            <i class="v" style="left:38.2%"></i><i class="v" style="left:61.8%"></i>
+            <i class="h" style="top:38.2%"></i><i class="h" style="top:61.8%"></i>
+          </div>
+          <button class="handle h-nw" data-dir="nw" aria-label="Resize from top-left"></button>
+          <button class="handle h-ne" data-dir="ne" aria-label="Resize from top-right"></button>
+          <button class="handle h-se" data-dir="se" aria-label="Resize from bottom-right"></button>
+          <button class="handle h-sw" data-dir="sw" aria-label="Resize from bottom-left"></button>
+          <button class="handle edge e-n" data-dir="n" aria-label="Resize from top edge"></button>
+          <button class="handle edge e-s" data-dir="s" aria-label="Resize from bottom edge"></button>
+          <button class="handle edge e-e" data-dir="e" aria-label="Resize from right edge"></button>
+          <button class="handle edge e-w" data-dir="w" aria-label="Resize from left edge"></button>
+        </div>
+      </div>
+
+      <div class="dropzone" id="dropzone">
+        <div class="dz-inner">
+          <svg class="dz-icon" width="56" height="56" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="6" y="9" width="36" height="30" rx="4"/><circle cx="17" cy="20" r="3.5"/><path d="M8 34l9-9 7 7 6-6 10 10"/>
+          </svg>
+          <div class="dz-title">Drop an image to crop</div>
+          <p class="dz-text">Drag &amp; drop a JPG, PNG or WebP anywhere here, or open a file. No image handy? Start with the built-in sample.</p>
+          <div class="dz-actions">
+            <button class="btn-primary" id="uploadBtn" style="min-height:48px;padding:0 22px;width:auto">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+              Open image
+            </button>
+            <button class="btn-ghost" id="sampleBtn">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/><circle cx="9" cy="9" r="1.6" fill="currentColor" stroke="none"/></svg>
+              Use sample
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="veil" id="veil" hidden><div class="spinner" role="status" aria-label="Loading image"></div></div>
+    </section>
+
+    <!-- ============ RAIL ============ -->
+    <aside class="rail" id="rail" aria-label="Crop controls">
+      <div class="rail-scroll">
+
+        <div class="group">
+          <div class="group-head">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="4" y="6" width="16" height="12" rx="1.5"/></svg>
+            Aspect ratio
+          </div>
+          <div class="seg" id="presets" role="group" aria-label="Aspect presets">
+            <button data-ratio="free" aria-pressed="true">Free</button>
+            <button data-ratio="1:1" aria-pressed="false">1:1</button>
+            <button data-ratio="4:3" aria-pressed="false">4:3</button>
+            <button data-ratio="3:2" aria-pressed="false">3:2</button>
+          </div>
+          <div class="seg" id="presets2" role="group" aria-label="More aspect presets">
+            <button data-ratio="16:9" aria-pressed="false">16:9</button>
+            <button data-ratio="2:3" aria-pressed="false">2:3</button>
+            <button data-ratio="9:16" aria-pressed="false">9:16</button>
+            <button data-ratio="orig" aria-pressed="false">Orig</button>
+          </div>
+          <div class="custom" role="group" aria-label="Custom aspect ratio">
+            <input class="num mono" id="cw" type="number" min="1" max="9999" step="1" placeholder="W" aria-label="Custom ratio width" inputmode="numeric"/>
+            <span class="colon">:</span>
+            <input class="num mono" id="ch" type="number" min="1" max="9999" step="1" placeholder="H" aria-label="Custom ratio height" inputmode="numeric"/>
+            <button class="apply" id="applyCustom" aria-label="Apply custom ratio" title="Apply custom ratio">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-head">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7"/></svg>
+            Transform
+          </div>
+          <div class="btn-row">
+            <button class="tbtn" id="rotL">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h11a5 5 0 0 1 0 10H8"/><path d="M3 8l4-4M3 8l4 4"/></svg>
+              90° left
+            </button>
+            <button class="tbtn" id="rotR">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8H10a5 5 0 0 0 0 10h6"/><path d="M21 8l-4-4M21 8l-4 4"/></svg>
+              90° right
+            </button>
+          </div>
+          <div class="btn-row">
+            <button class="tbtn" id="flipH" aria-pressed="false">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18"/><path d="M7 8l-4 4 4 4z" fill="currentColor"/><path d="M17 8l4 4-4 4z"/></svg>
+              Flip H
+            </button>
+            <button class="tbtn" id="flipV" aria-pressed="false">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h18"/><path d="M8 7l4-4 4 4z" fill="currentColor"/><path d="M8 17l4 4 4-4z"/></svg>
+              Flip V
+            </button>
+          </div>
+          <div class="slider-row">
+            <div class="slider-top"><label for="straighten">Straighten</label><span class="slider-val mono" id="straightenVal">0.0°</span></div>
+            <input type="range" id="straighten" min="-45" max="45" step="0.5" value="0" aria-describedby="straightenVal"/>
+            <div class="straighten-tick"><button id="straightenReset" type="button">reset to 0°</button></div>
+          </div>
+          <div class="slider-row">
+            <div class="slider-top"><label for="zoom">Zoom</label><span class="slider-val mono" id="zoomVal">100%</span></div>
+            <input type="range" id="zoom" min="100" max="400" step="1" value="100" aria-describedby="zoomVal"/>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-head">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18" stroke-width="1.4"/></svg>
+            Overlay
+          </div>
+          <div class="btn-row three" id="gridSeg" role="group" aria-label="Grid overlay">
+            <button class="tbtn" data-grid="thirds" aria-pressed="true">Thirds</button>
+            <button class="tbtn" data-grid="golden" aria-pressed="false">Golden</button>
+            <button class="tbtn" data-grid="off" aria-pressed="false">Off</button>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-head">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M21 16v3a2 2 0 0 1-2 2h-3"/></svg>
+            Output
+          </div>
+          <div class="readout">
+            <div class="ro-grid">
+              <div class="ro-cell">
+                <span class="ro-k">Pixels</span>
+                <span class="ro-v mono" id="roPx">—</span>
+              </div>
+              <div class="ro-cell">
+                <span class="ro-k">Ratio</span>
+                <span class="ro-v mono" id="roRatio">—</span>
+              </div>
+              <div class="ro-bar"><i id="roBar" style="transform:scaleX(0)"></i></div>
+            </div>
+            <div class="ro-sub">
+              <span class="mono" id="roSource">—</span>
+              <span aria-hidden="true">•</span>
+              <span class="mono" id="roEst">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="export-head">
+            <div class="group-head" style="margin:0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M8 11l4 4 4-4"/><path d="M4 19h16"/></svg>
+              Export
+            </div>
+            <div class="fmt" id="fmt" role="group" aria-label="Export format">
+              <button data-fmt="png" aria-pressed="true">PNG</button>
+              <button data-fmt="jpeg" aria-pressed="false">JPEG</button>
+            </div>
+          </div>
+          <div class="slider-row quality-row" id="qualityRow" hidden>
+            <div class="slider-top"><label for="quality">JPEG quality</label><span class="slider-val mono" id="qualityVal">92%</span></div>
+            <input type="range" id="quality" min="40" max="100" step="1" value="92" aria-describedby="qualityVal"/>
+          </div>
+          <button class="btn-primary" id="exportBtn" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M8 11l4 4 4-4"/><path d="M5 21h14"/></svg>
+            <span id="exportLabel">Export crop</span>
+          </button>
+          <div class="btn-row">
+            <button class="btn-ghost" id="newImg">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+              New image
+            </button>
+            <button class="btn-ghost danger" id="resetBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3"/><path d="M3 8a9 9 0 1 0 2-3"/></svg>
+              Reset
+            </button>
+          </div>
+          <p class="hint">Tip: focus the crop box, then nudge with arrow keys (Shift+Arrow resizes). Drag handles or the box body with mouse or touch.</p>
+        </div>
+
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="fileInput" accept="image/*" class="sr-only" tabindex="-1" aria-hidden="true"/>
+
+<script>
+(() => {
+  "use strict";
+  const $ = (s, r = document) => r.querySelector(s);
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---- DOM ----
+  const stage = $("#stage"), viewport = $("#viewport"), srcCanvas = $("#src");
+  const mask = $("#mask"), crop = $("#crop"), cropReadout = $("#cropReadout");
+  const dropzone = $("#dropzone"), veil = $("#veil");
+  const fileInput = $("#fileInput"), toast = $("#toast");
+  const exportBtn = $("#exportBtn"), exportLabel = $("#exportLabel");
+  const roPx = $("#roPx"), roRatio = $("#roRatio"), roBar = $("#roBar"), roSource = $("#roSource"), roEst = $("#roEst");
+  const zoom = $("#zoom"), zoomVal = $("#zoomVal");
+  const straighten = $("#straighten"), straightenVal = $("#straightenVal");
+  const quality = $("#quality"), qualityVal = $("#qualityVal"), qualityRow = $("#qualityRow");
+  const sampleBadge = $("#sampleBadge");
+  const MIN = 36; // minimum crop edge in displayed px
+
+  // ---- STATE ----
+  const state = {
+    img: null,            // ImageBitmap-like source (HTMLImageElement or canvas) — the ORIGINAL pixels
+    natW: 0, natH: 0,     // original natural size
+    rot: 0,               // 90° steps applied: 0/90/180/270
+    fine: 0,              // straighten degrees (-45..45)
+    flipH: false, flipV: false,
+    zoom: 1,              // >=1
+    // "oriented" content size = natural size after 90° rotation only (fine handled at draw)
+    dispRect: null,       // {x,y,w,h} of the displayed image inside the stage, in stage px
+    box: null,            // crop box in DISPLAY px relative to dispRect origin: {x,y,w,h}
+    ratio: null,          // locked ratio (w/h) or null for free
+    ratioKey: "free",
+    grid: "thirds",
+    fmt: "png",
+    isSample: false,
+    fileName: "image",
+  };
+
+  // ====================================================================
+  // PROCEDURAL SAMPLE IMAGE — a layered dusk landscape, drawn on a canvas.
+  // No stock/borrowed imagery. Labeled "sample" in the UI.
+  // ====================================================================
+  function makeSample(W = 1600, H = 1100) {
+    const c = document.createElement("canvas");
+    c.width = W; c.height = H;
+    const x = c.getContext("2d");
+    // sky gradient
+    const sky = x.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, "#1b2a52"); sky.addColorStop(.35, "#3b4f87");
+    sky.addColorStop(.62, "#b86a7e"); sky.addColorStop(.78, "#f0a06b"); sky.addColorStop(1, "#ffd9a0");
+    x.fillStyle = sky; x.fillRect(0, 0, W, H);
+    // soft stars upper band
+    x.save();
+    for (let i = 0; i < 90; i++) {
+      const sx = Math.random() * W, sy = Math.random() * H * 0.4;
+      x.globalAlpha = Math.random() * 0.5 + 0.1;
+      x.fillStyle = "#fff";
+      x.fillRect(sx, sy, Math.random() < .15 ? 2 : 1, Math.random() < .15 ? 2 : 1);
+    }
+    x.restore();
+    // sun
+    const sunX = W * 0.7, sunY = H * 0.52, sunR = H * 0.11;
+    const glow = x.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunR * 4);
+    glow.addColorStop(0, "rgba(255,236,190,.9)"); glow.addColorStop(.25, "rgba(255,190,130,.4)"); glow.addColorStop(1, "rgba(255,190,130,0)");
+    x.fillStyle = glow; x.fillRect(0, 0, W, H);
+    x.beginPath(); x.arc(sunX, sunY, sunR, 0, Math.PI * 2);
+    x.fillStyle = "#fff1cf"; x.fill();
+    // distant mountains (two ridges)
+    function ridge(baseY, amp, color, seed) {
+      x.beginPath(); x.moveTo(0, H);
+      let y = baseY;
+      for (let px = 0; px <= W; px += 24) {
+        y = baseY + Math.sin(px * 0.006 + seed) * amp + Math.sin(px * 0.017 + seed * 2) * amp * 0.4;
+        x.lineTo(px, y);
+      }
+      x.lineTo(W, H); x.closePath(); x.fillStyle = color; x.fill();
+    }
+    ridge(H * 0.62, 36, "#5a4a73", 1.2);
+    ridge(H * 0.70, 50, "#3c3357", 3.4);
+    // foreground hill
+    const fg = x.createLinearGradient(0, H * 0.7, 0, H);
+    fg.addColorStop(0, "#241f3a"); fg.addColorStop(1, "#14111f");
+    x.beginPath(); x.moveTo(0, H);
+    for (let px = 0; px <= W; px += 24) {
+      const yy = H * 0.82 + Math.sin(px * 0.004 + 6) * 26;
+      x.lineTo(px, yy);
+    }
+    x.lineTo(W, H); x.closePath(); x.fillStyle = fg; x.fill();
+    // water reflection band
+    const ref = x.createLinearGradient(0, H * 0.78, 0, H * 0.92);
+    ref.addColorStop(0, "rgba(255,190,130,.10)"); ref.addColorStop(1, "rgba(255,190,130,0)");
+    // alignment grid + corner ticks so crop framing is legible
+    x.strokeStyle = "rgba(255,255,255,.07)"; x.lineWidth = 1;
+    for (let gx = W / 12; gx < W; gx += W / 12) { x.beginPath(); x.moveTo(gx, 0); x.lineTo(gx, H); x.stroke(); }
+    for (let gy = H / 8; gy < H; gy += H / 8) { x.beginPath(); x.moveTo(0, gy); x.lineTo(W, gy); x.stroke(); }
+    x.strokeStyle = "rgba(255,255,255,.5)"; x.lineWidth = 3;
+    const T = 34, m = 22;
+    [[m, m, 1, 1], [W - m, m, -1, 1], [m, H - m, 1, -1], [W - m, H - m, -1, -1]].forEach(([cx, cy, dx, dy]) => {
+      x.beginPath(); x.moveTo(cx, cy + dy * T); x.lineTo(cx, cy); x.lineTo(cx + dx * T, cy); x.stroke();
+    });
+    // label
+    x.fillStyle = "rgba(0,0,0,.32)"; x.fillRect(m, H - 78, 196, 44);
+    x.fillStyle = "#fff"; x.font = "600 26px -apple-system,Segoe UI,Roboto,sans-serif";
+    x.fillText("SAMPLE", m + 18, H - 47);
+    x.font = "400 14px -apple-system,Segoe UI,Roboto,sans-serif";
+    x.fillStyle = "rgba(255,255,255,.7)";
+    x.fillText("1600 × 1100 · procedural", m + 18, H - 47 + 22);
+    return c;
+  }
+
+  // ---- oriented (90°-rotated) source size ----
+  function orientedSize() {
+    const swap = state.rot % 180 !== 0;
+    return swap ? { w: state.natH, h: state.natW } : { w: state.natW, h: state.natH };
+  }
+
+  // ---- compute the displayed image rect (fit inside stage, letterboxed) ----
+  function layout() {
+    if (!state.img) return;
+    const pad = 0;
+    const sw = stage.clientWidth - pad, sh = stage.clientHeight - pad;
+    const o = orientedSize();
+    const scale = Math.min(sw / o.w, sh / o.h, 1.6); // allow modest upscaling so small images aren't tiny
+    const w = Math.round(o.w * scale), h = Math.round(o.h * scale);
+    state.dispRect = { w, h, scale };
+    viewport.style.width = w + "px";
+    viewport.style.height = h + "px";
+    drawSource();
+    // keep box inside on resize
+    if (state.box) {
+      clampBox();
+      applyBox();
+    }
+  }
+
+  // ---- draw the original pixels onto the src canvas, sized to the displayed rect, with rot/flip/fine/zoom baked ----
+  function drawSource() {
+    const { w, h } = state.dispRect;
+    srcCanvas.width = w; srcCanvas.height = h;
+    const ctx = srcCanvas.getContext("2d");
+    ctx.clearRect(0, 0, w, h);
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+    ctx.save();
+    ctx.translate(w / 2, h / 2);
+    ctx.rotate((state.rot + state.fine) * Math.PI / 180);
+    ctx.scale(state.flipH ? -1 : 1, state.flipV ? -1 : 1);
+    ctx.scale(state.zoom, state.zoom);
+    // draw original natural image centered; the oriented scale maps natural->display
+    const o = orientedSize();
+    // displayScale maps oriented px -> display px (w/o zoom). natural draws at that scale.
+    const ds = state.dispRect.scale;
+    const dw = state.natW * ds, dh = state.natH * ds;
+    ctx.drawImage(state.img, -dw / 2, -dh / 2, dw, dh);
+    ctx.restore();
+  }
+
+  // ---- initialise the crop box (centered, ~80% of displayed image, honoring ratio) ----
+  function resetBox() {
+    const { w, h } = state.dispRect;
+    let bw, bh;
+    if (state.ratio) {
+      bw = w * 0.86; bh = bw / state.ratio;
+      if (bh > h * 0.86) { bh = h * 0.86; bw = bh * state.ratio; }
+    } else {
+      bw = w * 0.82; bh = h * 0.82;
+    }
+    state.box = { x: (w - bw) / 2, y: (h - bh) / 2, w: bw, h: bh };
+    clampBox(); applyBox();
+  }
+
+  // ---- clamp box within [0,0,dispW,dispH], honoring min size ----
+  function clampBox() {
+    const { w: DW, h: DH } = state.dispRect;
+    const b = state.box;
+    b.w = clamp(b.w, MIN, DW);
+    b.h = clamp(b.h, MIN, DH);
+    b.x = clamp(b.x, 0, DW - b.w);
+    b.y = clamp(b.y, 0, DH - b.h);
+  }
+
+  // ---- push box geometry to the DOM + mask + readout ----
+  function applyBox() {
+    const b = state.box, { w: DW, h: DH } = state.dispRect;
+    crop.style.left = b.x + "px"; crop.style.top = b.y + "px";
+    crop.style.width = b.w + "px"; crop.style.height = b.h + "px";
+    // mask via clip-path "outer" rectangle with rectangular hole (evenodd)
+    const x0 = (b.x / DW) * 100, y0 = (b.y / DH) * 100;
+    const x1 = ((b.x + b.w) / DW) * 100, y1 = ((b.y + b.h) / DH) * 100;
+    mask.style.setProperty("--mask-clip",
+      `polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, ${x0}% ${y0}%, ${x0}% ${y1}%, ${x1}% ${y1}%, ${x1}% ${y0}%, ${x0}% ${y0}%)`);
+    updateReadout();
+  }
+
+  // ---- map a displayed-box to OUTPUT pixel dimensions ----
+  function outputPx() {
+    const b = state.box;
+    // display px -> oriented source px: divide by (dispRect.scale * zoom)
+    const f = state.dispRect.scale * state.zoom;
+    return { w: Math.max(1, Math.round(b.w / f)), h: Math.max(1, Math.round(b.h / f)) };
+  }
+
+  function gcd(a, b) { a = Math.round(a); b = Math.round(b); while (b) { [a, b] = [b, a % b]; } return a || 1; }
+
+  function updateReadout() {
+    if (!state.box) return;
+    const px = outputPx();
+    roPx.innerHTML = `${px.w}<small> × </small>${px.h}`;
+    let rk = state.ratioKey;
+    if (rk === "free" || rk === "orig") {
+      const g = gcd(px.w, px.h);
+      let rw = px.w / g, rh = px.h / g;
+      if (rw > 99 || rh > 99) { roRatio.textContent = (px.w / px.h).toFixed(2) + ":1"; }
+      else roRatio.textContent = `${rw}:${rh}`;
+    } else {
+      roRatio.textContent = state.ratioKey;
+    }
+    const o = orientedSize();
+    roSource.textContent = `src ${o.w}×${o.h}`;
+    // rough size estimate
+    const area = px.w * px.h;
+    const bytes = state.fmt === "png" ? area * 2.3 : area * 0.42 * (quality.value / 100);
+    roEst.textContent = `~${fmtBytes(bytes)} ${state.fmt.toUpperCase()}`;
+    const frac = clamp((px.w * px.h) / (o.w * o.h), 0, 1);
+    roBar.style.transform = `scaleX(${frac.toFixed(4)})`;
+    cropReadout.textContent = `${px.w} × ${px.h}`;
+  }
+  function fmtBytes(b) {
+    if (b < 1024) return Math.round(b) + " B";
+    if (b < 1024 * 1024) return (b / 1024).toFixed(0) + " KB";
+    return (b / 1024 / 1024).toFixed(1) + " MB";
+  }
+
+  // ====================================================================
+  // POINTER INTERACTION — drag body + 8 handles, with ratio lock & clamp
+  // ====================================================================
+  let drag = null;
+  function onPointerDown(e) {
+    if (!state.box) return;
+    const handle = e.target.closest(".handle");
+    const isBody = e.target === crop || e.target.closest(".crop") && !handle;
+    if (!handle && !isBody) return;
+    e.preventDefault();
+    crop.focus({ preventScroll: true });
+    const rect = viewport.getBoundingClientRect();
+    drag = {
+      dir: handle ? handle.dataset.dir : "move",
+      startX: e.clientX, startY: e.clientY,
+      origin: { ...state.box },
+      rect,
+      el: handle || crop,
+    };
+    if (handle) handle.classList.add("is-active");
+    (handle || crop).setPointerCapture?.(e.pointerId);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
+  }
+
+  function onPointerMove(e) {
+    if (!drag) return;
+    const { w: DW, h: DH } = state.dispRect;
+    const dx = e.clientX - drag.startX, dy = e.clientY - drag.startY;
+    const o = drag.origin;
+    const r = state.ratio; // w/h or null
+
+    if (drag.dir === "move") {
+      state.box = { x: clamp(o.x + dx, 0, DW - o.w), y: clamp(o.y + dy, 0, DH - o.h), w: o.w, h: o.h };
+      applyBox(); return;
+    }
+
+    // resize. Determine new edges from the original box, anchored at the opposite side.
+    let left = o.x, top = o.y, right = o.x + o.w, bottom = o.y + o.h;
+    const d = drag.dir;
+    if (d.includes("e")) right = o.x + o.w + dx;
+    if (d.includes("w")) left = o.x + dx;
+    if (d.includes("s")) bottom = o.y + o.h + dy;
+    if (d.includes("n")) top = o.y + dy;
+
+    let nx = Math.min(left, right), ny = Math.min(top, bottom);
+    let nw = Math.abs(right - left), nh = Math.abs(top - bottom);
+
+    if (r) {
+      // ratio lock: drive the dimension by the primary drag axis, derive the other,
+      // anchored on the fixed corner/edge.
+      const horiz = d.includes("e") || d.includes("w");
+      const vert = d.includes("n") || d.includes("s");
+      if (horiz && vert) {
+        // corner: use width as driver, derive height
+        nw = Math.abs(right - left);
+        nh = nw / r;
+      } else if (horiz) {
+        nw = Math.abs(right - left);
+        nh = nw / r;
+      } else {
+        nh = Math.abs(top - bottom);
+        nw = nh * r;
+      }
+      // recompute anchored position from which edges are fixed
+      // fixed x edge: if dragging west -> right is fixed; else left fixed
+      const fixRight = d.includes("w");
+      const fixBottom = d.includes("n");
+      // for pure n/s (vert only) center horizontally on original center to keep it stable
+      if (!horiz && vert) {
+        nx = o.x + o.w / 2 - nw / 2;
+      } else {
+        nx = fixRight ? (o.x + o.w - nw) : o.x;
+      }
+      if (!vert && horiz) {
+        ny = o.y + o.h / 2 - nh / 2;
+      } else {
+        ny = fixBottom ? (o.y + o.h - nh) : o.y;
+      }
+    }
+
+    // enforce min, then clamp to image bounds (preserving ratio under clamp if locked)
+    if (nw < MIN) { if (r) { nw = MIN; nh = nw / r; } else nw = MIN; }
+    if (nh < MIN) { if (r) { nh = MIN; nw = nh * r; } else nh = MIN; }
+
+    // clamp within bounds; if ratio-locked, scale down to the most restrictive axis
+    if (r) {
+      // resolve fixed anchor point
+      const anchorX = (d.includes("w")) ? (o.x + o.w) : (!d.includes("e") ? o.x + o.w / 2 : o.x);
+      const anchorY = (d.includes("n")) ? (o.y + o.h) : (!d.includes("s") ? o.y + o.h / 2 : o.y);
+      // max width/height allowed before hitting an edge, given anchor & direction
+      let maxW = nw, maxH = nh;
+      // x extent
+      if (d.includes("w")) maxW = anchorX;              // can grow left to 0
+      else if (d.includes("e")) maxW = DW - anchorX;    // grow right to DW
+      else maxW = Math.min(anchorX, DW - anchorX) * 2;  // centered
+      // y extent
+      if (d.includes("n")) maxH = anchorY;
+      else if (d.includes("s")) maxH = DH - anchorY;
+      else maxH = Math.min(anchorY, DH - anchorY) * 2;
+      const sc = Math.min(1, maxW / nw, maxH / nh);
+      nw *= sc; nh *= sc;
+      nx = (d.includes("w")) ? anchorX - nw : (!d.includes("e") ? anchorX - nw / 2 : anchorX);
+      ny = (d.includes("n")) ? anchorY - nh : (!d.includes("s") ? anchorY - nh / 2 : anchorY);
+    } else {
+      nx = clamp(nx, 0, DW); ny = clamp(ny, 0, DH);
+      nw = clamp(nw, MIN, DW - nx); nh = clamp(nh, MIN, DH - ny);
+    }
+
+    state.box = { x: nx, y: ny, w: nw, h: nh };
+    clampBox();
+    applyBox();
+  }
+
+  function onPointerUp() {
+    if (drag) { drag.el.classList?.remove("is-active"); drag.el.querySelector?.(".is-active"); }
+    document.querySelectorAll(".handle.is-active").forEach(h => h.classList.remove("is-active"));
+    drag = null;
+    window.removeEventListener("pointermove", onPointerMove);
+    window.removeEventListener("pointerup", onPointerUp);
+    window.removeEventListener("pointercancel", onPointerUp);
+  }
+  crop.addEventListener("pointerdown", onPointerDown);
+
+  // ---- keyboard: nudge / resize the box ----
+  crop.addEventListener("keydown", (e) => {
+    if (!state.box) return;
+    const step = e.altKey ? 1 : 10;
+    const b = { ...state.box };
+    const resize = e.shiftKey;
+    let handled = true;
+    switch (e.key) {
+      case "ArrowLeft": resize ? (b.w -= step) : (b.x -= step); break;
+      case "ArrowRight": resize ? (b.w += step) : (b.x += step); break;
+      case "ArrowUp": resize ? (b.h -= step) : (b.y -= step); break;
+      case "ArrowDown": resize ? (b.h += step) : (b.y += step); break;
+      default: handled = false;
+    }
+    if (!handled) return;
+    e.preventDefault();
+    if (resize && state.ratio) {
+      // keep ratio: drive by changed dimension
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") b.h = b.w / state.ratio;
+      else b.w = b.h * state.ratio;
+    }
+    state.box = b; clampBox(); applyBox();
+  });
+
+  // ====================================================================
+  // CONTROLS
+  // ====================================================================
+  const RATIOS = { "1:1": 1, "4:3": 4 / 3, "3:2": 3 / 2, "16:9": 16 / 9, "2:3": 2 / 3, "9:16": 9 / 16 };
+
+  function setRatio(key, val) {
+    state.ratioKey = key; state.ratio = val;
+    // un-press all preset buttons, press the matching one
+    document.querySelectorAll("#presets button,#presets2 button").forEach(b =>
+      b.setAttribute("aria-pressed", String(b.dataset.ratio === key)));
+    if (state.box) { reshapeToRatio(); }
+    updateReadout();
+  }
+  // when a ratio is newly applied, reshape the existing box to it (keep center, fit inside)
+  function reshapeToRatio() {
+    if (!state.ratio) { applyBox(); return; }
+    const { w: DW, h: DH } = state.dispRect;
+    const b = state.box;
+    const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+    let nw = b.w, nh = nw / state.ratio;
+    if (nh > b.h) { nh = b.h; nw = nh * state.ratio; }
+    // shrink to fit bounds
+    nw = Math.min(nw, DW); nh = nw / state.ratio;
+    if (nh > DH) { nh = DH; nw = nh * state.ratio; }
+    let nx = cx - nw / 2, ny = cy - nh / 2;
+    nx = clamp(nx, 0, DW - nw); ny = clamp(ny, 0, DH - nh);
+    state.box = { x: nx, y: ny, w: nw, h: nh };
+    applyBox();
+  }
+
+  document.querySelectorAll("#presets button,#presets2 button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const key = btn.dataset.ratio;
+      if (key === "free") setRatio("free", null);
+      else if (key === "orig") {
+        const o = orientedSize();
+        setRatio("orig", o.w / o.h);
+      } else setRatio(key, RATIOS[key]);
+      $("#cw").value = ""; $("#ch").value = "";
+    });
+  });
+
+  $("#applyCustom").addEventListener("click", applyCustom);
+  [$("#cw"), $("#ch")].forEach(inp => inp.addEventListener("keydown", e => { if (e.key === "Enter") applyCustom(); }));
+  function applyCustom() {
+    const w = parseFloat($("#cw").value), h = parseFloat($("#ch").value);
+    if (!(w > 0) || !(h > 0)) { flash($("#cw").value ? $("#ch") : $("#cw")); return; }
+    setRatio(`${Math.round(w)}:${Math.round(h)}`, w / h);
+    document.querySelectorAll("#presets button,#presets2 button").forEach(b => b.setAttribute("aria-pressed", "false"));
+  }
+  function flash(el) { el.style.borderColor = "var(--danger)"; el.focus(); setTimeout(() => el.style.borderColor = "", 600); }
+
+  // grid overlay
+  document.querySelectorAll("#gridSeg button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      state.grid = btn.dataset.grid;
+      document.querySelectorAll("#gridSeg button").forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
+      crop.dataset.grid = state.grid;
+    });
+  });
+
+  // rotate
+  $("#rotL").addEventListener("click", () => rotate(-90));
+  $("#rotR").addEventListener("click", () => rotate(90));
+  function rotate(deg) {
+    state.rot = ((state.rot + deg) % 360 + 360) % 360;
+    layout();
+    if (state.ratioKey === "orig") { const o = orientedSize(); state.ratio = o.w / o.h; }
+    resetBox();
+  }
+
+  // flip
+  $("#flipH").addEventListener("click", () => { state.flipH = !state.flipH; $("#flipH").setAttribute("aria-pressed", String(state.flipH)); drawSource(); });
+  $("#flipV").addEventListener("click", () => { state.flipV = !state.flipV; $("#flipV").setAttribute("aria-pressed", String(state.flipV)); drawSource(); });
+
+  // straighten
+  function rangeFill(el) { const min = +el.min, max = +el.max; el.style.setProperty("--fill", ((el.value - min) / (max - min) * 100) + "%"); }
+  straighten.addEventListener("input", () => {
+    state.fine = parseFloat(straighten.value);
+    straightenVal.textContent = state.fine.toFixed(1) + "°";
+    rangeFill(straighten);
+    drawSource();
+  });
+  $("#straightenReset").addEventListener("click", () => { straighten.value = 0; straighten.dispatchEvent(new Event("input")); });
+
+  // zoom
+  zoom.addEventListener("input", () => {
+    state.zoom = (+zoom.value) / 100;
+    zoomVal.textContent = zoom.value + "%";
+    rangeFill(zoom);
+    drawSource();
+    clampBox(); applyBox();
+  });
+
+  // export format
+  document.querySelectorAll("#fmt button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      state.fmt = btn.dataset.fmt;
+      document.querySelectorAll("#fmt button").forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
+      qualityRow.hidden = state.fmt !== "jpeg";
+      exportLabel.textContent = `Export ${state.fmt.toUpperCase()}`;
+      updateReadout();
+    });
+  });
+  quality.addEventListener("input", () => { qualityVal.textContent = quality.value + "%"; rangeFill(quality); updateReadout(); });
+
+  // reset everything (transforms + box) for current image
+  $("#resetBtn").addEventListener("click", () => {
+    state.rot = 0; state.fine = 0; state.flipH = false; state.flipV = false; state.zoom = 1;
+    straighten.value = 0; straightenVal.textContent = "0.0°"; rangeFill(straighten);
+    zoom.value = 100; zoomVal.textContent = "100%"; rangeFill(zoom);
+    $("#flipH").setAttribute("aria-pressed", "false"); $("#flipV").setAttribute("aria-pressed", "false");
+    setRatio("free", null);
+    document.querySelectorAll("#presets button,#presets2 button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.ratio === "free")));
+    layout(); resetBox();
+    showToast("Reset to original", null);
+  });
+
+  // ====================================================================
+  // EXPORT — render the crop region (with all transforms) to an offscreen canvas
+  // ====================================================================
+  exportBtn.addEventListener("click", doExport);
+  function doExport() {
+    if (!state.box) return;
+    const out = outputPx();
+    const oc = document.createElement("canvas");
+    oc.width = out.w; oc.height = out.h;
+    const ctx = oc.getContext("2d");
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+
+    // We reconstruct the same transform pipeline as drawSource, but in OUTPUT pixel space,
+    // and translate so the crop box's top-left maps to (0,0).
+    const f = state.dispRect.scale * state.zoom;       // display px per output px
+    // crop box origin in display px:
+    const bx = state.box.x, by = state.box.y;
+    const { w: DW, h: DH } = state.dispRect;
+
+    ctx.save();
+    // move so that crop top-left -> 0,0 (output px = display px / f)
+    ctx.translate(-bx / f, -by / f);
+    // center of displayed image in output-px space:
+    ctx.translate((DW / 2) / f, (DH / 2) / f);
+    ctx.rotate((state.rot + state.fine) * Math.PI / 180);
+    ctx.scale(state.flipH ? -1 : 1, state.flipV ? -1 : 1);
+    ctx.scale(state.zoom, state.zoom);
+    // draw original at oriented-display scale / zoom -> output px
+    const ds = state.dispRect.scale;
+    const dwOut = state.natW * ds / f;   // == natW / zoom ... but keep explicit
+    const dhOut = state.natH * ds / f;
+    ctx.drawImage(state.img, -dwOut / 2, -dhOut / 2, dwOut, dhOut);
+    ctx.restore();
+
+    const type = state.fmt === "jpeg" ? "image/jpeg" : "image/png";
+    const q = state.fmt === "jpeg" ? (+quality.value) / 100 : undefined;
+    oc.toBlob((blob) => {
+      if (!blob) { showToast("Export failed — try again", null, true); return; }
+      const url = URL.createObjectURL(blob);
+      const ext = state.fmt === "jpeg" ? "jpg" : "png";
+      const name = `${state.fileName.replace(/\.[^.]+$/, "") || "crop"}-${out.w}x${out.h}.${ext}`;
+      const a = document.createElement("a");
+      a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      lastExport = { w: out.w, h: out.h, blob, name, type };
+      showToast(`Exported ${out.w} × ${out.h} ${state.fmt.toUpperCase()}`, name);
+    }, type, q);
+  }
+  let lastExport = null;
+  // expose for self-test assertions (no UI dependency)
+  window.__frameExport = () => new Promise((res) => {
+    const out = outputPx();
+    const oc = document.createElement("canvas");
+    oc.width = out.w; oc.height = out.h;
+    const ctx = oc.getContext("2d");
+    const f = state.dispRect.scale * state.zoom;
+    const { w: DW, h: DH } = state.dispRect;
+    ctx.save();
+    ctx.translate(-state.box.x / f, -state.box.y / f);
+    ctx.translate((DW / 2) / f, (DH / 2) / f);
+    ctx.rotate((state.rot + state.fine) * Math.PI / 180);
+    ctx.scale(state.flipH ? -1 : 1, state.flipV ? -1 : 1);
+    ctx.scale(state.zoom, state.zoom);
+    const ds = state.dispRect.scale;
+    ctx.drawImage(state.img, -(state.natW * ds / f) / 2, -(state.natH * ds / f) / 2, state.natW * ds / f, state.natH * ds / f);
+    ctx.restore();
+    res({ w: oc.width, h: oc.height, box: { ...state.box }, ratioKey: state.ratioKey, rot: state.rot });
+  });
+  window.__frameState = state;
+
+  // ====================================================================
+  // TOAST
+  // ====================================================================
+  let toastTimer = null;
+  function showToast(msg, filename, isErr) {
+    clearTimeout(toastTimer);
+    const icon = isErr
+      ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16v.1"/></svg>`
+      : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg>`;
+    toast.innerHTML = `${icon}<span>${msg}${filename ? ` <span class="t-link">${filename}</span>` : ""}</span>`;
+    toast.classList.add("show");
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 3600);
+  }
+
+  // ====================================================================
+  // IMAGE LOADING
+  // ====================================================================
+  function adoptImage(source, natW, natH, name, isSample) {
+    state.img = source; state.natW = natW; state.natH = natH;
+    state.rot = 0; state.fine = 0; state.flipH = false; state.flipV = false; state.zoom = 1;
+    state.fileName = name || "image"; state.isSample = !!isSample;
+    sampleBadge.hidden = !isSample;
+    // reset transform UI
+    straighten.value = 0; straightenVal.textContent = "0.0°"; rangeFill(straighten);
+    zoom.value = 100; zoomVal.textContent = "100%"; rangeFill(zoom);
+    $("#flipH").setAttribute("aria-pressed", "false"); $("#flipV").setAttribute("aria-pressed", "false");
+    dropzone.hidden = true; viewport.hidden = false; exportBtn.disabled = false;
+    requestAnimationFrame(() => {
+      layout();
+      // default to free ratio
+      state.ratioKey = "free"; state.ratio = null;
+      document.querySelectorAll("#presets button,#presets2 button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.ratio === "free")));
+      resetBox();
+    });
+  }
+
+  function loadFile(file) {
+    if (!file || !file.type.startsWith("image/")) { showToast("That file isn’t an image", null, true); return; }
+    veil.hidden = false;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      veil.hidden = true;
+      adoptImage(img, img.naturalWidth, img.naturalHeight, file.name, false);
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = () => { veil.hidden = true; URL.revokeObjectURL(url); showToast("Couldn’t read that image", null, true); };
+    img.src = url;
+  }
+
+  function loadSample() {
+    veil.hidden = false;
+    requestAnimationFrame(() => {
+      const c = makeSample();
+      veil.hidden = true;
+      adoptImage(c, c.width, c.height, "sample", true);
+    });
+  }
+
+  // upload wiring
+  ["#uploadBtn", "#uploadBtnTop", "#newImg"].forEach(sel => $(sel).addEventListener("click", () => fileInput.click()));
+  $("#sampleBtn").addEventListener("click", loadSample);
+  fileInput.addEventListener("change", e => { if (e.target.files[0]) loadFile(e.target.files[0]); fileInput.value = ""; });
+
+  // drag & drop on the whole stage
+  let dragDepth = 0;
+  ["dragenter", "dragover"].forEach(ev => stage.addEventListener(ev, e => {
+    e.preventDefault(); if (ev === "dragenter") dragDepth++; stage.classList.add("is-dragover");
+  }));
+  stage.addEventListener("dragleave", e => { e.preventDefault(); if (--dragDepth <= 0) { dragDepth = 0; stage.classList.remove("is-dragover"); } });
+  stage.addEventListener("drop", e => {
+    e.preventDefault(); dragDepth = 0; stage.classList.remove("is-dragover");
+    const f = e.dataTransfer.files[0]; if (f) loadFile(f);
+  });
+  // prevent the browser from navigating on a stray drop outside the stage
+  window.addEventListener("dragover", e => e.preventDefault());
+  window.addEventListener("drop", e => e.preventDefault());
+
+  // resize
+  let rT = null;
+  const ro = new ResizeObserver(() => { clearTimeout(rT); rT = setTimeout(() => { if (state.img) layout(); }, 60); });
+  ro.observe(stage);
+
+  // init range fills
+  rangeFill(zoom); rangeFill(straighten); rangeFill(quality);
+
+  // ---- boot with the procedural sample so the tool is usable immediately ----
+  loadSample();
+})();
+</script>
+</body>
+</html>

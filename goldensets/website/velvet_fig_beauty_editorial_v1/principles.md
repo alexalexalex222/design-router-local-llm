@@ -1,0 +1,5 @@
+- Lead with one graceful headline block and one obvious booking action.
+- Let the right-side visual feel sculpted and beauty-native: soft editorial geometry, controlled proof, and a clear sense of treatment polish.
+- Keep the phone action visible, but integrate it into the page rhythm instead of letting utility chrome become the hero.
+- Premium here should come from pace, typography, and restraint rather than vague luxury filler or residential warmth.
+- This family is strongest when the first frame feels quiet, feminine, and specific without turning into influencer-template fluff.

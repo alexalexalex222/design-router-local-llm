@@ -1,0 +1,1482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#04060b">
+<link rel="icon" href="data:,">
+<title>BIOLUME · Synthetic Interactome Explorer — Force-Directed Network</title>
+<meta name="description" content="BIOLUME — a bioluminescent force-directed network explorer. A clearly synthetic organism-interaction graph with seven color-coded clusters: drag nodes, zoom, hover to read a node's neighborhood, search, filter, and inspect connections. All data is generated in-browser from a seeded model — not real biological data.">
+
+<!-- Type: IBM Plex Sans (UI) + IBM Plex Mono (data/labels). font-display:swap; system fallbacks if offline. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+
+<style>
+/* ============================================================================
+   DESIGN TOKENS — build only from these
+   ========================================================================== */
+:root{
+  /* Cool neutral ramp (deep-field) — 11 steps */
+  --n0:#04060b; --n1:#070b13; --n2:#0b111c; --n3:#111928; --n4:#192234;
+  --n5:#243149; --n6:#33425f; --n7:#4a5b7d; --n8:#6f82a6; --n9:#a3b3d2; --n10:#e3ebfa;
+
+  /* Semantic roles */
+  --bg:var(--n0);
+  --panel:color-mix(in srgb, var(--n2) 84%, transparent);
+  --panel-solid:#0a1018;
+  --panel-2:color-mix(in srgb, var(--n3) 78%, transparent);
+  --inset:color-mix(in srgb, var(--n0) 60%, transparent);
+  --line:color-mix(in srgb, var(--n6) 46%, transparent);
+  --line-2:color-mix(in srgb, var(--n5) 70%, transparent);
+  --ink:var(--n10); --ink-2:var(--n9); --muted:var(--n8); --faint:var(--n7);
+
+  --accent:#2be7d6; --accent-2:#86f5ea; --accent-ink:#04201d;
+  --danger:#ff7a85; --warn:#ffc24b; --ok:#74f08a;
+
+  /* Cluster hues — luminous on black; mirrored in JS */
+  --c0:#2BE7D6; --c1:#9D7BFF; --c2:#74F08A; --c3:#4DA8FF;
+  --c4:#FFC24B; --c5:#FF6FB5; --c6:#FF8964;
+
+  /* Spacing — 4px scale */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  /* Radii */
+  --r1:8px; --r2:12px; --r3:16px; --r4:20px; --rp:999px;
+  /* Fluid type — ratio-locked, body >=16px */
+  --fs-2xs:11px; --fs-xs:12px; --fs-sm:13px; --fs-base:clamp(15px,1.1vw,16px);
+  --fs-md:clamp(16px,1.4vw,17px); --fs-lg:clamp(19px,2.1vw,22px); --fs-xl:clamp(22px,3vw,29px);
+  /* Elevation — 3 tiers */
+  --e1:0 1px 2px rgba(0,0,0,.45);
+  --e2:0 10px 34px rgba(0,0,0,.5);
+  --e3:0 24px 70px rgba(2,6,14,.62);
+  /* Motion */
+  --dur:.16s; --dur-2:.22s; --ease:cubic-bezier(.4,0,.2,1); --ease-out:cubic-bezier(.16,1,.3,1);
+
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--sans); font-size:var(--fs-base); line-height:1.5;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  overflow:hidden; overscroll-behavior:none;
+}
+h1,h2,h3,p{margin:0}
+button{font:inherit; color:inherit; cursor:pointer; background:none; border:none}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:6px}
+::selection{background:color-mix(in srgb,var(--accent) 40%, transparent)}
+
+.skip{position:fixed; left:var(--s3); top:-60px; z-index:200; background:var(--accent);
+  color:var(--accent-ink); padding:10px 16px; border-radius:var(--r1); font-weight:600;
+  transition:top var(--dur) var(--ease)}
+.skip:focus-visible{top:var(--s3)}
+.vh{position:absolute!important; width:1px;height:1px; padding:0;margin:-1px; overflow:hidden;
+  clip:rect(0 0 0 0); white-space:nowrap; border:0}
+
+/* ============================================================================
+   STAGE — full-viewport deep field; canvas is the base layer
+   ========================================================================== */
+.stage{
+  position:fixed; inset:0; overflow:hidden;
+  background:
+    radial-gradient(115% 85% at 80% -10%, rgba(43,150,160,.16), transparent 52%),
+    radial-gradient(95% 80% at 8% 112%, rgba(120,70,190,.16), transparent 52%),
+    radial-gradient(120% 120% at 50% 46%, transparent 38%, rgba(2,4,9,.66) 100%),
+    var(--bg);
+}
+.stage::after{ /* faint scientific dot-grid */
+  content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+  background-image:radial-gradient(circle at 1px 1px, rgba(120,150,200,.05) 1px, transparent 0);
+  background-size:34px 34px; mask-image:radial-gradient(120% 100% at 50% 40%, #000 30%, transparent 78%);
+}
+#graph{position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; cursor:grab}
+#graph.grabbing{cursor:grabbing}
+#graph:focus-visible{outline:2px solid var(--accent); outline-offset:-3px}
+
+/* ============================================================================
+   TOP BAR
+   ========================================================================== */
+.topbar{
+  position:fixed; left:0; right:0; top:0; z-index:30;
+  display:flex; align-items:center; gap:var(--s3);
+  padding:var(--s3) clamp(var(--s3),2vw,var(--s5));
+  background:linear-gradient(180deg, rgba(4,6,11,.82), rgba(4,6,11,0));
+  pointer-events:none;
+}
+.topbar>*{pointer-events:auto}
+.brand{display:flex; align-items:center; gap:var(--s3); min-width:0}
+.mark{width:34px;height:34px;flex:none; filter:drop-shadow(0 0 10px rgba(43,231,214,.5))}
+.brand-tx{min-width:0}
+.brand h1{font-size:var(--fs-md); font-weight:700; letter-spacing:.16em; line-height:1;
+  display:flex; align-items:center; gap:9px}
+.brand .sub{font-size:var(--fs-2xs); color:var(--muted); letter-spacing:.07em;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:3px}
+.chip{display:inline-flex; align-items:center; gap:6px; font-family:var(--mono);
+  font-size:var(--fs-2xs); font-weight:600; letter-spacing:.08em; color:var(--accent);
+  border:1px solid color-mix(in srgb,var(--accent) 40%, transparent);
+  background:color-mix(in srgb,var(--accent) 9%, transparent);
+  padding:3px 8px; border-radius:var(--rp); white-space:nowrap}
+.chip svg{width:12px;height:12px}
+.spacer{flex:1}
+.tb-actions{display:flex; align-items:center; gap:var(--s2)}
+
+/* Icon buttons */
+.ibtn{display:inline-grid; place-items:center; width:44px; height:44px; border-radius:var(--r2);
+  color:var(--ink-2); border:1px solid var(--line); background:var(--panel);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  transition:background var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease), transform var(--dur) var(--ease)}
+.ibtn svg{width:20px;height:20px}
+.ibtn:hover{color:var(--ink); border-color:var(--line-2); background:var(--panel-2)}
+.ibtn:active{transform:scale(.94)}
+.ibtn[aria-pressed="true"], .ibtn.on{color:var(--accent-ink); background:var(--accent); border-color:var(--accent)}
+.only-mobile{display:none}
+
+/* ============================================================================
+   RAIL (left dock / mobile bottom sheet) — controls + legend + node list
+   ========================================================================== */
+.rail{
+  position:fixed; z-index:40; left:var(--s4); top:74px; bottom:var(--s4); width:332px;
+  display:flex; flex-direction:column;
+  background:var(--panel); border:1px solid var(--line); border-radius:var(--r3);
+  box-shadow:var(--e3); backdrop-filter:blur(20px) saturate(1.2);
+  -webkit-backdrop-filter:blur(20px) saturate(1.2); overflow:hidden;
+  transition:transform var(--dur-2) var(--ease-out), opacity var(--dur-2) var(--ease);
+}
+.rail-scroll{overflow:auto; overscroll-behavior:contain; padding:var(--s4); scrollbar-width:thin;
+  scrollbar-color:var(--n5) transparent}
+.rail-scroll::-webkit-scrollbar{width:9px}
+.rail-scroll::-webkit-scrollbar-thumb{background:var(--n5); border-radius:99px; border:2px solid transparent; background-clip:padding-box}
+
+.sheet-handle{display:none}
+.group{padding:var(--s4) 0; border-top:1px solid var(--line)}
+.group:first-of-type{border-top:none; padding-top:2px}
+.group-h{display:flex; align-items:center; justify-content:space-between; gap:var(--s2); margin-bottom:var(--s3)}
+.group-h h2{font-family:var(--mono); font-size:var(--fs-2xs); font-weight:600; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--muted)}
+.group-h .hint{font-size:var(--fs-2xs); color:var(--faint); font-family:var(--mono)}
+
+/* Search field */
+.search{position:relative; display:flex; align-items:center}
+.search svg.sIco{position:absolute; left:12px; width:17px;height:17px; color:var(--muted); pointer-events:none}
+.search input{
+  width:100%; height:44px; padding:0 38px 0 38px; border-radius:var(--r2);
+  background:var(--inset); border:1px solid var(--line); color:var(--ink); font-size:var(--fs-sm);
+  transition:border-color var(--dur) var(--ease), background var(--dur) var(--ease)}
+.search input::placeholder{color:var(--faint)}
+.search input:focus-visible{outline:none; border-color:var(--accent); background:color-mix(in srgb,var(--accent) 6%, var(--inset))}
+.search .clr{position:absolute; right:6px; width:32px;height:32px; border-radius:var(--r1);
+  display:none; place-items:center; color:var(--muted)}
+.search .clr svg{width:15px;height:15px}
+.search .clr:hover{color:var(--ink); background:var(--panel-2)}
+.search.has-val .clr{display:grid}
+
+/* Sliders */
+.ctrl{margin-bottom:var(--s4)}
+.ctrl:last-child{margin-bottom:0}
+.ctrl-lab{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:7px}
+.ctrl-lab label{font-size:var(--fs-sm); color:var(--ink-2)}
+.ctrl-lab .val{font-family:var(--mono); font-size:var(--fs-xs); color:var(--accent)}
+input[type=range]{-webkit-appearance:none; appearance:none; width:100%; height:30px; background:none; cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:5px; border-radius:99px;
+  background:linear-gradient(90deg,var(--accent) var(--fill,40%), var(--n4) var(--fill,40%))}
+input[type=range]::-moz-range-track{height:5px; border-radius:99px; background:var(--n4)}
+input[type=range]::-moz-range-progress{height:5px; border-radius:99px; background:var(--accent)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:18px;height:18px; margin-top:-7px;
+  border-radius:50%; background:#eafffb; border:2px solid var(--accent);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 20%, transparent), 0 2px 6px rgba(0,0,0,.5)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px; border-radius:50%; background:#eafffb; border:2px solid var(--accent)}
+input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 45%, transparent)}
+
+/* Segmented + toggles + buttons */
+.seg{display:grid; grid-auto-flow:column; gap:4px; padding:4px; background:var(--inset);
+  border:1px solid var(--line); border-radius:var(--r2)}
+.seg button{height:38px; border-radius:9px; font-size:var(--fs-xs); font-weight:500; color:var(--muted);
+  letter-spacing:.01em; transition:background var(--dur) var(--ease), color var(--dur) var(--ease)}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 18%, transparent);
+  color:var(--accent-2); box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 40%, transparent)}
+
+.row{display:flex; gap:var(--s2)}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; height:44px; padding:0 14px;
+  border-radius:var(--r2); border:1px solid var(--line); background:var(--panel-2); color:var(--ink-2);
+  font-size:var(--fs-sm); font-weight:500; flex:1;
+  transition:background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur) var(--ease)}
+.btn svg{width:17px;height:17px}
+.btn:hover{color:var(--ink); border-color:var(--line-2); background:var(--n3)}
+.btn:active{transform:translateY(1px)}
+.btn.on{color:var(--accent-ink); background:var(--accent); border-color:var(--accent)}
+.btn.on:hover{background:var(--accent-2)}
+.btn:disabled{opacity:.42; cursor:not-allowed; transform:none}
+
+/* Cluster legend / filter */
+.legend{display:flex; flex-direction:column; gap:5px}
+.lg{display:flex; align-items:center; gap:11px; width:100%; min-height:44px; padding:7px 9px;
+  border-radius:var(--r2); border:1px solid transparent; text-align:left; color:var(--ink-2);
+  transition:background var(--dur) var(--ease), border-color var(--dur) var(--ease), opacity var(--dur) var(--ease)}
+.lg:hover{background:var(--panel-2)}
+.lg .sw{width:24px;height:24px;flex:none; display:grid; place-items:center; position:relative}
+.lg .sw .dot{width:13px;height:13px;border-radius:50%; background:var(--cc);
+  box-shadow:0 0 9px 1px color-mix(in srgb,var(--cc) 75%, transparent), 0 0 2px #fff inset}
+.lg .sw svg{position:absolute; width:24px;height:24px; color:var(--cc)}
+.lg .nm{flex:1; min-width:0}
+.lg .nm b{display:block; font-size:var(--fs-sm); font-weight:600; color:var(--ink); line-height:1.2}
+.lg .nm span{font-size:var(--fs-2xs); color:var(--faint)}
+.lg .ct{font-family:var(--mono); font-size:var(--fs-xs); color:var(--muted)}
+.lg[aria-pressed="false"]{opacity:.4}
+.lg[aria-pressed="false"] .dot{box-shadow:none; background:var(--n6)}
+.lg[aria-pressed="false"] .sw svg{color:var(--n6)}
+.lg[aria-pressed="true"]{background:color-mix(in srgb,var(--cc) 8%, transparent); border-color:color-mix(in srgb,var(--cc) 22%, transparent)}
+
+/* Node list (a11y parallel + explorer) */
+.list-tools{display:flex; gap:var(--s2); align-items:center; margin-bottom:var(--s2)}
+.list-tools .seg{flex:1}
+.nodelist{display:flex; flex-direction:column; gap:3px; max-height:340px; overflow:auto;
+  overscroll-behavior:contain; padding-right:3px; scrollbar-width:thin; scrollbar-color:var(--n5) transparent}
+.nodelist::-webkit-scrollbar{width:8px}
+.nodelist::-webkit-scrollbar-thumb{background:var(--n5); border-radius:99px; border:2px solid transparent; background-clip:padding-box}
+.nrow{display:flex; align-items:center; gap:10px; width:100%; min-height:44px; padding:6px 9px;
+  border-radius:var(--r1); border:1px solid transparent; text-align:left; color:var(--ink-2);
+  transition:background var(--dur) var(--ease), border-color var(--dur) var(--ease)}
+.nrow:hover{background:var(--panel-2)}
+.nrow .gl{width:18px;height:18px;flex:none; color:var(--cc)}
+.nrow .nm{flex:1; min-width:0; font-family:var(--mono); font-size:var(--fs-sm); font-weight:500;
+  color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.nrow .cl{font-size:var(--fs-2xs); color:var(--faint); white-space:nowrap}
+.nrow .deg{display:flex; align-items:center; gap:6px; flex:none}
+.nrow .deg .bar{width:30px; height:5px; border-radius:99px; background:var(--n4); overflow:hidden}
+.nrow .deg .bar i{display:block; height:100%; width:var(--w,10%); background:var(--cc); border-radius:99px}
+.nrow .deg b{font-family:var(--mono); font-size:var(--fs-2xs); color:var(--muted); width:20px; text-align:right}
+.nrow[aria-current="true"]{background:color-mix(in srgb,var(--cc) 14%, transparent);
+  border-color:color-mix(in srgb,var(--cc) 45%, transparent)}
+.nrow:focus-visible{outline:2px solid var(--accent); outline-offset:-1px}
+.empty{padding:22px 10px; text-align:center; color:var(--faint); font-size:var(--fs-sm)}
+
+/* ============================================================================
+   INSPECTOR (right dock / mobile bottom sheet)
+   ========================================================================== */
+.inspector{
+  position:fixed; z-index:45; right:var(--s4); top:74px; width:344px; max-height:calc(100vh - 90px);
+  display:flex; flex-direction:column;
+  background:var(--panel); border:1px solid var(--line); border-radius:var(--r3);
+  box-shadow:var(--e3); backdrop-filter:blur(20px) saturate(1.2); -webkit-backdrop-filter:blur(20px) saturate(1.2);
+  overflow:hidden; transform:translateX(calc(100% + var(--s5))); opacity:0; pointer-events:none;
+  transition:transform var(--dur-2) var(--ease-out), opacity var(--dur-2) var(--ease);
+}
+.inspector.open{transform:none; opacity:1; pointer-events:auto}
+.insp-head{display:flex; align-items:flex-start; gap:var(--s3); padding:var(--s4) var(--s4) var(--s3);
+  border-bottom:1px solid var(--line); position:relative}
+.insp-head .accent-bar{position:absolute; left:0; top:14px; bottom:14px; width:3px; border-radius:99px;
+  background:var(--cc); box-shadow:0 0 12px 1px color-mix(in srgb,var(--cc) 80%, transparent)}
+.insp-id{flex:1; min-width:0; padding-left:8px}
+.insp-id .nm{font-family:var(--mono); font-size:var(--fs-lg); font-weight:600; color:var(--ink);
+  letter-spacing:.01em; word-break:break-all; line-height:1.1}
+.insp-id .cl{display:inline-flex; align-items:center; gap:7px; margin-top:8px; font-size:var(--fs-xs);
+  color:var(--cc); font-weight:500}
+.insp-id .cl svg{width:14px;height:14px}
+.insp-scroll{overflow:auto; overscroll-behavior:contain; padding:var(--s4); scrollbar-width:thin; scrollbar-color:var(--n5) transparent}
+.insp-scroll::-webkit-scrollbar{width:8px}
+.insp-scroll::-webkit-scrollbar-thumb{background:var(--n5); border-radius:99px; border:2px solid transparent; background-clip:padding-box}
+.stats{display:grid; grid-template-columns:1fr 1fr; gap:var(--s2); margin-bottom:var(--s4)}
+.stat{background:var(--inset); border:1px solid var(--line); border-radius:var(--r2); padding:11px 12px}
+.stat .k{font-size:var(--fs-2xs); color:var(--muted); letter-spacing:.05em; text-transform:uppercase}
+.stat .v{font-family:var(--mono); font-size:var(--fs-lg); color:var(--ink); margin-top:3px; line-height:1}
+.stat .v small{font-size:var(--fs-xs); color:var(--faint)}
+.stat.hub .v{color:var(--accent)}
+.insp-sub{font-family:var(--mono); font-size:var(--fs-2xs); font-weight:600; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--muted); margin:var(--s4) 0 var(--s2); display:flex;
+  justify-content:space-between; align-items:center}
+.conns{display:flex; flex-direction:column; gap:3px}
+.cn{display:flex; align-items:center; gap:10px; width:100%; min-height:42px; padding:6px 9px; border-radius:var(--r1);
+  text-align:left; color:var(--ink-2); border:1px solid transparent; transition:background var(--dur) var(--ease)}
+.cn:hover{background:var(--panel-2); border-color:var(--line)}
+.cn .gl{width:16px;height:16px;flex:none; color:var(--cc)}
+.cn .nm{flex:1; font-family:var(--mono); font-size:var(--fs-sm); color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.cn .cl{font-size:var(--fs-2xs); color:var(--faint)}
+.cn .deg{font-family:var(--mono); font-size:var(--fs-2xs); color:var(--muted)}
+.cn.cross::after{content:"bridge"; font-family:var(--mono); font-size:9px; letter-spacing:.06em;
+  color:var(--warn); border:1px solid color-mix(in srgb,var(--warn) 40%, transparent); border-radius:99px; padding:1px 5px}
+
+/* ============================================================================
+   STAGE OVERLAYS — zoom controls, status, tooltip, loading, empty, error
+   ========================================================================== */
+.zoomctl{position:fixed; z-index:35; right:var(--s4); bottom:var(--s4); display:flex; flex-direction:column;
+  gap:var(--s2); transition:transform var(--dur-2) var(--ease-out)}
+.zoomctl .ibtn{width:46px;height:46px}
+
+.status{position:fixed; z-index:25; left:var(--s4); bottom:var(--s4); display:flex; align-items:center; gap:10px;
+  font-family:var(--mono); font-size:var(--fs-2xs); color:var(--muted); pointer-events:none;
+  background:color-mix(in srgb,var(--n1) 70%, transparent); border:1px solid var(--line);
+  border-radius:var(--rp); padding:7px 13px; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); max-width:calc(100vw - 32px)}
+.status .sep{width:1px; height:11px; background:var(--line-2)}
+.status .dotlive{width:7px;height:7px;border-radius:50%; background:var(--ok); box-shadow:0 0 8px var(--ok)}
+.status .dotlive.warm{background:var(--warn); box-shadow:0 0 8px var(--warn); animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.4}}
+.status b{color:var(--ink-2); font-weight:500}
+
+.tooltip{position:fixed; z-index:60; pointer-events:none; transform:translate(-50%,-140%);
+  background:var(--panel-solid); border:1px solid var(--line-2); border-radius:var(--r1);
+  padding:8px 11px; box-shadow:var(--e2); opacity:0; transition:opacity var(--dur) var(--ease); max-width:240px}
+.tooltip.show{opacity:1}
+.tooltip .t-nm{font-family:var(--mono); font-size:var(--fs-sm); font-weight:600; color:var(--ink)}
+.tooltip .t-meta{font-size:var(--fs-2xs); color:var(--muted); margin-top:2px; display:flex; align-items:center; gap:6px}
+.tooltip .t-meta .d{width:8px;height:8px;border-radius:50%; background:var(--cc); box-shadow:0 0 7px var(--cc)}
+
+.overlay{position:fixed; inset:0; z-index:70; display:grid; place-items:center; padding:var(--s5);
+  background:radial-gradient(60% 60% at 50% 45%, rgba(5,8,14,.55), rgba(3,5,10,.86)); text-align:center}
+.overlay[hidden]{display:none}
+.load-card{display:flex; flex-direction:column; align-items:center; gap:var(--s4); max-width:340px}
+.load-orb{width:78px;height:78px}
+.load-card h2{font-size:var(--fs-md); font-weight:600; letter-spacing:.02em}
+.load-card p{font-size:var(--fs-sm); color:var(--muted)}
+.load-bar{width:200px; height:5px; border-radius:99px; background:var(--n3); overflow:hidden}
+.load-bar i{display:block; height:100%; width:0; border-radius:99px;
+  background:linear-gradient(90deg,var(--accent),var(--c1)); box-shadow:0 0 12px var(--accent); transition:width .15s linear}
+
+.msg-card{max-width:380px; background:var(--panel-solid); border:1px solid var(--line-2);
+  border-radius:var(--r3); padding:var(--s6); box-shadow:var(--e3)}
+.msg-card .mi{width:52px;height:52px; margin:0 auto var(--s4); color:var(--muted)}
+.msg-card.err .mi{color:var(--danger)}
+.msg-card h2{font-size:var(--fs-md); margin-bottom:var(--s2)}
+.msg-card p{font-size:var(--fs-sm); color:var(--muted); margin-bottom:var(--s4); line-height:1.55}
+.msg-card .btn{display:inline-flex; flex:none; padding:0 22px}
+
+.scrim{position:fixed; inset:0; z-index:38; background:rgba(2,4,9,.5); opacity:0; pointer-events:none;
+  transition:opacity var(--dur-2) var(--ease); backdrop-filter:blur(2px)}
+.scrim.show{opacity:1; pointer-events:auto}
+
+/* ============================================================================
+   RESPONSIVE — panels become bottom sheets; zero horizontal overflow @360
+   ========================================================================== */
+@media (max-width:900px){
+  .rail{left:var(--s3); right:var(--s3); width:auto; top:auto; bottom:0;
+    max-height:82vh; border-radius:var(--r4) var(--r4) 0 0; border-bottom:none;
+    transform:translateY(100%); opacity:1}
+  .rail.open{transform:none}
+  .inspector{left:var(--s3); right:var(--s3); width:auto; top:auto; bottom:0;
+    max-height:82vh; border-radius:var(--r4) var(--r4) 0 0; border-bottom:none;
+    transform:translateY(100%)}
+  .inspector.open{transform:none}
+  .sheet-handle{display:block; flex:none; padding:10px 0 4px; text-align:center; cursor:grab}
+  .sheet-handle::before{content:""; display:inline-block; width:42px; height:5px; border-radius:99px; background:var(--n5)}
+  .rail-scroll{padding:0 var(--s4) var(--s5)}
+  .only-mobile{display:inline-grid}
+  .nodelist{max-height:38vh}
+  .zoomctl{bottom:auto; top:74px; right:var(--s3)}
+}
+@media (max-width:560px){
+  .brand .sub{display:none}
+  .topbar{padding:var(--s2) var(--s3); gap:var(--s2)}
+  .desk-only{display:none}
+  .status{font-size:10px; padding:6px 10px; gap:7px}
+  .status .hide-xs{display:none}
+}
+@media (max-width:380px){
+  .brand h1{font-size:var(--fs-sm); letter-spacing:.1em}
+  .ibtn{width:42px;height:42px}
+}
+
+/* spin + breathe for the loading orb (motion-safe) */
+@keyframes breathe{0%,100%{opacity:.65; transform:scale(.96)}50%{opacity:1; transform:scale(1.04)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-orb .ring{transform-origin:center; animation:spin 3.4s linear infinite}
+.load-orb .core{transform-origin:center; animation:breathe 2s var(--ease) infinite}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important; animation-iteration-count:1!important;
+    transition-duration:.001ms!important; scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#graph">Skip to network controls</a>
+
+<main class="stage" id="stage">
+  <canvas id="graph" tabindex="-1" role="img"
+    aria-label="Bioluminescent force-directed network of synthetic organism-interaction nodes across seven clusters. This is a visual rendering; use the keyboard-accessible node list in the controls panel to explore, select and inspect nodes."></canvas>
+</main>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 40 40" aria-hidden="true">
+      <defs>
+        <radialGradient id="mg" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#bafff5"/><stop offset="45%" stop-color="#2be7d6"/><stop offset="100%" stop-color="#1aa6d6"/>
+        </radialGradient>
+      </defs>
+      <circle cx="20" cy="20" r="3.6" fill="url(#mg)"/>
+      <circle cx="8" cy="11" r="2.4" fill="#9D7BFF"/><circle cx="32" cy="9" r="2.2" fill="#74F08A"/>
+      <circle cx="33" cy="29" r="2.6" fill="#FF6FB5"/><circle cx="9" cy="31" r="2.2" fill="#FFC24B"/>
+      <circle cx="20" cy="5" r="1.8" fill="#4DA8FF"/>
+      <g stroke="#2be7d6" stroke-width="1" opacity=".55" fill="none">
+        <path d="M20 20 8 11M20 20 32 9M20 20 33 29M20 20 9 31M20 20 20 5"/>
+      </g>
+    </svg>
+    <div class="brand-tx">
+      <h1>BIOLUME <span class="chip" title="All nodes, links and clusters are generated in-browser from a seeded model. Not real biological data.">
+        <svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.8 14 5v6L8 14.2 2 11V5z" stroke-linejoin="round"/><path d="M8 7.5v3.2M8 5.1v.05" stroke-linecap="round"/></svg>
+        SYNTHETIC</span></h1>
+      <p class="sub">Synthetic Interactome Explorer · force-directed</p>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <div class="tb-actions">
+    <button class="ibtn desk-only" id="btnFreeze" type="button" aria-pressed="false" title="Freeze / resume simulation (F)">
+      <svg class="i-freeze" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 2v20M12 2l-3 3M12 2l3 3M12 22l-3-3M12 22l3-3M3.5 7l17 10M3.5 7l.6 4.1M3.5 7l4-1.1M20.5 17l-.6-4.1M20.5 17l-4 1.1M3.5 17l17-10M3.5 17l4 1.1M3.5 17l.6-4.1M20.5 7l-4-1.1M20.5 7l-.6 4.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:none"><path d="M7 4.5v15l12-7.5z"/></svg>
+    </button>
+    <button class="ibtn desk-only" id="btnFit" type="button" title="Fit network to view (0)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 0-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4" stroke-linecap="round"/></svg>
+    </button>
+    <button class="ibtn only-mobile" id="btnInspM" type="button" aria-controls="inspector" title="Selected node details">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.01" stroke-linecap="round"/></svg>
+    </button>
+    <button class="ibtn" id="btnRail" type="button" aria-controls="rail" aria-expanded="true" title="Controls &amp; node list">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round"/><circle cx="9" cy="7" r="2" fill="var(--bg)"/><circle cx="15" cy="12" r="2" fill="var(--bg)"/><circle cx="8" cy="17" r="2" fill="var(--bg)"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- RAIL -->
+<aside class="rail open" id="rail" aria-label="Network controls and node list">
+  <div class="sheet-handle" aria-hidden="true"></div>
+  <div class="rail-scroll">
+
+    <div class="group">
+      <div class="search" id="searchWrap">
+        <svg class="sIco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5" stroke-linecap="round"/></svg>
+        <input id="search" type="search" inputmode="search" autocomplete="off" spellcheck="false"
+          placeholder="Search nodes (e.g. LUX-12, NRX)…" aria-label="Search nodes by name or cluster">
+        <button class="clr" id="searchClr" type="button" title="Clear search" aria-label="Clear search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-h"><h2>Clusters</h2>
+        <span><button class="hint" id="clAll" type="button" style="background:none;border:none;color:var(--accent)">all</button>
+        · <button class="hint" id="clNone" type="button" style="background:none;border:none;color:var(--muted)">none</button></span>
+      </div>
+      <div class="legend" id="legend" role="group" aria-label="Filter by cluster"></div>
+    </div>
+
+    <div class="group">
+      <div class="group-h"><h2>Layout</h2><span class="hint" id="simState">settling…</span></div>
+      <div class="ctrl">
+        <div class="ctrl-lab"><label for="rCharge">Charge — node repulsion</label><span class="val" id="vCharge">−260</span></div>
+        <input id="rCharge" type="range" min="40" max="900" step="10" value="260" aria-describedby="vCharge">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-lab"><label for="rLink">Link strength</label><span class="val" id="vLink">0.35</span></div>
+        <input id="rLink" type="range" min="2" max="100" step="1" value="35" aria-describedby="vLink">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-lab"><label for="rSep">Cluster separation</label><span class="val" id="vSep">0.08</span></div>
+        <input id="rSep" type="range" min="0" max="30" step="1" value="8" aria-describedby="vSep">
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-h"><h2>Behavior</h2></div>
+      <div class="row" style="margin-bottom:var(--s2)">
+        <button class="btn" id="btnPin" type="button" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M9 3h6l-1 6 3 3v2H7v-2l3-3z" stroke-linejoin="round"/><path d="M12 14v7" stroke-linecap="round"/></svg>
+          Pin on drag
+        </button>
+        <button class="btn" id="btnRelease" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 5l14 14M9 3h6l-1 6 3 3v2h-3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Release all
+        </button>
+      </div>
+      <div class="ctrl-lab" style="margin:var(--s3) 0 7px"><label for="segLabels" id="lblLabels">Labels</label></div>
+      <div class="seg" id="segLabels" role="group" aria-labelledby="lblLabels">
+        <button type="button" data-labels="auto" aria-pressed="true">Auto</button>
+        <button type="button" data-labels="hubs" aria-pressed="false">Hubs</button>
+        <button type="button" data-labels="off" aria-pressed="false">Off</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-h"><h2>Dataset</h2><span class="hint" id="dsHint">synthetic · seeded</span></div>
+      <div class="ctrl-lab" style="margin-bottom:7px"><label for="segDensity" id="lblDensity">Density</label></div>
+      <div class="seg" id="segDensity" role="group" aria-labelledby="lblDensity">
+        <button type="button" data-density="compact" aria-pressed="false">Compact</button>
+        <button type="button" data-density="standard" aria-pressed="true">Standard</button>
+        <button type="button" data-density="dense" aria-pressed="false">Dense</button>
+        <button type="button" data-density="stress" aria-pressed="false">5k</button>
+      </div>
+      <button class="btn" id="btnReseed" type="button" style="margin-top:var(--s3)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 9a8 8 0 0 1 13.7-3.3L20 8M20 4v4h-4M20 15a8 8 0 0 1-13.7 3.3L4 16M4 20v-4h4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Regenerate network
+      </button>
+    </div>
+
+    <div class="group">
+      <div class="group-h"><h2>Nodes</h2><span class="hint" id="nodeCount">—</span></div>
+      <div class="list-tools">
+        <div class="seg" id="segSort" role="group" aria-label="Sort nodes">
+          <button type="button" data-sort="degree" aria-pressed="true">Hubs first</button>
+          <button type="button" data-sort="name" aria-pressed="false">A–Z</button>
+          <button type="button" data-sort="cluster" aria-pressed="false">Cluster</button>
+        </div>
+      </div>
+      <div class="nodelist" id="nodelist" role="listbox" aria-label="Synthetic network nodes — select to inspect" tabindex="0"></div>
+    </div>
+
+  </div>
+</aside>
+
+<!-- INSPECTOR -->
+<aside class="inspector" id="inspector" aria-label="Node inspector" aria-live="polite">
+  <div class="sheet-handle" aria-hidden="true"></div>
+  <div class="insp-head">
+    <span class="accent-bar" id="iAccent"></span>
+    <div class="insp-id">
+      <div class="nm" id="iName">—</div>
+      <div class="cl" id="iCluster"></div>
+    </div>
+    <button class="ibtn" id="btnInspClose" type="button" title="Close inspector" aria-label="Close inspector" style="width:38px;height:38px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <div class="insp-scroll">
+    <div class="stats" id="iStats"></div>
+    <div class="row" style="gap:var(--s2)">
+      <button class="btn" id="btnPinNode" type="button" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M9 3h6l-1 6 3 3v2H7v-2l3-3z" stroke-linejoin="round"/><path d="M12 14v7" stroke-linecap="round"/></svg>
+        <span id="pinNodeLbl">Pin node</span>
+      </button>
+      <button class="btn" id="btnFocusNode" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke-linecap="round"/></svg>
+        Center
+      </button>
+    </div>
+    <div class="insp-sub"><span>Connections</span><span id="iConnCount" style="color:var(--faint)"></span></div>
+    <div class="conns" id="iConns"></div>
+  </div>
+</aside>
+
+<!-- ZOOM CONTROLS -->
+<div class="zoomctl" role="group" aria-label="Zoom controls">
+  <button class="ibtn" id="zIn" type="button" title="Zoom in" aria-label="Zoom in">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 6v12M6 12h12" stroke-linecap="round"/></svg>
+  </button>
+  <button class="ibtn" id="zOut" type="button" title="Zoom out" aria-label="Zoom out">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 12h12" stroke-linecap="round"/></svg>
+  </button>
+  <button class="ibtn" id="zFit" type="button" title="Fit to view" aria-label="Fit network to view">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 0-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4" stroke-linecap="round"/></svg>
+  </button>
+</div>
+
+<!-- STATUS -->
+<div class="status" id="status" role="status" aria-live="off">
+  <span class="dotlive warm" id="liveDot"></span>
+  <span><b id="stNodes">0</b> nodes</span><span class="sep"></span>
+  <span class="hide-xs"><b id="stEdges">0</b> links</span><span class="sep hide-xs"></span>
+  <span><b id="stClusters">7</b>/7 clusters</span><span class="sep"></span>
+  <span>zoom <b id="stZoom">1.0×</b></span><span class="sep hide-xs"></span>
+  <span class="hide-xs"><b id="stFps">–</b> fps</span>
+</div>
+
+<!-- TOOLTIP -->
+<div class="tooltip" id="tooltip" role="presentation">
+  <div class="t-nm" id="ttName"></div>
+  <div class="t-meta"><span class="d" id="ttDot"></span><span id="ttMeta"></span></div>
+</div>
+
+<!-- EMPTY STATE -->
+<div class="overlay" id="emptyState" hidden>
+  <div class="msg-card">
+    <svg class="mi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke-dasharray="3 3"/><path d="M9 12h6" stroke-linecap="round"/></svg>
+    <h2 id="emptyTitle">No nodes shown</h2>
+    <p id="emptyMsg">Every cluster is hidden. Re-enable a cluster to bring the network back.</p>
+    <button class="btn" id="emptyAction" type="button" style="flex:none">Show all clusters</button>
+  </div>
+</div>
+
+<!-- ERROR STATE -->
+<div class="overlay" id="errState" hidden>
+  <div class="msg-card err">
+    <svg class="mi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M12 3 2 20h20z" stroke-linejoin="round"/><path d="M12 10v4M12 17v.01" stroke-linecap="round"/></svg>
+    <h2>Visualization couldn’t load</h2>
+    <p id="errMsg">The d3 force library failed to load from its CDN. Check your network connection and reload the page.</p>
+    <button class="btn" onclick="location.reload()" type="button" style="flex:none">Reload</button>
+  </div>
+</div>
+
+<!-- LOADING / WARMUP -->
+<div class="overlay" id="loading">
+  <div class="load-card">
+    <svg class="load-orb" viewBox="0 0 80 80" aria-hidden="true">
+      <g class="ring" fill="none" stroke="#2be7d6" stroke-width="1.4" opacity=".7">
+        <circle cx="40" cy="40" r="30" stroke-dasharray="6 10"/>
+      </g>
+      <g class="ring" fill="none" stroke="#9D7BFF" stroke-width="1.2" opacity=".55" style="animation-direction:reverse;animation-duration:5s">
+        <circle cx="40" cy="40" r="22" stroke-dasharray="3 8"/>
+      </g>
+      <circle class="core" cx="40" cy="40" r="7" fill="url(#mg2)"/>
+      <defs><radialGradient id="mg2"><stop offset="0%" stop-color="#cafff7"/><stop offset="60%" stop-color="#2be7d6"/><stop offset="100%" stop-color="#1aa6d6"/></radialGradient></defs>
+    </svg>
+    <div>
+      <h2>Stabilizing network</h2>
+      <p id="loadMsg">Settling the force simulation…</p>
+    </div>
+    <div class="load-bar"><i id="loadFill"></i></div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim" aria-hidden="true"></div>
+
+<noscript>
+  <div class="overlay"><div class="msg-card"><h2>JavaScript required</h2>
+  <p>BIOLUME renders a live force-directed network and needs JavaScript enabled.</p></div></div>
+</noscript>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ── Fail loud, never blank ─────────────────────────────────────────────── */
+if (!window.d3 || !d3.forceSimulation) {
+  document.getElementById('loading').hidden = true;
+  document.getElementById('errState').hidden = false;
+  return;
+}
+
+/* ============================================================================
+   CLUSTER MODEL  (color mirrors CSS --c0..--c6)
+   ========================================================================== */
+const CLUSTERS = [
+  {key:'photophore', name:'Photophore Array',  color:'#2BE7D6', glyph:'spark',   blurb:'Light-emitting organ lattice', px:['LUX','PHO','GLM']},
+  {key:'neural',     name:'Neural Cortex',     color:'#9D7BFF', glyph:'tri',     blurb:'Signal-integrating neural mass', px:['NRX','SYN','AXO']},
+  {key:'metabolic',  name:'Metabolic Core',    color:'#74F08A', glyph:'hex',     blurb:'Energy & metabolite cycling',  px:['ATP','KRB','MTC']},
+  {key:'sensory',    name:'Sensory Lattice',   color:'#4DA8FF', glyph:'diamond', blurb:'Environmental signal capture', px:['OPS','MEC','CHE']},
+  {key:'locomotor',  name:'Locomotor Web',     color:'#FFC24B', glyph:'square',  blurb:'Contractile motion drivers',   px:['MYO','ACT','FLG']},
+  {key:'circulatory',name:'Circulatory Mesh',  color:'#FF6FB5', glyph:'ring',    blurb:'Transport & distribution net', px:['HEM','VAS','PLS']},
+  {key:'regulatory', name:'Regulatory Genome', color:'#FF8964', glyph:'cross',   blurb:'Expression control circuits',  px:['REG','TFX','CRX']},
+];
+const NC = CLUSTERS.length;
+
+const DENSITY = { compact:{n:170,label:'Compact'}, standard:{n:430,label:'Standard'},
+  dense:{n:1100,label:'Dense'}, stress:{n:5000,label:'Stress · 5k'} };
+
+/* Bespoke cluster glyph paths (16x16 viewBox) — shape encodes cluster (not color-only) */
+function glyphPath(g){
+  switch(g){
+    case 'spark':   return '<path d="M8 1.5 9.6 6.4 14.5 8 9.6 9.6 8 14.5 6.4 9.6 1.5 8 6.4 6.4z"/>';
+    case 'tri':     return '<path d="M8 2.2 14 13H2z"/>';
+    case 'hex':     return '<path d="M8 2 13.2 5v6L8 14 2.8 11V5z"/>';
+    case 'diamond': return '<path d="M8 1.6 14.4 8 8 14.4 1.6 8z"/>';
+    case 'square':  return '<rect x="3" y="3" width="10" height="10" rx="1.6"/>';
+    case 'ring':    return '<circle cx="8" cy="8" r="5.2" fill="none" stroke="currentColor" stroke-width="2.4"/>';
+    case 'cross':   return '<path d="M6.4 2.2h3.2v4.2h4.2v3.2H9.6v4.2H6.4V9.6H2.2V6.4h4.2z"/>';
+  }
+  return '<circle cx="8" cy="8" r="5"/>';
+}
+function glyphSVG(ci, cls){
+  const c = CLUSTERS[ci];
+  return `<svg class="${cls||''}" viewBox="0 0 16 16" style="--cc:${c.color}" fill="currentColor" aria-hidden="true">${glyphPath(c.glyph)}</svg>`;
+}
+
+/* ── seeded RNG (mulberry32) ─────────────────────────────────────────────── */
+function rng32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a);
+  t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+
+/* ============================================================================
+   GRAPH GENERATION — real community structure from a seeded model
+   per-cluster preferential attachment (true hubs) + bridge ring (connected)
+   ========================================================================== */
+function buildGraph(targetN, seed){
+  const rnd = rng32(seed);
+  const nodes=[], links=[], byId={}, used={};
+  const clusterNodes = Array.from({length:NC},()=>[]);
+  let idn=0;
+
+  // distribute count across clusters with mild variation
+  const per=[]; for(let c=0;c<NC;c++){ const base=targetN/NC;
+    per.push(Math.max(6, Math.round(base*(0.78+rnd()*0.5)))); }
+
+  for(let c=0;c<NC;c++){
+    const cl=CLUSTERS[c];
+    for(let j=0;j<per[c];j++){
+      let nm; do{ const p=cl.px[(rnd()*cl.px.length)|0]; nm=p+'-'+String(1+((rnd()*989)|0)).padStart(3,'0'); }
+      while(used[nm]); used[nm]=1;
+      const node={ id:'n'+idn, name:nm, cluster:c, deg:0, degIn:0, degOut:0 };
+      nodes.push(node); byId[node.id]=node; clusterNodes[c].push(node); idn++;
+    }
+    // intra-cluster preferential attachment → hubs emerge
+    const cn=clusterNodes[c], bag=[];
+    for(let j=0;j<cn.length;j++){
+      if(j===0){ bag.push(cn[0]); continue; }
+      const m=1+(rnd()<0.62?1:0)+(rnd()<0.22?1:0); const chosen={};
+      for(let e=0;e<m;e++){ const t=bag[(rnd()*bag.length)|0];
+        if(!t||t===cn[j]||chosen[t.id]) continue; chosen[t.id]=1;
+        links.push({source:cn[j].id, target:t.id, cross:false}); bag.push(t,cn[j]); }
+      if(Object.keys(chosen).length===0){ const t=cn[(rnd()*j)|0];
+        links.push({source:cn[j].id, target:t.id, cross:false}); bag.push(t,cn[j]); }
+    }
+  }
+  // degree so far (for hub-preferential bridges)
+  links.forEach(l=>{ byId[l.source].deg++; byId[l.target].deg++; });
+  const topOf=c=>{ const a=clusterNodes[c]; let b=a[0]; for(const n of a) if(n.deg>b.deg) b=n; return b; };
+
+  // bridge ring guarantees a single connected component
+  for(let c=0;c<NC;c++){ const a=topOf(c), b=topOf((c+1)%NC);
+    links.push({source:a.id, target:b.id, cross:true}); a.deg++; b.deg++; }
+  // a few extra hub-preferential cross links for richness
+  const extra=Math.round(NC*1.6);
+  for(let k=0;k<extra;k++){ let c1=(rnd()*NC)|0, c2=(rnd()*NC)|0; if(c1===c2) c2=(c2+1)%NC;
+    const pick=c=>{ const a=clusterNodes[c]; let best=a[(rnd()*a.length)|0];
+      for(let t=0;t<3;t++){ const cand=a[(rnd()*a.length)|0]; if(cand.deg>best.deg) best=cand; } return best; };
+    const s=pick(c1), t=pick(c2); links.push({source:s.id, target:t.id, cross:true}); s.deg++; t.deg++; }
+
+  // adjacency + incident edges; final degree split (within/cross)
+  nodes.forEach(n=>{ n.deg=0; n.degIn=0; n.degOut=0; });
+  const adj=new Map(nodes.map(n=>[n.id,new Set()]));
+  const inc=new Map(nodes.map(n=>[n.id,[]]));
+  links.forEach((l,i)=>{ const s=byId[l.source], t=byId[l.target];
+    adj.get(s.id).add(t.id); adj.get(t.id).add(s.id);
+    inc.get(s.id).push(i); inc.get(t.id).push(i);
+    s.deg++; t.deg++;
+    if(s.cluster===t.cluster){ s.degIn++; t.degIn++; } else { s.degOut++; t.degOut++; } });
+
+  const maxDeg=nodes.reduce((m,n)=>Math.max(m,n.deg),1);
+  // hub rank (1 = most connected)
+  const ranked=[...nodes].sort((a,b)=>b.deg-a.deg); ranked.forEach((n,i)=>n.rank=i+1);
+
+  // per-cluster counts + buckets (for batched rendering)
+  const counts=Array(NC).fill(0); nodes.forEach(n=>counts[n.cluster]++);
+  const byCluster=Array.from({length:NC},()=>[]); nodes.forEach(n=>byCluster[n.cluster].push(n));
+
+  return { nodes, links, byId, adj, inc, maxDeg, counts, byCluster };
+}
+
+/* ============================================================================
+   STATE
+   ========================================================================== */
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isCoarse = matchMedia('(pointer: coarse)').matches;
+
+const S = {
+  g:null, sim:null,
+  transform:d3.zoomIdentity,
+  selected:null, hovered:null, dragNode:null,
+  active:new Set(CLUSTERS.map((_,i)=>i)),
+  pinMode:false, frozen:false, labels:'auto', density:'standard', sort:'degree',
+  search:'', settled:false, settling:true, running:true, dragging:false,
+  t0:performance.now(), seed:1337, shimmer:false, needsRender:true,
+};
+
+/* ── canvas / dpr ───────────────────────────────────────────────────────── */
+const canvas=document.getElementById('graph');
+const ctx=canvas.getContext('2d',{alpha:true});
+let W=0,H=0,dpr=1, sprites=[];
+
+function makeSprite(color){
+  const s=128, c=document.createElement('canvas'); c.width=c.height=s;
+  const g=c.getContext('2d'); const m=/^#(..)(..)(..)$/.exec(color);
+  const r=parseInt(m[1],16),gg=parseInt(m[2],16),b=parseInt(m[3],16);
+  const grd=g.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2);
+  grd.addColorStop(0,   `rgba(${r},${gg},${b},0.95)`);
+  grd.addColorStop(0.16,`rgba(${r},${gg},${b},0.50)`);
+  grd.addColorStop(0.42,`rgba(${r},${gg},${b},0.14)`);
+  grd.addColorStop(1,   `rgba(${r},${gg},${b},0)`);
+  g.fillStyle=grd; g.fillRect(0,0,s,s); return c;
+}
+sprites = CLUSTERS.map(c=>makeSprite(c.color));
+const RGB = CLUSTERS.map(c=>{ const m=/^#(..)(..)(..)$/.exec(c.color);
+  return [parseInt(m[1],16),parseInt(m[2],16),parseInt(m[3],16)]; });
+function lighten(rgb,t){ return `rgb(${Math.round(rgb[0]+(255-rgb[0])*t)},${Math.round(rgb[1]+(255-rgb[1])*t)},${Math.round(rgb[2]+(255-rgb[2])*t)})`; }
+
+function resize(){
+  dpr=Math.min(window.devicePixelRatio||1, 2);
+  W=window.innerWidth; H=window.innerHeight;
+  canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr);
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  S.needsRender=true;
+}
+window.addEventListener('resize', resize);
+
+/* node radius from degree (importance) */
+function radius(n){ return 2.4 + 1.85*Math.sqrt(n.deg); }
+
+/* ============================================================================
+   SIMULATION
+   ========================================================================== */
+function clusterCentroid(){
+  // arrange clusters on a ring → constellation separation
+  const R=Math.max(260, Math.sqrt(S.g.nodes.length)*22);
+  return CLUSTERS.map((_,i)=>{ const a=-Math.PI/2 + i/NC*2*Math.PI;
+    return {x:Math.cos(a)*R, y:Math.sin(a)*R}; });
+}
+let centroids=[];
+
+function chargeStrength(){ return -(+document.getElementById('rCharge').value); }
+function linkStrength(){ return (+document.getElementById('rLink').value)/100; }
+function sepStrength(){ return (+document.getElementById('rSep').value)/100; }
+
+function buildSim(){
+  centroids=clusterCentroid();
+  const n=S.g.nodes.length;
+  const sim=d3.forceSimulation(S.g.nodes)
+    .force('link', d3.forceLink(S.g.links).id(d=>d.id)
+      .distance(d=> d.cross?120:34).strength(linkStrength()))
+    .force('charge', d3.forceManyBody().strength(chargeStrength()).distanceMax(n>1500?420:900).theta(0.9))
+    .force('x', d3.forceX(d=>centroids[d.cluster].x).strength(sepStrength()))
+    .force('y', d3.forceY(d=>centroids[d.cluster].y).strength(sepStrength()))
+    .force('center', d3.forceCenter(0,0).strength(0.04))
+    .force('collide', d3.forceCollide(d=>radius(d)+1.5).strength(0.7).iterations(1))
+    .velocityDecay(0.42).alphaDecay(0.035).alphaMin(0.0016);
+  sim.stop(); // we drive ticks manually in rAF
+  return sim;
+}
+
+function reheat(a){ if(S.frozen) return; S.sim.alpha(Math.max(S.sim.alpha(), a||0.5)); S.running=true; }
+
+/* ============================================================================
+   ZOOM + DRAG  (canvas; sim.find = d3-quadtree hit-test)
+   ========================================================================== */
+const cSel=d3.select(canvas);
+const zoom=d3.zoom().scaleExtent([0.12,7]).on('zoom', ev=>{
+  S.transform=ev.transform; S.needsRender=true; updateZoomStatus();
+});
+function pointGraph(ev){ const t=S.transform; const r=canvas.getBoundingClientRect();
+  const px=(ev.clientX!=null?ev.clientX:0)-r.left, py=(ev.clientY!=null?ev.clientY:0)-r.top;
+  return [ t.invertX(px), t.invertY(py) ]; }
+function findAt(px,py){ // px,py in CSS space
+  const t=S.transform; const gx=t.invertX(px), gy=t.invertY(py);
+  const n=S.sim.find(gx,gy, 18/t.k); // ~18px screen-radius hit target
+  if(n && S.active.has(n.cluster)) return n; return null;
+}
+
+zoom.filter(ev=>{
+  if(ev.type==='wheel') return true;
+  if(ev.type==='dblclick') return false;
+  if(ev.touches && ev.touches.length>1) return true; // pinch
+  // pointer/touch down: pan only on empty space
+  const r=canvas.getBoundingClientRect();
+  const cx=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left;
+  const cy=(ev.touches?ev.touches[0].clientY:ev.clientY)-r.top;
+  return !findAt(cx,cy);
+});
+
+const drag=d3.drag()
+  .subject(ev=>{ const r=canvas.getBoundingClientRect();
+    return findAt(ev.sourceEvent.clientX-r.left, ev.sourceEvent.clientY-r.top); })
+  .on('start', ev=>{ if(!ev.subject) return;
+    S.dragging=true; S.dragNode=ev.subject; ev.subject._moved=false;
+    canvas.classList.add('grabbing');
+    if(!S.frozen){ S.sim.alphaTarget(0.3); S.running=true; }
+    const [gx,gy]=pointGraph(ev.sourceEvent); ev.subject.fx=gx; ev.subject.fy=gy; })
+  .on('drag', ev=>{ if(!ev.subject) return;
+    const r=canvas.getBoundingClientRect();
+    const gx=S.transform.invertX(ev.sourceEvent.clientX-r.left);
+    const gy=S.transform.invertY(ev.sourceEvent.clientY-r.top);
+    ev.subject.fx=gx; ev.subject.fy=gy;
+    if(S.frozen){ ev.subject.x=gx; ev.subject.y=gy; }
+    ev.subject._moved=true; S.needsRender=true; })
+  .on('end', ev=>{ S.dragging=false; S.dragNode=null; canvas.classList.remove('grabbing');
+    if(!ev.subject) return; S.sim.alphaTarget(0);
+    if(!ev.subject._moved){ select(ev.subject,{center:false}); }     // tap = select
+    else if(!S.pinMode && !ev.subject.pinned){ ev.subject.fx=null; ev.subject.fy=null; reheat(0.2); }
+    else { ev.subject.pinned=true; }
+    S.needsRender=true; });
+
+cSel.call(zoom).call(drag).on('dblclick.zoom', null);
+cSel.on('dblclick', ev=>{ const r=canvas.getBoundingClientRect();
+  const n=findAt(ev.clientX-r.left, ev.clientY-r.top);
+  if(n){ togglePin(n); } });
+cSel.on('click', ev=>{ if(S.dragging) return; const r=canvas.getBoundingClientRect();
+  const n=findAt(ev.clientX-r.left, ev.clientY-r.top); if(!n) deselect(); });
+// hover (fine pointers only)
+if(!isCoarse){
+  cSel.on('mousemove.hov', ev=>{ const r=canvas.getBoundingClientRect();
+    const n=findAt(ev.clientX-r.left, ev.clientY-r.top); setHover(n, ev.clientX, ev.clientY); });
+  cSel.on('mouseleave.hov', ()=>setHover(null));
+}
+
+/* ============================================================================
+   HIGHLIGHT MODEL
+   ========================================================================== */
+function highlightSet(){
+  // returns {nodes:Set, edges:Set, mode} or null (no dim)
+  const focus = S.selected || S.hovered;
+  if(focus){ const ns=new Set([focus.id]); S.g.adj.get(focus.id).forEach(id=>ns.add(id));
+    const es=new Set(S.g.inc.get(focus.id)); return {nodes:ns, edges:es, mode:'focus'}; }
+  if(S.search){ const q=S.search.toLowerCase(); const ns=new Set();
+    S.g.nodes.forEach(n=>{ if(n.name.toLowerCase().includes(q) || CLUSTERS[n.cluster].name.toLowerCase().includes(q)) ns.add(n.id); });
+    if(ns.size===0) return {nodes:ns, edges:new Set(), mode:'search'};
+    return {nodes:ns, edges:new Set(), mode:'search'}; }
+  return null;
+}
+
+/* ============================================================================
+   RENDER
+   ========================================================================== */
+let frames=0, fpsT=performance.now(), fps=0;
+function render(){
+  const t=S.transform, hl=highlightSet(), active=S.active;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+  ctx.save();
+  ctx.translate(t.x,t.y); ctx.scale(t.k,t.k);
+
+  const time=(performance.now()-S.t0)/1000;
+  const nodes=S.g.nodes, links=S.g.links;
+
+  // ---- EDGES (additive; intra faint, bridges brighter, adaptive to density) ----
+  ctx.globalCompositeOperation='lighter';
+  ctx.lineWidth=Math.max(0.5, 0.85/Math.sqrt(t.k));
+  const dense=nodes.length>1500, edgeA=dense?0.05:0.13, focusing=hl&&hl.mode==='focus';
+  // intra-cluster filaments
+  ctx.beginPath(); ctx.strokeStyle=`rgba(150,188,228,${edgeA})`;
+  for(let i=0;i<links.length;i++){ const l=links[i]; if(l.cross) continue;
+    if(!active.has(l.source.cluster)||!active.has(l.target.cluster)) continue;
+    if(focusing || (hl && hl.edges.has(i))) continue;
+    ctx.moveTo(l.source.x,l.source.y); ctx.lineTo(l.target.x,l.target.y); }
+  ctx.stroke();
+  // cross-cluster bridges — brighter so the constellation links read
+  ctx.beginPath(); ctx.strokeStyle=`rgba(184,208,244,${dense?0.07:0.22})`;
+  for(let i=0;i<links.length;i++){ const l=links[i]; if(!l.cross) continue;
+    if(!active.has(l.source.cluster)||!active.has(l.target.cluster)) continue;
+    if(focusing || (hl && hl.edges.has(i))) continue;
+    ctx.moveTo(l.source.x,l.source.y); ctx.lineTo(l.target.x,l.target.y); }
+  ctx.stroke();
+  // faint dimmed web when focusing a node
+  if(focusing){
+    ctx.beginPath(); ctx.strokeStyle='rgba(150,185,225,0.022)';
+    for(let i=0;i<links.length;i++){ const l=links[i];
+      if(!active.has(l.source.cluster)||!active.has(l.target.cluster)) continue;
+      if(hl.edges.has(i)) continue;
+      ctx.moveTo(l.source.x,l.source.y); ctx.lineTo(l.target.x,l.target.y); }
+    ctx.stroke();
+  }
+  // highlighted edges (bright, source-cluster colored)
+  if(hl && hl.edges.size){
+    ctx.lineWidth=Math.max(0.9, 1.5/Math.sqrt(t.k));
+    hl.edges.forEach(i=>{ const l=links[i];
+      if(!active.has(l.source.cluster)||!active.has(l.target.cluster)) return;
+      const rgb=RGB[l.source.cluster];
+      ctx.beginPath(); ctx.strokeStyle=`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.6)`;
+      ctx.moveTo(l.source.x,l.source.y); ctx.lineTo(l.target.x,l.target.y); ctx.stroke(); });
+  }
+
+  // ---- NODE GLOWS (additive sprites, grouped by cluster; skip leaf glows at scale)
+  const dense2=nodes.length>1500, glowMin=nodes.length>2500?2:0;
+  const TAU=6.2832, byC=S.g.byCluster;
+  for(let c=0;c<NC;c++){ if(!active.has(c)) continue; const sprite=sprites[c], bucket=byC[c];
+    for(let j=0;j<bucket.length;j++){ const n=bucket[j]; if(n.deg<glowMin) continue;
+      const r=radius(n); let a=0.42 + Math.min(0.4, n.deg/S.g.maxDeg*0.5);
+      if(hl){ a *= hl.nodes.has(n.id) ? 1.25 : 0.12; }
+      if(S.shimmer){ a *= 0.86 + 0.14*Math.sin(time*1.6 + (n.x+n.y)*0.02); }
+      const gr=(r*3.3+7); ctx.globalAlpha=a<1?a:1;
+      ctx.drawImage(sprite, n.x-gr, n.y-gr, gr*2, gr*2); } }
+  ctx.globalAlpha=1;
+
+  // ---- NODE CORES (source-over, crisp; batched per cluster → few fill calls) ----
+  ctx.globalCompositeOperation='source-over';
+  const hot = !dense2; // inner sparkle only at explorable scale
+  for(let c=0;c<NC;c++){ if(!active.has(c)) continue; const bucket=byC[c];
+    // full cores
+    ctx.globalAlpha=1; ctx.beginPath();
+    for(let j=0;j<bucket.length;j++){ const n=bucket[j]; if(hl && !hl.nodes.has(n.id)) continue;
+      const r=radius(n); ctx.moveTo(n.x+r,n.y); ctx.arc(n.x,n.y,r,0,TAU); }
+    ctx.fillStyle=lighten(RGB[c], hot?0.28:0.5); ctx.fill();
+    if(hl){ // dimmed cores
+      ctx.globalAlpha=0.22; ctx.beginPath();
+      for(let j=0;j<bucket.length;j++){ const n=bucket[j]; if(hl.nodes.has(n.id)) continue;
+        const r=radius(n); ctx.moveTo(n.x+r,n.y); ctx.arc(n.x,n.y,r,0,TAU); }
+      ctx.fillStyle=lighten(RGB[c], hot?0.05:0.18); ctx.fill(); }
+    if(hot){ // hot centers (bright)
+      ctx.globalAlpha=1; ctx.beginPath();
+      for(let j=0;j<bucket.length;j++){ const n=bucket[j]; if(hl && !hl.nodes.has(n.id)) continue;
+        const r=Math.max(0.8,radius(n)*0.4); ctx.moveTo(n.x+r,n.y); ctx.arc(n.x,n.y,r,0,TAU); }
+      ctx.fillStyle=lighten(RGB[c],0.78); ctx.fill();
+      if(hl){ ctx.globalAlpha=0.22; ctx.beginPath();
+        for(let j=0;j<bucket.length;j++){ const n=bucket[j]; if(hl.nodes.has(n.id)) continue;
+          const r=Math.max(0.8,radius(n)*0.4); ctx.moveTo(n.x+r,n.y); ctx.arc(n.x,n.y,r,0,TAU); }
+        ctx.fillStyle=lighten(RGB[c],0.2); ctx.fill(); } }
+  }
+  ctx.globalAlpha=1;
+
+  // selection / pin rings
+  const ring=(n,col,w,rr)=>{ ctx.beginPath(); ctx.arc(n.x,n.y,radius(n)+rr,0,6.2832);
+    ctx.strokeStyle=col; ctx.lineWidth=w/t.k; ctx.stroke(); };
+  nodes.forEach(n=>{ if(!active.has(n.cluster)) return;
+    if(n.pinned){ ring(n,'rgba(255,255,255,0.5)',1.4,2.6); } });
+  if(S.selected && active.has(S.selected.cluster)){ ring(S.selected,'#ffffff',2,4); ring(S.selected,lighten(RGB[S.selected.cluster],0.4),1,6.5); }
+  else if(S.hovered && active.has(S.hovered.cluster)){ ring(S.hovered,'rgba(255,255,255,0.7)',1.6,3.5); }
+
+  ctx.restore();
+
+  // ---- LABELS (screen space, LOD + declutter) ----
+  drawLabels(hl);
+
+  // fps
+  frames++; const now=performance.now();
+  if(now-fpsT>=500){ fps=Math.round(frames*1000/(now-fpsT)); frames=0; fpsT=now;
+    document.getElementById('stFps').textContent=fps; }
+}
+
+function drawLabels(hl){
+  if(S.g.nodes.length===0) return;
+  const t=S.transform, active=S.active, placed=[];
+  const cand=[];
+  const focus=S.selected||S.hovered;
+  const focusSet = focus ? hl.nodes : null;
+  const maxDeg=S.g.maxDeg;
+  // dynamic hub threshold from zoom
+  const thr = Math.max(2, Math.round(maxDeg*(1.15 - t.k*0.42)));
+  for(const n of S.g.nodes){
+    if(!active.has(n.cluster)) continue;
+    let pri=-1;
+    if(S.selected===n) pri=1000; else if(S.hovered===n) pri=950;
+    else if(focusSet && focusSet.has(n.id)) pri=850;
+    else if(S.search && hl && hl.mode==='search' && hl.nodes.has(n.id)) pri=800;
+    else if(S.labels==='off') continue;
+    else if(S.labels==='hubs'){ if(n.deg>=Math.max(5,maxDeg*0.5)) pri=n.deg; else continue; }
+    else { if(n.deg>=thr || radius(n)*t.k>9) pri=n.deg; else continue; }
+    if(pri<0) continue;
+    const sx=t.applyX(n.x), sy=t.applyY(n.y);
+    if(sx<-40||sx>W+40||sy<-30||sy>H+30) continue;
+    cand.push({n,pri,sx,sy});
+  }
+  cand.sort((a,b)=>b.pri-a.pri);
+  const cap = S.g.nodes.length>1500 ? 42 : 80;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.textBaseline='middle'; ctx.textAlign='left';
+  let drawn=0;
+  for(const c of cand){
+    if(drawn>=cap) break;
+    const n=c.n, big=(S.selected===n||S.hovered===n);
+    const fs=big?13:11.5; ctx.font=`${big?600:500} ${fs}px 'IBM Plex Mono', ui-monospace, monospace`;
+    const rscreen=radius(n)*t.k;
+    const tx=c.sx + rscreen + 5, ty=c.sy;
+    const w=ctx.measureText(n.name).width;
+    const box={x:tx-2,y:ty-fs/2-2,w:w+6,h:fs+4};
+    let clash=false; for(const p of placed){ if(box.x<p.x+p.w&&box.x+box.w>p.x&&box.y<p.y+p.h&&box.y+box.h>p.y){clash=true;break;} }
+    if(clash && !big) continue;
+    placed.push(box);
+    ctx.shadowColor='rgba(2,5,10,0.92)'; ctx.shadowBlur=6;
+    ctx.fillStyle = big ? '#ffffff' : 'rgba(225,235,250,0.86)';
+    ctx.fillText(n.name, tx, ty);
+    ctx.shadowBlur=0;
+    drawn++;
+  }
+}
+
+/* ============================================================================
+   MAIN LOOP
+   ========================================================================== */
+function shimmerActive(){ return !reduceMotion && !S.frozen && S.g.nodes.length<=1200 && S.settled; }
+function tick(){
+  S.shimmer=shimmerActive();
+  if(!S.frozen){
+    const live = S.sim.alpha()>S.sim.alphaMin() || S.dragging;
+    if(live){ S.sim.tick(); S.needsRender=true;
+      if(S.settling) updateWarmup();
+      if(!S.dragging && S.sim.alpha()<=S.sim.alphaMin()){ onSettle(); }
+    }
+    S.running=live;
+  }
+  if(S.shimmer) S.needsRender=true;
+  if(S.needsRender){ render(); S.needsRender=false; }
+  requestAnimationFrame(tick);
+}
+
+function updateWarmup(){
+  const a=S.sim.alpha(), a0=1, am=S.sim.alphaMin();
+  const p=Math.min(1, Math.max(0, 1-(a-am)/(a0-am)));
+  document.getElementById('loadFill').style.width=(p*100).toFixed(0)+'%';
+}
+function onSettle(){
+  if(S.settled) return; S.settled=true; S.settling=false;
+  document.getElementById('loadFill').style.width='100%';
+  const lo=document.getElementById('loading');
+  setTimeout(()=>{ lo.hidden=true; }, reduceMotion?0:260);
+  document.getElementById('simState').textContent='stable';
+  document.getElementById('liveDot').classList.remove('warm');
+  fitView(reduceMotion?0:600);
+}
+
+/* ============================================================================
+   VIEW FRAMING
+   ========================================================================== */
+function visibleNodes(){ return S.g.nodes.filter(n=>S.active.has(n.cluster)); }
+function fitView(dur){
+  const vis=visibleNodes(); if(!vis.length) return;
+  let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+  vis.forEach(n=>{ const r=radius(n)+8; x0=Math.min(x0,n.x-r); y0=Math.min(y0,n.y-r);
+    x1=Math.max(x1,n.x+r); y1=Math.max(y1,n.y+r); });
+  const bw=x1-x0, bh=y1-y0; const pad=70;
+  const availW=W - (window.innerWidth>900?360:40) - pad;
+  const availH=H - 120 - pad;
+  let k=Math.min(availW/bw, availH/bh); k=Math.max(0.12,Math.min(2.4,k));
+  const cx=(x0+x1)/2, cy=(y0+y1)/2;
+  const offX = window.innerWidth>900 ? (W+170)/2 : W/2;  // bias right of left rail
+  const tr=d3.zoomIdentity.translate(offX - k*cx, (H/2+10) - k*cy).scale(k);
+  applyTransform(tr,dur);
+}
+function applyTransform(tr,dur){
+  if(reduceMotion||!dur) cSel.call(zoom.transform,tr);
+  else cSel.transition().duration(dur).ease(d3.easeCubicOut).call(zoom.transform,tr);
+}
+function centerOn(n,dur){
+  const k=Math.max(S.transform.k, 1.1);
+  const offX = window.innerWidth>900 ? (W-180)/2 + 80 : W/2;
+  const tr=d3.zoomIdentity.translate(offX - k*n.x, (H/2) - k*n.y).scale(k);
+  applyTransform(tr, reduceMotion?0:(dur||450));
+}
+function updateZoomStatus(){ document.getElementById('stZoom').textContent=S.transform.k.toFixed(1)+'×'; }
+
+/* ============================================================================
+   SELECTION / HOVER / TOOLTIP
+   ========================================================================== */
+const tooltip=document.getElementById('tooltip');
+function setHover(n, cx, cy){
+  if(S.hovered===n){ if(n){ tooltip.style.left=cx+'px'; tooltip.style.top=cy+'px'; } return; }
+  S.hovered=n; S.needsRender=true;
+  if(n){ document.getElementById('ttName').textContent=n.name;
+    document.getElementById('ttDot').style.setProperty('--cc',CLUSTERS[n.cluster].color);
+    document.getElementById('ttMeta').textContent=`${CLUSTERS[n.cluster].name} · degree ${n.deg}`;
+    tooltip.style.left=cx+'px'; tooltip.style.top=cy+'px'; tooltip.classList.add('show');
+    canvas.style.cursor='pointer';
+  } else { tooltip.classList.remove('show'); if(!S.dragging) canvas.style.cursor='grab'; }
+}
+
+const insp=document.getElementById('inspector');
+function select(n, opts){ opts=opts||{};
+  S.selected=n; S.needsRender=true; renderInspector(n);
+  insp.classList.add('open');
+  syncListSelection();
+  if(opts.center) centerOn(n);
+  if(window.innerWidth<=900 && opts.fromList) openSheet(insp);
+}
+function deselect(){ if(!S.selected) return; S.selected=null; S.needsRender=true;
+  insp.classList.remove('open'); if(window.innerWidth<=900) closeSheet(insp); syncListSelection(); }
+
+function renderInspector(n){
+  const cl=CLUSTERS[n.cluster];
+  document.getElementById('iName').textContent=n.name;
+  document.getElementById('iAccent').style.setProperty('--cc',cl.color);
+  const ic=document.getElementById('iCluster');
+  ic.style.setProperty('--cc',cl.color);
+  ic.innerHTML=`${glyphSVG(n.cluster)} ${cl.name}`;
+  const stats=document.getElementById('iStats');
+  stats.innerHTML=`
+    <div class="stat"><div class="k">Degree</div><div class="v">${n.deg}</div></div>
+    <div class="stat hub"><div class="k">Hub rank</div><div class="v">#${n.rank} <small>/ ${S.g.nodes.length}</small></div></div>
+    <div class="stat"><div class="k">Within cluster</div><div class="v">${n.degIn}</div></div>
+    <div class="stat"><div class="k">Bridges out</div><div class="v">${n.degOut}</div></div>`;
+  // pin button
+  const pb=document.getElementById('btnPinNode'); pb.setAttribute('aria-pressed', n.pinned?'true':'false');
+  pb.classList.toggle('on', !!n.pinned);
+  document.getElementById('pinNodeLbl').textContent = n.pinned?'Unpin node':'Pin node';
+  // connections
+  const ids=[...S.g.adj.get(n.id)].map(id=>S.g.byId[id]).sort((a,b)=>b.deg-a.deg);
+  document.getElementById('iConnCount').textContent=`${ids.length} node${ids.length===1?'':'s'}`;
+  const wrap=document.getElementById('iConns');
+  wrap.innerHTML = ids.map(o=>{ const cross=o.cluster!==n.cluster; const c=CLUSTERS[o.cluster];
+    return `<button class="cn ${cross?'cross':''}" data-id="${o.id}" type="button" style="--cc:${c.color}">
+      ${glyphSVG(o.cluster,'gl')}<span class="nm">${o.name}</span>
+      <span class="cl">${cross?c.name:''}</span><span class="deg">${o.deg}</span></button>`; }).join('')
+    || `<div class="empty">No connections.</div>`;
+}
+document.getElementById('iConns').addEventListener('click', e=>{
+  const b=e.target.closest('.cn'); if(!b) return; const n=S.g.byId[b.dataset.id];
+  if(n){ select(n,{center:true}); } });
+
+document.getElementById('btnInspClose').addEventListener('click', deselect);
+document.getElementById('btnFocusNode').addEventListener('click', ()=>{ if(S.selected) centerOn(S.selected); });
+document.getElementById('btnPinNode').addEventListener('click', ()=>{ if(S.selected) togglePin(S.selected); });
+
+function togglePin(n){
+  n.pinned=!n.pinned;
+  if(n.pinned){ n.fx=n.x; n.fy=n.y; } else { n.fx=null; n.fy=null; reheat(0.2); }
+  if(S.selected===n) renderInspector(n);
+  S.needsRender=true;
+}
+
+/* ============================================================================
+   LEGEND / FILTER
+   ========================================================================== */
+const legendEl=document.getElementById('legend');
+function buildLegend(){
+  legendEl.innerHTML = CLUSTERS.map((c,i)=>`
+    <button class="lg" data-c="${i}" type="button" aria-pressed="true" style="--cc:${c.color}">
+      <span class="sw">${glyphSVG(i)}<span class="dot"></span></span>
+      <span class="nm"><b>${c.name}</b><span>${c.blurb}</span></span>
+      <span class="ct" data-ct="${i}">0</span>
+    </button>`).join('');
+}
+legendEl.addEventListener('click', e=>{ const b=e.target.closest('.lg'); if(!b) return;
+  const i=+b.dataset.c; toggleCluster(i); });
+function toggleCluster(i){
+  if(S.active.has(i)) S.active.delete(i); else S.active.add(i);
+  syncLegend(); afterFilterChange();
+}
+function syncLegend(){ legendEl.querySelectorAll('.lg').forEach(b=>{ const i=+b.dataset.c;
+  b.setAttribute('aria-pressed', S.active.has(i)?'true':'false'); }); }
+document.getElementById('clAll').addEventListener('click', ()=>{ CLUSTERS.forEach((_,i)=>S.active.add(i)); syncLegend(); afterFilterChange(); });
+document.getElementById('clNone').addEventListener('click', ()=>{ S.active.clear(); syncLegend(); afterFilterChange(); });
+
+function afterFilterChange(){
+  if(S.selected && !S.active.has(S.selected.cluster)) deselect();
+  updateCounts(); buildNodeList(); S.needsRender=true; checkEmpty();
+}
+function checkEmpty(){
+  const empty=S.active.size===0;
+  const el=document.getElementById('emptyState');
+  if(empty){ el.hidden=false; } else { el.hidden=true; }
+}
+document.getElementById('emptyAction').addEventListener('click', ()=>{ CLUSTERS.forEach((_,i)=>S.active.add(i)); syncLegend(); afterFilterChange(); });
+
+/* ============================================================================
+   NODE LIST  (a11y parallel + explorer) — roving tabindex keyboard nav
+   ========================================================================== */
+const listEl=document.getElementById('nodelist');
+function listData(){
+  const q=S.search.toLowerCase();
+  let arr=S.g.nodes.filter(n=>S.active.has(n.cluster) &&
+    (!q || n.name.toLowerCase().includes(q) || CLUSTERS[n.cluster].name.toLowerCase().includes(q)));
+  if(S.sort==='degree') arr.sort((a,b)=>b.deg-a.deg||a.name.localeCompare(b.name));
+  else if(S.sort==='name') arr.sort((a,b)=>a.name.localeCompare(b.name));
+  else arr.sort((a,b)=>a.cluster-b.cluster||b.deg-a.deg);
+  return arr;
+}
+function buildNodeList(){
+  const arr=listData();
+  document.getElementById('nodeCount').textContent=`${arr.length} shown`;
+  if(arr.length===0){ listEl.innerHTML=`<div class="empty">${S.search?`No nodes match “${escapeHtml(S.search)}”.`:'No nodes — enable a cluster.'}</div>`; return; }
+  const cap=Math.min(arr.length, 600); // keep DOM light at 5k
+  let html='';
+  for(let i=0;i<cap;i++){ const n=arr[i]; const c=CLUSTERS[n.cluster];
+    const w=Math.round(n.deg/S.g.maxDeg*100);
+    html+=`<button class="nrow" role="option" data-id="${n.id}" type="button" tabindex="-1"
+      aria-current="${S.selected===n?'true':'false'}" aria-label="${n.name}, ${c.name}, degree ${n.deg}" style="--cc:${c.color}">
+      ${glyphSVG(n.cluster,'gl')}<span class="nm">${n.name}</span>
+      <span class="cl">${c.name.split(' ')[0]}</span>
+      <span class="deg"><span class="bar"><i style="--w:${w}%"></i></span><b>${n.deg}</b></span>
+    </button>`; }
+  if(arr.length>cap) html+=`<div class="empty">+${arr.length-cap} more — refine search to see them.</div>`;
+  listEl.innerHTML=html;
+  // first item focusable
+  const first=listEl.querySelector('.nrow'); if(first) first.tabIndex=0;
+}
+function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+listEl.addEventListener('click', e=>{ const b=e.target.closest('.nrow'); if(!b) return;
+  const n=S.g.byId[b.dataset.id]; if(n) select(n,{center:true, fromList:true}); });
+listEl.addEventListener('keydown', e=>{
+  const items=[...listEl.querySelectorAll('.nrow')]; if(!items.length) return;
+  let idx=items.findIndex(el=>el.tabIndex===0); if(idx<0) idx=0;
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){ e.preventDefault();
+    idx=Math.max(0,Math.min(items.length-1, idx+(e.key==='ArrowDown'?1:-1)));
+    items.forEach(el=>el.tabIndex=-1); items[idx].tabIndex=0; items[idx].focus();
+  } else if(e.key==='Home'){ e.preventDefault(); items.forEach(el=>el.tabIndex=-1); items[0].tabIndex=0; items[0].focus(); }
+  else if(e.key==='End'){ e.preventDefault(); items.forEach(el=>el.tabIndex=-1); items[items.length-1].tabIndex=0; items[items.length-1].focus(); }
+  else if(e.key==='Enter'||e.key===' '){ e.preventDefault(); const n=S.g.byId[items[idx].dataset.id]; if(n) select(n,{center:true, fromList:true}); }
+});
+function syncListSelection(){ listEl.querySelectorAll('.nrow').forEach(b=>{
+  const sel=S.selected&&b.dataset.id===S.selected.id;
+  b.setAttribute('aria-current', sel?'true':'false');
+  if(sel) b.scrollIntoView({block:'nearest'}); }); }
+
+/* ============================================================================
+   CONTROLS WIRING
+   ========================================================================== */
+function setFill(el){ const min=+el.min,max=+el.max,v=+el.value; el.style.setProperty('--fill',((v-min)/(max-min)*100)+'%'); }
+const rCharge=document.getElementById('rCharge'), rLink=document.getElementById('rLink'), rSep=document.getElementById('rSep');
+[rCharge,rLink,rSep].forEach(setFill);
+rCharge.addEventListener('input', ()=>{ setFill(rCharge); document.getElementById('vCharge').textContent='−'+rCharge.value;
+  S.sim.force('charge').strength(chargeStrength()); reheat(0.45); });
+rLink.addEventListener('input', ()=>{ setFill(rLink); document.getElementById('vLink').textContent=(rLink.value/100).toFixed(2);
+  S.sim.force('link').strength(linkStrength()); reheat(0.45); });
+rSep.addEventListener('input', ()=>{ setFill(rSep); document.getElementById('vSep').textContent=(rSep.value/100).toFixed(2);
+  S.sim.force('x').strength(sepStrength()); S.sim.force('y').strength(sepStrength()); reheat(0.45); });
+
+// search
+const searchInput=document.getElementById('search'), searchWrap=document.getElementById('searchWrap');
+let searchTimer=null;
+searchInput.addEventListener('input', ()=>{ searchWrap.classList.toggle('has-val', !!searchInput.value);
+  clearTimeout(searchTimer); searchTimer=setTimeout(()=>{ S.search=searchInput.value.trim();
+    buildNodeList(); S.needsRender=true; }, 110); });
+searchInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ const arr=listData();
+  if(arr.length){ select(arr[0],{center:true}); } } });
+document.getElementById('searchClr').addEventListener('click', ()=>{ searchInput.value=''; S.search='';
+  searchWrap.classList.remove('has-val'); buildNodeList(); S.needsRender=true; searchInput.focus(); });
+
+// sort
+document.getElementById('segSort').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return;
+  S.sort=b.dataset.sort; segPress('segSort',b); buildNodeList(); });
+// labels
+document.getElementById('segLabels').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return;
+  S.labels=b.dataset.labels; segPress('segLabels',b); S.needsRender=true; });
+// density
+document.getElementById('segDensity').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.density===S.density) return; S.density=b.dataset.density; segPress('segDensity',b); regenerate(false); });
+function segPress(id,btn){ document.getElementById(id).querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed','false'));
+  btn.setAttribute('aria-pressed','true'); }
+
+// freeze
+function setFrozen(f){ S.frozen=f;
+  const bF=document.getElementById('btnFreeze'); bF.setAttribute('aria-pressed', f?'true':'false');
+  bF.querySelector('.i-freeze').style.display=f?'none':'block';
+  bF.querySelector('.i-play').style.display=f?'block':'none';
+  document.getElementById('simState').textContent = f?'frozen':(S.settled?'stable':'settling…');
+  document.getElementById('liveDot').classList.toggle('warm', !f && !S.settled);
+  if(!f){ reheat(0.05); }
+  S.needsRender=true;
+}
+document.getElementById('btnFreeze').addEventListener('click', ()=>setFrozen(!S.frozen));
+
+// pin mode
+document.getElementById('btnPin').addEventListener('click', e=>{ S.pinMode=!S.pinMode;
+  e.currentTarget.setAttribute('aria-pressed',S.pinMode?'true':'false'); e.currentTarget.classList.toggle('on',S.pinMode); });
+document.getElementById('btnRelease').addEventListener('click', ()=>{ S.g.nodes.forEach(n=>{ n.pinned=false; n.fx=null; n.fy=null; });
+  if(S.selected) renderInspector(S.selected); reheat(0.4); S.needsRender=true; });
+
+// reseed / regenerate
+document.getElementById('btnReseed').addEventListener('click', ()=>{ S.seed=(S.seed*1103515245+12345)>>>0; regenerate(true); });
+document.getElementById('btnFit').addEventListener('click', ()=>fitView(reduceMotion?0:500));
+document.getElementById('zFit').addEventListener('click', ()=>fitView(reduceMotion?0:500));
+document.getElementById('zIn').addEventListener('click', ()=>cSel.transition().duration(reduceMotion?0:200).call(zoom.scaleBy,1.5));
+document.getElementById('zOut').addEventListener('click', ()=>cSel.transition().duration(reduceMotion?0:200).call(zoom.scaleBy,1/1.5));
+
+/* ── mobile sheets ──────────────────────────────────────────────────────── */
+const rail=document.getElementById('rail'), scrim=document.getElementById('scrim');
+const btnRail=document.getElementById('btnRail');
+function openSheet(el){ if(window.innerWidth>900) return; if(el===rail) insp.classList.remove('open');
+  if(el===insp) rail.classList.remove('open'); el.classList.add('open'); scrim.classList.add('show'); }
+function closeSheet(el){ el.classList.remove('open'); if(!rail.classList.contains('open')&&!insp.classList.contains('open')) scrim.classList.remove('show'); }
+btnRail.addEventListener('click', ()=>{ const desktop=window.innerWidth>900;
+  if(desktop){ const open=rail.classList.toggle('open'); btnRail.setAttribute('aria-expanded',open?'true':'false'); }
+  else { if(rail.classList.contains('open')) closeSheet(rail); else openSheet(rail); } });
+document.getElementById('btnInspM').addEventListener('click', ()=>{ if(S.selected){ openSheet(insp); } else { openSheet(rail); } });
+scrim.addEventListener('click', ()=>{ closeSheet(rail); closeSheet(insp); });
+// start closed on mobile
+if(window.innerWidth<=900){ rail.classList.remove('open'); btnRail.setAttribute('aria-expanded','false'); }
+
+/* ── keyboard shortcuts ─────────────────────────────────────────────────── */
+window.addEventListener('keydown', e=>{
+  if(e.target.matches('input,textarea')) return;
+  if(e.key==='f'||e.key==='F'){ setFrozen(!S.frozen); }
+  else if(e.key==='0'){ fitView(reduceMotion?0:500); }
+  else if(e.key==='/'){ e.preventDefault(); if(window.innerWidth<=900) openSheet(rail); searchInput.focus(); }
+  else if(e.key==='Escape'){ if(S.selected) deselect(); else if(window.innerWidth<=900){ closeSheet(rail); closeSheet(insp); } }
+});
+
+/* ============================================================================
+   COUNTS / STATUS
+   ========================================================================== */
+function updateCounts(){
+  CLUSTERS.forEach((_,i)=>{ const el=legendEl.querySelector(`[data-ct="${i}"]`); if(el) el.textContent=S.g.counts[i]; });
+  document.getElementById('stNodes').textContent=S.g.nodes.length;
+  document.getElementById('stEdges').textContent=S.g.links.length;
+  document.getElementById('stClusters').textContent=S.active.size;
+}
+
+/* ============================================================================
+   (RE)GENERATE  &  BOOT
+   ========================================================================== */
+function regenerate(newSeed){
+  if(S.sim) S.sim.stop();
+  const target=DENSITY[S.density].n;
+  S.g=buildGraph(target, S.seed);
+  S.selected=null; S.hovered=null; insp.classList.remove('open'); tooltip.classList.remove('show');
+  S.settled=false; S.settling=true;
+  document.getElementById('loadFill').style.width='0%';
+  document.getElementById('loading').hidden=false;
+  document.getElementById('simState').textContent='settling…';
+  document.getElementById('liveDot').classList.add('warm');
+  S.sim=buildSim();
+  // pre-tick invisibly so the reveal starts from coherent structure (no big-bang explosion)
+  const pre = reduceMotion ? 320 : 46;
+  for(let i=0;i<pre;i++) S.sim.tick();
+  if(reduceMotion){ S.frozen=false; setFrozen(true); onSettle(); }
+  buildLegend(); syncLegend(); updateCounts(); buildNodeList(); checkEmpty();
+  S.running=true; S.needsRender=true;
+}
+
+function boot(){
+  resize();
+  S.density='standard';
+  S.g=buildGraph(DENSITY.standard.n, S.seed);
+  buildLegend(); syncLegend(); updateCounts();
+  S.sim=buildSim();
+  const pre = reduceMotion ? 320 : 46;
+  for(let i=0;i<pre;i++) S.sim.tick();
+  buildNodeList(); checkEmpty();
+  if(reduceMotion){ setFrozen(true); onSettle(); }
+  updateZoomStatus();
+  // pick up the web font for canvas labels once loaded
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{ S.needsRender=true; });
+  requestAnimationFrame(tick);
+}
+
+/* Read-only automation/verification hook (no behavior change; used by the headless
+   self-test to drive and assert canvas interactions that have no DOM handle). */
+window.__BIO = {
+  get k(){ return S.transform.k; },
+  get nodes(){ return S.g.nodes; },
+  get count(){ return S.g.nodes.length; },
+  screen(id){ const n=S.g.byId[id]; return n?[S.transform.applyX(n.x), S.transform.applyY(n.y)]:null; },
+  graphPos(id){ const n=S.g.byId[id]; return n?[n.x,n.y]:null; },
+  neighbors(id){ return [...S.g.adj.get(id)]; },
+  topHub(){ let b=S.g.nodes[0]; for(const n of S.g.nodes) if(n.deg>b.deg) b=n; return b.id; },
+  get selected(){ return S.selected?S.selected.id:null; },
+  get hovered(){ return S.hovered?S.hovered.id:null; },
+  get settled(){ return S.settled; },
+  inViewport(){ const m=4; return S.g.nodes.every(n=>{ const x=S.transform.applyX(n.x), y=S.transform.applyY(n.y);
+    return x>=-m && x<=window.innerWidth+m && y>=-m && y<=window.innerHeight+m; }); },
+  // synchronous dim probe: sum a small patch at each NON-neighbor node's centre,
+  // un-highlighted vs hub-focused, in one JS turn (no rAF/readback race). Verify only.
+  probeDim(){
+    const f=S.g.nodes.reduce((a,b)=>b.deg>a.deg?b:a);
+    // farthest cluster from the focus → its nodes are pure non-neighbors, off the hot area
+    const fc=centroids[f.cluster]; let c2=(f.cluster+1)%NC, bd=-1;
+    for(let c=0;c<NC;c++){ if(c===f.cluster) continue; const d=Math.hypot(centroids[c].x-fc.x,centroids[c].y-fc.y); if(d>bd){bd=d;c2=c;} }
+    const bucket=S.g.byCluster[c2];
+    // frame that cluster at high zoom so nodes are large + isolated (no glow-overlap confound)
+    let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9; bucket.forEach(n=>{ x0=Math.min(x0,n.x);y0=Math.min(y0,n.y);x1=Math.max(x1,n.x);y1=Math.max(y1,n.y); });
+    const k=0.82*Math.min(canvas.width/dpr/(x1-x0+60), canvas.height/dpr/(y1-y0+60));
+    const cx=(x0+x1)/2, cy=(y0+y1)/2;
+    const savedT=S.transform; S.transform=d3.zoomIdentity.translate(W/2-k*cx,H/2-k*cy).scale(k);
+    // total brightness of this isolated view: every visible node is a non-neighbor, so
+    // the whole field (cores + halos) dims on focus — captures the full glow falloff.
+    const off=document.createElement('canvas'); off.width=200; off.height=120; const octx=off.getContext('2d');
+    const measure=()=>{ octx.clearRect(0,0,200,120); octx.drawImage(canvas,0,0,200,120);
+      const d=octx.getImageData(0,0,200,120).data; let s=0; for(let i=0;i<d.length;i+=4) s+=d[i]+d[i+1]+d[i+2]; return s; };
+    const sh=S.hovered, ss=S.selected, sShim=S.shimmer; S.shimmer=false;
+    S.selected=null; S.hovered=null; render(); const before=measure();
+    S.hovered=f; render(); const after=measure();
+    S.transform=savedT; S.hovered=sh; S.selected=ss; S.shimmer=sShim; S.needsRender=true;
+    return { before, after, ratio:+(after/before).toFixed(3), cluster:c2, nodes:bucket.length };
+  },
+  // render-throughput benchmark — forces continuous renders for `ms` and returns fps
+  benchmark(ms){ return new Promise(res=>{ let n=0; const t0=performance.now();
+    const loop=()=>{ S.needsRender=true; render(); n++;
+      if(performance.now()-t0<ms) requestAnimationFrame(loop);
+      else res(Math.round(n*1000/(performance.now()-t0))); };
+    requestAnimationFrame(loop); }); },
+};
+
+try{ boot(); }
+catch(err){
+  document.getElementById('loading').hidden=true;
+  const es=document.getElementById('errState'); es.hidden=false;
+  document.getElementById('errMsg').textContent='The network failed to initialize: '+(err&&err.message||err);
+}
+})();
+</script>
+</body>
+</html>

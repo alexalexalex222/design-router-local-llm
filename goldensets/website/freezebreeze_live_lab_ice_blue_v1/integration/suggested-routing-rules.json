@@ -1,0 +1,82 @@
+{
+  "pack_id": "freezebreeze_live_lab_ice_blue_v1",
+  "vertical_tokens": [
+    "live commerce",
+    "live shopping",
+    "shoppable video",
+    "product demo",
+    "product education",
+    "cooling product",
+    "comfort product",
+    "appliance demo",
+    "tiktok shop",
+    "youtube live",
+    "shopify live",
+    "broadcast storefront"
+  ],
+  "tone_tokens": [
+    "tech-commerce",
+    "ice-blue",
+    "cool",
+    "crisp",
+    "broadcast",
+    "instructional",
+    "premium",
+    "dark"
+  ],
+  "surface_tokens": [
+    "homepage",
+    "hero",
+    "landing",
+    "section",
+    "live_commerce",
+    "product_education"
+  ],
+  "motif_tokens": [
+    "product_schematic_svg",
+    "airflow_diagram",
+    "heat_map_accent",
+    "live_cue_cards",
+    "broadcast_pulse",
+    "segment_timeline",
+    "shoppable_video_queue",
+    "offer_bundle_matrix",
+    "objection_faq",
+    "platform_tagging_checklist",
+    "script_rail"
+  ],
+  "preferred_example_tokens": [
+    "watch it live",
+    "airflow",
+    "schematic",
+    "demo sequence",
+    "offer bundle",
+    "objection faq",
+    "shoppable clip",
+    "segment script",
+    "platform tagging"
+  ],
+  "anti_tokens": [
+    "fake reviews",
+    "units sold",
+    "percentage discount",
+    "was now price",
+    "countdown timer",
+    "influencer endorsement",
+    "media logo wall",
+    "temperature claim",
+    "fight gym",
+    "law firm",
+    "garden care",
+    "medspa",
+    "saas dashboard"
+  ],
+  "ood_fallback_value": "generic_modern_website",
+  "conflicts_to_avoid": [
+    "Do not co-route with high-contrast combat/fight-gym anchors (emberforge, iron_circuit, holland_dirt) — opposite palette and emotional register.",
+    "Do not co-route with warm light editorial service packs (verdant_line, copperbeam, velvet_fig, aurelia_medspa) — those are warm/light, this is cool/dark.",
+    "Do not pull this pack for B2B SaaS dashboards or admin UIs — it is a consumer physical-product broadcast surface.",
+    "When the request is live commerce but the product is not cooling/comfort, keep the structure + atoms but treat the schematic and ice-blue palette as replaceable, not authoritative."
+  ],
+  "recommended_weight_notes": "Strong anchor for live-commerce + product-education requests, especially physical-product demos with a 'watch it live' or shoppable-video framing. Boost weight when the prompt names TikTok Shop / YouTube Live / Shopify Live, schematic/airflow/explainer visuals, or honest offer comparison. Down-weight (or fall back to a neutral modern-website anchor) for warm/light service businesses, dark combat/industrial brands, and SaaS dashboards. This pack is the canonical donor for the eight live-commerce atoms; prefer it over generic ecommerce packs when proof-safe, claim-free commerce copy is required."
+}

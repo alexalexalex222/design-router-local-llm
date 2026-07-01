@@ -1,0 +1,7 @@
+- Lead with practice-area clarity (corporate, M&A, regulatory, dispute resolution) instead of vague "trusted attorneys" framing.
+- Maintain editorial calm: restrained type, generous white space, and a paper-warm background. No heavy stock photography.
+- Use the oxblood/blue/sage/brass accent palette sparingly — accents on labels, dividers, and key callouts, not full backgrounds.
+- Pair Iowan Old Style (or equivalent old-style serif) display with Inter body and SFMono micro-labels for matter numbers, citations, and process tags.
+- Treat the triage / risk-map / process timeline as a working artifact (SVG, structured grid) rather than a marketing diagram.
+- Surface intake friction honestly: conflict checks, scoping, engagement letter — readers should believe a real attorney runs intake, not a chat widget.
+- Keep navigation hierarchical and quiet: a single sticky header, no carousel hero, no animated counters.

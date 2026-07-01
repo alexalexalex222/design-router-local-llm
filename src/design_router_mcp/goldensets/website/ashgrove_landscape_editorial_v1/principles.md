@@ -1,0 +1,3 @@
+- Keep the first frame rooted in outdoor design-build logic: grade, stone, planting, circulation, and site planning.
+- Prefer plan-board or exterior landscape proof surfaces over interior rooms, living rooms, or residential product shots.
+- Let below-fold sections separate roles cleanly: service lane, outdoor proof, planning logic, consultation, final CTA.

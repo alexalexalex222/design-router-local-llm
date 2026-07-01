@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Sudoku — The Daily Grid</title>
+<meta name="color-scheme" content="light" />
+<style>
+/* ============================================================
+   DESIGN TOKENS — a typeset print-puzzle page
+   ============================================================ */
+:root{
+  /* paper + ink neutrals (≥4-step ramp) */
+  --paper:        #f3eee1;
+  --paper-board:  #fbf8f1;
+  --paper-panel:  #efe8d7;
+  --paper-sunk:   #e7dfca;
+  --ink:          #20201b;
+  --ink-2:        #3b372d;
+  --ink-soft:     #645e4f;
+  --ink-faint:    #8a8270;
+  --line:         #d9d1bd;
+  --line-2:       #cabfa6;
+
+  /* hues — entry ink + single accent */
+  --entry:        #2b4f73;   /* player digits: fountain-pen blue */
+  --entry-soft:   #3d6390;
+  --accent:       #a8392a;   /* conflict / error: oxblood */
+  --accent-ink:   #8f2c20;
+  --accent-wash:  #f4ddd4;
+  --gold:         #9a7b3f;   /* win seal only */
+
+  /* interaction washes (tonal, not hued) */
+  --sel:          #ecdfc1;
+  --peer:         #f0e8d3;
+  --same:         #e4d6b2;
+
+  /* radii */
+  --r-xs: 3px; --r-sm: 6px; --r: 10px; --r-lg: 16px; --r-pill: 999px;
+
+  /* elevation (≤3) */
+  --e-1: 0 1px 2px rgba(40,34,20,.06), 0 1px 0 rgba(255,255,255,.6) inset;
+  --e-2: 0 6px 22px -10px rgba(40,34,20,.30), 0 1px 0 rgba(255,255,255,.55) inset;
+  --e-3: 0 26px 60px -22px rgba(30,26,14,.45);
+
+  /* motion */
+  --t-fast: 150ms;  --t: 220ms;  --t-slow: 420ms;
+  --ease: cubic-bezier(.2,.7,.2,1);
+
+  /* fluid type scale */
+  --fs-micro: clamp(.66rem, .62rem + .2vw, .72rem);
+  --fs-cap:   clamp(.72rem, .68rem + .25vw, .8rem);
+  --fs-body:  clamp(1rem, .96rem + .2vw, 1.06rem);
+  --fs-lg:    clamp(1.18rem, 1.05rem + .6vw, 1.45rem);
+  --fs-title: clamp(2.2rem, 1.5rem + 3.4vw, 3.6rem);
+
+  /* spacing (4px) */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s8:32px; --s10:40px;
+
+  --serif: "Hoefler Text","Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+html{ -webkit-text-size-adjust:100%; }
+body{
+  margin:0; min-height:100dvh; background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-size:var(--fs-body); line-height:1.5;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  background-image:
+    radial-gradient(120% 90% at 50% -8%, rgba(255,255,255,.55), transparent 60%),
+    repeating-linear-gradient(180deg, transparent 0 38px, rgba(120,104,70,.022) 38px 39px);
+}
+
+/* accessibility: skip link */
+.skip{ position:fixed; left:50%; top:-60px; transform:translateX(-50%);
+  background:var(--ink); color:var(--paper-board); padding:10px 18px; border-radius:var(--r-pill);
+  z-index:60; transition:top var(--t) var(--ease); font-size:var(--fs-cap); }
+.skip:focus-visible{ top:12px; }
+
+:focus-visible{ outline:2.5px solid var(--entry); outline-offset:2px; border-radius:var(--r-xs); }
+
+.page{ max-width:1060px; margin:0 auto; padding:clamp(16px,3.5vw,40px) clamp(14px,3vw,32px) 64px; }
+
+/* ============================================================
+   MASTHEAD
+   ============================================================ */
+.masthead{ text-align:center; margin-bottom:clamp(18px,3vw,30px); }
+.masthead .kicker{
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  font-size:var(--fs-micro); letter-spacing:.34em; text-transform:uppercase;
+  color:var(--ink-soft); font-weight:600;
+}
+.kicker .dot{ width:4px; height:4px; transform:rotate(45deg); background:var(--gold); }
+.masthead h1{
+  font-family:var(--serif); font-weight:600; font-size:var(--fs-title);
+  letter-spacing:.14em; margin:.18em 0 .12em; line-height:1; color:var(--ink);
+}
+.rule{ display:flex; align-items:center; justify-content:center; gap:14px;
+  max-width:540px; margin:6px auto 0; }
+.rule::before,.rule::after{ content:""; height:1px; flex:1; background:
+  linear-gradient(90deg, transparent, var(--line-2) 18%, var(--line-2) 82%, transparent); }
+.rule .meta{ display:flex; align-items:center; gap:10px; flex:none;
+  font-family:var(--serif); font-style:italic; color:var(--ink-soft); font-size:var(--fs-cap); }
+.rule .meta b{ font-style:normal; font-weight:600; color:var(--ink-2);
+  letter-spacing:.02em; text-transform:capitalize; }
+.rule .meta .sep{ width:4px; height:4px; transform:rotate(45deg); background:var(--line-2); }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.layout{ display:grid; grid-template-columns:minmax(0,1fr) 304px; gap:clamp(20px,3vw,40px);
+  align-items:start; }
+@media (max-width:880px){ .layout{ grid-template-columns:1fr; gap:22px; } }
+
+/* ---- BOARD ---- */
+.board-wrap{ position:relative; }
+.board-stage{ position:relative; width:min(100%, 70vh, 560px); margin:0 auto; }
+.board{
+  position:relative; container-type:inline-size;
+  display:grid; grid-template-columns:repeat(9,1fr); grid-template-rows:repeat(9,1fr);
+  aspect-ratio:1/1; width:100%;
+  background:var(--paper-board); border:2.5px solid var(--ink); border-radius:var(--r-sm);
+  box-shadow:var(--e-2); overflow:hidden; touch-action:manipulation;
+  -webkit-user-select:none; user-select:none;
+}
+.board:focus-visible{ outline:3px solid var(--entry); outline-offset:4px; }
+.cell{
+  position:relative; display:flex; align-items:center; justify-content:center;
+  border-right:1px solid var(--line); border-bottom:1px solid var(--line);
+  cursor:pointer; transition:background-color var(--t-fast) var(--ease);
+}
+.cell.lastcol{ border-right:none; } .cell.lastrow{ border-bottom:none; }
+.cell.br3{ border-right:2.5px solid var(--ink); }
+.cell.bb3{ border-bottom:2.5px solid var(--ink); }
+
+.cell .val{
+  font-family:var(--serif); font-size:6.4cqw; line-height:1;
+  font-variant-numeric:lining-nums tabular-nums; font-feature-settings:"lnum" 1,"tnum" 1;
+  transition:color var(--t-fast), transform var(--t-fast) var(--ease); color:var(--entry);
+}
+.cell.given .val{ color:var(--ink); font-weight:560; }
+.cell.entry .val{ color:var(--entry); font-weight:420; }
+.cell.hinted .val{ color:var(--entry-soft); }
+.cell.conflict .val{ color:var(--accent); }
+.cell.error  .val{ color:var(--accent); }
+
+/* washes */
+.cell.peer{ background:var(--peer); }
+.cell.same{ background:var(--same); }
+.cell.selected{ background:var(--sel); }
+.cell.conflict{ background:var(--accent-wash); }
+.cell.error{ background:var(--accent-wash); }
+.cell.selected::after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  box-shadow:0 0 0 2px var(--ink) inset; border-radius:1px;
+}
+.cell.hinted::before{
+  content:""; position:absolute; top:7%; right:7%; width:5.5cqw; max-width:8px; aspect-ratio:1;
+  background:var(--gold); border-radius:50%; opacity:.85;
+}
+@media (hover:hover){
+  .cell:not(.selected):hover{ background:var(--peer); }
+}
+.cell .val.place-in{ animation:place var(--t) var(--ease); }
+@keyframes place{ from{ transform:scale(.5); opacity:0; } to{ transform:scale(1); opacity:1; } }
+
+/* pencil marks */
+.notes{ position:absolute; inset:7%; display:grid;
+  grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr);
+  pointer-events:none; }
+.notes span{ display:flex; align-items:center; justify-content:center;
+  font-family:var(--sans); font-size:2.5cqw; line-height:1; color:var(--ink-faint);
+  font-variant-numeric:tabular-nums; }
+.notes span.on{ color:var(--ink-soft); }
+.cell.conflict .notes span.on{ color:var(--accent); }
+
+/* same-number dot on filled peers */
+.cell.same.given .val,.cell.same.entry .val{ text-shadow:none; }
+
+.board-foot{ display:flex; align-items:center; justify-content:space-between;
+  margin-top:14px; gap:12px; color:var(--ink-soft); font-size:var(--fs-cap);
+  width:min(100%, 70vh, 560px); margin-left:auto; margin-right:auto; }
+.board-foot .notes-flag{ display:inline-flex; align-items:center; gap:7px;
+  padding:4px 11px; border:1px solid var(--line-2); border-radius:var(--r-pill);
+  font-variant:small-caps; letter-spacing:.06em; opacity:0; transition:opacity var(--t); }
+.board-foot .notes-flag.on{ opacity:1; color:var(--entry); border-color:var(--entry); }
+.board-foot .tip{ font-family:var(--serif); font-style:italic; }
+
+/* ============================================================
+   PANEL
+   ============================================================ */
+.panel{ display:flex; flex-direction:column; gap:var(--s5); }
+@media (max-width:880px){ .panel{ max-width:560px; margin:0 auto; width:100%; } }
+
+.card{ background:var(--paper-panel); border:1px solid var(--line-2);
+  border-radius:var(--r); box-shadow:var(--e-1); }
+.card-head{ font-size:var(--fs-micro); letter-spacing:.22em; text-transform:uppercase;
+  color:var(--ink-soft); font-weight:600; padding:11px 14px 0; }
+
+/* scoreboard */
+.scoreboard{ display:grid; grid-template-columns:repeat(3,1fr); padding:6px; gap:0; }
+.stat{ text-align:center; padding:10px 6px; position:relative; }
+.stat + .stat::before{ content:""; position:absolute; left:0; top:18%; bottom:18%; width:1px;
+  background:var(--line-2); }
+.stat .label{ font-size:var(--fs-micro); letter-spacing:.16em; text-transform:uppercase;
+  color:var(--ink-soft); }
+.stat .value{ font-family:var(--serif); font-size:var(--fs-lg); margin-top:2px;
+  font-variant-numeric:tabular-nums; color:var(--ink); }
+.stat .value.warn{ color:var(--accent); }
+
+/* difficulty segmented */
+.seg{ display:grid; grid-template-columns:repeat(4,1fr); gap:4px; padding:6px; }
+.seg button{ appearance:none; border:1px solid transparent; background:transparent;
+  font-family:var(--sans); font-size:var(--fs-micro); letter-spacing:.06em; text-transform:uppercase;
+  color:var(--ink-soft); padding:9px 2px; border-radius:var(--r-sm); cursor:pointer;
+  font-weight:600; transition:all var(--t-fast) var(--ease); min-height:40px; }
+.seg button:hover{ background:var(--paper-sunk); color:var(--ink-2); }
+.seg button[aria-pressed="true"]{ background:var(--ink); color:var(--paper-board);
+  box-shadow:var(--e-1); }
+.newbtn{ margin:0 6px 8px; }
+
+/* number pad */
+.numpad{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; padding:12px; }
+.numpad button{ position:relative; appearance:none; cursor:pointer;
+  background:var(--paper-board); border:1px solid var(--line-2); border-radius:var(--r-sm);
+  font-family:var(--serif); font-size:1.5rem; color:var(--entry); min-height:52px;
+  font-variant-numeric:lining-nums; box-shadow:var(--e-1);
+  transition:transform var(--t-fast) var(--ease), background var(--t-fast), border-color var(--t-fast); }
+.numpad button:hover{ background:#fff; border-color:var(--entry-soft); }
+.numpad button:active{ transform:translateY(1px) scale(.98); }
+.numpad button[disabled]{ opacity:.34; cursor:not-allowed; box-shadow:none; }
+.numpad button .rem{ position:absolute; right:6px; bottom:4px; font-family:var(--sans);
+  font-size:.58rem; color:var(--ink-faint); font-weight:600; }
+.numpad button.erase{ color:var(--ink-soft); grid-column:span 1; }
+.numpad button.erase svg{ width:22px; height:22px; }
+
+/* action grid */
+.actions{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; padding:12px; }
+.act{ appearance:none; cursor:pointer; display:flex; flex-direction:column; align-items:center;
+  gap:5px; padding:11px 4px; background:var(--paper-board); border:1px solid var(--line-2);
+  border-radius:var(--r-sm); color:var(--ink-2); font-family:var(--sans); font-size:var(--fs-micro);
+  letter-spacing:.05em; text-transform:uppercase; font-weight:600; box-shadow:var(--e-1);
+  transition:transform var(--t-fast) var(--ease), background var(--t-fast), color var(--t-fast), border-color var(--t-fast); min-height:58px; }
+.act svg{ width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.6;
+  stroke-linecap:round; stroke-linejoin:round; }
+.act:hover{ background:#fff; color:var(--ink); border-color:var(--ink-faint); }
+.act:active{ transform:translateY(1px); }
+.act[disabled]{ opacity:.36; cursor:not-allowed; box-shadow:none; }
+.act[aria-pressed="true"]{ background:var(--ink); color:var(--paper-board); border-color:var(--ink); }
+.act.accent:hover{ color:var(--accent); border-color:var(--accent); }
+
+/* options */
+.options{ padding:10px 14px 14px; display:flex; flex-direction:column; gap:10px; }
+.opt{ display:flex; align-items:center; justify-content:space-between; gap:12px;
+  cursor:pointer; font-size:var(--fs-cap); color:var(--ink-2); }
+.opt .switch{ --w:38px; position:relative; width:var(--w); height:22px; flex:none;
+  background:var(--paper-sunk); border:1px solid var(--line-2); border-radius:var(--r-pill);
+  transition:background var(--t) var(--ease); }
+.opt .switch::after{ content:""; position:absolute; top:2px; left:2px; width:16px; height:16px;
+  border-radius:50%; background:var(--paper-board); box-shadow:var(--e-1);
+  transition:transform var(--t) var(--ease); }
+.opt input{ position:absolute; opacity:0; width:0; height:0; }
+.opt input:checked + .switch{ background:var(--entry); border-color:var(--entry); }
+.opt input:checked + .switch::after{ transform:translateX(16px); }
+.opt input:focus-visible + .switch{ outline:2.5px solid var(--entry); outline-offset:2px; }
+
+/* ============================================================
+   OVERLAY (pause / win)
+   ============================================================ */
+.overlay{ position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+  z-index:20; border-radius:var(--r-sm); }
+.overlay.show{ display:flex; }
+.overlay .scrim{ position:absolute; inset:0; background:rgba(240,233,216,.72);
+  backdrop-filter:blur(7px) saturate(112%); -webkit-backdrop-filter:blur(7px) saturate(112%);
+  border-radius:var(--r-sm); }
+.modal{ position:relative; text-align:center; padding:clamp(24px,5vw,38px) clamp(22px,5vw,40px);
+  background:var(--paper-board); border:1px solid var(--line-2); border-radius:var(--r-lg);
+  box-shadow:var(--e-3); max-width:340px; width:min(86%,340px);
+  animation:rise var(--t-slow) var(--ease); }
+@keyframes rise{ from{ transform:translateY(14px) scale(.97); opacity:0; } to{ transform:none; opacity:1; } }
+.seal{ width:62px; height:62px; margin:0 auto 12px; color:var(--gold); }
+.modal h2{ font-family:var(--serif); font-weight:600; font-size:clamp(1.5rem,1.2rem+1.6vw,2rem);
+  margin:0 0 6px; letter-spacing:.02em; }
+.modal p{ margin:0 0 18px; color:var(--ink-soft); font-family:var(--serif); font-style:italic; }
+.modal .summary{ display:flex; justify-content:center; gap:26px; margin:0 0 22px; }
+.modal .summary .s .label{ font-size:var(--fs-micro); letter-spacing:.16em; text-transform:uppercase;
+  color:var(--ink-faint); }
+.modal .summary .s .v{ font-family:var(--serif); font-size:var(--fs-lg); }
+.btn{ appearance:none; cursor:pointer; font-family:var(--sans); font-weight:600;
+  font-size:var(--fs-cap); letter-spacing:.04em; padding:12px 22px; border-radius:var(--r-pill);
+  border:1px solid var(--ink); background:var(--ink); color:var(--paper-board); min-height:44px;
+  box-shadow:var(--e-1); transition:transform var(--t-fast) var(--ease), background var(--t-fast); }
+.btn:hover{ background:var(--ink-2); }
+.btn:active{ transform:translateY(1px); }
+.btn.ghost{ background:transparent; color:var(--ink); }
+.btn.ghost:hover{ background:var(--paper-sunk); }
+.modal .row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+
+/* announce region */
+.sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
+  clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+footer.colophon{ text-align:center; margin-top:40px; color:var(--ink-faint);
+  font-family:var(--serif); font-style:italic; font-size:var(--fs-cap); }
+footer.colophon kbd{ font-family:var(--sans); font-style:normal; background:var(--paper-panel);
+  border:1px solid var(--line-2); border-bottom-width:2px; border-radius:var(--r-xs);
+  padding:1px 6px; font-size:.78em; color:var(--ink-2); }
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#board">Skip to puzzle</a>
+
+<main class="page">
+  <header class="masthead">
+    <div class="kicker"><span class="dot"></span><span id="puzzle-no">Puzzle No. ————</span><span class="dot"></span></div>
+    <h1>Sudoku</h1>
+    <div class="rule">
+      <span class="meta"><b id="meta-diff">Medium</b><span class="sep"></span><span id="meta-clues">— clues</span></span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- BOARD -->
+    <section class="board-wrap" aria-label="Puzzle">
+      <div class="board-stage">
+        <div id="board" class="board" role="grid" aria-label="Sudoku grid, 9 by 9" tabindex="0"></div>
+        <div id="overlay" class="overlay" aria-hidden="true">
+          <div class="scrim"></div>
+          <div class="modal" role="dialog" aria-modal="true" aria-labelledby="ov-title">
+            <div class="seal" id="ov-seal"></div>
+            <h2 id="ov-title">Paused</h2>
+            <p id="ov-sub">The clock is resting.</p>
+            <div class="summary" id="ov-summary" hidden>
+              <div class="s"><div class="label">Time</div><div class="v" id="ov-time">00:00</div></div>
+              <div class="s"><div class="label">Mistakes</div><div class="v" id="ov-mist">0</div></div>
+              <div class="s"><div class="label">Hints</div><div class="v" id="ov-hints">0</div></div>
+            </div>
+            <div class="row">
+              <button class="btn" id="ov-primary">Resume</button>
+              <button class="btn ghost" id="ov-secondary" hidden>New puzzle</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="board-foot">
+        <span class="notes-flag" id="notes-flag">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          Pencil
+        </span>
+        <span class="tip">Type 1–9 · arrows to move</span>
+      </div>
+    </section>
+
+    <!-- PANEL -->
+    <aside class="panel">
+      <div class="card">
+        <div class="scoreboard">
+          <div class="stat"><div class="label">Time</div><div class="value" id="s-time">00:00</div></div>
+          <div class="stat"><div class="label">Mistakes</div><div class="value" id="s-mist">0</div></div>
+          <div class="stat"><div class="label">Filled</div><div class="value" id="s-fill">0/81</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">Difficulty</div>
+        <div class="seg" role="group" aria-label="Difficulty">
+          <button data-diff="easy"   aria-pressed="false">Easy</button>
+          <button data-diff="medium" aria-pressed="true">Med</button>
+          <button data-diff="hard"   aria-pressed="false">Hard</button>
+          <button data-diff="expert" aria-pressed="false">Exp</button>
+        </div>
+        <button class="btn ghost newbtn" id="btn-new" style="width:calc(100% - 12px)">New puzzle</button>
+      </div>
+
+      <div class="card">
+        <div class="card-head">Entry</div>
+        <div class="numpad" id="numpad" aria-label="Number pad"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">Tools</div>
+        <div class="actions" id="actions">
+          <button class="act" id="a-undo" aria-label="Undo" title="Undo (Z)"><svg viewBox="0 0 24 24"><path d="M9 7 4 12l5 5"/><path d="M4 12h11a5 5 0 0 1 0 10h-1"/></svg>Undo</button>
+          <button class="act" id="a-redo" aria-label="Redo" title="Redo (Y)"><svg viewBox="0 0 24 24"><path d="m15 7 5 5-5 5"/><path d="M20 12H9a5 5 0 0 0 0 10h1"/></svg>Redo</button>
+          <button class="act" id="a-notes" aria-pressed="false" aria-label="Pencil notes mode" title="Notes (N)"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Notes</button>
+          <button class="act" id="a-hint" aria-label="Reveal a hint" title="Hint (H)"><svg viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.3 1 2.5h6c0-1.2.3-1.8 1-2.5A6 6 0 0 0 12 3Z"/></svg>Hint</button>
+          <button class="act accent" id="a-check" aria-label="Check for errors" title="Check (C)"><svg viewBox="0 0 24 24"><path d="m4 13 4 4L20 5"/></svg>Check</button>
+          <button class="act accent" id="a-solve" aria-label="Solve the puzzle" title="Solve"><svg viewBox="0 0 24 24"><path d="M5 3v4M3 5h4M6 17v4M4 19h4"/><path d="m13 7 3.5 3.5L21 6"/><path d="M11 13 4 20"/><path d="M14 14l6 6"/></svg>Solve</button>
+        </div>
+        <div class="options">
+          <label class="opt"><span>Auto-clean pencil marks</span>
+            <input type="checkbox" id="opt-clean" checked><span class="switch"></span></label>
+          <label class="opt"><span>Highlight peers &amp; matches</span>
+            <input type="checkbox" id="opt-highlight" checked><span class="switch"></span></label>
+          <button class="btn ghost" id="a-autonotes" style="width:100%; margin-top:2px">Fill all pencil marks</button>
+          <button class="act" id="a-pause" aria-label="Pause" title="Pause (P)" style="width:100%; flex-direction:row; justify-content:center; gap:8px"><svg viewBox="0 0 24 24" style="width:18px;height:18px"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>Pause</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="colophon">
+    Set in a fine serif &middot; keyboard-first &middot; <kbd>N</kbd> notes &middot; <kbd>H</kbd> hint &middot; <kbd>Z</kbd>/<kbd>Y</kbd> undo
+  </footer>
+</main>
+
+<div class="sr-only" id="live" aria-live="polite"></div>
+
+<script>
+"use strict";
+(function(){
+/* =====================================================================
+   SUDOKU ENGINE — backtracking solver, unique-solution generator
+   ===================================================================== */
+
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0;
+  let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t;
+  return ((t^t>>>14)>>>0)/4294967296; }; }
+
+function shuffle(arr,rng){ for(let i=arr.length-1;i>0;i--){
+  const j=Math.floor(rng()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+
+function isValid(g,idx,n){
+  const r=(idx/9)|0, c=idx%9;
+  for(let k=0;k<9;k++){ if(g[r*9+k]===n) return false; if(g[k*9+c]===n) return false; }
+  const br=r-r%3, bc=c-c%3;
+  for(let i=0;i<3;i++) for(let j=0;j<3;j++){ if(g[(br+i)*9+(bc+j)]===n) return false; }
+  return true;
+}
+
+// Fill empty cells in place; rng (optional) randomises candidate order.
+function solveGrid(g,rng){
+  const idx=g.indexOf(0);
+  if(idx===-1) return true;
+  const nums=[1,2,3,4,5,6,7,8,9];
+  if(rng) shuffle(nums,rng);
+  for(let k=0;k<9;k++){ const n=nums[k];
+    if(isValid(g,idx,n)){ g[idx]=n; if(solveGrid(g,rng)) return true; g[idx]=0; } }
+  return false;
+}
+// Public: return a solved copy (or null) — non-destructive.
+function solve(grid){ const g=grid.slice(); return solveGrid(g) ? g : null; }
+
+// Count solutions up to `limit` (early-exit). Used for uniqueness.
+function countSolutions(grid,limit){
+  const g=grid.slice();
+  function rec(){
+    const idx=g.indexOf(0);
+    if(idx===-1) return 1;
+    let total=0;
+    for(let n=1;n<=9;n++){ if(isValid(g,idx,n)){ g[idx]=n; total+=rec(); g[idx]=0;
+      if(total>=limit) return total; } }
+    return total;
+  }
+  return rec();
+}
+
+const CLUE_TARGET={ easy:45, medium:36, hard:31, expert:25 };
+
+// Generate a puzzle with EXACTLY ONE solution at the given difficulty.
+function generate(difficulty,seed){
+  const rng=mulberry32(seed>>>0);
+  const full=new Array(81).fill(0);
+  solveGrid(full,rng);                 // random complete grid
+  const solution=full.slice();
+  const puzzle=full.slice();
+  const target=CLUE_TARGET[difficulty]||36;
+  let givens=81;
+  // Pass 1 — remove in 180° rotational pairs for the classic print-puzzle look.
+  for(const p of shuffle([...Array(81).keys()],rng)){
+    if(givens<=target) break;
+    if(puzzle[p]===0) continue;
+    const q=80-p;
+    const bp=puzzle[p], bq=puzzle[q];
+    puzzle[p]=0; if(q!==p) puzzle[q]=0;
+    if(countSolutions(puzzle,2)!==1){ puzzle[p]=bp; if(q!==p) puzzle[q]=bq; }
+    else givens-=(q!==p?2:1);
+  }
+  // Pass 2 — single-cell removal to actually reach the target clue count
+  // (symmetry can stall early; harder levels must end with fewer givens).
+  if(givens>target){
+    for(const p of shuffle([...Array(81).keys()],rng)){
+      if(givens<=target) break;
+      if(puzzle[p]===0) continue;
+      const bp=puzzle[p]; puzzle[p]=0;
+      if(countSolutions(puzzle,2)!==1) puzzle[p]=bp; else givens--;
+    }
+  }
+  return { puzzle, solution, givens:puzzle.filter(Boolean).length };
+}
+
+/* =====================================================================
+   STATE
+   ===================================================================== */
+const SAVE_KEY="sudoku.print.v1";
+const DIFF_LABEL={ easy:"Easy", medium:"Medium", hard:"Hard", expert:"Expert" };
+
+let S=null;            // active game state
+let history=[], hIndex=-1;
+let timerId=null, lastError=[];
+
+function blankNotes(){ return Array.from({length:81},()=>Array(9).fill(false)); }
+
+function newGame(difficulty){
+  const seed=(Math.random()*900000+100000)|0;
+  const { puzzle, solution }=generate(difficulty,seed);
+  S={
+    difficulty, seed, puzzle, solution,
+    cells:puzzle.slice(),
+    given:puzzle.map(v=>v!==0),
+    notes:blankNotes(),
+    hinted:Array(81).fill(false),
+    selected:firstEmpty(puzzle),
+    notesMode:false, mistakes:0, hints:0, seconds:0,
+    status:"playing"   // playing | paused | won | solved
+  };
+  history=[]; hIndex=-1; pushHistory();
+  hideOverlay();
+  startTimer(); save(); render();
+  announce(`New ${DIFF_LABEL[difficulty]} puzzle, ${S.given.filter(Boolean).length} clues.`);
+}
+
+function firstEmpty(arr){ const i=arr.indexOf(0); return i===-1?0:i; }
+
+/* ---- history (undo / redo) ---- */
+function snapshot(){ return { cells:S.cells.slice(),
+  notes:S.notes.map(n=>n.slice()), hinted:S.hinted.slice(),
+  mistakes:S.mistakes, hints:S.hints }; }
+function pushHistory(){ history=history.slice(0,hIndex+1);
+  history.push(snapshot()); hIndex=history.length-1; }
+function restore(snap){ S.cells=snap.cells.slice();
+  S.notes=snap.notes.map(n=>n.slice()); S.hinted=snap.hinted.slice();
+  S.mistakes=snap.mistakes; S.hints=snap.hints; }
+function undo(){ if(hIndex>0){ hIndex--; restore(history[hIndex]); afterChange(false); announce("Undo."); } }
+function redo(){ if(hIndex<history.length-1){ hIndex++; restore(history[hIndex]); afterChange(false); announce("Redo."); } }
+
+/* ---- timer ---- */
+function startTimer(){ stopTimer(); timerId=setInterval(()=>{
+  if(S.status==="playing"){ S.seconds++; updateClock(); if(S.seconds%5===0) save(); } },1000); }
+function stopTimer(){ if(timerId){ clearInterval(timerId); timerId=null; } }
+function fmt(s){ const m=(s/60)|0; const sec=s%60;
+  return String(m).padStart(2,"0")+":"+String(sec).padStart(2,"0"); }
+
+/* =====================================================================
+   MUTATIONS
+   ===================================================================== */
+function placeDigit(n){
+  const i=S.selected;
+  if(S.given[i]||S.hinted[i]||S.status!=="playing") return;
+  if(S.notesMode){
+    if(S.cells[i]!==0) return;
+    S.notes[i][n-1]=!S.notes[i][n-1];
+    pushHistory(); afterChange(true); return;
+  }
+  if(S.cells[i]===n){ // toggle off
+    S.cells[i]=0; pushHistory(); afterChange(true); return;
+  }
+  S.cells[i]=n; S.notes[i].fill(false);
+  if(els.optClean.checked) cleanPeers(i,n);
+  if(n!==S.solution[i]) S.mistakes++;
+  pushHistory(); afterChange(true); checkWin();
+}
+function eraseCell(){
+  const i=S.selected;
+  if(S.given[i]||S.hinted[i]||S.status!=="playing") return;
+  if(S.cells[i]===0 && !S.notes[i].some(Boolean)) return;
+  S.cells[i]=0; S.notes[i].fill(false);
+  pushHistory(); afterChange(true);
+}
+function cleanPeers(idx,n){ const r=(idx/9)|0,c=idx%9,br=r-r%3,bc=c-c%3;
+  for(let k=0;k<9;k++){ S.notes[r*9+k][n-1]=false; S.notes[k*9+c][n-1]=false; }
+  for(let i=0;i<3;i++) for(let j=0;j<3;j++) S.notes[(br+i)*9+(bc+j)][n-1]=false; }
+
+function afterChange(doSave){ if(doSave) save(); render(); }
+
+/* ---- conflicts ---- */
+function computeConflicts(){
+  const bad=new Set();
+  const scan=(idxs)=>{ const seen={};
+    for(const i of idxs){ const v=S.cells[i]; if(!v) continue;
+      if(seen[v]!==undefined){ bad.add(i); bad.add(seen[v]); } else seen[v]=i; } };
+  for(let r=0;r<9;r++){ const row=[]; for(let c=0;c<9;c++) row.push(r*9+c); scan(row); }
+  for(let c=0;c<9;c++){ const col=[]; for(let r=0;r<9;r++) col.push(r*9+c); scan(col); }
+  for(let b=0;b<9;b++){ const box=[]; const br=((b/3)|0)*3, bc=(b%3)*3;
+    for(let i=0;i<3;i++) for(let j=0;j<3;j++) box.push((br+i)*9+(bc+j)); scan(box); }
+  return bad;
+}
+
+/* ---- win ---- */
+function checkWin(){
+  for(let i=0;i<81;i++){ if(S.cells[i]!==S.solution[i]) return false; }
+  S.status="won"; stopTimer(); save(); render(); showOverlay("win"); return true;
+}
+
+/* ---- hint ---- */
+function hint(){
+  if(S.status!=="playing") return;
+  const cands=[];
+  for(let i=0;i<81;i++){ if(!S.given[i] && S.cells[i]!==S.solution[i]) cands.push(i); }
+  if(!cands.length) return;
+  // prefer the currently-selected cell if it qualifies
+  let i = cands.includes(S.selected) ? S.selected : cands[(Math.random()*cands.length)|0];
+  S.cells[i]=S.solution[i]; S.notes[i].fill(false); S.hinted[i]=true; S.hints++; S.selected=i;
+  cleanPeers(i,S.solution[i]);
+  pushHistory(); afterChange(true); animateCell(i);
+  announce(`Hint placed at row ${(i/9|0)+1}, column ${i%9+1}.`);
+  checkWin();
+}
+
+/* ---- check for errors ---- */
+function checkErrors(){
+  lastError=[];
+  for(let i=0;i<81;i++){ if(!S.given[i] && S.cells[i]!==0 && S.cells[i]!==S.solution[i]) lastError.push(i); }
+  render();
+  if(lastError.length){ announce(`${lastError.length} incorrect ${lastError.length===1?"cell":"cells"} marked.`); }
+  else announce("No errors so far.");
+  setTimeout(()=>{ lastError=[]; render(); },1600);
+}
+
+/* ---- solve (animated) ---- */
+let solving=false;
+function solveBoard(){
+  if(solving||S.status==="won") return;
+  const reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
+  const empties=[];
+  for(let i=0;i<81;i++){ if(S.cells[i]!==S.solution[i]) empties.push(i); }
+  // diagonal sweep order for a pleasing fill
+  empties.sort((a,b)=>((a/9|0)+a%9)-((b/9|0)+b%9));
+  S.status="solved"; stopTimer();
+  if(reduce){ for(const i of empties){ S.cells[i]=S.solution[i]; S.notes[i].fill(false); }
+    finishSolve(); return; }
+  solving=true;
+  let k=0;
+  const step=()=>{ if(k>=empties.length){ solving=false; finishSolve(); return; }
+    const i=empties[k++]; S.cells[i]=S.solution[i]; S.notes[i].fill(false);
+    render(); animateCell(i); setTimeout(step, 26); };
+  step();
+}
+function finishSolve(){ pushHistory(); save(); render(); showOverlay("solved");
+  announce("Puzzle solved."); }
+
+function animateCell(i){ const el=board.children[i]; if(!el) return;
+  const v=el.querySelector(".val"); if(v){ v.classList.remove("place-in");
+    void v.offsetWidth; v.classList.add("place-in"); } }
+
+/* ---- pause ---- */
+function pause(){ if(S.status!=="playing") return; S.status="paused"; save(); render(); showOverlay("pause"); }
+function resume(){ if(S.status!=="paused") return; S.status="playing"; hideOverlay(); render(); }
+
+/* ---- pencil auto-fill ---- */
+function autoNotes(){ if(S.status!=="playing") return;
+  for(let i=0;i<81;i++){ if(S.cells[i]!==0||S.given[i]){ continue; }
+    for(let n=1;n<=9;n++) S.notes[i][n-1]=isValid(S.cells,i,n); }
+  pushHistory(); afterChange(true); announce("Pencil marks filled."); }
+
+/* =====================================================================
+   SELECTION + KEYBOARD
+   ===================================================================== */
+function select(i){ if(i<0||i>80) return; S.selected=i; render();
+  board.focus({preventScroll:true}); }
+function move(dr,dc){ let r=(S.selected/9|0)+dr, c=S.selected%9+dc;
+  r=(r+9)%9; c=(c+9)%9; select(r*9+c); }
+
+function onKey(e){
+  if(S.status==="paused"){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); resume(); } return; }
+  const k=e.key;
+  if(k>="1"&&k<="9"){ e.preventDefault(); placeDigit(+k); return; }
+  switch(k){
+    case "ArrowUp": e.preventDefault(); move(-1,0); break;
+    case "ArrowDown": e.preventDefault(); move(1,0); break;
+    case "ArrowLeft": e.preventDefault(); move(0,-1); break;
+    case "ArrowRight": e.preventDefault(); move(0,1); break;
+    case "Backspace": case "Delete": case "0": e.preventDefault(); eraseCell(); break;
+    case "n": case "N": toggleNotes(); break;
+    case "h": case "H": hint(); break;
+    case "c": case "C": checkErrors(); break;
+    case "p": case "P": pause(); break;
+    case "z": case "Z": e.preventDefault(); undo(); break;
+    case "y": case "Y": e.preventDefault(); redo(); break;
+  }
+}
+function toggleNotes(){ S.notesMode=!S.notesMode; render(); }
+
+/* =====================================================================
+   RENDER
+   ===================================================================== */
+const els={};
+const board=document.getElementById("board");
+
+function buildBoard(){
+  const frag=document.createDocumentFragment();
+  for(let i=0;i<81;i++){
+    const r=(i/9|0), c=i%9;
+    const cell=document.createElement("div");
+    cell.className="cell";
+    cell.setAttribute("role","gridcell");
+    cell.dataset.i=i;
+    if(c===2||c===5) cell.classList.add("br3");
+    if(r===2||r===5) cell.classList.add("bb3");
+    if(c===8) cell.classList.add("lastcol");
+    if(r===8) cell.classList.add("lastrow");
+    const val=document.createElement("span"); val.className="val";
+    const notes=document.createElement("div"); notes.className="notes";
+    for(let n=1;n<=9;n++){ const s=document.createElement("span"); s.textContent=n; notes.appendChild(s); }
+    cell.appendChild(notes); cell.appendChild(val);
+    cell.addEventListener("click",()=>{ if(S.status==="paused") return; select(i); });
+    frag.appendChild(cell);
+  }
+  board.appendChild(frag);
+  board.addEventListener("keydown",onKey);
+}
+
+function buildNumpad(){
+  const np=document.getElementById("numpad");
+  for(let n=1;n<=9;n++){ const b=document.createElement("button");
+    b.innerHTML=`${n}<span class="rem" aria-hidden="true"></span>`;
+    b.setAttribute("aria-label",`Place ${n}`);
+    b.dataset.n=n; b.addEventListener("click",()=>{ placeDigit(n); board.focus({preventScroll:true}); });
+    np.appendChild(b); }
+  const er=document.createElement("button"); er.className="erase";
+  er.setAttribute("aria-label","Erase cell");
+  er.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6H9l-6 6 6 6h11a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1Z"/><path d="m15 9-5 6M10 9l5 6"/></svg>`;
+  er.addEventListener("click",()=>{ eraseCell(); board.focus({preventScroll:true}); });
+  np.appendChild(er);
+}
+
+function render(){
+  const conflicts=computeConflicts();
+  const selV=S.cells[S.selected];
+  const sr=(S.selected/9|0), sc=S.selected%9, sbr=sr-sr%3, sbc=sc-sc%3;
+  const hl=els.optHighlight.checked;
+
+  for(let i=0;i<81;i++){
+    const cell=board.children[i];
+    const r=(i/9|0), c=i%9;
+    const v=S.cells[i];
+    let cls="cell";
+    if(c===2||c===5) cls+=" br3"; if(r===2||r===5) cls+=" bb3";
+    if(c===8) cls+=" lastcol"; if(r===8) cls+=" lastrow";
+
+    if(S.given[i]) cls+=" given"; else if(v) cls+=" entry";
+    if(S.hinted[i]) cls+=" hinted";
+
+    // peers + same-number (skip while paused)
+    if(S.status!=="paused" && hl){
+      const samePeer=(r===sr||c===sc||(r>=sbr&&r<sbr+3&&c>=sbc&&c<sbc+3));
+      if(samePeer && i!==S.selected) cls+=" peer";
+      if(selV && v===selV && i!==S.selected) cls+=" same";
+    }
+    if(i===S.selected && S.status!=="paused") cls+=" selected";
+    if(conflicts.has(i)) cls+=" conflict";
+    if(lastError.includes(i)) cls+=" error";
+    cell.className=cls;
+    cell.setAttribute("aria-selected", i===S.selected ? "true":"false");
+
+    // contents: paused hides everything; else a value, else any pencil marks, else empty
+    const valEl=cell.querySelector(".val");
+    const notesEl=cell.querySelector(".notes");
+    const label=`Row ${r+1} column ${c+1}`;
+    if(S.status==="paused"){
+      valEl.textContent=""; valEl.style.display="none"; notesEl.style.display="none";
+      cell.setAttribute("aria-label",`${label}, hidden`);
+    } else if(v){
+      valEl.textContent=v; valEl.style.display=""; notesEl.style.display="none";
+      cell.setAttribute("aria-label",`${label}, ${S.given[i]?"clue":"your"} ${v}`);
+    } else if(S.notes[i].some(Boolean)){
+      valEl.style.display="none"; notesEl.style.display="grid";
+      const spans=notesEl.children;
+      for(let n=0;n<9;n++) spans[n].className=S.notes[i][n]?"on":"";
+      cell.setAttribute("aria-label",`${label}, notes`);
+    } else {
+      valEl.textContent=""; valEl.style.display=""; notesEl.style.display="none";
+      cell.setAttribute("aria-label",`${label}, empty`);
+    }
+  }
+
+  // numpad remaining counts + disabled
+  const counts=Array(10).fill(0);
+  for(let i=0;i<81;i++) if(S.cells[i]) counts[S.cells[i]]++;
+  els.numBtns.forEach((b,idx)=>{ const n=idx+1; const rem=9-counts[n];
+    b.querySelector(".rem").textContent=rem>0?rem:"";
+    b.disabled = rem<=0 || S.status!=="playing"; });
+
+  // stats
+  updateClock();
+  els.sMist.textContent=S.mistakes;
+  els.sMist.classList.toggle("warn",S.mistakes>0);
+  const filled=S.cells.filter(Boolean).length;
+  els.sFill.textContent=`${filled}/81`;
+
+  // header
+  els.metaDiff.textContent=DIFF_LABEL[S.difficulty];
+  els.metaClues.textContent=`${S.given.filter(Boolean).length} clues`;
+  els.puzzleNo.textContent=`Puzzle No. ${String(S.seed).padStart(6,"0")}`;
+
+  // controls state
+  els.aUndo.disabled=hIndex<=0;
+  els.aRedo.disabled=hIndex>=history.length-1;
+  els.aNotes.setAttribute("aria-pressed",String(S.notesMode));
+  els.notesFlag.classList.toggle("on",S.notesMode);
+  const done=S.status==="won"||S.status==="solved";
+  [els.aHint,els.aCheck,els.aSolve,els.aPause,els.aAuto].forEach(b=>b.disabled=done||S.status==="paused");
+
+  // difficulty segmented
+  els.segBtns.forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.diff===S.difficulty)));
+}
+
+function updateClock(){ const t=fmt(S.seconds); els.sTime.textContent=t; els.ovTime.textContent=t; }
+
+/* =====================================================================
+   OVERLAY
+   ===================================================================== */
+const SEAL_WIN=`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 30c-4 1-7 4-7 9 5 0 8-2 10-5"/><path d="M44 30c4 1 7 4 7 9-5 0-8-2-10-5"/><path d="M24 14c-3 6-3 14 0 20"/><path d="M40 14c3 6 3 14 0 20"/><circle cx="32" cy="30" r="9"/><path d="m29 30 2.2 2.4L36 27"/><path d="M32 39v9"/><path d="M26 50h12"/></svg>`;
+const SEAL_PAUSE=`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="18"/><rect x="26" y="25" width="4" height="14" rx="1.4"/><rect x="34" y="25" width="4" height="14" rx="1.4"/></svg>`;
+const SEAL_SOLVED=`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="18"/><path d="m24 32 5 5 11-12"/></svg>`;
+
+function showOverlay(kind){
+  const ov=els.overlay;
+  els.ovSummary.hidden = kind==="pause";
+  els.ovSecondary.hidden = kind==="pause";
+  els.ovMist.textContent=S.mistakes; els.ovHints.textContent=S.hints; els.ovTime.textContent=fmt(S.seconds);
+  if(kind==="win"){ els.ovSeal.innerHTML=SEAL_WIN; els.ovTitle.textContent="Solved";
+    els.ovSub.textContent="A clean, complete grid."; els.ovPrimary.textContent="New puzzle";
+    els.ovPrimary.dataset.act="new"; els.ovSecondary.hidden=true; }
+  else if(kind==="solved"){ els.ovSeal.innerHTML=SEAL_SOLVED; els.ovTitle.textContent="Auto-solved";
+    els.ovSub.textContent="The solution, revealed."; els.ovPrimary.textContent="New puzzle";
+    els.ovPrimary.dataset.act="new"; els.ovSecondary.hidden=true; }
+  else { els.ovSeal.innerHTML=SEAL_PAUSE; els.ovTitle.textContent="Paused";
+    els.ovSub.textContent="The clock is resting."; els.ovPrimary.textContent="Resume";
+    els.ovPrimary.dataset.act="resume"; els.ovSecondary.hidden=false; }
+  ov.classList.add("show"); ov.setAttribute("aria-hidden","false");
+  els.ovPrimary.focus({preventScroll:true});
+}
+function hideOverlay(){ els.overlay.classList.remove("show"); els.overlay.setAttribute("aria-hidden","true"); }
+
+/* =====================================================================
+   PERSISTENCE
+   ===================================================================== */
+function save(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify({
+  difficulty:S.difficulty, seed:S.seed, puzzle:S.puzzle, solution:S.solution,
+  cells:S.cells, given:S.given, notes:S.notes, hinted:S.hinted,
+  selected:S.selected, notesMode:S.notesMode, mistakes:S.mistakes, hints:S.hints,
+  seconds:S.seconds, status:S.status==="paused"?"playing":S.status })); }catch(e){} }
+
+function load(){ try{ const raw=localStorage.getItem(SAVE_KEY); if(!raw) return false;
+  const d=JSON.parse(raw);
+  if(!d.cells||d.cells.length!==81||!d.solution) return false;
+  S={ difficulty:d.difficulty, seed:d.seed, puzzle:d.puzzle, solution:d.solution,
+    cells:d.cells, given:d.given, notes:d.notes||blankNotes(), hinted:d.hinted||Array(81).fill(false),
+    selected:d.selected||0, notesMode:!!d.notesMode, mistakes:d.mistakes||0, hints:d.hints||0,
+    seconds:d.seconds||0, status:(d.status==="won"||d.status==="solved")?d.status:"playing" };
+  history=[]; hIndex=-1; pushHistory();
+  if(S.status==="playing") startTimer();
+  return true; }catch(e){ return false; } }
+
+/* =====================================================================
+   WIRING
+   ===================================================================== */
+function cacheEls(){
+  els.overlay=document.getElementById("overlay");
+  els.ovSeal=document.getElementById("ov-seal");
+  els.ovTitle=document.getElementById("ov-title");
+  els.ovSub=document.getElementById("ov-sub");
+  els.ovSummary=document.getElementById("ov-summary");
+  els.ovTime=document.getElementById("ov-time");
+  els.ovMist=document.getElementById("ov-mist");
+  els.ovHints=document.getElementById("ov-hints");
+  els.ovPrimary=document.getElementById("ov-primary");
+  els.ovSecondary=document.getElementById("ov-secondary");
+  els.sTime=document.getElementById("s-time");
+  els.sMist=document.getElementById("s-mist");
+  els.sFill=document.getElementById("s-fill");
+  els.metaDiff=document.getElementById("meta-diff");
+  els.metaClues=document.getElementById("meta-clues");
+  els.puzzleNo=document.getElementById("puzzle-no");
+  els.notesFlag=document.getElementById("notes-flag");
+  els.optClean=document.getElementById("opt-clean");
+  els.optHighlight=document.getElementById("opt-highlight");
+  els.aUndo=document.getElementById("a-undo");
+  els.aRedo=document.getElementById("a-redo");
+  els.aNotes=document.getElementById("a-notes");
+  els.aHint=document.getElementById("a-hint");
+  els.aCheck=document.getElementById("a-check");
+  els.aSolve=document.getElementById("a-solve");
+  els.aPause=document.getElementById("a-pause");
+  els.aAuto=document.getElementById("a-autonotes");
+  els.numBtns=[...document.querySelectorAll("#numpad button[data-n]")];
+  els.segBtns=[...document.querySelectorAll(".seg button")];
+}
+function wire(){
+  els.aUndo.addEventListener("click",undo);
+  els.aRedo.addEventListener("click",redo);
+  els.aNotes.addEventListener("click",toggleNotes);
+  els.aHint.addEventListener("click",hint);
+  els.aCheck.addEventListener("click",checkErrors);
+  els.aSolve.addEventListener("click",solveBoard);
+  els.aPause.addEventListener("click",pause);
+  els.aAuto.addEventListener("click",autoNotes);
+  els.optHighlight.addEventListener("change",render);
+  document.getElementById("btn-new").addEventListener("click",()=>newGame(S.difficulty));
+  els.segBtns.forEach(b=>b.addEventListener("click",()=>newGame(b.dataset.diff)));
+  els.ovPrimary.addEventListener("click",()=>{ const a=els.ovPrimary.dataset.act;
+    if(a==="resume") resume(); else { hideOverlay(); newGame(S.difficulty); } });
+  els.ovSecondary.addEventListener("click",()=>{ hideOverlay(); newGame(S.difficulty); });
+  document.addEventListener("keydown",(e)=>{ // global shortcuts when board not focused
+    if(e.target===board) return;
+    if(["INPUT","BUTTON","TEXTAREA"].includes(e.target.tagName) && e.key!=="Escape") return;
+    if(S.status==="paused" && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); resume(); }
+  });
+}
+function announce(msg){ document.getElementById("live").textContent=msg; }
+
+/* ---- boot ---- */
+buildBoard(); buildNumpad(); cacheEls(); wire();
+if(!load()) newGame("medium");
+render();
+
+/* ---- test/automation API ---- */
+window.SUDOKU={ generate, solve, countSolutions, isValid, CLUE_TARGET,
+  get state(){ return S; },
+  select, placeDigit, eraseCell, newGame, solveBoard, hint, checkErrors,
+  computeConflicts, get history(){ return {history,hIndex}; } };
+})();
+</script>
+</body>
+</html>

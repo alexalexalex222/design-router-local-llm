@@ -1,0 +1,609 @@
+{
+  "id": "root_5193",
+  "url": "http://localhost:5193/.",
+  "finalUrl": "http://localhost:5193/",
+  "httpStatus": 200,
+  "title": "PHOSPHOR — browser-native synthesizer",
+  "renderedHtml": {
+    "file": "rendered.html",
+    "bytes": 33656,
+    "sha256": "157fbb0ed1f5293f865ea822ec939efef76e5587c776f34baafe072eac59e047"
+  },
+  "screenshots": [
+    {
+      "viewport": {
+        "name": "desktop-1512x812",
+        "width": 1512,
+        "height": 812
+      },
+      "path": "desktop-1512x812.png",
+      "metrics": {
+        "scrollWidth": 1512,
+        "clientWidth": 1512,
+        "bodyScrollWidth": 1512,
+        "horizontalOverflow": false,
+        "textLength": 157
+      }
+    },
+    {
+      "viewport": {
+        "name": "mobile-390x844",
+        "width": 390,
+        "height": 844
+      },
+      "path": "mobile-390x844.png",
+      "metrics": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "bodyScrollWidth": 390,
+        "horizontalOverflow": false,
+        "textLength": 157
+      }
+    }
+  ],
+  "resources": [
+    {
+      "url": "http://localhost:5193/",
+      "status": 200,
+      "resourceType": "document",
+      "contentType": "text/html",
+      "bytes": 3848,
+      "sha256": "a38c2dcc9b893a83ebf54a36f1f41915c548cbde069fb87b91808b0e0878763c",
+      "file": "resources/01-root.html"
+    },
+    {
+      "url": "http://localhost:5193/@vite/client",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 182535,
+      "sha256": "f2933d7f0a34a7da6b2a4fd25ccb9aa2a90f0c2bb293be552627804695a5f54b",
+      "file": "resources/02-_vite_client.js"
+    },
+    {
+      "url": "http://localhost:5193/src/main.ts?t=1782146233539",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 20763,
+      "sha256": "511ce0ebe11d3c1e03723184c4ac54cd49335f92d390388e1b61c6360da2f59b",
+      "file": "resources/03-src_main.ts.js"
+    },
+    {
+      "url": "http://localhost:5193/node_modules/vite/dist/client/env.mjs",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 3861,
+      "sha256": "004862df937de3eaacc341fe72d9b0b72454278a7accf493998a6b35a7c61217",
+      "file": "resources/04-node_modules_vite_dist_client_env.mjs.js"
+    },
+    {
+      "url": "http://localhost:5193/src/audio/presets.ts?t=1782146233539",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 16405,
+      "sha256": "bc64464db44a9b0daf8d51a5ee8357a7e1ca855548acca8c8d91ae40f1056ea8",
+      "file": "resources/05-src_audio_presets.ts.js"
+    },
+    {
+      "url": "http://localhost:5193/styles/index.css?t=1782145812645",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 31350,
+      "sha256": "0340f910c5a9568ae16c6bc3d3a1d5619013f072ecd8ade8da09bc15b7168e1a",
+      "file": "resources/06-styles_index.css.js"
+    },
+    {
+      "url": "http://localhost:5193/src/state/store.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 5435,
+      "sha256": "8ace07450c63dbdbcc20ebc3ee10cefe550a0ac77858518b2d3a2afc2ebbf91e",
+      "file": "resources/07-src_state_store.ts.js"
+    },
+    {
+      "url": "http://localhost:5193/src/audio/notes.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 7682,
+      "sha256": "248dca6b2ef47077fb47e8fb612406314c9ca6b2efdb09febd5aa5119b24ec76",
+      "file": "resources/08-src_audio_notes.ts.js"
+    },
+    {
+      "url": "http://localhost:5193/src/audio/Synth.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 18164,
+      "sha256": "8f17edb18360a9d37d130bfaaea792f7795d763274d32f182308c8f381314227",
+      "file": "resources/09-src_audio_Synth.ts.js"
+    },
+    {
+      "url": "http://localhost:5193/src/ui/StepGrid.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 14139,
+      "sha256": "5f30befd9f7fe2a6ad8a201a4de682f1cab6e2af9214b7ef32f63284ca36b035",
+      "file": "resources/10-src_ui_StepGrid.ts.js"
+    },
+    {
+      "url": "http://localhost:5193/src/ui/rack.ts?t=1782146233539",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 29483,
+      "sha256": "2ee8b486cfcd24d839686eb6c5b193fdeebbba18e073957b33922c2b25d2392b",
+      "file": "resources/11-src_ui_rack.ts.js"
+    },
+    {
+      "url": "http://localhost:5193/src/ui/Keyboard.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 16558,
+      "sha256": "15c2238e0ce5c228505eef4b701fe6ab4f33ac9ab060214beaa6992d9d488de8",
+      "file": "resources/12-src_ui_Keyboard.ts.js"
+    },
+    {
+      "url": "http://localhost:5193/src/sequencer/Sequencer.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 9474,
+      "sha256": "7f86115cfa17eb20399117af36d75a44b26d5ce429ac10c0c37a0f0a69c3466c",
+      "file": "resources/13-src_sequencer_Sequencer.ts.js"
+    },
+    {
+      "url": "http://localhost:5193/src/ui/Transport.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 14615,
+      "sha256": "c289587c1b3b7c6259eec1e391ed79a13dd12d617f997defdd48edb2a9f87644",
+      "file": "resources/14-src_ui_Transport.ts.js"
+    },
+    {
+      "url": "http://localhost:5193/src/ui/PresetBar.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 6111,
+      "sha256": "39c15abf8e78432743196a1c2e2b2728b143ad56cd603b54b2e881321c9fa8b6",
+      "file": "resources/15-src_ui_PresetBar.ts.js"
+    },
+    {
+      "url": "http://localhost:5193/src/ui/SeqControls.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 10957,
+      "sha256": "ab6cc72fe88b59c99cd66cd8f8d98bbcc30658491412b2c0f83e206838460de7",
+      "file": "resources/16-src_ui_SeqControls.ts.js"
+    },
+    {
+      "url": "http://localhost:5193/src/visual/Visualizer.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 18174,
+      "sha256": "dfa2cd9517b25e89e3efa2f250daa06b11242eefeac5438db1e815906863a632",
+      "file": "resources/17-src_visual_Visualizer.ts.js"
+    },
+    {
+      "url": "http://localhost:5193/src/audio/effects.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 11599,
+      "sha256": "3835cfc4f9762157e49bb4933f178e521c14cd0dbe38841619b065090554354d",
+      "file": "resources/18-src_audio_effects.ts.js"
+    },
+    {
+      "url": "http://localhost:5193/src/ui/Knob.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 24311,
+      "sha256": "dadbd46cb762c4f6b125c0ab14705a0e66208424ab9426dbb129ae32a5908822",
+      "file": "resources/19-src_ui_Knob.ts.js"
+    },
+    {
+      "url": "http://localhost:5193/src/ui/Meter.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 4319,
+      "sha256": "4810d2abd1951c3dedc225b5ee519f3b552f6c4ff162f0cddf451305531a3835",
+      "file": "resources/20-src_ui_Meter.ts.js"
+    },
+    {
+      "url": "http://localhost:5193/src/audio/Voice.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 22921,
+      "sha256": "bbc354bf1947fdcae5215e9d4e004ce3876f1b62d0d7976b6069ce7a755ff738",
+      "file": "resources/21-src_audio_Voice.ts.js"
+    },
+    {
+      "url": "http://localhost:5193/src/ui/Segmented.ts",
+      "status": 200,
+      "resourceType": "script",
+      "contentType": "text/javascript",
+      "bytes": 8338,
+      "sha256": "e97e6bd6211b92ac68b203d184bfd7280c3224676bf0dbfd67bdc53919497715",
+      "file": "resources/22-src_ui_Segmented.ts.js"
+    },
+    {
+      "url": "http://localhost:5193/",
+      "status": 200,
+      "resourceType": "document",
+      "contentType": "text/html",
+      "bytes": 3848,
+      "sha256": "a38c2dcc9b893a83ebf54a36f1f41915c548cbde069fb87b91808b0e0878763c",
+      "file": "resources/23-root.html"
+    },
+    {
+      "url": "http://localhost:5193/",
+      "status": 200,
+      "resourceType": "document",
+      "contentType": "text/html",
+      "bytes": 3848,
+      "sha256": "a38c2dcc9b893a83ebf54a36f1f41915c548cbde069fb87b91808b0e0878763c",
+      "file": "resources/24-root.html"
+    }
+  ],
+  "extraction": {
+    "title": "PHOSPHOR — browser-native synthesizer",
+    "lang": "en",
+    "bodyTextLength": 157,
+    "headings": [
+      {
+        "tag": "h1",
+        "text": "PHOSPHOR",
+        "box": {
+          "x": 539,
+          "y": 274,
+          "width": 435,
+          "height": 84
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(243, 240, 234)",
+          "fontFamily": "Inter, -apple-system, \"system-ui\", \"Segoe UI\", system-ui, \"Helvetica Neue\", Arial, sans-serif",
+          "fontSize": "56px",
+          "fontWeight": "600",
+          "lineHeight": "84px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      }
+    ],
+    "navLinks": [],
+    "forms": [],
+    "sections": [
+      {
+        "index": 0,
+        "tag": "main",
+        "id": "app",
+        "className": "app",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [],
+        "buttons": [],
+        "text": "PHOSPHOR synth · studio PHOSPHOR",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "styles": {
+          "display": "none",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(194, 198, 207)",
+          "fontFamily": "Inter, -apple-system, \"system-ui\", \"Segoe UI\", system-ui, \"Helvetica Neue\", Arial, sans-serif",
+          "fontSize": "17px",
+          "fontWeight": "400",
+          "lineHeight": "25.5px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 1,
+        "tag": "header",
+        "id": "",
+        "className": "topbar",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [],
+        "buttons": [],
+        "text": "PHOSPHOR synth · studio",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "styles": {
+          "display": "grid",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(194, 198, 207)",
+          "fontFamily": "Inter, -apple-system, \"system-ui\", \"Segoe UI\", system-ui, \"Helvetica Neue\", Arial, sans-serif",
+          "fontSize": "17px",
+          "fontWeight": "400",
+          "lineHeight": "25.5px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 2,
+        "tag": "section",
+        "id": "",
+        "className": "stage",
+        "role": "",
+        "ariaLabel": "Live visualizer",
+        "headings": [],
+        "buttons": [],
+        "text": "",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "styles": {
+          "display": "block",
+          "position": "relative",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(194, 198, 207)",
+          "fontFamily": "Inter, -apple-system, \"system-ui\", \"Segoe UI\", system-ui, \"Helvetica Neue\", Arial, sans-serif",
+          "fontSize": "17px",
+          "fontWeight": "400",
+          "lineHeight": "25.5px",
+          "borderRadius": "18px",
+          "boxShadow": "rgba(255, 255, 255, 0.04) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.55) 0px 8px 26px 0px"
+        }
+      },
+      {
+        "index": 3,
+        "tag": "section",
+        "id": "",
+        "className": "rack",
+        "role": "",
+        "ariaLabel": "Synthesizer controls",
+        "headings": [],
+        "buttons": [],
+        "text": "",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(194, 198, 207)",
+          "fontFamily": "Inter, -apple-system, \"system-ui\", \"Segoe UI\", system-ui, \"Helvetica Neue\", Arial, sans-serif",
+          "fontSize": "17px",
+          "fontWeight": "400",
+          "lineHeight": "25.5px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      },
+      {
+        "index": 4,
+        "tag": "section",
+        "id": "",
+        "className": "motion",
+        "role": "",
+        "ariaLabel": "Step sequencer",
+        "headings": [],
+        "buttons": [],
+        "text": "",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgb(19, 22, 29)",
+          "color": "rgb(194, 198, 207)",
+          "fontFamily": "Inter, -apple-system, \"system-ui\", \"Segoe UI\", system-ui, \"Helvetica Neue\", Arial, sans-serif",
+          "fontSize": "17px",
+          "fontWeight": "400",
+          "lineHeight": "25.5px",
+          "borderRadius": "18px",
+          "boxShadow": "rgba(255, 255, 255, 0.03) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.45) 0px 2px 8px 0px"
+        }
+      },
+      {
+        "index": 5,
+        "tag": "section",
+        "id": "keys",
+        "className": "board",
+        "role": "",
+        "ariaLabel": "Keyboard",
+        "headings": [],
+        "buttons": [],
+        "text": "",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "styles": {
+          "display": "block",
+          "position": "static",
+          "background": "rgb(19, 22, 29)",
+          "color": "rgb(194, 198, 207)",
+          "fontFamily": "Inter, -apple-system, \"system-ui\", \"Segoe UI\", system-ui, \"Helvetica Neue\", Arial, sans-serif",
+          "fontSize": "17px",
+          "fontWeight": "400",
+          "lineHeight": "25.5px",
+          "borderRadius": "18px",
+          "boxShadow": "rgba(255, 255, 255, 0.03) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.45) 0px 2px 8px 0px"
+        }
+      },
+      {
+        "index": 6,
+        "tag": "footer",
+        "id": "",
+        "className": "footer",
+        "role": "",
+        "ariaLabel": "",
+        "headings": [],
+        "buttons": [],
+        "text": "PHOSPHOR",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "styles": {
+          "display": "flex",
+          "position": "static",
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(86, 92, 104)",
+          "fontFamily": "Inter, -apple-system, \"system-ui\", \"Segoe UI\", system-ui, \"Helvetica Neue\", Arial, sans-serif",
+          "fontSize": "11.5px",
+          "fontWeight": "400",
+          "lineHeight": "17.25px",
+          "borderRadius": "0px",
+          "boxShadow": ""
+        }
+      }
+    ],
+    "cssVars": {
+      "--mod-soft": "#36c2b6",
+      "--r-3": "12px",
+      "--signal-line": "rgba(255, 177, 59, 0.42)",
+      "--glow-mod": "0 0 0.5px #3fd9cb, 0 0 14px rgba(63, 217, 203, 0.3)",
+      "--surface-2": "#1a1e27",
+      "--text-1": "#c2c6cf",
+      "--good": "#6fe08a",
+      "--line-3": "rgba(233, 238, 248, 0.2)",
+      "--tracking-label": "0.14em",
+      "--signal": "#ffb13b",
+      "--bg-1": "#0b0d12",
+      "--surface-3": "#232834",
+      "--sp-4": "16px",
+      "--elev-3": "0 1px 0 rgba(255, 255, 255, 0.05) inset,\n    0 18px 48px rgba(0, 0, 0, 0.6)",
+      "--glow-signal": "0 0 0.5px #ffb13b, 0 0 14px rgba(255, 177, 59, 0.35)",
+      "--sp-8": "64px",
+      "--r-2": "8px",
+      "--fs-meta": "clamp(12px, 0.2vw + 11.5px, 13px)",
+      "--r-1": "4px",
+      "--sp-6": "32px",
+      "--maxw": "1380px",
+      "--fs-body": "clamp(16px, 0.3vw + 15px, 17px)",
+      "--danger": "#ff5b4d",
+      "--mod": "#3fd9cb",
+      "--text-3": "#565c68",
+      "--elev-1": "0 1px 0 rgba(255, 255, 255, 0.03) inset,\n    0 2px 8px rgba(0, 0, 0, 0.45)",
+      "--elev-2": "0 1px 0 rgba(255, 255, 255, 0.04) inset,\n    0 8px 26px rgba(0, 0, 0, 0.55)",
+      "--line-2": "rgba(233, 238, 248, 0.12)",
+      "--fs-display": "clamp(28px, 4vw + 12px, 56px)",
+      "--line": "rgba(233, 238, 248, 0.07)",
+      "--ease-snap": "cubic-bezier(0.2, 0.9, 0.25, 1.2)",
+      "--danger-dim": "rgba(255, 91, 77, 0.16)",
+      "--fs-h2": "clamp(18px, 0.6vw + 16px, 22px)",
+      "--mod-dim": "rgba(63, 217, 203, 0.14)",
+      "--fs-label": "clamp(10.5px, 0.2vw + 10px, 11.5px)",
+      "--dur-3": "320ms",
+      "--r-pill": "999px",
+      "--surface-1": "#13161d",
+      "--hot": "#fff1d4",
+      "--font-mono": "ui-monospace, \"SF Mono\", \"JetBrains Mono\", \"Menlo\",\n    \"Roboto Mono\", monospace",
+      "--signal-dim": "rgba(255, 177, 59, 0.16)",
+      "--mod-line": "rgba(63, 217, 203, 0.4)",
+      "--fs-h3": "clamp(13px, 0.4vw + 12px, 15px)",
+      "--sp-7": "48px",
+      "--tracking-wide": "0.26em",
+      "--r-4": "18px",
+      "--text-0": "#f3f0ea",
+      "--sp-1": "4px",
+      "--bg-0": "#07080b",
+      "--dur-1": "120ms",
+      "--text-2": "#868c98",
+      "--signal-soft": "#f7a23a",
+      "--sp-2": "8px",
+      "--font-ui": "\"Inter\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", system-ui,\n    \"Helvetica Neue\", Arial, sans-serif",
+      "--ease-out": "cubic-bezier(0.22, 1, 0.36, 1)",
+      "--fs-micro": "clamp(9.5px, 0.2vw + 9px, 10.5px)",
+      "--sp-3": "12px",
+      "--surface-4": "#2d3340",
+      "--dur-2": "200ms",
+      "--sp-5": "24px",
+      "--ease-in-out": "cubic-bezier(0.65, 0, 0.35, 1)"
+    },
+    "topColors": [
+      [
+        "rgb(194, 198, 207)",
+        46
+      ],
+      [
+        "rgb(86, 92, 104)",
+        16
+      ],
+      [
+        "rgb(243, 240, 234)",
+        13
+      ],
+      [
+        "rgb(134, 140, 152)",
+        6
+      ],
+      [
+        "rgba(233, 238, 248, 0.12)",
+        4
+      ],
+      [
+        "rgb(26, 30, 39)",
+        3
+      ],
+      [
+        "rgba(233, 238, 248, 0.07)",
+        3
+      ],
+      [
+        "rgb(19, 22, 29)",
+        2
+      ],
+      [
+        "rgba(233, 238, 248, 0.2)",
+        1
+      ],
+      [
+        "rgb(194, 198, 207) rgb(194, 198, 207) rgba(233, 238, 248, 0.07)",
+        1
+      ]
+    ],
+    "scrollWidth": 1512,
+    "clientWidth": 1512,
+    "scrollHeight": 812
+  },
+  "consoleMessages": [],
+  "pageErrors": [],
+  "capturedAt": "2026-06-22T17:40:30.141Z"
+}

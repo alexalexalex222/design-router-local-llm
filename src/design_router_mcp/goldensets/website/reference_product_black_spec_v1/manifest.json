@@ -1,0 +1,66 @@
+{
+  "pack_id": "reference_product_black_spec_v1",
+  "role": "anchor",
+  "family": "website.product_detail",
+  "source_paths": [
+    "source_snapshot/index.html",
+    "source_snapshot/styles.css",
+    "source_snapshot/extracted_patterns.md"
+  ],
+  "origin_example_ids": [
+    "reference-product-spec"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "website"
+  ],
+  "tones": [
+    "dark",
+    "premium",
+    "editorial",
+    "technical",
+    "restrained",
+    "warm-metal",
+    "high-contrast"
+  ],
+  "surfaces": [
+    "homepage",
+    "hero",
+    "landing",
+    "section",
+    "full_site"
+  ],
+  "motif_tags": [
+    "product_hero",
+    "dark_texture",
+    "technical_manifest",
+    "material_showcase",
+    "specification_table",
+    "proof_cards",
+    "pricing_panel",
+    "process_timeline",
+    "headline_hierarchy"
+  ],
+  "supports_tasks": [
+    "premium_product_detail",
+    "hardware_landing_page",
+    "audio_product_website",
+    "industrial_design_product_page",
+    "measured_specs_product_page",
+    "reservation_checkout_landing"
+  ],
+  "anti_patterns": [
+    "invented performance measurements",
+    "fake scarcity or availability claims",
+    "generic e-commerce grid",
+    "copying exact product object or price",
+    "decorative specs with no method"
+  ],
+  "screenshot_paths": [
+    "screenshots/desktop-1512x812.png",
+    "screenshots/mobile-390x844.png"
+  ],
+  "token_budget_hint": 6200,
+  "confidence_score": 5
+}

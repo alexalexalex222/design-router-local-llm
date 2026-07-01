@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>TERRA — a cinematic procedural landscape generator</title>
+<meta name="description" content="TERRA generates seam-free procedural terrains from multi-octave noise and lets you fly over them. Tune seed, octaves, frequency and water level; watch biomes form from sea to snow; export a keynote-grade frame." />
+<style>
+  /* ============================================================
+     DESIGN TOKENS — cinematic-landscape control surface
+     ============================================================ */
+  :root{
+    /* neutral ramp (deep slate inks) */
+    --n-950:#070b10; --n-900:#0a1019; --n-800:#0f1722; --n-700:#16212f;
+    --n-600:#1f2d3e; --n-500:#2c3d52; --n-400:#41566f; --n-300:#6c819a;
+    --n-200:#9fb2c6; --n-100:#cfdae6; --n-050:#eef3f8;
+    /* semantic surfaces (glass over the 3D canvas) */
+    --surface-0:rgba(10,16,25,.62);
+    --surface-1:rgba(13,21,32,.80);
+    --surface-2:rgba(20,32,46,.92);
+    --line:rgba(159,178,198,.14);
+    --line-strong:rgba(159,178,198,.30);
+    /* text roles */
+    --text-hi:#eef3f8; --text-mid:#aebdcd; --text-low:#73879c; --text-dim:#566779;
+    /* brand accents — dawn over a ridge */
+    --amber:#ffc56b; --amber-2:#ff9b45;
+    --teal:#5fd0c5; --teal-2:#36b3b8;
+    --sky:#7db8ff;
+    --good:#74e0a8; --bad:#ff8d8d; --warn:#ffcf7a;
+    --focus:#9fd6ff;
+    /* fluid type scale (ratio-locked ~1.2) */
+    --fs-700:clamp(1.45rem,1.2rem + 1.1vw,2.0rem);
+    --fs-600:clamp(1.18rem,1.05rem + .5vw,1.4rem);
+    --fs-500:clamp(1.02rem,.97rem + .25vw,1.14rem);
+    --fs-400:1rem;
+    --fs-300:.86rem;
+    --fs-200:.78rem;
+    --fs-100:.7rem;
+    --ff-sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    --ff-mono:ui-monospace,"SF Mono",SFMono-Regular,"JetBrains Mono",Menlo,Consolas,monospace;
+    /* spacing (4px scale) */
+    --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:20px; --s-6:24px; --s-7:28px; --s-8:32px;
+    /* radii */
+    --r-1:6px; --r-2:9px; --r-3:13px; --r-4:18px; --r-pill:999px;
+    /* elevation (max 3 tiers) */
+    --e-1:0 1px 0 rgba(180,200,225,.05) inset, 0 6px 18px rgba(0,0,0,.42);
+    --e-2:0 1px 0 rgba(180,200,225,.07) inset, 0 16px 44px rgba(0,0,0,.55);
+    --e-3:0 1px 0 rgba(180,200,225,.09) inset, 0 28px 70px rgba(0,0,0,.62);
+    /* motion */
+    --dur-1:140ms; --dur-2:200ms; --dur-3:260ms;
+    --ease:cubic-bezier(.22,.61,.36,1);
+    --ease-out:cubic-bezier(.16,1,.3,1);
+  }
+
+  *{box-sizing:border-box;margin:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--n-950); color:var(--text-hi);
+    font-family:var(--ff-sans); font-size:var(--fs-400); line-height:1.45;
+    overflow:hidden; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    overscroll-behavior:none;
+  }
+  canvas{display:block;}
+  button{font-family:inherit;}
+  .vh{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+      clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+
+  a.skip{
+    position:fixed; left:var(--s-3); top:-60px; z-index:60;
+    background:var(--surface-2); color:var(--text-hi);
+    padding:var(--s-2) var(--s-4); border-radius:var(--r-2);
+    border:1px solid var(--line-strong); box-shadow:var(--e-2);
+    transition:top var(--dur-2) var(--ease);
+  }
+  a.skip:focus-visible{top:var(--s-3);}
+
+  /* ---------- stage ---------- */
+  #stage{position:fixed; inset:0; z-index:0;}
+  #gl{position:absolute; inset:0; width:100%; height:100%;}
+
+  /* loading veil over canvas */
+  #veil{
+    position:absolute; inset:0; z-index:5; display:grid; place-items:center;
+    background:radial-gradient(120% 100% at 50% 35%, #11202f 0%, #070b10 80%);
+    transition:opacity var(--dur-3) var(--ease);
+  }
+  #veil[hidden]{display:none;}
+  #veil.fade{opacity:0; pointer-events:none;}
+  .loader{display:flex; flex-direction:column; align-items:center; gap:var(--s-4); color:var(--text-mid);}
+  .loader .ring{width:42px; height:42px; color:var(--amber);}
+  .loader .ring circle{stroke:currentColor; stroke-width:3; fill:none; stroke-linecap:round;
+    stroke-dasharray:90; stroke-dashoffset:60; transform-origin:center;
+    animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loader p{font-size:var(--fs-300); letter-spacing:.04em;}
+  .loader .word{font-size:var(--fs-200); color:var(--text-low); letter-spacing:.22em; text-transform:uppercase;}
+
+  /* WebGL error state */
+  #glerror{
+    position:absolute; inset:0; z-index:6; display:none; place-items:center; padding:var(--s-6);
+    background:radial-gradient(120% 100% at 50% 40%, #1a1320 0%, #070b10 80%);
+  }
+  #glerror.show{display:grid;}
+  .errcard{
+    max-width:440px; text-align:center; background:var(--surface-1);
+    border:1px solid var(--line-strong); border-radius:var(--r-4); padding:var(--s-7);
+    box-shadow:var(--e-3); display:flex; flex-direction:column; align-items:center; gap:var(--s-4);
+  }
+  .errcard svg{width:48px; height:48px; color:var(--warn);}
+  .errcard h2{font-size:var(--fs-600); font-weight:650;}
+  .errcard p{font-size:var(--fs-300); color:var(--text-mid); line-height:1.55;}
+
+  /* small "generating" toast (regenerate) */
+  #toast{
+    position:fixed; left:50%; top:var(--s-5); transform:translate(-50%,-12px);
+    z-index:40; display:flex; align-items:center; gap:var(--s-3);
+    background:var(--surface-2); border:1px solid var(--line-strong);
+    border-radius:var(--r-pill); padding:var(--s-2) var(--s-5);
+    font-size:var(--fs-200); color:var(--text-mid); letter-spacing:.04em;
+    box-shadow:var(--e-2); opacity:0; pointer-events:none;
+    transition:opacity var(--dur-2) var(--ease), transform var(--dur-2) var(--ease-out);
+  }
+  #toast.show{opacity:1; transform:translate(-50%,0);}
+  #toast .ring{width:15px; height:15px; color:var(--amber);}
+  #toast .ring circle{stroke:currentColor; stroke-width:3.5; fill:none; stroke-linecap:round;
+    stroke-dasharray:60; stroke-dashoffset:42; transform-origin:center; animation:spin .9s linear infinite;}
+
+  /* ---------- brand / titlebar ---------- */
+  #brand{
+    position:fixed; left:var(--s-5); top:var(--s-5); z-index:30;
+    display:flex; align-items:center; gap:var(--s-3); pointer-events:none;
+  }
+  #brand .mark{width:34px; height:34px; filter:drop-shadow(0 4px 10px rgba(0,0,0,.5));}
+  #brand .txt{line-height:1.05;}
+  #brand .name{font-size:var(--fs-500); font-weight:680; letter-spacing:.16em;}
+  #brand .sub{font-size:var(--fs-100); color:var(--text-low); letter-spacing:.18em; text-transform:uppercase;}
+
+  /* ---------- HUD: minimap + readout (top-right) ---------- */
+  #hud{
+    position:fixed; right:var(--s-5); top:var(--s-5); z-index:30;
+    display:flex; flex-direction:column; align-items:flex-end; gap:var(--s-3);
+  }
+  .map-wrap{
+    background:var(--surface-1); border:1px solid var(--line-strong);
+    border-radius:var(--r-3); padding:var(--s-2); box-shadow:var(--e-2);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  }
+  .map-wrap .cap{
+    display:flex; justify-content:space-between; align-items:center; gap:var(--s-3);
+    font-size:var(--fs-100); color:var(--text-low); letter-spacing:.14em;
+    text-transform:uppercase; padding:2px var(--s-1) var(--s-2);
+  }
+  .map-wrap .cap #mapBiome{color:var(--amber); letter-spacing:.1em;}
+  #minimap{display:block; width:148px; height:148px; border-radius:var(--r-1); background:#0a1018;}
+  .readout{
+    display:flex; gap:var(--s-3); background:var(--surface-1);
+    border:1px solid var(--line); border-radius:var(--r-pill);
+    padding:var(--s-2) var(--s-4); font-family:var(--ff-mono); font-size:var(--fs-100);
+    color:var(--text-mid); box-shadow:var(--e-1);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  }
+  .readout b{color:var(--text-hi); font-weight:600;}
+  .readout .sep{color:var(--text-dim);}
+
+  /* ---------- control panel ---------- */
+  #panel{
+    position:fixed; left:var(--s-5); bottom:var(--s-5); top:auto; z-index:35;
+    width:312px; max-height:calc(100dvh - 92px);
+    display:flex; flex-direction:column;
+    background:var(--surface-1); border:1px solid var(--line-strong);
+    border-radius:var(--r-4); box-shadow:var(--e-3);
+    backdrop-filter:blur(16px) saturate(1.1); -webkit-backdrop-filter:blur(16px) saturate(1.1);
+    overflow:hidden;
+  }
+  .panel-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:var(--s-4) var(--s-4) var(--s-3);
+    border-bottom:1px solid var(--line);
+  }
+  .panel-head h1{font-size:var(--fs-300); font-weight:640; letter-spacing:.04em; color:var(--text-hi);}
+  .panel-head .hint{font-size:var(--fs-100); color:var(--text-low);}
+  .panel-body{
+    overflow-y:auto; overflow-x:hidden; padding:var(--s-4);
+    display:flex; flex-direction:column; gap:var(--s-5);
+    scrollbar-width:thin; scrollbar-color:var(--n-500) transparent;
+  }
+  .panel-body::-webkit-scrollbar{width:8px;}
+  .panel-body::-webkit-scrollbar-thumb{background:var(--n-600); border-radius:var(--r-pill);}
+
+  .group{display:flex; flex-direction:column; gap:var(--s-3);}
+  .group > .legend{
+    font-size:var(--fs-100); color:var(--text-low); letter-spacing:.16em;
+    text-transform:uppercase; display:flex; align-items:center; gap:var(--s-2);
+  }
+  .group > .legend::after{content:""; flex:1; height:1px; background:var(--line);}
+
+  .ctl{display:flex; flex-direction:column; gap:var(--s-2);}
+  .ctl .row{display:flex; align-items:baseline; justify-content:space-between; gap:var(--s-3);}
+  .ctl label{font-size:var(--fs-300); color:var(--text-mid); font-weight:500;}
+  .ctl .val{font-family:var(--ff-mono); font-size:var(--fs-200); color:var(--text-hi);
+    background:var(--n-800); border:1px solid var(--line); border-radius:var(--r-1);
+    padding:1px var(--s-2); min-width:46px; text-align:right;}
+
+  /* range input */
+  input[type=range]{
+    -webkit-appearance:none; appearance:none; width:100%; height:26px; background:transparent;
+    cursor:pointer; margin:0;
+  }
+  input[type=range]:focus{outline:none;}
+  input[type=range]::-webkit-slider-runnable-track{
+    height:5px; border-radius:var(--r-pill);
+    background:linear-gradient(90deg,var(--teal-2),var(--teal) var(--fill,50%),var(--n-600) var(--fill,50%));
+  }
+  input[type=range]::-moz-range-track{height:5px; border-radius:var(--r-pill); background:var(--n-600);}
+  input[type=range]::-moz-range-progress{height:5px; border-radius:var(--r-pill); background:var(--teal);}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none; width:18px; height:18px; margin-top:-7px;
+    border-radius:50%; background:#eaf3fb; border:2px solid var(--teal-2);
+    box-shadow:0 2px 6px rgba(0,0,0,.5); transition:transform var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:18px; height:18px; border-radius:50%; background:#eaf3fb; border:2px solid var(--teal-2);
+    box-shadow:0 2px 6px rgba(0,0,0,.5);}
+  input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.12);}
+  input[type=range]:active::-webkit-slider-thumb{transform:scale(.96);}
+  input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(159,214,255,.4);}
+  input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 4px rgba(159,214,255,.4);}
+
+  /* select */
+  .sel-wrap{position:relative;}
+  select{
+    -webkit-appearance:none; appearance:none; width:100%;
+    background:var(--n-800); color:var(--text-hi); font-family:inherit; font-size:var(--fs-300);
+    border:1px solid var(--line-strong); border-radius:var(--r-2);
+    padding:9px var(--s-7) 9px var(--s-3); cursor:pointer; min-height:40px;
+    transition:border-color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
+  }
+  select:hover{background:var(--n-700);}
+  select:focus-visible{outline:none; border-color:var(--focus); box-shadow:0 0 0 3px rgba(159,214,255,.28);}
+  .sel-wrap::after{content:""; position:absolute; right:13px; top:50%; width:8px; height:8px;
+    border-right:2px solid var(--text-low); border-bottom:2px solid var(--text-low);
+    transform:translateY(-65%) rotate(45deg); pointer-events:none;}
+
+  /* seed control */
+  .seed-row{display:flex; gap:var(--s-2);}
+  .seed-row input[type=number]{
+    flex:1; min-width:0; background:var(--n-800); color:var(--text-hi);
+    font-family:var(--ff-mono); font-size:var(--fs-300);
+    border:1px solid var(--line-strong); border-radius:var(--r-2);
+    padding:9px var(--s-3); min-height:40px;
+    -moz-appearance:textfield;
+  }
+  .seed-row input[type=number]::-webkit-outer-spin-button,
+  .seed-row input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
+  .seed-row input:focus-visible{outline:none; border-color:var(--focus); box-shadow:0 0 0 3px rgba(159,214,255,.28);}
+
+  /* segmented control (radios) */
+  .seg{display:flex; background:var(--n-800); border:1px solid var(--line-strong);
+    border-radius:var(--r-2); padding:3px; gap:3px;}
+  .seg label{flex:1; position:relative;}
+  .seg input{position:absolute; opacity:0; width:1px; height:1px;}
+  .seg span{
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    padding:8px 4px; min-height:38px; border-radius:7px;
+    font-size:var(--fs-200); color:var(--text-mid); cursor:pointer; user-select:none;
+    transition:background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+  }
+  .seg span svg{width:15px; height:15px;}
+  .seg label:hover span{color:var(--text-hi); background:var(--n-700);}
+  .seg input:checked + span{background:linear-gradient(180deg,var(--n-500),var(--n-600));
+    color:var(--text-hi); box-shadow:var(--e-1);}
+  .seg input:focus-visible + span{box-shadow:0 0 0 3px rgba(159,214,255,.4);}
+
+  /* switch toggle */
+  .switch{display:flex; align-items:center; justify-content:space-between; gap:var(--s-3);
+    min-height:40px;}
+  .switch label{font-size:var(--fs-300); color:var(--text-mid); cursor:pointer;}
+  .switch button{
+    position:relative; width:46px; height:26px; border-radius:var(--r-pill);
+    background:var(--n-600); border:1px solid var(--line-strong); cursor:pointer; padding:0;
+    transition:background var(--dur-2) var(--ease);
+  }
+  .switch button::after{content:""; position:absolute; left:3px; top:50%; transform:translateY(-50%);
+    width:18px; height:18px; border-radius:50%; background:#eaf3fb;
+    box-shadow:0 2px 5px rgba(0,0,0,.5); transition:left var(--dur-2) var(--ease-out);}
+  .switch button[aria-pressed=true]{background:linear-gradient(90deg,var(--teal-2),var(--teal));}
+  .switch button[aria-pressed=true]::after{left:25px;}
+  .switch button:focus-visible{outline:none; box-shadow:0 0 0 3px rgba(159,214,255,.36);}
+
+  /* action buttons */
+  .actions{display:grid; grid-template-columns:1fr 1fr; gap:var(--s-2);}
+  .btn{
+    display:flex; align-items:center; justify-content:center; gap:var(--s-2);
+    min-height:44px; padding:0 var(--s-3); border-radius:var(--r-2); cursor:pointer;
+    font-size:var(--fs-300); font-weight:560; letter-spacing:.01em;
+    border:1px solid var(--line-strong); background:var(--n-700); color:var(--text-hi);
+    transition:transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),
+               border-color var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
+  }
+  .btn svg{width:16px; height:16px; flex:none;}
+  .btn:hover{background:var(--n-600); border-color:var(--line-strong);}
+  .btn:active{transform:translateY(1px) scale(.99);}
+  .btn:focus-visible{outline:none; box-shadow:0 0 0 3px rgba(159,214,255,.34);}
+  .btn:disabled{opacity:.5; cursor:not-allowed; transform:none;}
+  .btn.primary{grid-column:1 / -1;
+    background:linear-gradient(180deg,var(--amber),var(--amber-2)); color:#2a1605;
+    border-color:rgba(255,210,140,.6); box-shadow:0 6px 18px rgba(255,140,50,.28);}
+  .btn.primary:hover{filter:brightness(1.05);}
+  .btn.ghost{background:transparent;}
+
+  /* preset chips */
+  .presets{display:grid; grid-template-columns:repeat(2,1fr); gap:var(--s-2);}
+  .chip{
+    display:flex; align-items:center; gap:var(--s-2); padding:8px 10px; min-height:42px;
+    border-radius:var(--r-2); border:1px solid var(--line-strong); background:var(--n-800);
+    color:var(--text-mid); cursor:pointer; font-size:var(--fs-200); font-weight:540; text-align:left;
+    transition:background var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease),
+               color var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
+  }
+  .chip svg{width:18px; height:18px; flex:none; color:var(--text-low); transition:color var(--dur-1) var(--ease);}
+  .chip:hover{background:var(--n-700); color:var(--text-hi);}
+  .chip:hover svg{color:var(--teal);}
+  .chip:focus-visible{outline:none; box-shadow:0 0 0 3px rgba(159,214,255,.34);}
+  .chip:active{transform:translateY(1px) scale(.99);}
+  .chip[aria-pressed=true]{
+    background:linear-gradient(180deg,var(--n-500),var(--n-600)); color:var(--text-hi);
+    border-color:var(--line-strong); box-shadow:var(--e-1);}
+  .chip[aria-pressed=true] svg{color:var(--amber);}
+  .chip.wide{grid-column:1 / -1;}
+
+  /* biome legend card (HUD) */
+  #legend{
+    background:var(--surface-1); border:1px solid var(--line-strong);
+    border-radius:var(--r-3); padding:var(--s-2) var(--s-3) var(--s-3);
+    box-shadow:var(--e-2); width:164px;
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  }
+  #legend .cap{
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:var(--fs-100); color:var(--text-low); letter-spacing:.14em;
+    text-transform:uppercase; padding:2px 0 var(--s-2);
+  }
+  #legendBar{display:block; width:100%; height:12px; border-radius:var(--r-1);
+    border:1px solid var(--line);}
+  .legend-scale{display:flex; justify-content:space-between; font-size:9px; color:var(--text-dim);
+    font-family:var(--ff-mono); padding-top:3px; letter-spacing:.06em;}
+  .legend-swatches{display:grid; grid-template-columns:1fr 1fr; gap:5px var(--s-3); padding-top:var(--s-3);}
+  .sw{display:flex; align-items:center; gap:var(--s-2); font-size:var(--fs-100); color:var(--text-mid);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .sw i{width:11px; height:11px; border-radius:3px; border:1px solid rgba(255,255,255,.18); flex:none;}
+
+  /* mobile sheet handle + toggle (hidden on desktop) */
+  #sheetToggle{display:none;}
+  .sheet-grip{display:none;}
+
+  /* fly-mode overlay hint */
+  #flyhint{
+    position:fixed; left:50%; bottom:var(--s-6); transform:translate(-50%,8px);
+    z-index:38; display:none; align-items:center; gap:var(--s-4);
+    background:var(--surface-2); border:1px solid var(--line-strong);
+    border-radius:var(--r-pill); padding:var(--s-3) var(--s-5); box-shadow:var(--e-2);
+    font-size:var(--fs-200); color:var(--text-mid); opacity:0;
+    transition:opacity var(--dur-2) var(--ease), transform var(--dur-2) var(--ease-out);
+  }
+  #flyhint.show{display:flex; opacity:1; transform:translate(-50%,0);}
+  #flyhint kbd{font-family:var(--ff-mono); font-size:var(--fs-100); background:var(--n-700);
+    border:1px solid var(--line-strong); border-bottom-width:2px; border-radius:5px;
+    padding:2px 6px; color:var(--text-hi);}
+  #flyhint .x{color:var(--text-low);}
+
+  /* a11y reduced motion */
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms!important; animation-iteration-count:1!important;
+      transition-duration:.001ms!important;}
+  }
+
+  /* ---------- responsive: tablet ---------- */
+  @media (max-width:880px){
+    #hud{right:var(--s-3); top:var(--s-3);}
+    #minimap{width:120px; height:120px;}
+    #brand{left:var(--s-3); top:var(--s-3);}
+  }
+
+  /* ---------- responsive: mobile sheet ---------- */
+  @media (max-width:680px){
+    #brand .sub{display:none;}
+    #hud{gap:var(--s-2);}
+    #minimap{width:96px; height:96px;}
+    .readout{font-size:9px; padding:5px var(--s-3);}
+
+    #sheetToggle{
+      display:flex; align-items:center; gap:var(--s-2);
+      position:fixed; left:50%; bottom:var(--s-4); transform:translateX(-50%); z-index:36;
+      min-height:48px; padding:0 var(--s-5); border-radius:var(--r-pill);
+      background:var(--surface-2); color:var(--text-hi);
+      border:1px solid var(--line-strong); box-shadow:var(--e-3);
+      font-size:var(--fs-300); font-weight:560; cursor:pointer;
+    }
+    #sheetToggle svg{width:18px; height:18px;}
+
+    #panel{
+      left:0; right:0; bottom:0; top:auto; width:auto;
+      max-height:82dvh; border-radius:var(--r-4) var(--r-4) 0 0;
+      transform:translateY(100%); transition:transform var(--dur-3) var(--ease-out);
+      border-bottom:0;
+    }
+    #panel.open{transform:translateY(0);}
+    .sheet-grip{display:block; width:40px; height:4px; border-radius:var(--r-pill);
+      background:var(--n-500); margin:var(--s-3) auto var(--s-1);}
+    .panel-head .hint{display:none;}
+    #flyhint{display:none!important;}
+    #legend{display:none;}
+  }
+  @media (max-width:680px) and (display-mode:standalone){ }
+</style>
+</head>
+<body>
+<a class="skip" href="#panel">Skip to controls</a>
+
+<main id="stage" aria-label="Procedural terrain viewport">
+  <canvas id="gl" aria-label="3D terrain render. Use the control panel to regenerate; press Enter Fly Mode to navigate." role="img"></canvas>
+
+  <div id="veil" aria-live="polite">
+    <div class="loader">
+      <svg class="ring" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="18"/></svg>
+      <p>Sculpting terrain from noise…</p>
+      <span class="word">TERRA</span>
+    </div>
+  </div>
+
+  <div id="glerror" role="alert">
+    <div class="errcard">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 3 2.5 20.5h19L12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M12 10v4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="12" cy="17.4" r="1.05" fill="currentColor"/>
+      </svg>
+      <h2>WebGL isn't available</h2>
+      <p>TERRA renders its landscape with WebGL, which this browser or device hasn't enabled. The controls on the left stay interactive, but the 3D view can't draw. Try a hardware-accelerated browser, or enable WebGL in your settings, then reload.</p>
+    </div>
+  </div>
+</main>
+
+<div id="toast" role="status" aria-live="polite">
+  <svg class="ring" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="18"/></svg>
+  <span id="toastTxt">Regenerating…</span>
+</div>
+
+<header id="brand" aria-hidden="true">
+  <svg class="mark" viewBox="0 0 40 40" fill="none">
+    <defs>
+      <linearGradient id="bsky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#7db8ff"/><stop offset="1" stop-color="#ffc56b"/>
+      </linearGradient>
+      <linearGradient id="bland" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#2c3d52"/><stop offset="1" stop-color="#0f1722"/>
+      </linearGradient>
+    </defs>
+    <rect x="1.2" y="1.2" width="37.6" height="37.6" rx="9" fill="url(#bsky)" opacity=".16"/>
+    <rect x="1.2" y="1.2" width="37.6" height="37.6" rx="9" stroke="rgba(159,178,198,.35)" stroke-width="1"/>
+    <circle cx="28" cy="13" r="4.4" fill="#ffc56b"/>
+    <path d="M4 30 13 18l6 7 5-6 12 11v6H4Z" fill="url(#bland)" stroke="#5fd0c5" stroke-width="1.1" stroke-linejoin="round"/>
+    <path d="M11 21l2 2.4 1.6-1.9" stroke="#eef3f8" stroke-width="1.2" stroke-linecap="round" fill="none" opacity=".8"/>
+  </svg>
+  <div class="txt">
+    <div class="name">TERRA</div>
+    <div class="sub">Procedural Landscape</div>
+  </div>
+</header>
+
+<aside id="hud">
+  <div class="map-wrap">
+    <div class="cap"><span>Heightmap</span><span id="mapBiome">—</span></div>
+    <canvas id="minimap" width="296" height="296" aria-label="Top-down biome heightmap with camera position marker"></canvas>
+  </div>
+  <div class="readout" aria-hidden="true">
+    <span>alt <b id="roAlt">—</b></span><span class="sep">·</span>
+    <span>fps <b id="roFps">—</b></span><span class="sep">·</span>
+    <span><b id="roTris">—</b> tris</span>
+  </div>
+  <div id="legend" aria-label="Biome elevation legend">
+    <div class="cap"><span>Biomes</span><span id="legendName">Temperate</span></div>
+    <canvas id="legendBar" width="320" height="24" aria-hidden="true"></canvas>
+    <div class="legend-scale"><span>sea</span><span id="legendWl">water</span><span>peak</span></div>
+    <div class="legend-swatches" id="legendSwatches"></div>
+  </div>
+</aside>
+
+<button id="sheetToggle" aria-expanded="false" aria-controls="panel">
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  </svg>
+  Terrain controls
+</button>
+
+<aside id="panel" aria-label="Terrain controls">
+  <div class="sheet-grip" aria-hidden="true"></div>
+  <div class="panel-head">
+    <h1>Terrain Studio</h1>
+    <span class="hint">live</span>
+  </div>
+  <div class="panel-body" id="panelBody">
+
+    <!-- PRESETS -->
+    <section class="group">
+      <div class="legend">Terrain presets</div>
+      <div class="presets" role="group" aria-label="Terrain presets">
+        <button class="chip" data-preset="alpine" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 20 9 7l4 7 2-3 6 9H3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7.4 13.6 9 11l1.5 2.6" stroke="#eef3f8" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Alpine
+        </button>
+        <button class="chip" data-preset="islands" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 16c2.2 0 2.2 1.4 4.4 1.4S11.6 16 13.8 16 16 17.4 18.2 17.4 20.4 16 22 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M8 14c1-3 4-4 5 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="16.5" cy="7.5" r="2.2" stroke="currentColor" stroke-width="1.4"/></svg>
+          Islands
+        </button>
+        <button class="chip" data-preset="desert" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 17c3 0 4-4 7-4s4 4 8 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M3 20h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="17.5" cy="7" r="2.4" stroke="currentColor" stroke-width="1.4"/></svg>
+          Desert
+        </button>
+        <button class="chip" data-preset="canyon" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 4v9l3 1v3l3 1M20 4v7l-3 1v4l-3 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 20c0-2 1-3 1-5s-1-3-1-5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity=".7"/></svg>
+          Canyon
+        </button>
+        <button class="chip wide" data-preset="hills" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2 17c2.5-5 5.5-5 8 0 2.5-6 5.5-6 12 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="18" cy="6.5" r="2" stroke="currentColor" stroke-width="1.4"/></svg>
+          Rolling Hills
+        </button>
+      </div>
+    </section>
+
+    <!-- NOISE -->
+    <section class="group">
+      <div class="legend">Noise field</div>
+
+      <div class="ctl">
+        <div class="row"><label for="noiseType">Base function</label></div>
+        <div class="sel-wrap">
+          <select id="noiseType" aria-label="Noise base function">
+            <option value="simplex">Simplex</option>
+            <option value="perlin">Perlin</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="ctl">
+        <div class="row"><label for="style">Fractal style</label></div>
+        <div class="sel-wrap">
+          <select id="style" aria-label="Fractal style">
+            <option value="smooth">Smooth (fBm)</option>
+            <option value="ridged">Ridged peaks</option>
+            <option value="billow">Billow</option>
+            <option value="terraced">Terraced</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="ctl">
+        <div class="row"><label for="seed">Seed</label></div>
+        <div class="seed-row">
+          <input id="seed" type="number" min="0" max="999999" step="1" value="1337"
+                 inputmode="numeric" aria-label="Random seed" />
+          <button class="btn ghost" id="diceBtn" style="min-height:40px; padding:0 12px;" aria-label="Randomize seed">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="3.5" y="3.5" width="17" height="17" rx="4" stroke="currentColor" stroke-width="1.6"/>
+              <circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="16" cy="8" r="1.3" fill="currentColor"/>
+              <circle cx="12" cy="12" r="1.3" fill="currentColor"/>
+              <circle cx="8" cy="16" r="1.3" fill="currentColor"/><circle cx="16" cy="16" r="1.3" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="ctl">
+        <div class="row"><label for="octaves">Octaves</label><span class="val" id="octavesV">5</span></div>
+        <input id="octaves" type="range" min="1" max="8" step="1" value="5" />
+      </div>
+      <div class="ctl">
+        <div class="row"><label for="frequency">Frequency</label><span class="val" id="frequencyV">1.6</span></div>
+        <input id="frequency" type="range" min="0.4" max="4.5" step="0.05" value="1.6" />
+      </div>
+      <div class="ctl">
+        <div class="row"><label for="amplitude">Relief</label><span class="val" id="amplitudeV">190</span></div>
+        <input id="amplitude" type="range" min="40" max="340" step="2" value="190" />
+      </div>
+      <div class="ctl">
+        <div class="row"><label for="lacunarity">Lacunarity</label><span class="val" id="lacunarityV">2.0</span></div>
+        <input id="lacunarity" type="range" min="1.6" max="3.0" step="0.05" value="2.0" />
+      </div>
+      <div class="ctl">
+        <div class="row"><label for="gain">Gain</label><span class="val" id="gainV">0.50</span></div>
+        <input id="gain" type="range" min="0.30" max="0.70" step="0.01" value="0.50" />
+      </div>
+    </section>
+
+    <!-- SURFACE & WATER -->
+    <section class="group">
+      <div class="legend">Surface &amp; water</div>
+      <div class="ctl">
+        <div class="row"><label for="palette">Biome palette</label></div>
+        <div class="sel-wrap">
+          <select id="palette" aria-label="Biome palette">
+            <option value="temperate">Temperate</option>
+            <option value="alpine">Alpine glacier</option>
+            <option value="tropical">Tropical isles</option>
+            <option value="desert">Desert dunes</option>
+            <option value="canyon">Red canyon</option>
+            <option value="meadow">Verdant meadow</option>
+          </select>
+        </div>
+      </div>
+      <div class="ctl">
+        <div class="row"><label for="water">Water level</label><span class="val" id="waterV">0.34</span></div>
+        <input id="water" type="range" min="0.0" max="0.7" step="0.01" value="0.34" />
+      </div>
+      <div class="ctl">
+        <div class="row"><label for="slope">Cliff rock</label><span class="val" id="slopeV">0.45</span></div>
+        <input id="slope" type="range" min="0" max="1" step="0.01" value="0.45"
+               aria-describedby="slopeHint" />
+      </div>
+      <p id="slopeHint" class="vh">Blends bare rock onto steep slopes regardless of altitude.</p>
+      <div class="switch">
+        <label id="wireLbl">Wireframe</label>
+        <button id="wireBtn" role="switch" aria-pressed="false" aria-labelledby="wireLbl"></button>
+      </div>
+    </section>
+
+    <!-- SUN & SKY -->
+    <section class="group">
+      <div class="legend">Sun &amp; sky</div>
+      <div class="ctl">
+        <div class="row"><label for="sunEl">Sun elevation</label><span class="val" id="sunElV">18°</span></div>
+        <input id="sunEl" type="range" min="-8" max="88" step="1" value="18" />
+      </div>
+      <div class="ctl">
+        <div class="row"><label for="sunAz">Sun azimuth</label><span class="val" id="sunAzV">135°</span></div>
+        <input id="sunAz" type="range" min="0" max="360" step="1" value="135" />
+      </div>
+      <div class="switch">
+        <label id="dayLbl">Day cycle <span id="phaseV" style="color:var(--text-low); font-family:var(--ff-mono); font-size:var(--fs-100);"></span></label>
+        <button id="dayBtn" role="switch" aria-pressed="false" aria-labelledby="dayLbl"></button>
+      </div>
+    </section>
+
+    <!-- CAMERA -->
+    <section class="group">
+      <div class="legend">Camera</div>
+      <div class="seg" role="radiogroup" aria-label="Camera mode">
+        <label>
+          <input type="radio" name="cam" value="orbit" checked />
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><ellipse cx="12" cy="12" rx="9" ry="4" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.4" fill="currentColor"/></svg>
+            Auto-orbit
+          </span>
+        </label>
+        <label>
+          <input type="radio" name="cam" value="fly" />
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 11l18-7-7 18-3-7-8-4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            Free-fly
+          </span>
+        </label>
+      </div>
+      <button class="btn" id="flyBtn" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 11l18-7-7 18-3-7-8-4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        Enter fly mode
+      </button>
+      <p id="camNote" style="font-size:var(--fs-200); color:var(--text-low); line-height:1.5;">
+        Auto-orbit sweeps the camera around the landscape — ideal for touch. Switch to free-fly for WASD navigation.
+      </p>
+    </section>
+
+    <!-- GENERATE -->
+    <section class="group">
+      <div class="legend">Generate</div>
+      <div class="actions">
+        <button class="btn primary" id="regenBtn">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8M20 4v4h-4M20 12a8 8 0 0 1-13.7 5.6L4 16M4 20v-4h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Regenerate
+        </button>
+        <button class="btn" id="randAllBtn">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M16 3h5v5M21 3l-7 7M8 21H3v-5M3 21l7-7M21 16v5h-5M14 14l7 7M3 8V3h5M10 10 3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Surprise me
+        </button>
+        <button class="btn ghost" id="resetBtn">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12a8 8 0 1 1 2.3 5.6M4 12H1m3 0V9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Reset
+        </button>
+      </div>
+    </section>
+
+    <!-- EXPORT -->
+    <section class="group">
+      <div class="legend">Export</div>
+      <div class="actions">
+        <button class="btn" id="shotBtn">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2L8 5h8l1.5 2h2A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5v-9Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.3" stroke="currentColor" stroke-width="1.5"/></svg>
+          Frame
+        </button>
+        <button class="btn" id="heightBtn">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M4 15l4-3 3 2 4-4 5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Heightmap
+        </button>
+      </div>
+    </section>
+  </div>
+</aside>
+
+<div id="flyhint" aria-hidden="true">
+  <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span>
+  <span class="x">·</span><span><kbd>Q</kbd><kbd>E</kbd> down / up</span>
+  <span class="x">·</span><span>drag to look</span>
+  <span class="x">·</span><span><kbd>Shift</kbd> boost</span>
+  <span class="x">·</span><span><kbd>Esc</kbd> exit</span>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "simplex-noise": "https://cdn.jsdelivr.net/npm/simplex-noise@4.0.1/dist/esm/simplex-noise.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { createNoise2D } from 'simplex-noise';
+
+/* =========================================================================
+   TERRA — cinematic procedural landscape
+   Single contiguous high-segment plane (no tiling → inherently seam-free),
+   displaced by multi-octave fractal noise, recolored by elevation bands,
+   normals recomputed after every displacement.
+   ========================================================================= */
+
+const $ = (id)=>document.getElementById(id);
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const lerp=(a,b,t)=>a+(b-a)*t;
+const DEG=Math.PI/180;
+
+const reduceMotion = matchMedia('(prefers-reduced-motion:reduce)').matches;
+const forceError = new URLSearchParams(location.search).has('forceerror');
+
+/* ---- geometry resolution ---- */
+const WORLD = 1000;          // world units across
+const SEG   = 256;           // segments → 257×257 vertices (66049)
+const VERTS = (SEG+1)*(SEG+1);
+
+/* ---- parameters (single source of truth) ---- */
+const DEFAULTS = {
+  noiseType:'simplex', style:'smooth', seed:1337,
+  octaves:5, frequency:1.6, amplitude:190, lacunarity:2.0, gain:0.50,
+  water:0.34, sunEl:18, sunAz:135, wireframe:false, camMode:'orbit',
+  palette:'temperate', slope:0.45, dayCycle:false
+};
+const P = { ...DEFAULTS };
+
+/* =========================================================================
+   Seeded PRNG + noise bases
+   ========================================================================= */
+function mulberry32(seed){
+  let a = seed>>>0;
+  return function(){
+    a|=0; a = (a + 0x6D2B79F5)|0;
+    let t = Math.imul(a ^ (a>>>15), 1|a);
+    t = (t + Math.imul(t ^ (t>>>7), 61|t)) ^ t;
+    return ((t ^ (t>>>14))>>>0) / 4294967296;
+  };
+}
+// Classic value-gradient Perlin (seeded permutation) — a genuine 2nd base.
+function makePerlin(rng){
+  const p = new Uint8Array(256);
+  for(let i=0;i<256;i++) p[i]=i;
+  for(let i=255;i>0;i--){ const j=(rng()*(i+1))|0; const t=p[i]; p[i]=p[j]; p[j]=t; }
+  const perm = new Uint8Array(512);
+  for(let i=0;i<512;i++) perm[i]=p[i&255];
+  const fade=t=>t*t*t*(t*(t*6-15)+10);
+  const grad=(h,x,y)=>{ const u=(h&1)?-x:x, v=(h&2)?-y:y; return u+v; };
+  return (x,y)=>{
+    const xi=Math.floor(x), yi=Math.floor(y);
+    const X=xi&255, Y=yi&255, xf=x-xi, yf=y-yi;
+    const u=fade(xf), v=fade(yf);
+    const aa=perm[perm[X]+Y], ab=perm[perm[X]+Y+1];
+    const ba=perm[perm[X+1]+Y], bb=perm[perm[X+1]+Y+1];
+    const x1=lerp(grad(aa,xf,yf), grad(ba,xf-1,yf), u);
+    const x2=lerp(grad(ab,xf,yf-1), grad(bb,xf-1,yf-1), u);
+    return clamp(lerp(x1,x2,v), -1, 1); // ~ -1..1
+  };
+}
+
+let noise2D = ()=>0;            // current base, returns -1..1
+function rebuildNoise(){
+  const rng = mulberry32((P.seed|0) * 2654435761 >>> 0 || 1);
+  noise2D = P.noiseType==='perlin' ? makePerlin(rng) : createNoise2D(rng);
+}
+
+/* fractal Brownian motion over the chosen base → normalized 0..1 elevation */
+function fbm(x, y){
+  let amp=1, freq=P.frequency*0.004, sum=0, norm=0;
+  const lac=P.lacunarity, gain=P.gain, style=P.style, oct=P.octaves;
+  for(let o=0;o<oct;o++){
+    let n = noise2D(x*freq, y*freq);            // -1..1
+    if(style==='ridged'){ n = 1 - Math.abs(n); n = n*n; }     // 0..1 sharp ridges
+    else if(style==='billow'){ n = Math.abs(n); }             // 0..1 puffy
+    else { n = n*0.5 + 0.5; }                                 // smooth/terraced → 0..1
+    sum += n*amp; norm += amp;
+    freq *= lac; amp *= gain;
+  }
+  let v = sum/norm;                              // 0..1
+  if(style==='terraced'){ const s=7; v = Math.round(v*s)/s; }
+  // mild relief curve: lift peaks, broaden lowlands
+  v = Math.pow(v, 1.35);
+  return v;
+}
+
+/* =========================================================================
+   THREE scene
+   ========================================================================= */
+let renderer, scene, camera, terrain, geom, posAttr, colAttr, normAttr;
+let water, sky, sunSprite, sunLight, hemi;
+const waterUniforms = { uTime:{value:0}, uAmp:{value:7.0} };  // animated swell (GPU)
+let baseX, baseZ;            // constant grid coords (after rotate)
+let elev;                    // normalized 0..1 per vertex (for minimap + tests)
+const scratch = new THREE.Color();
+let webglOK = true;
+
+function initRenderer(){
+  if(forceError) throw new Error('forced-webgl-error');
+  renderer = new THREE.WebGLRenderer({ antialias:true, preserveDrawingBuffer:true, powerPreference:'high-performance' });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  $('gl').replaceWith(renderer.domElement);
+  renderer.domElement.id='gl';
+}
+
+function buildScene(){
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 1.2, 6000);
+
+  /* --- sky dome (vertical gradient via CanvasTexture; recolored on sun change) --- */
+  const skyTex = makeSkyTexture();
+  sky = new THREE.Mesh(
+    new THREE.SphereGeometry(4200, 32, 16),
+    new THREE.MeshBasicMaterial({ map:skyTex, side:THREE.BackSide, depthWrite:false, fog:false })
+  );
+  scene.add(sky);
+
+  /* --- sun glow sprite --- */
+  sunSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+    map:makeGlowTexture(), color:0xffd9a0, blending:THREE.AdditiveBlending,
+    depthWrite:false, depthTest:false, fog:false, transparent:true
+  }));
+  sunSprite.scale.setScalar(900);
+  scene.add(sunSprite);
+
+  /* --- lights --- */
+  sunLight = new THREE.DirectionalLight(0xffffff, 2.4);
+  scene.add(sunLight);
+  hemi = new THREE.HemisphereLight(0x9ec6ff, 0x40341f, 0.55);
+  scene.add(hemi);
+  scene.add(new THREE.AmbientLight(0x4a5a72, 0.25));
+
+  /* --- terrain geometry (rotate once so it lies in XZ, +Y up) --- */
+  geom = new THREE.PlaneGeometry(WORLD, WORLD, SEG, SEG);
+  geom.rotateX(-Math.PI/2);
+  posAttr = geom.attributes.position;
+  baseX = new Float32Array(VERTS);
+  baseZ = new Float32Array(VERTS);
+  for(let i=0;i<VERTS;i++){ baseX[i]=posAttr.getX(i); baseZ[i]=posAttr.getZ(i); }
+  geom.setAttribute('color', new THREE.BufferAttribute(new Float32Array(VERTS*3), 3));
+  colAttr = geom.attributes.color;
+  elev = new Float32Array(VERTS);
+
+  const mat = new THREE.MeshStandardMaterial({
+    vertexColors:true, roughness:0.92, metalness:0.02, flatShading:false
+  });
+  terrain = new THREE.Mesh(geom, mat);
+  scene.add(terrain);
+
+  /* --- water plane at y=0, animated swell + ripple normals via shader injection --- */
+  const wmat = new THREE.MeshStandardMaterial({
+    color:0x2a6f86, roughness:0.10, metalness:0.55,
+    transparent:true, opacity:0.86, envMapIntensity:1
+  });
+  wmat.onBeforeCompile = (shader)=>{
+    shader.uniforms.uTime = waterUniforms.uTime;
+    shader.uniforms.uAmp  = waterUniforms.uAmp;
+    // common: wave height field + analytic normal helpers (local plane space x=position.x, y=position.y)
+    shader.vertexShader = shader.vertexShader.replace('#include <common>', `#include <common>
+      uniform float uTime; uniform float uAmp;
+      float wsin(vec2 p, vec2 d, float f, float s){ return sin(dot(p, normalize(d))*f + uTime*s); }
+      float wheight(vec2 p){
+        return uAmp*( 0.55*wsin(p, vec2(1.0,0.35),  0.0120, 1.05)
+                    + 0.32*wsin(p, vec2(-0.3,1.0),  0.0210, 0.78)
+                    + 0.16*wsin(p, vec2(0.7,-0.6),  0.0380, 1.55) );
+      }`)
+    // perturb the surface normal from the wave gradient (before lighting basis is built)
+    .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
+      {
+        vec2 wp = position.xy; float e = 2.5;
+        float h0 = wheight(wp);
+        float hx = wheight(wp+vec2(e,0.0)) - h0;
+        float hy = wheight(wp+vec2(0.0,e)) - h0;
+        objectNormal = normalize(vec3(-hx/e, -hy/e, 1.0));
+      }`)
+    // raise the vertices into a moving swell (local +z == world up after the mesh rotation)
+    .replace('#include <begin_vertex>', `#include <begin_vertex>
+      transformed.z += wheight(position.xy);`);
+  };
+  water = new THREE.Mesh(new THREE.PlaneGeometry(WORLD*2.4, WORLD*2.4, 96, 96), wmat);
+  water.rotation.x = -Math.PI/2;
+  water.renderOrder = 1;
+  scene.add(water);
+
+  /* --- fog: large draw distance --- */
+  scene.fog = new THREE.Fog(0x9fb8d6, WORLD*0.35, WORLD*1.45);
+
+  camera.position.set(0, P.amplitude*0.9 + 120, WORLD*0.62);
+  flyYaw = Math.atan2(-camera.position.x, -camera.position.z);
+  flyPitch = -0.28;
+}
+
+/* ----- procedural textures ----- */
+function makeGlowTexture(){
+  const c=document.createElement('canvas'); c.width=c.height=128;
+  const g=c.getContext('2d');
+  const rg=g.createRadialGradient(64,64,0,64,64,64);
+  rg.addColorStop(0,'rgba(255,255,245,1)');
+  rg.addColorStop(0.18,'rgba(255,226,170,0.95)');
+  rg.addColorStop(0.5,'rgba(255,180,110,0.35)');
+  rg.addColorStop(1,'rgba(255,170,90,0)');
+  g.fillStyle=rg; g.fillRect(0,0,128,128);
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t;
+}
+let skyCanvas, skyCtx, skyTexture;
+function makeSkyTexture(){
+  skyCanvas=document.createElement('canvas'); skyCanvas.width=2; skyCanvas.height=256;
+  skyCtx=skyCanvas.getContext('2d');
+  skyTexture=new THREE.CanvasTexture(skyCanvas);
+  skyTexture.colorSpace=THREE.SRGBColorSpace;
+  paintSky();
+  return skyTexture;
+}
+function paintSky(){
+  // day↔dusk↔night driven by sun elevation; horizon warms as the sun lowers
+  const el=P.sunEl;
+  const day  = clamp((el+4)/26, 0, 1);            // 0 night .. 1 high day
+  const warm = clamp((24-el)/34, 0, 1);           // golden-hour weight near horizon
+  const zenith = mixHex('#08112b','#1f5fb8', day);                 // deep azure crown
+  const mid    = mixHex('#101d3c', '#5b93dc', day);
+  // horizon: cool daylight haze ↔ warm golden glow, then dimmed at night
+  const hWarm  = mixHex('#bcd6ee', '#ffb070', warm);
+  const horizon= mixHex('#1c1626', hWarm, day);
+  const g=skyCtx.createLinearGradient(0,0,0,256);
+  g.addColorStop(0, zenith);
+  g.addColorStop(0.50, mid);
+  g.addColorStop(0.84, horizon);
+  g.addColorStop(1, horizon);
+  skyCtx.fillStyle=g; skyCtx.fillRect(0,0,2,256);
+  if(skyTexture) skyTexture.needsUpdate=true;
+  return horizon;
+}
+function mixHex(a,b,t){
+  const pa=hexRGB(a), pb=hexRGB(b);
+  return `rgb(${Math.round(lerp(pa[0],pb[0],t))},${Math.round(lerp(pa[1],pb[1],t))},${Math.round(lerp(pa[2],pb[2],t))})`;
+}
+function hexRGB(h){ const n=parseInt(h.slice(1),16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+
+/* =========================================================================
+   Elevation → biome color ramp (fixed thresholds relative to water level)
+   ========================================================================= */
+// palettes in sRGB 0..1 — each defines the full sea→snow ramp + a base water tint + band labels.
+const PALETTES = {
+  temperate:{ name:'Temperate',
+    deep:[0.05,0.12,0.20], shoal:[0.10,0.28,0.36], sand:[0.82,0.74,0.52], sand2:[0.74,0.69,0.47],
+    grass:[0.27,0.46,0.22], grass2:[0.34,0.50,0.24], grassHi:[0.46,0.52,0.27],
+    rock:[0.42,0.37,0.32], rock2:[0.55,0.50,0.46], snow:[0.93,0.95,0.98],
+    water:[0.10,0.34,0.42], labels:['Water','Sand','Grass','Rock','Snow'] },
+  alpine:{ name:'Alpine glacier',
+    deep:[0.04,0.10,0.18], shoal:[0.10,0.30,0.42], sand:[0.55,0.60,0.58], sand2:[0.50,0.55,0.54],
+    grass:[0.30,0.42,0.30], grass2:[0.36,0.46,0.32], grassHi:[0.50,0.52,0.42],
+    rock:[0.40,0.40,0.42], rock2:[0.62,0.63,0.66], snow:[0.96,0.97,1.0],
+    water:[0.12,0.36,0.50], labels:['Lake','Shore','Meadow','Scree','Snow'] },
+  tropical:{ name:'Tropical isles',
+    deep:[0.02,0.25,0.40], shoal:[0.10,0.55,0.62], sand:[0.93,0.87,0.66], sand2:[0.87,0.80,0.57],
+    grass:[0.20,0.50,0.22], grass2:[0.15,0.43,0.19], grassHi:[0.34,0.55,0.24],
+    rock:[0.45,0.40,0.34], rock2:[0.58,0.52,0.46], snow:[0.86,0.88,0.86],
+    water:[0.08,0.55,0.62], labels:['Sea','Beach','Jungle','Cliff','Peak'] },
+  desert:{ name:'Desert dunes',
+    deep:[0.20,0.28,0.30], shoal:[0.35,0.42,0.40], sand:[0.87,0.72,0.45], sand2:[0.80,0.63,0.37],
+    grass:[0.66,0.52,0.30], grass2:[0.58,0.45,0.26], grassHi:[0.71,0.58,0.36],
+    rock:[0.55,0.36,0.24], rock2:[0.67,0.46,0.32], snow:[0.81,0.66,0.50],
+    water:[0.22,0.34,0.34], labels:['Oasis','Dunes','Scrub','Stone','Crest'] },
+  canyon:{ name:'Red canyon',
+    deep:[0.10,0.18,0.20], shoal:[0.18,0.34,0.34], sand:[0.78,0.58,0.40], sand2:[0.70,0.48,0.32],
+    grass:[0.42,0.42,0.24], grass2:[0.52,0.40,0.26], grassHi:[0.60,0.44,0.28],
+    rock:[0.62,0.30,0.20], rock2:[0.76,0.43,0.28], snow:[0.88,0.72,0.56],
+    water:[0.12,0.30,0.32], labels:['River','Bank','Mesa','Rock','Rim'] },
+  meadow:{ name:'Verdant meadow',
+    deep:[0.06,0.16,0.22], shoal:[0.12,0.34,0.38], sand:[0.80,0.74,0.52], sand2:[0.72,0.70,0.48],
+    grass:[0.30,0.52,0.24], grass2:[0.36,0.56,0.26], grassHi:[0.48,0.58,0.30],
+    rock:[0.46,0.42,0.34], rock2:[0.58,0.54,0.46], snow:[0.92,0.94,0.96],
+    water:[0.10,0.34,0.40], labels:['Pond','Sand','Pasture','Rock','Snow'] }
+};
+let PAL = PALETTES[P.palette] || PALETTES.temperate;   // active palette (mutable)
+function ramp(v, wl, out){
+  // out = [r,g,b] sRGB 0..1
+  let c;
+  if(v < wl-0.06)        c = mix3(PAL.deep, PAL.shoal, clamp((v-(wl-0.18))/0.12,0,1));
+  else if(v < wl)        c = mix3(PAL.shoal, PAL.sand, clamp((v-(wl-0.06))/0.06,0,1));
+  else if(v < wl+0.025)  c = mix3(PAL.sand, PAL.sand2, (v-wl)/0.025);
+  else if(v < wl+0.055)  c = mix3(PAL.sand2, PAL.grass, (v-(wl+0.025))/0.030);
+  else if(v < wl+0.16)   c = mix3(PAL.grass, PAL.grass2, (v-(wl+0.055))/0.105);
+  else if(v < wl+0.21)   c = mix3(PAL.grass2, PAL.grassHi, (v-(wl+0.16))/0.05);
+  else if(v < wl+0.235)  c = mix3(PAL.grassHi, PAL.rock, (v-(wl+0.21))/0.025);
+  else if(v < wl+0.36)   c = mix3(PAL.rock, PAL.rock2, (v-(wl+0.235))/0.125);
+  else if(v < wl+0.40)   c = mix3(PAL.rock2, PAL.snow, (v-(wl+0.36))/0.04);
+  else                   c = PAL.snow;
+  out[0]=c[0]; out[1]=c[1]; out[2]=c[2];
+}
+function mix3(a,b,t){ t=clamp(t,0,1); return [lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)]; }
+
+// deterministic band classification (for tests + HUD)
+const BAND_TOKENS=['water','beach','grass','rock','snow'];
+function bandIndex(v, wl=P.water){
+  if(v < wl)            return 0;
+  if(v < wl+0.055)      return 1;
+  if(v < wl+0.21)       return 2;
+  if(v < wl+0.36)       return 3;
+  return 4;
+}
+function bandAt(v, wl=P.water){ return BAND_TOKENS[bandIndex(v,wl)]; }
+function bandLabel(v, wl=P.water){ return PAL.labels[bandIndex(v,wl)]; }
+
+/* =========================================================================
+   Biome legend — elevation→color bar + labelled swatches, from the active palette
+   ========================================================================= */
+const legendBar=$('legendBar'), legCtx=legendBar.getContext('2d');
+function drawLegend(){
+  const W=legendBar.width, H=legendBar.height, wl=P.water;
+  for(let x=0;x<W;x++){
+    ramp(x/(W-1), wl, rgb);
+    legCtx.fillStyle=`rgb(${(rgb[0]*255)|0},${(rgb[1]*255)|0},${(rgb[2]*255)|0})`;
+    legCtx.fillRect(x,0,1,H);
+  }
+  const wx=Math.round(wl*(W-1));                   // water-level marker
+  legCtx.fillStyle='rgba(8,12,18,.92)'; legCtx.fillRect(wx-1,0,2,H);
+  legCtx.fillStyle='rgba(238,243,248,.9)'; legCtx.fillRect(wx-1,0,2,4); legCtx.fillRect(wx-1,H-4,2,4);
+  $('legendName').textContent=PAL.name;
+  $('legendWl').textContent='water '+wl.toFixed(2);
+  const reps=[wl-0.10, wl+0.03, wl+0.13, wl+0.30, wl+0.42];
+  const host=$('legendSwatches');
+  if(host.childElementCount!==5){
+    host.innerHTML='';
+    for(let i=0;i<5;i++){ const s=document.createElement('span'); s.className='sw';
+      s.innerHTML='<i></i><span></span>'; host.appendChild(s); }
+  }
+  for(let i=0;i<5;i++){
+    ramp(clamp(reps[i],0,1), wl, rgb);
+    const el=host.children[i];
+    el.firstChild.style.background=`rgb(${(rgb[0]*255)|0},${(rgb[1]*255)|0},${(rgb[2]*255)|0})`;
+    el.lastChild.textContent=PAL.labels[i];
+  }
+}
+
+/* =========================================================================
+   Terrain presets — one click reconfigures noise + water + palette + sun
+   ========================================================================= */
+const PRESETS = {
+  alpine:{ palette:'alpine', noiseType:'simplex', style:'ridged', octaves:5, frequency:1.05,
+    amplitude:285, lacunarity:2.0, gain:0.46, water:0.27, sunEl:22, sunAz:135, slope:0.62 },
+  islands:{ palette:'tropical', noiseType:'simplex', style:'smooth', octaves:5, frequency:2.2,
+    amplitude:150, lacunarity:2.00, gain:0.50, water:0.52, sunEl:55, sunAz:205, slope:0.35 },
+  desert:{ palette:'desert', noiseType:'perlin', style:'billow', octaves:4, frequency:1.7,
+    amplitude:140, lacunarity:2.00, gain:0.55, water:0.06, sunEl:14, sunAz:95, slope:0.20 },
+  canyon:{ palette:'canyon', noiseType:'simplex', style:'terraced', octaves:5, frequency:1.5,
+    amplitude:260, lacunarity:2.05, gain:0.50, water:0.30, sunEl:30, sunAz:150, slope:0.85 },
+  hills:{ palette:'meadow', noiseType:'simplex', style:'smooth', octaves:4, frequency:1.2,
+    amplitude:95, lacunarity:2.00, gain:0.48, water:0.24, sunEl:45, sunAz:170, slope:0.25 }
+};
+let activePreset=null;
+function setPalette(name){ PAL = PALETTES[name]||PALETTES.temperate; P.palette=name; }
+function markPreset(key){
+  activePreset=key;
+  document.querySelectorAll('.chip[data-preset]').forEach(c=>
+    c.setAttribute('aria-pressed', String(c.dataset.preset===key)));
+}
+function applyPreset(key){
+  const pr=PRESETS[key]; if(!pr) return;
+  Object.assign(P, pr);
+  setPalette(pr.palette);
+  markPreset(key);
+  pushControlsFromP();
+  updateSun();
+  requestRegen('Loading preset…');
+}
+function clearPreset(){ if(activePreset) markPreset(null); }
+
+/* =========================================================================
+   Regenerate — the hot path. Mutates pre-allocated buffers in place.
+   ========================================================================= */
+let lastGenMs=0;
+const rgb=[0,0,0];
+function regenerate(){
+  rebuildNoise();
+  const pos = posAttr.array;          // Float32Array, [x,y,z]×VERTS
+  const col = colAttr.array;
+  const amp = P.amplitude, wl = P.water, sl = P.slope;
+  const t0 = performance.now();
+  // pass 1 — displace surface + cache normalized elevation field
+  for(let i=0;i<VERTS;i++){
+    const v = fbm(baseX[i], baseZ[i]);
+    elev[i] = v;
+    pos[i*3+1] = (v - wl) * amp;       // y; water sits at y=0
+  }
+  posAttr.needsUpdate = true;
+  geom.computeVertexNormals();         // true surface normals → lighting AND slope shading
+  normAttr = geom.attributes.normal;
+  const nrm = normAttr.array;
+  const rk = PAL.rock2;                // bare-rock target for steep faces
+  // pass 2 — elevation ramp, then blend rock onto cliffs by true slope
+  for(let i=0;i<VERTS;i++){
+    const v = elev[i];
+    ramp(v, wl, rgb);
+    if(sl>0 && v > wl+0.02){
+      const slope01 = 1 - nrm[i*3+1];  // 0 flat .. ~1 vertical
+      let k = (slope01 - 0.30) / 0.34; // start blending past a gentle grade
+      if(k>0){ k = (k>1?1:k) * sl;
+        rgb[0]=lerp(rgb[0],rk[0],k); rgb[1]=lerp(rgb[1],rk[1],k); rgb[2]=lerp(rgb[2],rk[2],k); }
+    }
+    // sRGB → working linear space for correct on-screen color
+    scratch.setRGB(rgb[0], rgb[1], rgb[2], THREE.SRGBColorSpace);
+    col[i*3]=scratch.r; col[i*3+1]=scratch.g; col[i*3+2]=scratch.b;
+  }
+  colAttr.needsUpdate = true;
+  geom.computeBoundingSphere();
+  lastGenMs = performance.now()-t0;
+  renderMinimap();
+  drawLegend();
+  if(window.__TERRAIN) window.__TERRAIN.ready = true;
+  return lastGenMs;
+}
+
+/* =========================================================================
+   Sun / lighting update
+   ========================================================================= */
+const sunDir = new THREE.Vector3();
+function updateSun(){
+  const el=P.sunEl*DEG, az=P.sunAz*DEG;
+  sunDir.set(Math.cos(el)*Math.cos(az), Math.sin(el), Math.cos(el)*Math.sin(az)).normalize();
+  sunLight.position.copy(sunDir).multiplyScalar(2500);
+  sunSprite.position.copy(sunDir).multiplyScalar(3600);
+
+  const day = clamp((P.sunEl+4)/26, 0, 1);
+  // sun color: white at noon → amber at horizon → dim blue below
+  const lc = scratch.setRGB(
+    lerp(0.55,1.0,day), lerp(0.55,0.96,day), lerp(0.78,0.86,day), THREE.SRGBColorSpace);
+  sunLight.color.copy(lc);
+  sunLight.intensity = lerp(0.15, 2.7, day);
+  sunSprite.material.opacity = clamp(day*1.1, 0.05, 1);
+  sunSprite.material.color.setRGB(1, lerp(0.78,0.92,day), lerp(0.55,0.82,day), THREE.SRGBColorSpace);
+
+  hemi.intensity = lerp(0.18, 0.62, day);
+  hemi.color.setHSL(0.6, 0.5, lerp(0.25,0.62,day));
+  hemi.groundColor.setHSL(0.09, 0.4, lerp(0.05,0.16,day));
+
+  const horizon = paintSky();
+  // parse "rgb(r,g,b)" → fog + water tint
+  const m = horizon.match(/\d+/g).map(Number);
+  scratch.setRGB(m[0]/255, m[1]/255, m[2]/255, THREE.SRGBColorSpace);
+  scene.fog.color.copy(scratch);
+  renderer.setClearColor(scratch, 1);
+  // water tint = palette base, darkened toward night
+  const w0=PAL.water, wb=lerp(0.42,1.0,day);
+  water.material.color.setRGB(w0[0]*wb, w0[1]*wb, w0[2]*wb, THREE.SRGBColorSpace);
+  water.material.roughness = lerp(0.22, 0.07, day);
+}
+
+/* =========================================================================
+   Minimap (biome heightmap + camera marker)
+   ========================================================================= */
+const mmCanvas=$('minimap'), mmCtx=mmCanvas.getContext('2d');
+const MM=mmCanvas.width;                       // 296
+const mmBuf=document.createElement('canvas'); mmBuf.width=mmBuf.height=MM;
+const mmBufCtx=mmBuf.getContext('2d');
+function renderMinimap(){
+  const img=mmBufCtx.createImageData(MM,MM);
+  const d=img.data, wl=P.water, n=SEG+1;
+  for(let py=0;py<MM;py++){
+    const gy=Math.min(n-1,(py/MM*n)|0);
+    for(let px=0;px<MM;px++){
+      const gx=Math.min(n-1,(px/MM*n)|0);
+      const v=elev[gy*n+gx];
+      ramp(v, wl, rgb);
+      // slight shade by elevation for relief readability
+      const sh = 0.7 + 0.3*clamp((v-wl)/0.4,0,1);
+      const o=(py*MM+px)*4;
+      d[o]  =Math.round(rgb[0]*255*sh);
+      d[o+1]=Math.round(rgb[1]*255*sh);
+      d[o+2]=Math.round(rgb[2]*255*sh);
+      d[o+3]=255;
+    }
+  }
+  mmBufCtx.putImageData(img,0,0);
+}
+const camFwd=new THREE.Vector3();
+function drawMinimap(){
+  mmCtx.drawImage(mmBuf,0,0);
+  // camera marker: world XZ → map. Grid x maps to +X; baseZ spans world Z.
+  const mx=(camera.position.x/WORLD+0.5)*MM;
+  const my=(camera.position.z/WORLD+0.5)*MM;
+  camera.getWorldDirection(camFwd);
+  const ang=Math.atan2(camFwd.x, camFwd.z);
+  mmCtx.save();
+  mmCtx.translate(clamp(mx,6,MM-6), clamp(my,6,MM-6));
+  mmCtx.rotate(-ang);
+  mmCtx.beginPath(); mmCtx.moveTo(0,-13); mmCtx.lineTo(9,9); mmCtx.lineTo(0,4); mmCtx.lineTo(-9,9); mmCtx.closePath();
+  mmCtx.fillStyle='rgba(255,210,120,0.95)'; mmCtx.strokeStyle='rgba(20,28,40,0.9)'; mmCtx.lineWidth=3;
+  mmCtx.stroke(); mmCtx.fill();
+  mmCtx.restore();
+  // biome label under camera
+  const gx=clamp(((camera.position.x/WORLD+0.5)*(SEG)) |0,0,SEG);
+  const gz=clamp(((camera.position.z/WORLD+0.5)*(SEG)) |0,0,SEG);
+  $('mapBiome').textContent = bandLabel(elev[gz*(SEG+1)+gx]);
+}
+
+/* =========================================================================
+   Camera control — free-fly (pointer-lock) + auto-orbit
+   ========================================================================= */
+let flyYaw=0, flyPitch=0, orbitAngle=0, flyActive=false;
+const keys=Object.create(null);
+const move=new THREE.Vector3(), fwd=new THREE.Vector3(), right=new THREE.Vector3();
+const UP=new THREE.Vector3(0,1,0);
+
+const canvasEl = ()=>renderer.domElement;
+
+function enterFly(){
+  if(P.camMode!=='fly') return;
+  canvasEl().requestPointerLock?.();
+}
+function onLockChange(){
+  flyActive = document.pointerLockElement === canvasEl();
+  $('flyhint').classList.toggle('show', flyActive);
+  setFlyBtnLabel();
+}
+function setFlyBtnLabel(){
+  const b=$('flyBtn');
+  b.innerHTML = flyActive
+    ? '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> Exit fly mode'
+    : '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 11l18-7-7 18-3-7-8-4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg> Enter fly mode';
+}
+addEventListener('pointerlockchange', onLockChange);
+addEventListener('mousemove', (e)=>{
+  if(!flyActive) return;
+  flyYaw   -= e.movementX*0.0022;
+  flyPitch -= e.movementY*0.0022;
+  flyPitch = clamp(flyPitch, -1.45, 1.45);
+});
+addEventListener('keydown', e=>{
+  if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName)) return;
+  keys[e.code]=true;
+  if(e.code==='Space') e.preventDefault();
+});
+addEventListener('keyup', e=>{ keys[e.code]=false; });
+
+function updateFly(dt){
+  const boost = keys['ShiftLeft']||keys['ShiftRight'] ? 3.4 : 1;
+  const speed = 130*boost*dt;
+  fwd.set(Math.sin(flyYaw)*Math.cos(flyPitch), Math.sin(flyPitch), Math.cos(flyYaw)*Math.cos(flyPitch)).normalize();
+  right.crossVectors(fwd, UP).normalize();
+  move.set(0,0,0);
+  if(keys['KeyW']) move.add(fwd);
+  if(keys['KeyS']) move.sub(fwd);
+  if(keys['KeyD']) move.add(right);
+  if(keys['KeyA']) move.sub(right);
+  if(keys['KeyE']||keys['Space']) move.y+=1;
+  if(keys['KeyQ']||keys['ControlLeft']) move.y-=1;
+  if(move.lengthSq()>0){ move.normalize().multiplyScalar(speed); camera.position.add(move); }
+  // soft floor so you never punch through terrain
+  const minY = sampleHeight(camera.position.x, camera.position.z) + 6;
+  if(camera.position.y < minY) camera.position.y = minY;
+  camera.position.x = clamp(camera.position.x, -WORLD*1.4, WORLD*1.4);
+  camera.position.z = clamp(camera.position.z, -WORLD*1.4, WORLD*1.4);
+  const tgt=move.set(camera.position.x+fwd.x, camera.position.y+fwd.y, camera.position.z+fwd.z);
+  camera.lookAt(tgt);
+}
+function updateOrbit(dt){
+  if(!reduceMotion) orbitAngle += dt*0.12;
+  const r=WORLD*0.66, h=Math.max(P.amplitude*0.55,120)+90;
+  camera.position.set(Math.cos(orbitAngle)*r, h + Math.sin(orbitAngle*0.7)*40, Math.sin(orbitAngle)*r);
+  camera.lookAt(0, P.amplitude*0.08, 0);
+}
+// bilinear-ish height sample for camera floor (nearest grid)
+function sampleHeight(wx, wz){
+  const gx=clamp(((wx/WORLD+0.5)*SEG)|0,0,SEG);
+  const gz=clamp(((wz/WORLD+0.5)*SEG)|0,0,SEG);
+  const i=gz*(SEG+1)+gx;
+  return (elev[i]-P.water)*P.amplitude;
+}
+
+/* =========================================================================
+   Render loop
+   ========================================================================= */
+/* day cycle — drives sun azimuth/elevation through a stylized 24h arc */
+let dayPhase=0.30, sunDomT=0;
+function clockLabel(ph){ const h=ph*24, hh=Math.floor(h)%24, mm=Math.floor((h-Math.floor(h))*60);
+  return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0'); }
+function stepDayCycle(dt){
+  dayPhase += dt*0.035; if(dayPhase>1) dayPhase-=1;
+  P.sunAz = Math.round(70 + dayPhase*260) % 360;
+  P.sunEl = Math.round(76*Math.sin(dayPhase*Math.PI) - 8);   // peaks at midday, dips below horizon at night
+  updateSun();
+  sunDomT += dt;
+  if(sunDomT>0.12){ sunDomT=0;
+    $('sunEl').value=P.sunEl; $('sunAz').value=P.sunAz;
+    $('phaseV').textContent=clockLabel(dayPhase); syncLabels();
+  }
+}
+
+const clock = new THREE.Clock();
+let fpsT=0, fpsN=0, fpsShown=0;
+function animate(){
+  requestAnimationFrame(animate);
+  let dt=clock.getDelta(); if(dt>0.066) dt=0.066;
+  if(!reduceMotion) waterUniforms.uTime.value += dt;
+  if(P.dayCycle && !reduceMotion) stepDayCycle(dt);
+  if(P.camMode==='fly') updateFly(dt); else updateOrbit(dt);
+  renderer.render(scene, camera);
+  drawMinimap();
+  // hud
+  fpsN++; fpsT+=dt;
+  if(fpsT>=0.5){ fpsShown=Math.round(fpsN/fpsT); fpsN=0; fpsT=0;
+    $('roFps').textContent=fpsShown;
+    $('roAlt').textContent=Math.round(camera.position.y)+'m';
+  }
+}
+
+/* =========================================================================
+   UI wiring
+   ========================================================================= */
+function setFill(el){
+  const min=+el.min, max=+el.max, pct=((+el.value-min)/(max-min))*100;
+  el.style.setProperty('--fill', pct+'%');
+}
+function fmt(id,v){ $(id).textContent=v; }
+
+function syncLabels(){
+  fmt('octavesV', P.octaves);
+  fmt('frequencyV', P.frequency.toFixed(2));
+  fmt('amplitudeV', P.amplitude);
+  fmt('lacunarityV', P.lacunarity.toFixed(2));
+  fmt('gainV', P.gain.toFixed(2));
+  fmt('waterV', P.water.toFixed(2));
+  fmt('slopeV', P.slope.toFixed(2));
+  fmt('sunElV', P.sunEl+'°');
+  fmt('sunAzV', P.sunAz+'°');
+  ['octaves','frequency','amplitude','lacunarity','gain','water','slope','sunEl','sunAz'].forEach(id=>setFill($(id)));
+}
+function pushControlsFromP(){
+  $('noiseType').value=P.noiseType; $('style').value=P.style;
+  $('palette').value=P.palette; $('slope').value=P.slope;
+  $('seed').value=P.seed;
+  $('octaves').value=P.octaves; $('frequency').value=P.frequency;
+  $('amplitude').value=P.amplitude; $('lacunarity').value=P.lacunarity;
+  $('gain').value=P.gain; $('water').value=P.water;
+  $('sunEl').value=P.sunEl; $('sunAz').value=P.sunAz;
+  $('wireBtn').setAttribute('aria-pressed', String(P.wireframe));
+  $('dayBtn').setAttribute('aria-pressed', String(P.dayCycle));
+  document.querySelector(`input[name=cam][value=${P.camMode}]`).checked=true;
+  syncLabels();
+}
+
+let toastTimer=0;
+function toast(msg){
+  $('toastTxt').textContent=msg;
+  const t=$('toast'); t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'), 900);
+}
+// regenerate with a paint-first toast so heavy frames don't hide the spinner
+let regenPending=false;
+function requestRegen(label='Regenerating…'){
+  if(regenPending) return; regenPending=true;
+  toast(label);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const ms=regenerate(); regenPending=false;
+    toast(`Generated in ${ms.toFixed(0)} ms`);
+  }));
+}
+
+function wireUI(){
+  // presets
+  document.querySelectorAll('.chip[data-preset]').forEach(c=>
+    c.addEventListener('click',()=>applyPreset(c.dataset.preset)));
+
+  // sliders → live update (cheap visual) ; regenerate where field/surface changes
+  const geomSliders=['octaves','frequency','amplitude','lacunarity','gain','water','slope'];
+  geomSliders.forEach(id=>{
+    const el=$(id);
+    el.addEventListener('input', ()=>{
+      P[id]= id==='octaves' ? (+el.value|0) : +el.value;
+      clearPreset();
+      syncLabels();
+      requestRegen('Regenerating…');
+    });
+  });
+  $('noiseType').addEventListener('change',e=>{P.noiseType=e.target.value; clearPreset(); requestRegen('Switching noise…');});
+  $('style').addEventListener('change',e=>{P.style=e.target.value; clearPreset(); requestRegen('Reshaping…');});
+  $('palette').addEventListener('change',e=>{ setPalette(e.target.value); clearPreset();
+    updateSun(); requestRegen('Recoloring…'); });
+  $('seed').addEventListener('change',e=>{
+    P.seed=clamp(parseInt(e.target.value||'0',10),0,999999); e.target.value=P.seed; requestRegen('New seed…');
+  });
+  $('diceBtn').addEventListener('click',()=>{
+    P.seed=Math.floor(Math.random()*1000000); $('seed').value=P.seed; requestRegen('New seed…');
+  });
+  // day cycle
+  $('dayBtn').addEventListener('click',()=>{
+    P.dayCycle=!P.dayCycle;
+    $('dayBtn').setAttribute('aria-pressed',String(P.dayCycle));
+    $('phaseV').textContent = P.dayCycle ? (reduceMotion?'paused':clockLabel(dayPhase)) : '';
+  });
+
+  // sun (no geometry rebuild — instant)
+  ['sunEl','sunAz'].forEach(id=>$(id).addEventListener('input',e=>{
+    P[id]=+e.target.value; syncLabels(); updateSun();
+  }));
+
+  // wireframe
+  $('wireBtn').addEventListener('click',()=>{
+    P.wireframe=!P.wireframe;
+    $('wireBtn').setAttribute('aria-pressed',String(P.wireframe));
+    terrain.material.wireframe=P.wireframe;
+  });
+
+  // camera mode
+  document.querySelectorAll('input[name=cam]').forEach(r=>r.addEventListener('change',e=>{
+    P.camMode=e.target.value;
+    const fly = P.camMode==='fly';
+    $('flyBtn').style.display = fly ? 'flex' : 'none';
+    $('camNote').textContent = fly
+      ? 'Free-fly: press Enter fly mode, then WASD to move and drag to look. Esc exits. (Pointer-lock needs a mouse — touch devices should use auto-orbit.)'
+      : 'Auto-orbit sweeps the camera around the landscape — ideal for touch. Switch to free-fly for WASD navigation.';
+    if(!fly && flyActive) document.exitPointerLock?.();
+  }));
+  $('flyBtn').addEventListener('click',()=>{ flyActive ? document.exitPointerLock?.() : enterFly(); });
+
+  // actions
+  $('regenBtn').addEventListener('click',()=>requestRegen('Regenerating…'));
+  $('randAllBtn').addEventListener('click',randomizeAll);
+  $('resetBtn').addEventListener('click',()=>{ Object.assign(P,DEFAULTS); setPalette(P.palette);
+    markPreset(null); $('phaseV').textContent=''; pushControlsFromP();
+    terrain.material.wireframe=false; updateSun(); requestRegen('Reset…'); applyCamMode(); });
+  $('shotBtn').addEventListener('click',exportPNG);
+  $('heightBtn').addEventListener('click',exportHeightmap);
+
+  // mobile sheet
+  const sheet=$('panel'), tog=$('sheetToggle');
+  tog.addEventListener('click',()=>{
+    const open=sheet.classList.toggle('open');
+    tog.setAttribute('aria-expanded',String(open));
+  });
+  $('panelBody').addEventListener('input',()=>{}, {passive:true});
+}
+function applyCamMode(){
+  const fly=P.camMode==='fly';
+  $('flyBtn').style.display=fly?'flex':'none';
+}
+
+function randomizeAll(){
+  const noises=['simplex','perlin'], styles=['smooth','ridged','billow','terraced'];
+  const pals=Object.keys(PALETTES);
+  P.noiseType = noises[(Math.random()*noises.length)|0];
+  P.style     = styles[(Math.random()*styles.length)|0];
+  P.seed      = Math.floor(Math.random()*1000000);
+  P.octaves   = 3+((Math.random()*5)|0);
+  P.frequency = +(0.8+Math.random()*2.4).toFixed(2);
+  P.amplitude = 110+((Math.random()*180)|0);
+  P.lacunarity= +(1.8+Math.random()*0.7).toFixed(2);
+  P.gain      = +(0.42+Math.random()*0.16).toFixed(2);
+  P.water     = +(0.22+Math.random()*0.28).toFixed(2);
+  P.slope     = +(0.2+Math.random()*0.6).toFixed(2);
+  setPalette(pals[(Math.random()*pals.length)|0]);
+  markPreset(null);
+  pushControlsFromP();
+  updateSun();
+  requestRegen('Surprise…');
+}
+
+function exportPNG(){
+  renderer.render(scene, camera);  // ensure current frame is in the buffer
+  renderer.domElement.toBlob((blob)=>{
+    if(!blob){ toast('Export failed'); return; }
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=`terra-${P.noiseType}-${P.style}-seed${P.seed}.png`;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+    toast('Saved frame');
+  }, 'image/png');
+}
+
+/* high-res colored relief heightmap (sun-direction hillshade) → PNG */
+function buildHeightmapCanvas(size=1024){
+  const c=document.createElement('canvas'); c.width=c.height=size;
+  const ctx=c.getContext('2d'), img=ctx.createImageData(size,size), d=img.data;
+  const wl=P.water, n=SEG+1, az=P.sunAz*DEG, lx=Math.cos(az), lz=Math.sin(az);
+  for(let py=0;py<size;py++){
+    const gy=Math.min(n-1,(py/size*n)|0);
+    for(let px=0;px<size;px++){
+      const gx=Math.min(n-1,(px/size*n)|0), i=gy*n+gx, v=elev[i];
+      ramp(v, wl, rgb);
+      const gx1=Math.min(n-1,gx+1), gy1=Math.min(n-1,gy+1);
+      const dhx=elev[gy*n+gx1]-v, dhz=elev[gy1*n+gx]-v;
+      let sh=1+(-(dhx*lx)-(dhz*lz))*6; sh=sh<0.55?0.55:sh>1.4?1.4:sh;
+      const o=(py*size+px)*4;
+      d[o]  =Math.min(255,(rgb[0]*255*sh)|0);
+      d[o+1]=Math.min(255,(rgb[1]*255*sh)|0);
+      d[o+2]=Math.min(255,(rgb[2]*255*sh)|0);
+      d[o+3]=255;
+    }
+  }
+  ctx.putImageData(img,0,0); return c;
+}
+function exportHeightmap(){
+  buildHeightmapCanvas(1024).toBlob((blob)=>{
+    if(!blob){ toast('Export failed'); return; }
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=`terra-heightmap-${P.palette}-seed${P.seed}.png`;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+    toast('Saved heightmap');
+  }, 'image/png');
+}
+
+/* =========================================================================
+   Resize
+   ========================================================================= */
+function onResize(){
+  if(!renderer) return;
+  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight, false);
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+}
+addEventListener('resize', onResize);
+
+/* =========================================================================
+   Boot
+   ========================================================================= */
+function showError(reason){
+  webglOK=false;
+  $('veil').setAttribute('hidden','');
+  $('glerror').classList.add('show');
+  if(window.__TERRAIN){ window.__TERRAIN.webglOK=false; window.__TERRAIN.ready=false; }
+  // panel stays fully interactive by design (controls just don't drive a canvas)
+  console.warn('[TERRA] WebGL unavailable:', reason);
+}
+
+function boot(){
+  // default to orbit on touch / coarse pointers
+  if(matchMedia('(pointer:coarse)').matches){ P.camMode='orbit'; }
+  pushControlsFromP();
+  // expose API skeleton early so the error path is observable too
+  window.__TERRAIN = {
+    ready:false, webglOK:true, params:P,
+    api:{ regenerate, randomizeAll, exportPNG, exportHeightmap, applyPreset, setSun:updateSun,
+      setPalette(n){ setPalette(n); updateSun(); return regenerate(); },
+      setCamMode(m){ P.camMode=m; const r=document.querySelector(`input[name=cam][value=${m}]`);
+        if(r) r.checked=true; applyCamMode(); return P.camMode; } },
+    vertexCount:VERTS, world:WORLD, segments:SEG,
+    lastGenMs(){ return lastGenMs; },
+    heightHash(){ const a=posAttr.array; let h=2166136261>>>0;
+      for(let i=0;i<VERTS;i++){ const y=(a[i*3+1]*100)|0; h^=y; h=Math.imul(h,16777619); } return h>>>0; },
+    sampleNormal(i){ return [normAttr.getX(i),normAttr.getY(i),normAttr.getZ(i)]; },
+    normalsAllFlat(){ // true if every normal ≈ (0,1,0) — would mean normals NOT recomputed
+      let flat=true; for(let i=0;i<VERTS;i+=137){
+        if(Math.abs(normAttr.getX(i))>0.02 || Math.abs(normAttr.getZ(i))>0.02){ flat=false; break; } }
+      return flat; },
+    hasNaN(){ const a=posAttr.array; for(let i=0;i<VERTS;i++){ if(Number.isNaN(a[i*3+1])) return true; } return false; },
+    elevationAt(i){ return elev[i]; },
+    bandAt(v){ return bandAt(v); },
+    paletteName(){ return P.palette; },
+    paletteLabels(){ return PAL.labels.slice(); },
+    activePreset(){ return activePreset; },
+    presetKeys(){ return Object.keys(PRESETS); },
+    lightPos(){ return [sunLight.position.x, sunLight.position.y, sunLight.position.z]; },
+    sunDir(){ return [sunDir.x, sunDir.y, sunDir.z]; },
+    waterInfo(){ return { inScene:scene.children.includes(water), y:water.position.y,
+      segments:water.geometry.parameters.widthSegments, animated:('uTime' in waterUniforms),
+      time:waterUniforms.uTime.value }; },
+    frameDataURL(){ renderer.render(scene,camera); return renderer.domElement.toDataURL('image/png'); },
+    heightmapDataURL(s){ return buildHeightmapCanvas(s||256).toDataURL('image/png'); },
+    thresholds(){ const wl=P.water; return {water:wl, beach:wl, grass:wl+0.055, rock:wl+0.21, snow:wl+0.36}; },
+    setParam(k,v){ P[k]=v; pushControlsFromP(); }
+  };
+
+  try{
+    initRenderer();
+    buildScene();
+    renderer.domElement.addEventListener('click',()=>{ if(P.camMode==='fly' && !flyActive) enterFly(); });
+    onResize();
+    updateSun();
+    regenerate();
+    animate();
+    window.__TERRAIN.ready=true;
+    // reveal
+    requestAnimationFrame(()=>{
+      const v=$('veil'); v.classList.add('fade');
+      setTimeout(()=>v.setAttribute('hidden',''), 320);
+    });
+  }catch(err){
+    showError(err && err.message || err);
+  }
+}
+
+wireUI();
+boot();
+</script>
+</body>
+</html>

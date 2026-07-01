@@ -1,0 +1,1322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#f3eee2">
+<link rel="icon" href="data:,">
+<title>WEAVE · Relationship Matrix — reading the flows between entities (illustrative sample data)</title>
+<meta name="description" content="WEAVE — an editorial chord-diagram explorer built on d3-chord. Read the magnitude and direction of every relationship in an n×n matrix: hover an arc to isolate one entity, hover a ribbon for both directional values, pin an entity for its ranked partners, and cross-read the matrix heatmap beside it. Directed and undirected views, sortable rings, SVG/PNG/CSV/JSON export. All values are illustrative samples and clearly labeled.">
+
+<!-- Type: Fraunces (display serif, masthead) + Inter (data sans, tabular figures). font-display:swap; system fallbacks if offline. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&display=swap">
+
+<style>
+/* ============================================================================
+   WEAVE — DESIGN TOKENS  (build only from these)
+   ========================================================================== */
+:root{
+  /* Cool paper neutral ramp — 11 steps, ink -> paper */
+  --p0:#161a1f; --p1:#212732; --p2:#333b48; --p3:#475160; --p4:#5e697a;
+  --p5:#7b8696; --p6:#9aa4b2; --p7:#bcc4cf; --p8:#d7dce3; --p9:#e8ecf1; --p10:#f6f8fb;
+
+  --bg:#f3eee2;          /* page paper (warm) */
+  --canvas:#fbfaf6;      /* chart canvas */
+  --panel:#fffefb;       /* cards */
+  --ink:var(--p0);
+  --ink-2:var(--p2);
+  --muted:var(--p4);
+  --faint:var(--p5);
+  --line:color-mix(in srgb, var(--p3) 22%, transparent);
+  --line-2:color-mix(in srgb, var(--p3) 12%, transparent);
+
+  --accent:#1f5fae;      /* ink blue — editorial accent */
+  --accent-2:#15498a;
+  --accent-soft:color-mix(in srgb, var(--accent) 12%, transparent);
+  --accent-ink:#ffffff;
+  --danger:#b3401f;
+  --ok:#1f7a52;
+
+  /* Entity palette — curated, harmonious, distinct. Mirrored in JS PALETTE. */
+  --c0:#2f6fb0; --c1:#d98a2b; --c2:#3f9d7a; --c3:#c0526b; --c4:#6b58a6;
+  --c5:#48a0c2; --c6:#b58a3c; --c7:#8a8f3c; --c8:#a85b3e; --c9:#7a6f63;
+
+  /* Spacing — 4px scale */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px;
+  /* Radii */
+  --r1:6px; --r2:10px; --r3:14px; --r4:20px; --rp:999px;
+  /* Fluid type — ratio-locked, body >=16px */
+  --fs-2xs:11px; --fs-xs:12px; --fs-sm:13px; --fs-base:clamp(15px,.3vw + 14px,16px);
+  --fs-md:clamp(16px,.55vw + 15px,18px);
+  --fs-lg:clamp(20px,1.2vw + 16px,25px);
+  --fs-xl:clamp(28px,3.4vw + 15px,48px);
+  /* Elevation — 3 tiers */
+  --e1:0 1px 2px rgba(20,28,40,.08), 0 1px 1px rgba(20,28,40,.05);
+  --e2:0 6px 22px rgba(22,30,44,.10), 0 2px 6px rgba(22,30,44,.06);
+  --e3:0 22px 60px rgba(18,26,40,.20), 0 7px 20px rgba(18,26,40,.11);
+  /* Motion */
+  --dur:.16s; --dur-2:.24s; --ease:cubic-bezier(.4,0,.2,1); --ease-out:cubic-bezier(.16,1,.3,1);
+
+  --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  --sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:
+    radial-gradient(120% 80% at 10% -10%, color-mix(in srgb,var(--c0) 7%, transparent), transparent 58%),
+    radial-gradient(120% 80% at 100% 0%, color-mix(in srgb,var(--c1) 7%, transparent), transparent 54%),
+    var(--bg);
+  color:var(--ink);
+  font-family:var(--sans); font-size:var(--fs-base); line-height:1.5;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  overflow-x:hidden; overscroll-behavior-y:none;
+}
+.tnum{font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1}
+h1,h2,h3,h4,p{margin:0}
+button{font:inherit; color:inherit}
+:focus-visible{outline:2.5px solid var(--accent); outline-offset:2px; border-radius:var(--r1)}
+
+.skip{position:fixed; left:var(--s3); top:-100px; z-index:60; background:var(--accent); color:#fff;
+  padding:10px 16px; border-radius:var(--r2); box-shadow:var(--e2); transition:top var(--dur) var(--ease)}
+.skip:focus{top:var(--s3)}
+
+.wrap{max-width:1320px; margin:0 auto; padding:clamp(var(--s4),3vw,var(--s7)) clamp(var(--s4),3vw,var(--s6))}
+
+/* ---------- Masthead ---------- */
+.mast{display:flex; flex-wrap:wrap; align-items:flex-end; gap:var(--s4) var(--s5);
+  justify-content:space-between; border-bottom:1.5px solid var(--line);
+  padding-bottom:var(--s4); margin-bottom:var(--s5)}
+.brandrow{display:flex; align-items:center; gap:var(--s3); margin-bottom:var(--s3)}
+.glyph{width:36px; height:36px; flex:none; color:var(--accent)}
+.kicker{font-family:var(--sans); font-weight:600; font-size:var(--fs-2xs); letter-spacing:.2em;
+  text-transform:uppercase; color:var(--accent-2)}
+h1{font-family:var(--serif); font-weight:600; font-size:var(--fs-xl); line-height:1.0; letter-spacing:-.014em}
+h1 em{font-style:italic; color:var(--accent-2)}
+.dek{font-family:var(--serif); font-size:var(--fs-md); color:var(--ink-2); max-width:56ch; margin-top:var(--s3); line-height:1.45}
+.mast-right{display:flex; flex-direction:column; align-items:flex-end; gap:var(--s3); text-align:right}
+.badge{display:inline-flex; align-items:center; gap:6px; font-size:var(--fs-2xs); font-weight:600;
+  letter-spacing:.05em; text-transform:uppercase; color:var(--c1);
+  background:color-mix(in srgb,var(--c1) 12%, var(--panel)); border:1px solid color-mix(in srgb,var(--c1) 30%, transparent);
+  padding:6px 11px; border-radius:var(--rp); white-space:nowrap}
+.badge svg{width:13px; height:13px}
+
+/* ---------- Toolbar ---------- */
+.toolbar{display:flex; flex-wrap:wrap; gap:var(--s4) var(--s5); align-items:flex-end; margin-bottom:var(--s5)}
+.field{display:flex; flex-direction:column; gap:var(--s2)}
+.field>.lbl{font-size:var(--fs-2xs); font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+.toolbar .spacer{flex:1 1 auto}
+.segmented{display:inline-flex; background:var(--panel); border:1px solid var(--line); border-radius:var(--rp);
+  padding:4px; box-shadow:var(--e1); gap:2px}
+.seg{appearance:none; border:0; background:transparent; cursor:pointer; min-height:40px; padding:0 var(--s4);
+  border-radius:var(--rp); font-size:var(--fs-sm); font-weight:600; color:var(--ink-2);
+  display:inline-flex; align-items:center; gap:7px; transition:background var(--dur) var(--ease), color var(--dur) var(--ease)}
+.seg svg{width:15px; height:15px}
+.seg:hover{background:var(--p9)}
+.seg[aria-checked="true"]{background:var(--accent); color:var(--accent-ink); box-shadow:var(--e1)}
+.seg[aria-checked="true"]:hover{background:var(--accent-2)}
+.seg:disabled{opacity:.45; cursor:not-allowed}
+
+/* Switch (toggle) */
+.switch{display:inline-flex; align-items:center; gap:var(--s3); cursor:pointer; user-select:none; min-height:40px}
+.switch input{position:absolute; opacity:0; width:1px; height:1px}
+.track{width:46px; height:26px; border-radius:var(--rp); background:var(--p7); position:relative;
+  transition:background var(--dur) var(--ease); flex:none; border:1px solid var(--line)}
+.knob{position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:#fff;
+  box-shadow:var(--e1); transition:transform var(--dur-2) var(--ease)}
+.switch input:checked + .track{background:var(--accent)}
+.switch input:checked + .track .knob{transform:translateX(20px)}
+.switch input:focus-visible + .track{outline:2.5px solid var(--accent); outline-offset:2px}
+.switch .swlabel{font-size:var(--fs-sm); font-weight:600; color:var(--ink-2)}
+
+/* Menu button + popover */
+.menu{position:relative}
+.btn{appearance:none; cursor:pointer; min-height:40px; padding:0 var(--s4); border-radius:var(--rp);
+  border:1px solid var(--line); background:var(--panel); color:var(--ink-2); font-weight:600; font-size:var(--fs-sm);
+  display:inline-flex; align-items:center; gap:8px; box-shadow:var(--e1);
+  transition:background var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur) var(--ease)}
+.btn svg{width:16px; height:16px}
+.btn:hover{background:var(--p9); border-color:var(--p6)}
+.btn:active{transform:translateY(1px)}
+.pop{position:absolute; top:calc(100% + 8px); right:0; z-index:40; min-width:218px;
+  background:var(--panel); border:1px solid var(--line); border-radius:var(--r2); box-shadow:var(--e3);
+  padding:var(--s2); display:none}
+.pop.open{display:block; animation:pop .16s var(--ease-out)}
+@keyframes pop{from{opacity:0; transform:translateY(-6px)}to{opacity:1; transform:none}}
+.pop button{display:flex; width:100%; align-items:center; gap:var(--s3); text-align:left; appearance:none;
+  border:0; background:transparent; cursor:pointer; padding:10px var(--s3); border-radius:var(--r1);
+  font-size:var(--fs-sm); font-weight:500; color:var(--ink)}
+.pop button:hover{background:var(--p9)}
+.pop button svg{width:16px; height:16px; color:var(--muted); flex:none}
+.pop .sep{height:1px; background:var(--line-2); margin:var(--s2) var(--s2)}
+.pop .pophd{font-size:var(--fs-2xs); font-weight:600; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--faint); padding:var(--s2) var(--s3) var(--s1)}
+
+/* ---------- Layout ---------- */
+.stage{display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:var(--s5); align-items:start}
+@media (max-width:980px){ .stage{grid-template-columns:1fr} }
+
+.card{background:var(--panel); border:1px solid var(--line); border-radius:var(--r3); box-shadow:var(--e1)}
+.cardhd{display:flex; align-items:center; gap:var(--s3); justify-content:space-between;
+  padding:var(--s4) var(--s4) var(--s3); border-bottom:1px solid var(--line-2)}
+.cardhd h2{font-family:var(--serif); font-weight:600; font-size:var(--fs-lg); letter-spacing:-.01em}
+.cardhd .sub{font-size:var(--fs-xs); color:var(--muted)}
+
+/* Chord canvas */
+.chartcard{padding:0; overflow:hidden}
+.chartwrap{position:relative; background:
+   radial-gradient(70% 70% at 50% 46%, var(--canvas), color-mix(in srgb,var(--canvas) 60%, var(--bg)));
+   padding:var(--s3)}
+#chord{display:block; width:100%; height:auto}
+.arc{cursor:pointer; transition:opacity var(--dur) var(--ease)}
+.arc:focus{outline:none}
+.arc.kbd{stroke:var(--ink); stroke-width:2.5px; paint-order:stroke}
+.ribbon{cursor:pointer; transition:opacity var(--dur) var(--ease)}
+.tick line{stroke:var(--p4)}
+.tick text{fill:var(--muted); font-size:9px; font-family:var(--sans)}
+.tick .tickbase{fill:var(--ink-2); font-weight:600}
+.entlabel{font-family:var(--sans); font-weight:600; fill:var(--ink); font-size:12.5px; cursor:pointer}
+.entlabel.dim{fill:var(--faint)}
+.chord-foot{display:flex; flex-wrap:wrap; gap:var(--s2) var(--s4); align-items:center;
+  padding:var(--s3) var(--s4); border-top:1px solid var(--line-2); font-size:var(--fs-xs); color:var(--muted)}
+.chord-foot b{color:var(--ink-2); font-weight:600}
+.pinpill{display:none; align-items:center; gap:6px; background:var(--accent-soft); color:var(--accent-2);
+  border:1px solid color-mix(in srgb,var(--accent) 30%, transparent); border-radius:var(--rp);
+  padding:4px 6px 4px 10px; font-weight:600; font-size:var(--fs-xs)}
+.pinpill.show{display:inline-flex}
+.pinpill button{appearance:none; border:0; background:transparent; cursor:pointer; display:inline-flex;
+  color:var(--accent-2); padding:3px; border-radius:50%}
+.pinpill button:hover{background:color-mix(in srgb,var(--accent) 16%, transparent)}
+.pinpill svg{width:13px; height:13px}
+
+/* Sidebar */
+.side{display:flex; flex-direction:column; gap:var(--s5)}
+.side .card{padding:var(--s4)}
+.sectitle{font-size:var(--fs-2xs); font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--faint); margin-bottom:var(--s3); display:flex; align-items:center; justify-content:space-between}
+
+/* legend list */
+.legend{display:flex; flex-direction:column; gap:2px}
+.legrow{display:flex; align-items:center; gap:var(--s3); padding:7px var(--s2); border-radius:var(--r1);
+  cursor:pointer; border:1px solid transparent; transition:background var(--dur) var(--ease)}
+.legrow:hover{background:var(--p9)}
+.legrow.active{background:var(--accent-soft); border-color:color-mix(in srgb,var(--accent) 22%, transparent)}
+.legrow .dot{width:13px; height:13px; border-radius:4px; flex:none; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.legrow .nm{font-size:var(--fs-sm); font-weight:600; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.legrow .tot{font-size:var(--fs-xs); color:var(--muted)}
+
+/* pin panel */
+.panel-empty{color:var(--muted); font-size:var(--fs-sm); line-height:1.55}
+.panel-empty strong{color:var(--ink-2)}
+.pinhead{display:flex; align-items:center; gap:var(--s3); margin-bottom:var(--s3)}
+.pinhead .dot{width:16px; height:16px; border-radius:5px; flex:none; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.pinhead .nm{font-family:var(--serif); font-size:var(--fs-lg); font-weight:600; line-height:1.05}
+.pinstats{display:flex; gap:var(--s5); margin:var(--s2) 0 var(--s4)}
+.pinstat .k{font-size:var(--fs-2xs); letter-spacing:.08em; text-transform:uppercase; color:var(--faint); font-weight:600}
+.pinstat .v{font-size:var(--fs-lg); font-weight:600; font-family:var(--serif)}
+.partlbl{font-size:var(--fs-2xs); font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
+  display:flex; align-items:center; gap:6px; margin:var(--s4) 0 var(--s2)}
+.partlbl svg{width:13px; height:13px}
+.part{display:flex; align-items:center; gap:var(--s3); padding:5px 0; cursor:pointer; border-radius:var(--r1)}
+.part:hover .pnm{color:var(--accent-2)}
+.part .dot{width:9px; height:9px; border-radius:3px; flex:none}
+.part .pnm{font-size:var(--fs-sm); font-weight:600; min-width:0; flex:none; width:84px; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; transition:color var(--dur)}
+.part .bar{flex:1; height:9px; background:var(--p9); border-radius:var(--rp); overflow:hidden; position:relative}
+.part .bar i{position:absolute; inset:0 auto 0 0; border-radius:var(--rp); display:block}
+.part .pv{font-size:var(--fs-xs); color:var(--ink-2); font-weight:600; width:46px; text-align:right; flex:none}
+.partnone{font-size:var(--fs-sm); color:var(--faint); padding:2px 0 4px}
+
+/* value scale legend */
+.vscale{margin-top:var(--s2)}
+.vbar{height:12px; border-radius:var(--rp); border:1px solid var(--line); margin-bottom:6px}
+.vticks{display:flex; justify-content:space-between; font-size:var(--fs-2xs); color:var(--muted)}
+.widthkey{display:flex; align-items:center; gap:var(--s3); margin-top:var(--s4); font-size:var(--fs-xs); color:var(--muted)}
+.widthkey svg{flex:none}
+
+/* ---------- Matrix heatmap ---------- */
+.matrix-section{margin-top:var(--s5)}
+.matrix-scroll{overflow-x:auto; padding:var(--s4)}
+table.matrix{border-collapse:separate; border-spacing:2px; font-variant-numeric:tabular-nums; margin:0 auto}
+table.matrix caption{caption-side:top; text-align:left; font-size:var(--fs-xs); color:var(--muted); padding:0 0 var(--s3)}
+table.matrix th{font-size:var(--fs-xs); font-weight:600; color:var(--ink-2); padding:4px 6px; white-space:nowrap}
+table.matrix thead th{vertical-align:bottom; text-align:center}
+table.matrix tbody th{text-align:right; position:relative}
+table.matrix thead th.corner{text-align:right; color:var(--faint); font-weight:600; font-size:var(--fs-2xs);
+  letter-spacing:.04em; text-transform:uppercase}
+.colhd{display:inline-block}
+.rowhd{display:inline-flex; align-items:center; gap:6px; justify-content:flex-end}
+.rowhd .dot,.colhd-dot{width:9px; height:9px; border-radius:3px; flex:none; display:inline-block}
+.colhd-dot{margin:0 auto 3px; }
+.mcell{width:34px; height:30px; text-align:center; font-size:var(--fs-2xs); font-weight:600; border-radius:5px;
+  cursor:pointer; transition:transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease); position:relative}
+.mcell:hover, .mcell.hot{transform:scale(1.12); box-shadow:0 0 0 2px var(--ink), var(--e2); z-index:2}
+.mcell.diag{outline:1.5px dashed color-mix(in srgb,var(--ink) 30%, transparent); outline-offset:-3px}
+.mcell.zero{color:var(--p6); font-weight:400}
+.matrix-foot{display:flex; flex-wrap:wrap; gap:var(--s4); align-items:center; justify-content:space-between;
+  padding:0 var(--s4) var(--s4); font-size:var(--fs-xs); color:var(--muted)}
+.matrix-foot .rdg{display:flex; align-items:center; gap:6px}
+
+/* ---------- Tooltip ---------- */
+#tip{position:fixed; z-index:80; pointer-events:none; opacity:0; transform:translateY(4px);
+  transition:opacity .12s var(--ease), transform .12s var(--ease);
+  background:var(--p0); color:var(--p10); border-radius:var(--r2); box-shadow:var(--e3);
+  padding:var(--s3) var(--s4); max-width:280px; font-size:var(--fs-xs); line-height:1.45}
+#tip.show{opacity:1; transform:none}
+#tip .tt{font-weight:600; font-size:var(--fs-sm); margin-bottom:6px; display:flex; align-items:center; gap:7px}
+#tip .tt .a,#tip .tt .b{display:inline-flex; align-items:center; gap:5px}
+#tip .tt .sw{width:10px; height:10px; border-radius:3px; display:inline-block}
+#tip .tt .arr{color:var(--p6)}
+#tip .row{display:flex; align-items:center; justify-content:space-between; gap:var(--s4); padding:2px 0}
+#tip .row .lab{color:var(--p7)}
+#tip .row .val{font-weight:700; font-variant-numeric:tabular-nums}
+#tip .hint{color:var(--p6); font-size:var(--fs-2xs); margin-top:6px; border-top:1px solid color-mix(in srgb,#fff 16%, transparent); padding-top:5px}
+.bidir{color:var(--p7); font-size:var(--fs-2xs); margin-top:3px}
+
+/* footer note */
+.note{margin-top:var(--s6); padding-top:var(--s4); border-top:1px solid var(--line);
+  font-size:var(--fs-xs); color:var(--muted); max-width:84ch; line-height:1.6}
+.note b{color:var(--ink-2)}
+
+.sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0}
+
+@media (prefers-reduced-motion: reduce){
+  *{transition-duration:.001ms !important; animation-duration:.001ms !important}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#chordcard">Skip to the diagram</a>
+
+<main class="wrap">
+  <!-- ===================== MASTHEAD ===================== -->
+  <header class="mast">
+    <div>
+      <div class="brandrow">
+        <svg class="glyph" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <circle cx="16" cy="16" r="13.5" stroke="currentColor" stroke-width="1.6" opacity=".4"/>
+          <path d="M7 11.5 C 16 24, 25 8, 25 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M7 20.5 C 16 8, 25 24, 25 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".55"/>
+          <circle cx="7" cy="11.5" r="2.4" fill="currentColor"/>
+          <circle cx="25" cy="8" r="2.4" fill="currentColor"/>
+          <circle cx="7" cy="20.5" r="2.4" fill="currentColor" opacity=".55"/>
+          <circle cx="25" cy="24" r="2.4" fill="currentColor" opacity=".55"/>
+        </svg>
+        <span class="kicker">WEAVE · Relationship Matrix Explorer</span>
+      </div>
+      <h1>Every flow between them, <em>read at a glance</em></h1>
+      <p class="dek">A chord diagram turns an n×n matrix into a ring of arcs and ribbons —
+        each ribbon's width is the value of a pair, each color an entity. Isolate one,
+        compare both directions, and cross-read the matrix itself.</p>
+    </div>
+    <div class="mast-right">
+      <span class="badge">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18.5A2 2 0 0 0 3.5 21.5h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Illustrative sample data
+      </span>
+      <span id="datasetMeta" class="sub" style="font-size:var(--fs-xs); color:var(--muted)"></span>
+    </div>
+  </header>
+
+  <!-- ===================== TOOLBAR ===================== -->
+  <div class="toolbar" role="region" aria-label="Diagram controls">
+    <div class="field">
+      <span class="lbl" id="lbl-ds">Dataset</span>
+      <div class="segmented" role="radiogroup" aria-labelledby="lbl-ds" id="dsGroup"></div>
+    </div>
+    <div class="field">
+      <span class="lbl" id="lbl-view">Direction</span>
+      <div class="segmented" role="radiogroup" aria-labelledby="lbl-view">
+        <button class="seg" role="radio" data-view="directed" aria-checked="true">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12h13m0 0-5-5m5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Directed</button>
+        <button class="seg" role="radio" data-view="undirected" aria-checked="false">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12h16M8 7l-4 5 4 5M16 7l4 5-4 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Undirected</button>
+      </div>
+    </div>
+    <div class="field">
+      <span class="lbl" id="lbl-sort">Order around ring</span>
+      <div class="segmented" role="radiogroup" aria-labelledby="lbl-sort">
+        <button class="seg" role="radio" data-sort="original" aria-checked="true">Group</button>
+        <button class="seg" role="radio" data-sort="total" aria-checked="false">By total</button>
+        <button class="seg" role="radio" data-sort="name" aria-checked="false">A–Z</button>
+      </div>
+    </div>
+    <label class="switch" title="Show self-relationships (the matrix diagonal)">
+      <input type="checkbox" id="diagToggle">
+      <span class="track"><span class="knob"></span></span>
+      <span class="swlabel">Self-links</span>
+    </label>
+    <div class="spacer"></div>
+    <div class="field">
+      <span class="lbl">Export</span>
+      <div class="menu">
+        <button class="btn" id="exportBtn" aria-haspopup="true" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Download
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:13px;height:13px"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="pop" id="exportPop" role="menu" aria-label="Export options">
+          <div class="pophd">Current view</div>
+          <button role="menuitem" data-exp="svg"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v14H4z" stroke="currentColor" stroke-width="1.7"/><path d="M8 15v-6m0 0 3 4 3-4v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Diagram as SVG</button>
+          <button role="menuitem" data-exp="png"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.7"/><circle cx="8.5" cy="9.5" r="1.6" stroke="currentColor" stroke-width="1.5"/><path d="m4 17 5-5 4 4 3-3 4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Diagram as PNG</button>
+          <div class="sep"></div>
+          <div class="pophd">Matrix data</div>
+          <button role="menuitem" data-exp="csv"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Matrix as CSV</button>
+          <button role="menuitem" data-exp="json"><svg viewBox="0 0 24 24" fill="none"><path d="M9 4H7a2 2 0 0 0-2 2v3a2 2 0 0 1-2 2 2 2 0 0 1 2 2v3a2 2 0 0 0 2 2h2M15 4h2a2 2 0 0 1 2 2v3a2 2 0 0 0 2 2 2 2 0 0 0-2 2v3a2 2 0 0 1-2 2h-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Matrix as JSON</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== STAGE ===================== -->
+  <div class="stage">
+    <!-- Chord -->
+    <section class="card chartcard" id="chordcard" aria-labelledby="chord-h">
+      <div class="cardhd">
+        <div>
+          <h2 id="chord-h" style="font-size:var(--fs-lg)">The ring</h2>
+          <div class="sub" id="chordSub">Hover an arc to isolate · hover a ribbon for both directions · click to pin</div>
+        </div>
+        <span class="pinpill" id="pinpill">
+          <span id="pinpillTxt">Pinned</span>
+          <button id="unpinBtn" aria-label="Clear pinned entity"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+        </span>
+      </div>
+      <div class="chartwrap">
+        <svg id="chord" viewBox="0 0 760 760" role="img" aria-labelledby="chord-h"
+             aria-describedby="chordSub" tabindex="-1"></svg>
+      </div>
+      <div class="chord-foot">
+        <span>Ribbon width = <b>pair value</b></span>
+        <span aria-hidden="true">·</span>
+        <span>Arc length = <b id="footTotalLbl">row total</b></span>
+        <span aria-hidden="true">·</span>
+        <span><b id="footN">8</b> entities · <b id="footPairs">0</b> relationships shown</span>
+      </div>
+    </section>
+
+    <!-- Sidebar -->
+    <aside class="side">
+      <section class="card" id="pinCard" aria-live="polite">
+        <div class="sectitle"><span>Focus</span><span id="focusMode" style="color:var(--faint); font-weight:600">no selection</span></div>
+        <div id="pinBody">
+          <p class="panel-empty"><strong>Pick an entity.</strong> Click any arc or legend row to pin it.
+            Its ribbons stay lit while everything else fades, and this panel ranks its partners
+            by value — outbound and inbound, separately.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="sectitle"><span>Entities</span><span id="legTotalNote" style="color:var(--faint); font-weight:600"></span></div>
+        <div class="legend" id="legend" role="list"></div>
+      </section>
+
+      <section class="card">
+        <div class="sectitle">Reading the widths</div>
+        <div class="vscale">
+          <div class="vbar" id="vbar"></div>
+          <div class="vticks"><span id="vmin">0</span><span id="vmid"></span><span id="vmax"></span></div>
+        </div>
+        <div class="widthkey">
+          <svg width="56" height="26" viewBox="0 0 56 26" aria-hidden="true">
+            <path d="M2 6 H54 V4 H2 Z" fill="var(--c0)" opacity=".75"/>
+            <path d="M2 22 H54 V14 H2 Z" fill="var(--c0)" opacity=".75"/>
+          </svg>
+          <span>A thicker ribbon end means a larger value at that entity.</span>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <!-- ===================== MATRIX HEATMAP ===================== -->
+  <section class="card matrix-section" aria-labelledby="mx-h">
+    <div class="cardhd">
+      <div>
+        <h2 id="mx-h" style="font-size:var(--fs-lg)">The matrix, in full</h2>
+        <div class="sub">Row → column. Hover a cell to light its ribbon; hover a ribbon to light its two cells.</div>
+      </div>
+      <span class="sub" id="mxMeta"></span>
+    </div>
+    <div class="matrix-scroll">
+      <table class="matrix" id="matrix"><caption id="mxCaption"></caption></table>
+    </div>
+    <div class="matrix-foot">
+      <span class="rdg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.7" stroke-dasharray="3 2"/></svg> Dashed = diagonal (self-link)</span>
+      <span>Darker cell = larger value · empty cell = no relationship (zero)</span>
+    </div>
+  </section>
+
+  <p class="note">
+    <b>About the data.</b> Both datasets are <b>illustrative samples</b> built to be structurally realistic —
+    directional, asymmetric, with believable corridors — but the numbers are synthetic and not authoritative
+    measurements. <span id="dsNote"></span> Use them to read the <em>shape</em> of a relationship matrix, not to cite a figure.
+    Built with <a href="https://github.com/d3/d3-chord" style="color:var(--accent-2)">d3-chord</a> ·
+    <code>chord()</code>, <code>chordDirected()</code>, <code>ribbon()</code>, <code>ribbonArrow()</code>, <code>arc()</code>.
+  </p>
+</main>
+
+<!-- Tooltip -->
+<div id="tip" role="status" aria-live="off"></div>
+<!-- live region for keyboard/pin announcements -->
+<div class="sr-only" id="live" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script>
+"use strict";
+(function(){
+/* ========================================================================
+   DATA — two illustrative, structurally-real directed n×n matrices.
+   matrix[i][j] = flow FROM entity i TO entity j.
+   ===================================================================== */
+const DATASETS = {
+  migration: {
+    label: "Migration corridors",
+    short: "Migration",
+    unit: "thousand people / yr",
+    unitShort: "k",
+    note: "“Migration corridors” shows illustrative annual people-flows between eight world regions; the diagonal is zero (internal moves are out of scope).",
+    caption: "Annual migration FROM each region (row) TO each region (column), in thousands — illustrative sample.",
+    entities: ["N. America","L. America","Europe","Africa","Mid. East","S. Asia","E. Asia","Oceania"],
+    matrix: [
+      [  0, 18, 42,  6,  5,  9, 14, 11],
+      [310,  0, 58,  3,  2,  1,  4,  2],
+      [ 70, 22,  0, 19, 12,  8, 10,  9],
+      [ 34,  5,195,  0, 88,  6,  7,  4],
+      [ 28,  3, 64, 12,  0, 41,  9,  3],
+      [ 96,  2, 73,  8,240,  0, 22, 18],
+      [180,  6, 55,  9, 14, 17,  0, 33],
+      [  9,  1,  7,  1,  1,  3, 12,  0]
+    ]
+  },
+  notes: {
+    label: "Note-app switching",
+    short: "Note apps",
+    unit: "survey respondents",
+    unitShort: "",
+    note: "“Note-app switching” shows illustrative numbers of survey respondents who moved their primary note app FROM one tool TO another over a year; the diagonal counts those who stayed (toggle Self-links to see it).",
+    caption: "Respondents who switched primary tool FROM (row) TO (column) over a year — illustrative sample. Diagonal = stayed.",
+    entities: ["Notion","Obsidian","Apple Notes","Evernote","Google Keep","Roam"],
+    matrix: [
+      [420, 64, 22,  9, 14,  8],
+      [ 38,380, 11,  5,  6, 19],
+      [ 70, 25,510,  4, 33,  3],
+      [120, 30, 60, 95, 18,  5],
+      [ 45, 12, 88,  6,240,  2],
+      [ 55, 88,  6,  2,  3, 60]
+    ]
+  }
+};
+
+const PALETTE = ["#2f6fb0","#d98a2b","#3f9d7a","#c0526b","#6b58a6","#48a0c2","#b58a3c","#8a8f3c","#a85b3e","#7a6f63"];
+
+/* ========================================================================
+   STATE
+   ===================================================================== */
+const state = {
+  dataset: "migration",
+  view: "directed",          // 'directed' | 'undirected'
+  sort: "original",          // 'original' | 'total' | 'name'
+  diagonal: false,           // show self links
+  pinned: null,              // entity index (original) or null
+  hoverGroup: null,          // entity index (original)
+  hoverChord: null,          // key string
+  kbdFocus: null             // entity index for keyboard nav
+};
+const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ========================================================================
+   GEOMETRY
+   ===================================================================== */
+const W = 760, CX = W/2, CY = W/2;
+const fmt = d3.format(",");
+const fmt1 = d3.format(",.0f");
+
+const svg = d3.select("#chord").attr("width", null).attr("height", null);
+const root = svg.append("g").attr("transform", `translate(${CX},${CY})`);
+const gDefs = svg.append("defs");
+const gRibbons = root.append("g").attr("class","ribbons").attr("fill-opacity",.74);
+const gArcs    = root.append("g").attr("class","arcs");
+const gTicks   = root.append("g").attr("class","ticks").attr("pointer-events","none");
+const gLabels  = root.append("g").attr("class","labels");
+
+const color = d3.scaleOrdinal();   // domain set per dataset (entity index -> color)
+
+const tip = document.getElementById("tip");
+const live = document.getElementById("live");
+
+/* current computed layout cache */
+let cur = null;   // {n, entities, order, origForPos[], posForOrig[], matrixPerm, groups, chords, ir, or, labelR, valueScale, maxPair}
+
+/* ========================================================================
+   LAYOUT COMPUTE
+   ===================================================================== */
+function radii(){
+  const outerR = W/2 - 118;     // leave room for ticks + labels
+  return { ir: outerR - 13, or: outerR, labelR: outerR + 30 };
+}
+
+function buildLayout(){
+  const ds = DATASETS[state.dataset];
+  const n = ds.entities.length;
+  const M = ds.matrix;
+
+  // working matrix with diagonal handling (operate in ORIGINAL index space)
+  const work = M.map((row,i)=> row.map((v,j)=> (i===j && !state.diagonal) ? 0 : v ));
+
+  // ordering: array of original indices in ring position order
+  let order = d3.range(n);
+  if(state.sort === "name"){
+    order.sort((a,b)=> d3.ascending(ds.entities[a], ds.entities[b]));
+  } else if(state.sort === "total"){
+    const tot = i => d3.sum(work[i]) + d3.sum(work.map(r=>r[i]));
+    order.sort((a,b)=> d3.descending(tot(a), tot(b)));
+  }
+  // posForOrig[origIndex] = ring position; order[pos] = origIndex
+  const posForOrig = new Array(n);
+  order.forEach((orig,pos)=> posForOrig[orig]=pos);
+
+  // permuted matrix in ring-position space
+  const matrixPerm = order.map(oi => order.map(oj => work[oi][oj]));
+
+  const layout = (state.view === "directed")
+      ? d3.chordDirected().padAngle(n>7?0.035:0.05).sortSubgroups(d3.descending).sortChords(d3.descending)
+      : d3.chord().padAngle(n>7?0.035:0.05).sortSubgroups(d3.descending).sortChords(d3.descending);
+
+  const ch = layout(matrixPerm);
+
+  const { ir, or, labelR } = radii();
+
+  // max single pair value (off-diagonal-aware) for scales/legend
+  let maxPair = 0;
+  M.forEach((row,i)=> row.forEach((v,j)=>{ if(!(i===j && !state.diagonal)) maxPair = Math.max(maxPair, v); }));
+
+  color.domain(d3.range(n)).range(PALETTE.slice(0, Math.max(n,3)));
+
+  // value scale for heatmap (light -> entity-neutral accent)
+  const valueScale = d3.scaleSequential(d3.interpolateRgbBasis(
+      ["#f1f4f8","#bcd0e6","#5b8fc4","#1f5fae","#15386b"])).domain([0, maxPair]);
+
+  cur = { n, ds, entities: ds.entities, order, posForOrig, matrixPerm, work,
+          groups: ch.groups, chords: ch, ir, or, labelR, valueScale, maxPair };
+  return cur;
+}
+
+/* helpers in ring-position space */
+const pIdx = c => c.source.index;          // ring position of source
+const qIdx = c => c.target.index;          // ring position of target
+const origOf = pos => cur.order[pos];      // ring position -> original entity index
+function chordKey(c){
+  // stable key by ORIGINAL entity pair + direction
+  const a = origOf(c.source.index), b = origOf(c.target.index);
+  if(state.view === "directed") return `d:${a}>${b}`;
+  return `u:${Math.min(a,b)}-${Math.max(a,b)}`;
+}
+function groupKey(g){ return `g:${origOf(g.index)}`; }
+
+/* ribbon generators */
+function makeRibbon(){
+  if(state.view === "directed"){
+    return d3.ribbonArrow().radius(cur.ir).headRadius(Math.max(8, cur.ir*0.045)).padAngle(0.008);
+  }
+  return d3.ribbon().radius(cur.ir).padAngle(0.006);
+}
+function makeArc(){ return d3.arc().innerRadius(cur.ir).outerRadius(cur.or); }
+
+function ptAt(angle, r){ return [ r*Math.sin(angle), -r*Math.cos(angle) ]; }
+
+/* ========================================================================
+   RENDER
+   ===================================================================== */
+function render(animate){
+  buildLayout();
+  const arcGen = makeArc();
+  const ribGen = makeRibbon();
+  const doAnim = animate && !reduced;
+  const T = doAnim ? d3.transition().duration(620).ease(d3.easeCubicInOut) : null;
+
+  // ---- gradients (directed) ----
+  gDefs.selectAll("linearGradient.rg").remove();
+  if(state.view === "directed"){
+    cur.chords.forEach(c=>{
+      const key = chordKey(c);
+      const s = ptAt((c.source.startAngle+c.source.endAngle)/2, cur.ir);
+      const t = ptAt((c.target.startAngle+c.target.endAngle)/2, cur.ir);
+      const grad = gDefs.append("linearGradient").attr("class","rg")
+        .attr("id","rg_"+cssId(key)).attr("gradientUnits","userSpaceOnUse")
+        .attr("x1",s[0]).attr("y1",s[1]).attr("x2",t[0]).attr("y2",t[1]);
+      grad.append("stop").attr("offset","5%").attr("stop-color", color(origOf(pIdx(c))));
+      grad.append("stop").attr("offset","95%").attr("stop-color", color(origOf(qIdx(c))));
+    });
+  }
+
+  // ---- ribbons (data-join keyed) ----
+  const rib = gRibbons.selectAll("path.ribbon").data(cur.chords, chordKey);
+
+  rib.exit().each(function(d){ this._cur = d; })
+     .call(sel => doAnim
+        ? sel.transition(T).attrTween("d", collapseTween(ribGen)).style("opacity",0).remove()
+        : sel.remove());
+
+  const ribEnter = rib.enter().append("path").attr("class","ribbon")
+      .each(function(d){ this._cur = degenerate(d); })
+      .attr("d", function(d){ return ribGen(this._cur); })
+      .style("opacity", 0)
+      .attr("role","img")
+      .on("mousemove", onRibbonMove)
+      .on("mouseenter", onRibbonEnter)
+      .on("mouseleave", onLeave)
+      .on("click", onRibbonClick);
+
+  const ribAll = ribEnter.merge(rib)
+      .attr("fill", d => state.view==="directed" ? `url(#rg_${cssId(chordKey(d))})` : color(origOf(pIdx(d))) )
+      .attr("aria-label", d => ribAria(d));
+
+  if(doAnim){
+    ribAll.transition(T).attrTween("d", chordTween(ribGen)).style("opacity",1);
+  } else {
+    ribAll.each(function(d){ this._cur = d; }).attr("d", function(d){ return ribGen(d); }).style("opacity",1);
+  }
+
+  // ---- arcs (groups) ----
+  const arcs = gArcs.selectAll("path.arc").data(cur.groups, groupKey);
+  arcs.exit().remove();
+  const arcEnter = arcs.enter().append("path").attr("class","arc")
+      .attr("tabindex", -1)
+      .attr("role","button")
+      .each(function(d){ this._cur = d; })
+      .on("mouseenter", onArcEnter)
+      .on("mousemove", onArcMove)
+      .on("mouseleave", onLeave)
+      .on("click", onArcClick)
+      .on("focus", onArcFocus)
+      .on("blur", onArcBlur);
+
+  const arcAll = arcEnter.merge(arcs)
+      .attr("fill", d => color(origOf(d.index)))
+      .attr("stroke", d => d3.color(color(origOf(d.index))).darker(0.7))
+      .attr("stroke-width", 1)
+      .attr("aria-label", d => arcAria(d))
+      .attr("data-orig", d => origOf(d.index));
+
+  if(doAnim){ arcAll.transition(T).attrTween("d", arcTween(arcGen)); }
+  else { arcAll.attr("d", d => arcGen(d)).each(function(d){ this._cur = d; }); }
+
+  // ---- ticks ----
+  drawTicks(arcGen, doAnim ? T : null);
+  // ---- labels ----
+  drawLabels(doAnim ? T : null);
+
+  // sync overlays
+  buildLegend();
+  buildMatrix();
+  renderPin();
+  applyEmphasis();
+  updateChrome();
+}
+
+function degenerate(d){
+  // a collapsed chord at the source group centroid (for enter/exit fade)
+  const a = (d.source.startAngle + d.source.endAngle)/2;
+  const z = { source:{startAngle:a, endAngle:a}, target:{startAngle:a, endAngle:a} };
+  return z;
+}
+
+/* tween helpers — interpolate angles, regenerate path each frame */
+function chordTween(gen){
+  return function(d){
+    const a = this._cur || degenerate(d);
+    const i = interpAngles(a, d);
+    const self = this;
+    return function(t){ const o = i(t); self._cur = o; return gen(o); };
+  };
+}
+function collapseTween(gen){
+  return function(d){
+    const a = this._cur || d;
+    const z = degenerate(a);
+    const i = interpAngles(a, z);
+    const self = this;
+    return function(t){ const o = i(t); self._cur = o; return gen(o); };
+  };
+}
+function interpAngles(a,b){
+  const ii = d3.interpolate(
+    [a.source.startAngle,a.source.endAngle,a.target.startAngle,a.target.endAngle],
+    [b.source.startAngle,b.source.endAngle,b.target.startAngle,b.target.endAngle]);
+  return t => { const v = ii(t);
+    return { source:{startAngle:v[0],endAngle:v[1]}, target:{startAngle:v[2],endAngle:v[3]} }; };
+}
+function arcTween(gen){
+  return function(d){
+    const a = this._cur || {startAngle:d.startAngle, endAngle:d.startAngle};
+    const i = d3.interpolate([a.startAngle,a.endAngle],[d.startAngle,d.endAngle]);
+    const self = this;
+    return function(t){ const v=i(t); const o={startAngle:v[0],endAngle:v[1]}; self._cur=o; return gen(o); };
+  };
+}
+
+/* ---- ticks ---- */
+function groupTicks(d, step){
+  const k = (d.endAngle - d.startAngle) / Math.max(d.value, 1e-6);
+  return d3.range(0, d.value, step).map(value => ({ value, angle: value*k + d.startAngle }));
+}
+function tickStep(){
+  // round step so each arc gets ~4-7 ticks across the dataset
+  const maxVal = d3.max(cur.groups, g=>g.value) || 1;
+  const raw = maxVal/6;
+  const pow = Math.pow(10, Math.floor(Math.log10(raw)));
+  const norm = raw/pow;
+  const mult = norm>=5?5: norm>=2?2:1;
+  return mult*pow;
+}
+function drawTicks(arcGen, T){
+  const step = tickStep();
+  const g = gTicks.selectAll("g.tickgroup").data(cur.groups, groupKey);
+  g.exit().remove();
+  const gE = g.enter().append("g").attr("class","tickgroup");
+  const gAll = gE.merge(g);
+
+  gAll.each(function(d){
+    const sel = d3.select(this);
+    const ticks = groupTicks(d, step);
+    const t = sel.selectAll("g.tick").data(ticks, dd=>dd.value);
+    t.exit().remove();
+    const tE = t.enter().append("g").attr("class","tick");
+    tE.append("line").attr("x2",6).attr("stroke-width",1);
+    tE.append("text").attr("x",8).attr("dy","0.32em");
+    const tAll = tE.merge(t);
+    tAll.attr("transform", dd => `rotate(${dd.angle*180/Math.PI - 90}) translate(${cur.or},0)`);
+    tAll.select("line");
+    tAll.select("text")
+      .attr("transform", dd => dd.angle > Math.PI ? "rotate(180) translate(-16,0)" : null)
+      .style("text-anchor", dd => dd.angle > Math.PI ? "end" : null)
+      .classed("tickbase", dd => dd.value===0)
+      .text(dd => dd.value===0 ? "" : magnitude(dd.value));
+  });
+}
+function magnitude(v){
+  if(v>=1000) return (v/1000)+"k";
+  return ""+v;
+}
+
+/* ---- labels ---- */
+function drawLabels(T){
+  const lab = gLabels.selectAll("text.entlabel").data(cur.groups, groupKey);
+  lab.exit().remove();
+  const labE = lab.enter().append("text").attr("class","entlabel")
+      .attr("dy","0.32em")
+      .style("cursor","pointer")
+      .on("mouseenter", function(e,d){ state.hoverGroup = origOf(d.index); applyEmphasis(); })
+      .on("mouseleave", onLeave)
+      .on("click", function(e,d){ togglePin(origOf(d.index)); });
+  const labAll = labE.merge(lab)
+      .text(d => cur.entities[origOf(d.index)])
+      .attr("data-orig", d => origOf(d.index));
+
+  const place = sel => sel.attr("transform", d=>{
+        const a = (d.startAngle+d.endAngle)/2;
+        const rot = a*180/Math.PI - 90;
+        const flip = a > Math.PI ? "rotate(180)" : "";
+        return `rotate(${rot}) translate(${cur.labelR},0) ${flip}`;
+      })
+      .style("text-anchor", d => (d.startAngle+d.endAngle)/2 > Math.PI ? "end" : "start");
+
+  if(T){ labAll.transition(T).call(place); } else { place(labAll); }
+}
+
+/* ========================================================================
+   EMPHASIS  (hover / pin / cell isolate)
+   ===================================================================== */
+function connected(c, orig){ return origOf(pIdx(c))===orig || origOf(qIdx(c))===orig; }
+
+function applyEmphasis(){
+  const focus = (state.hoverGroup!=null) ? state.hoverGroup : state.pinned;
+  const hoverC = state.hoverChord;
+
+  gRibbons.selectAll("path.ribbon").each(function(c){
+    const k = chordKey(c);
+    let op = 0.74;
+    if(hoverC){ op = (k===hoverC) ? 0.95 : 0.07; }
+    else if(focus!=null){ op = connected(c, focus) ? 0.92 : 0.07; }
+    d3.select(this).style("opacity", op);
+  });
+
+  gArcs.selectAll("path.arc").each(function(g){
+    const o = origOf(g.index);
+    let op = 1;
+    if(hoverC){
+      const c = cur.chords.find(cc=>chordKey(cc)===hoverC);
+      op = (c && (origOf(pIdx(c))===o || origOf(qIdx(c))===o)) ? 1 : 0.3;
+    } else if(focus!=null){
+      op = (o===focus) ? 1 : 0.3;
+    }
+    d3.select(this).style("opacity", op);
+  });
+
+  gLabels.selectAll("text.entlabel").each(function(g){
+    const o = origOf(g.index);
+    const dim = (focus!=null && o!==focus) || (hoverC && !chordTouches(hoverC,o));
+    d3.select(this).classed("dim", !!dim);
+  });
+
+  // legend active
+  d3.selectAll(".legrow").classed("active", function(){
+    return +this.dataset.orig === (state.pinned!=null?state.pinned:focus);
+  });
+
+  // matrix cell highlight
+  syncMatrixHot(focus, hoverC);
+}
+function chordTouches(key, orig){
+  const c = cur.chords.find(cc=>chordKey(cc)===key);
+  return c && (origOf(pIdx(c))===orig || origOf(qIdx(c))===orig);
+}
+
+/* ========================================================================
+   INTERACTIONS
+   ===================================================================== */
+function onArcEnter(e,d){ state.hoverGroup = origOf(d.index); applyEmphasis(); showArcTip(e,d); }
+function onArcMove(e,d){ moveTip(e); }
+function onArcFocus(e,d){ state.hoverGroup = origOf(d.index); state.kbdFocus = origOf(d.index); applyEmphasis(); }
+function onArcBlur(){ if(state.hoverChord==null){ state.hoverGroup=null; applyEmphasis(); } hideTip(); }
+function onArcClick(e,d){ togglePin(origOf(d.index)); }
+
+function onRibbonEnter(e,c){ state.hoverChord = chordKey(c); applyEmphasis(); showRibbonTip(e,c); }
+function onRibbonMove(e){ moveTip(e); }
+function onRibbonClick(e,c){
+  // pin the source entity of this relationship
+  togglePin(origOf(pIdx(c)));
+}
+function onLeave(){ state.hoverGroup=null; state.hoverChord=null; applyEmphasis(); hideTip(); }
+
+function togglePin(orig){
+  state.pinned = (state.pinned===orig) ? null : orig;
+  state.hoverGroup = null;
+  renderPin(); applyEmphasis(); updateChrome();
+  announce(state.pinned!=null ? `Pinned ${cur.entities[orig]}` : "Cleared focus");
+}
+
+/* ---- tooltip ---- */
+function showArcTip(e,d){
+  const o = origOf(d.index);
+  const out = d3.sum(cur.work[o]);
+  const inn = d3.sum(cur.work.map(r=>r[o]));
+  const u = cur.ds.unitShort;
+  tip.innerHTML =
+    `<div class="tt"><span class="sw" style="background:${color(o)}"></span>${esc(cur.entities[o])}</div>`+
+    `<div class="row"><span class="lab">Outbound total</span><span class="val tnum">${fmt(out)}${u}</span></div>`+
+    `<div class="row"><span class="lab">Inbound total</span><span class="val tnum">${fmt(inn)}${u}</span></div>`+
+    `<div class="hint">Click to pin · ranked partners in the panel</div>`;
+  showTip(e);
+}
+function showRibbonTip(e,c){
+  const a = origOf(pIdx(c)), b = origOf(qIdx(c));
+  const M = cur.ds.matrix;
+  const ab = M[a][b], ba = M[b][a];
+  const u = cur.ds.unitShort;
+  const arrow = state.view==="directed" ? "→" : "↔";
+  tip.innerHTML =
+    `<div class="tt"><span class="a"><span class="sw" style="background:${color(a)}"></span>${esc(cur.entities[a])}</span>`+
+    `<span class="arr">${arrow}</span>`+
+    `<span class="b"><span class="sw" style="background:${color(b)}"></span>${esc(cur.entities[b])}</span></div>`+
+    `<div class="row"><span class="lab">${esc(cur.entities[a])} → ${esc(cur.entities[b])}</span><span class="val tnum">${fmt(ab)}${u}</span></div>`+
+    `<div class="row"><span class="lab">${esc(cur.entities[b])} → ${esc(cur.entities[a])}</span><span class="val tnum">${fmt(ba)}${u}</span></div>`+
+    `<div class="bidir">Both directions shown · net ${fmt(Math.abs(ab-ba))}${u} toward ${esc(cur.entities[ab>=ba?b:a])}</div>`;
+  showTip(e);
+}
+function showTip(e){ tip.classList.add("show"); moveTip(e); }
+function moveTip(e){
+  const pad=14, w=tip.offsetWidth, h=tip.offsetHeight;
+  let x=e.clientX+pad, y=e.clientY+pad;
+  if(x+w>window.innerWidth-8) x=e.clientX-w-pad;
+  if(y+h>window.innerHeight-8) y=e.clientY-h-pad;
+  tip.style.left=Math.max(8,x)+"px"; tip.style.top=Math.max(8,y)+"px";
+}
+function hideTip(){ tip.classList.remove("show"); }
+
+/* ========================================================================
+   ARIA strings
+   ===================================================================== */
+function arcAria(d){
+  const o=origOf(d.index), out=d3.sum(cur.work[o]), inn=d3.sum(cur.work.map(r=>r[o]));
+  return `${cur.entities[o]}. Outbound ${fmt(out)}, inbound ${fmt(inn)} ${cur.ds.unit}. Activate to pin.`;
+}
+function ribAria(c){
+  const a=origOf(pIdx(c)), b=origOf(qIdx(c)), M=cur.ds.matrix;
+  return `${cur.entities[a]} to ${cur.entities[b]} ${fmt(M[a][b])}; reverse ${fmt(M[b][a])} ${cur.ds.unit}.`;
+}
+
+/* ========================================================================
+   LEGEND
+   ===================================================================== */
+function buildLegend(){
+  const el = document.getElementById("legend");
+  const rows = cur.order.map(o=>o); // ring order
+  el.innerHTML = "";
+  rows.forEach(o=>{
+    const out=d3.sum(cur.work[o]), inn=d3.sum(cur.work.map(r=>r[o]));
+    const row=document.createElement("div");
+    row.className="legrow"; row.setAttribute("role","listitem"); row.dataset.orig=o; row.tabIndex=0;
+    row.innerHTML=`<span class="dot" style="background:${color(o)}"></span>`+
+      `<span class="nm">${esc(cur.entities[o])}</span>`+
+      `<span class="tot tnum">${fmt(out+inn)}${cur.ds.unitShort}</span>`;
+    row.addEventListener("mouseenter", ()=>{ state.hoverGroup=o; applyEmphasis(); });
+    row.addEventListener("mouseleave", onLeave);
+    row.addEventListener("click", ()=>togglePin(o));
+    row.addEventListener("keydown", ev=>{ if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); togglePin(o);} });
+    el.appendChild(row);
+  });
+  document.getElementById("legTotalNote").textContent = `${cur.n} · by ring order`;
+}
+
+/* ========================================================================
+   PIN PANEL
+   ===================================================================== */
+function renderPin(){
+  const body=document.getElementById("pinBody");
+  const mode=document.getElementById("focusMode");
+  if(state.pinned==null){
+    mode.textContent="no selection";
+    body.innerHTML=`<p class="panel-empty"><strong>Pick an entity.</strong> Click any arc or legend row to pin it.
+      Its ribbons stay lit while everything else fades, and this panel ranks its partners
+      by value — outbound and inbound, separately.</p>`;
+    return;
+  }
+  const o=state.pinned, M=cur.ds.matrix, W2=cur.work;
+  mode.textContent="pinned";
+  const out=d3.sum(W2[o]), inn=d3.sum(W2.map(r=>r[o]));
+  const u=cur.ds.unitShort;
+
+  // partners
+  const outbound = cur.entities.map((nm,j)=>({j, v:W2[o][j]})).filter(d=>d.v>0 && (state.diagonal || d.j!==o)).sort((a,b)=>b.v-a.v);
+  const inbound  = cur.entities.map((nm,i)=>({i, v:W2[i][o]})).filter(d=>d.v>0 && (state.diagonal || d.i!==o)).sort((a,b)=>b.v-a.v);
+  const maxOut=d3.max(outbound,d=>d.v)||1, maxIn=d3.max(inbound,d=>d.v)||1;
+
+  const partRow=(nm,idx,v,max)=>`<div class="part" data-orig="${idx}">`+
+      `<span class="dot" style="background:${color(idx)}"></span>`+
+      `<span class="pnm">${esc(nm)}</span>`+
+      `<span class="bar"><i style="width:${Math.max(6,v/max*100)}%;background:${color(idx)}"></i></span>`+
+      `<span class="pv tnum">${fmt(v)}${u}</span></div>`;
+
+  body.innerHTML =
+    `<div class="pinhead"><span class="dot" style="background:${color(o)}"></span>`+
+      `<span class="nm">${esc(cur.entities[o])}</span></div>`+
+    `<div class="pinstats">`+
+      `<div class="pinstat"><div class="k">Outbound</div><div class="v tnum" style="color:${color(o)}">${fmt(out)}${u}</div></div>`+
+      `<div class="pinstat"><div class="k">Inbound</div><div class="v tnum">${fmt(inn)}${u}</div></div>`+
+      `<div class="pinstat"><div class="k">Net</div><div class="v tnum" style="color:${out>=inn?'var(--ok)':'var(--danger)'}">${(out-inn>=0?'+':'−')}${fmt(Math.abs(out-inn))}</div></div>`+
+    `</div>`+
+    `<div class="partlbl"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12h13m0 0-5-5m5 5-5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Sends to</div>`+
+      (outbound.length? outbound.map(d=>partRow(cur.entities[d.j],d.j,d.v,maxOut)).join("") : `<div class="partnone">No outbound flows</div>`)+
+    `<div class="partlbl"><svg viewBox="0 0 24 24" fill="none"><path d="M20 12H7m0 0 5-5m-5 5 5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Receives from</div>`+
+      (inbound.length? inbound.map(d=>partRow(cur.entities[d.i],d.i,d.v,maxIn)).join("") : `<div class="partnone">No inbound flows</div>`);
+
+  body.querySelectorAll(".part").forEach(p=>{
+    const idx=+p.dataset.orig;
+    p.addEventListener("mouseenter", ()=>{ state.hoverGroup=idx; applyEmphasis(); });
+    p.addEventListener("mouseleave", ()=>{ state.hoverGroup=null; applyEmphasis(); });
+    p.addEventListener("click", ()=>togglePin(idx));
+  });
+}
+
+/* ========================================================================
+   MATRIX HEATMAP
+   ===================================================================== */
+function buildMatrix(){
+  const table=document.getElementById("matrix");
+  const M=cur.ds.matrix, ord=cur.order, n=cur.n;
+  document.getElementById("mxMeta").textContent = `${n}×${n} · row → column`;
+
+  let html = `<caption id="mxCaption">${esc(cur.ds.caption)}</caption><thead><tr><th class='corner'>from ＼ to</th>`;
+  ord.forEach(j=>{
+    html += `<th scope="col"><span class="colhd-dot" style="background:${color(j)}"></span><span class="colhd">${esc(short(cur.entities[j]))}</span></th>`;
+  });
+  html += "</tr></thead><tbody>";
+  ord.forEach(i=>{
+    html += `<tr><th scope="row"><span class="rowhd"><span class="nm" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(cur.entities[i])}</span><span class="dot" style="background:${color(i)}"></span></span></th>`;
+    ord.forEach(j=>{
+      const raw=M[i][j];
+      const shown=(i===j && !state.diagonal)? 0 : raw;
+      const isDiag=i===j;
+      const isZero=shown===0;
+      const bg = isZero ? "transparent" : cur.valueScale(shown);
+      const fg = (!isZero && contrastDark(bg)) ? "#fff" : "var(--ink)";
+      const cls = `mcell${isDiag?" diag":""}${isZero?" zero":""}`;
+      const cellVal = (i===j && !state.diagonal) ? "·" : magnitudeCell(raw);
+      html += `<td class="${cls}" data-i="${i}" data-j="${j}" style="background:${bg};color:${fg}" `+
+              `tabindex="-1" aria-label="${esc(cur.entities[i])} to ${esc(cur.entities[j])}: ${fmt(raw)}">${cellVal}</td>`;
+    });
+    html += "</tr>";
+  });
+  html += "</tbody>";
+  table.innerHTML = html;
+
+  table.querySelectorAll("td.mcell").forEach(td=>{
+    const i=+td.dataset.i, j=+td.dataset.j;
+    td.addEventListener("mouseenter", e=>{
+      const shown=(i===j && !state.diagonal)?0:cur.ds.matrix[i][j];
+      if(shown>0){ state.hoverChord = findChordKey(i,j); applyEmphasis(); showCellTip(e,i,j); }
+      else { state.hoverGroup=null; applyEmphasis(); }
+    });
+    td.addEventListener("mousemove", moveTip);
+    td.addEventListener("mouseleave", onLeave);
+    td.addEventListener("click", ()=>{ togglePin(i); });
+  });
+}
+function findChordKey(i,j){
+  // find a rendered chord whose original pair matches i,j
+  const c = cur.chords.find(cc=>{
+    const a=origOf(pIdx(cc)), b=origOf(qIdx(cc));
+    if(state.view==="directed") return (a===i&&b===j) || (a===j&&b===i);
+    return (Math.min(a,b)===Math.min(i,j) && Math.max(a,b)===Math.max(i,j));
+  });
+  return c ? chordKey(c) : null;
+}
+function showCellTip(e,i,j){
+  const M=cur.ds.matrix, u=cur.ds.unitShort;
+  tip.innerHTML =
+    `<div class="tt"><span class="a"><span class="sw" style="background:${color(i)}"></span>${esc(cur.entities[i])}</span>`+
+    `<span class="arr">→</span>`+
+    `<span class="b"><span class="sw" style="background:${color(j)}"></span>${esc(cur.entities[j])}</span></div>`+
+    `<div class="row"><span class="lab">${esc(cur.entities[i])} → ${esc(cur.entities[j])}</span><span class="val tnum">${fmt(M[i][j])}${u}</span></div>`+
+    `<div class="row"><span class="lab">${esc(cur.entities[j])} → ${esc(cur.entities[i])}</span><span class="val tnum">${fmt(M[j][i])}${u}</span></div>`;
+  showTip(e);
+}
+function syncMatrixHot(focus, hoverC){
+  const table=document.getElementById("matrix");
+  if(!table) return;
+  table.querySelectorAll("td.mcell").forEach(td=>{
+    const i=+td.dataset.i, j=+td.dataset.j;
+    let hot=false;
+    if(hoverC){
+      const c=cur.chords.find(cc=>chordKey(cc)===hoverC);
+      if(c){ const a=origOf(pIdx(c)), b=origOf(qIdx(c));
+        hot = (i===a&&j===b) || (i===b&&j===a); }
+    } else if(focus!=null){
+      hot = (i===focus || j===focus) && cur.ds.matrix[i][j]>0 && (state.diagonal || i!==j);
+    }
+    td.classList.toggle("hot", hot);
+  });
+}
+
+/* ========================================================================
+   CHROME (footers / meta)
+   ===================================================================== */
+function updateChrome(){
+  document.getElementById("footN").textContent = cur.n;
+  document.getElementById("footPairs").textContent = cur.chords.length;
+  document.getElementById("footTotalLbl").textContent = state.view==="directed" ? "row + column total" : "row total";
+  document.getElementById("datasetMeta").textContent = `${cur.ds.label} · ${cur.n}×${cur.n} · ${cur.ds.unit}`;
+  document.getElementById("dsNote").textContent = cur.ds.note;
+
+  // value scale legend
+  const vb=document.getElementById("vbar");
+  vb.style.background=`linear-gradient(90deg, ${cur.valueScale(0)}, ${cur.valueScale(cur.maxPair*0.5)}, ${cur.valueScale(cur.maxPair)})`;
+  document.getElementById("vmin").textContent="0";
+  document.getElementById("vmid").textContent=fmt(Math.round(cur.maxPair/2))+cur.ds.unitShort;
+  document.getElementById("vmax").textContent=fmt(cur.maxPair)+cur.ds.unitShort;
+
+  // pin pill
+  const pill=document.getElementById("pinpill");
+  if(state.pinned!=null){ pill.classList.add("show"); document.getElementById("pinpillTxt").textContent=cur.entities[state.pinned]; }
+  else pill.classList.remove("show");
+
+  document.getElementById("chordSub").textContent =
+    state.view==="directed"
+      ? "Arrows point source → target · hover to isolate · click to pin"
+      : "Hover an arc to isolate · hover a ribbon for both directions · click to pin";
+}
+
+/* ========================================================================
+   KEYBOARD NAV on arcs
+   ===================================================================== */
+function focusArcByOrig(orig){
+  const el=gArcs.selectAll("path.arc").filter(d=>origOf(d.index)===orig).node();
+  if(el){ el.setAttribute("tabindex","0"); el.focus(); markKbd(orig); }
+}
+function markKbd(orig){
+  gArcs.selectAll("path.arc").classed("kbd", d=>origOf(d.index)===orig)
+       .attr("tabindex", d=>origOf(d.index)===orig?0:-1);
+  state.kbdFocus=orig;
+}
+svg.node().addEventListener("keydown", e=>{
+  const k=e.key;
+  if(["ArrowRight","ArrowDown","ArrowLeft","ArrowUp","Enter"," ","Escape","Home","End"].indexOf(k)<0) return;
+  e.preventDefault();
+  let pos = state.kbdFocus!=null ? cur.posForOrig[state.kbdFocus] : -1;
+  if(k==="Escape"){ state.pinned=null; renderPin(); applyEmphasis(); updateChrome(); return; }
+  if(k==="Enter"||k===" "){ if(state.kbdFocus!=null) togglePin(state.kbdFocus); return; }
+  if(k==="Home") pos=0;
+  else if(k==="End") pos=cur.n-1;
+  else if(k==="ArrowRight"||k==="ArrowDown") pos=(pos+1+cur.n)%cur.n;
+  else if(k==="ArrowLeft"||k==="ArrowUp") pos=(pos-1+cur.n)%cur.n;
+  if(pos<0) pos=0;
+  focusArcByOrig(origOf(pos));
+});
+// allow entering the diagram via Tab to the svg, then arrow keys
+svg.node().setAttribute("tabindex","0");
+svg.node().setAttribute("aria-label","Chord diagram. Press Tab then arrow keys to move between entities, Enter to pin.");
+svg.node().addEventListener("focus", ()=>{ if(state.kbdFocus==null && cur) focusArcByOrig(origOf(0)); });
+
+/* ========================================================================
+   CONTROLS
+   ===================================================================== */
+// dataset segmented (built dynamically so labels come from data)
+(function buildDatasetControl(){
+  const g=document.getElementById("dsGroup");
+  Object.keys(DATASETS).forEach(key=>{
+    const b=document.createElement("button");
+    b.className="seg"; b.setAttribute("role","radio"); b.dataset.ds=key;
+    b.setAttribute("aria-checked", key===state.dataset ? "true":"false");
+    b.textContent=DATASETS[key].short;
+    b.addEventListener("click", ()=>{
+      if(state.dataset===key) return;
+      state.dataset=key; state.pinned=null; state.hoverGroup=null; state.hoverChord=null; state.kbdFocus=null;
+      g.querySelectorAll(".seg").forEach(s=>s.setAttribute("aria-checked", s.dataset.ds===key?"true":"false"));
+      render(true);
+      announce(`Switched to ${DATASETS[key].label}, ${DATASETS[key].entities.length} entities`);
+    });
+    g.appendChild(b);
+  });
+})();
+
+// view (direction)
+document.querySelectorAll('[data-view]').forEach(b=>{
+  b.addEventListener("click", ()=>{
+    if(state.view===b.dataset.view) return;
+    state.view=b.dataset.view;
+    document.querySelectorAll('[data-view]').forEach(s=>s.setAttribute("aria-checked", s.dataset.view===state.view?"true":"false"));
+    render(true);
+    announce(`${state.view} view`);
+  });
+});
+// sort
+document.querySelectorAll('[data-sort]').forEach(b=>{
+  b.addEventListener("click", ()=>{
+    if(state.sort===b.dataset.sort) return;
+    state.sort=b.dataset.sort;
+    document.querySelectorAll('[data-sort]').forEach(s=>s.setAttribute("aria-checked", s.dataset.sort===state.sort?"true":"false"));
+    render(true);
+    announce(`Ordered by ${state.sort}`);
+  });
+});
+// diagonal
+document.getElementById("diagToggle").addEventListener("change", e=>{
+  state.diagonal=e.target.checked;
+  render(true);
+  announce(state.diagonal? "Self-links shown":"Self-links hidden");
+});
+
+/* ---- export menu ---- */
+const exportBtn=document.getElementById("exportBtn"), exportPop=document.getElementById("exportPop");
+exportBtn.addEventListener("click", e=>{ e.stopPropagation(); const open=exportPop.classList.toggle("open"); exportBtn.setAttribute("aria-expanded", open?"true":"false"); });
+document.addEventListener("click", e=>{ if(!exportPop.contains(e.target) && e.target!==exportBtn){ exportPop.classList.remove("open"); exportBtn.setAttribute("aria-expanded","false"); } });
+exportPop.querySelectorAll("[data-exp]").forEach(b=> b.addEventListener("click", ()=>{ doExport(b.dataset.exp); exportPop.classList.remove("open"); exportBtn.setAttribute("aria-expanded","false"); }));
+
+function doExport(kind){
+  const ds=cur.ds, base=`weave-${state.dataset}`;
+  if(kind==="csv"){
+    const ord=cur.order;
+    let rows=[ ["from\\to", ...ord.map(j=>ds.entities[j])] ];
+    ord.forEach(i=> rows.push([ds.entities[i], ...ord.map(j=>ds.matrix[i][j])]));
+    const csv=rows.map(r=>r.map(c=>/[",\n]/.test(""+c)?`"${(""+c).replace(/"/g,'""')}"`:c).join(",")).join("\n");
+    download(base+"-matrix.csv","text/csv;charset=utf-8", csv);
+  } else if(kind==="json"){
+    const obj={ dataset:ds.label, unit:ds.unit, illustrative:true, entities:ds.entities, matrix:ds.matrix,
+                ordering:cur.order.map(o=>ds.entities[o]), view:state.view, diagonalShown:state.diagonal };
+    download(base+"-matrix.json","application/json", JSON.stringify(obj,null,2));
+  } else if(kind==="svg"){
+    download(base+".svg","image/svg+xml;charset=utf-8", serializeSVG());
+  } else if(kind==="png"){
+    exportPNG(base+".png");
+  }
+}
+function serializeSVG(){
+  const clone=svg.node().cloneNode(true);
+  clone.setAttribute("xmlns","http://www.w3.org/2000/svg");
+  clone.setAttribute("width", W); clone.setAttribute("height", W);
+  // inject a background + minimal styles so it renders standalone
+  const style=document.createElementNS("http://www.w3.org/2000/svg","style");
+  style.textContent=`text{font-family:Inter,system-ui,sans-serif} .entlabel{font-weight:600;font-size:12.5px;fill:#161a1f}`+
+    `.tick text{fill:#5e697a;font-size:9px}.tick line{stroke:#5e697a}.ribbon{}`;
+  clone.insertBefore(style, clone.firstChild);
+  const bg=document.createElementNS("http://www.w3.org/2000/svg","rect");
+  bg.setAttribute("width",W); bg.setAttribute("height",W); bg.setAttribute("fill","#fbfaf6");
+  clone.insertBefore(bg, clone.firstChild);
+  return '<?xml version="1.0" encoding="UTF-8"?>\n'+new XMLSerializer().serializeToString(clone);
+}
+function exportPNG(name){
+  const svgStr=serializeSVG();
+  const scale=2;
+  const img=new Image();
+  const url="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svgStr);
+  img.onload=function(){
+    const c=document.createElement("canvas"); c.width=W*scale; c.height=W*scale;
+    const ctx=c.getContext("2d"); ctx.scale(scale,scale); ctx.drawImage(img,0,0);
+    c.toBlob(b=>{ const u=URL.createObjectURL(b); triggerDownload(name,u); setTimeout(()=>URL.revokeObjectURL(u),1500); }, "image/png");
+  };
+  img.onerror=function(){ announce("PNG export failed; try SVG"); };
+  img.src=url;
+}
+function download(name,mime,data){
+  const blob=new Blob([data],{type:mime}); const u=URL.createObjectURL(blob);
+  triggerDownload(name,u); setTimeout(()=>URL.revokeObjectURL(u),1500);
+}
+function triggerDownload(name,url){
+  const a=document.createElement("a"); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+}
+
+document.getElementById("unpinBtn").addEventListener("click", ()=>{ state.pinned=null; renderPin(); applyEmphasis(); updateChrome(); });
+
+/* ========================================================================
+   UTIL
+   ===================================================================== */
+function esc(s){ return (""+s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function cssId(s){ return s.replace(/[^a-zA-Z0-9_-]/g,"_"); }
+function short(s){ return s.length>10 ? s.replace(/\. /,".").slice(0,11) : s; }
+function magnitudeCell(v){ return v>=1000 ? (v/1000).toFixed(v%1000?1:0)+"k" : ""+v; }
+function contrastDark(rgb){ const c=d3.color(rgb); if(!c) return false; const {r,g,b}=c.rgb(); return (0.299*r+0.587*g+0.114*b) < 150; }
+function announce(msg){ live.textContent=msg; }
+
+/* ========================================================================
+   INIT
+   ===================================================================== */
+render(false);
+window.addEventListener("resize", ()=>{ /* viewBox handles scaling; nothing to recompute */ });
+
+// expose for verification harness
+window.__weave = {
+  state,
+  get cur(){ return cur; },
+  chordKey, origOf, applyEmphasis,
+  ribbonOpacity(){ const m={}; gRibbons.selectAll("path.ribbon").each(function(c){ m[chordKey(c)]=+ (d3.select(this).style("opacity")||1); }); return m; },
+  rowTotalCheck(){
+    // For each ring position group, sum the angular spans of its chord endpoints
+    // and compare to the group's arc angular length.
+    const eps=1e-6, results=[];
+    cur.groups.forEach(g=>{
+      const arcLen=g.endAngle-g.startAngle;
+      let sum=0;
+      cur.chords.forEach(c=>{
+        if(c.source.index===g.index) sum += (c.source.endAngle-c.source.startAngle);
+        if(c.target.index===g.index) sum += (c.target.endAngle-c.target.startAngle);
+      });
+      results.push({pos:g.index, orig:origOf(g.index), arcLen, sum, ok:Math.abs(arcLen-sum)<1e-4});
+    });
+    return results;
+  },
+  setHoverGroupOrig(o){ state.hoverGroup=o; applyEmphasis(); },
+  clearHover(){ state.hoverGroup=null; state.hoverChord=null; applyEmphasis(); },
+  pin(o){ togglePin(o); },
+  ribbonCount(){ return gRibbons.selectAll("path.ribbon").size(); },
+  pairHasRibbon(i,j){ return !!findChordKey(i,j); }
+};
+})();
+</script>
+</body>
+</html>

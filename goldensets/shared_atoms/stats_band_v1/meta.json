@@ -1,0 +1,13 @@
+{
+  "atom_id": "stats_band_v1",
+  "category": "proof",
+  "summary": "Proof/stat ribbon on a dark editorial band; placeholder [STAT_VALUE]/[STAT_LABEL] metrics with an IntersectionObserver count-up that is frozen under reduced-motion.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": ["stats_strip", "trust_rail"],
+  "tags": ["proof", "stats", "metrics", "ribbon", "count-up", "intersection-observer", "data-integrity", "dark"],
+  "tone": ["editorial", "premium", "confident"],
+  "files": ["snippet.html", "snippet.css", "snippet.js"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

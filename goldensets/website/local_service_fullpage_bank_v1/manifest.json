@@ -1,0 +1,616 @@
+{
+  "pack_id": "local_service_fullpage_bank_v1",
+  "role": "support_bank",
+  "family": "website.local_service",
+  "source_paths": [
+    "examples/silverwave-medspa-augusta.md",
+    "examples/ashgrove-landscape-macon.md",
+    "examples/lumena-wellness-macon.md",
+    "examples/cedarbrook-dental-associates-athens.md",
+    "examples/mosswood-landscaping-savannah.md",
+    "examples/summitline-roofing-atlanta.md",
+    "examples/hale-winslow-columbus.md",
+    "examples/axlecraft-garage-door-jefferson.md",
+    "examples/quayside-dental-savannah.md",
+    "examples/foster-quinn-athens.md",
+    "examples/gatewood-fence-marietta.md",
+    "examples/gullwing-roofing-savannah.md",
+    "examples/thermaline-heating-air-atlanta.md",
+    "examples/stillwater-plumbing-kennesaw.md",
+    "examples/pipewise-plumbing-marietta.md",
+    "examples/willowbend-dental-savannah.md",
+    "examples/aurelia-med-spa-macon.md",
+    "examples/terraverde-ecoscapes-macon.md",
+    "examples/spa-larkspur-augusta.md",
+    "examples/solace-medical-spa-macon.md",
+    "examples/velvet-fig-wax-atlanta.md",
+    "examples/rivergate-dental-augusta.md"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "website"
+  ],
+  "tones": [
+    "beauty",
+    "clinical",
+    "dark",
+    "editorial",
+    "full_page",
+    "hospitality",
+    "industrial",
+    "light",
+    "premium",
+    "residential",
+    "restrained",
+    "service",
+    "warm"
+  ],
+  "surfaces": [
+    "fullpage",
+    "hero",
+    "homepage",
+    "landing",
+    "section"
+  ],
+  "motif_tags": [
+    "cta_treatment",
+    "dark_texture",
+    "editorial_shell",
+    "full_page_donor",
+    "fullpage_depth",
+    "glass_panel",
+    "headline_hierarchy",
+    "hero_shell",
+    "light_precision",
+    "material_showcase",
+    "phone_pill",
+    "process_timeline",
+    "proof_cards",
+    "section_sequencing",
+    "service_map",
+    "split_hero",
+    "sticky_nav",
+    "testimonial_density",
+    "trust_rail"
+  ],
+  "supports_tasks": [
+    "clinic_homepage",
+    "donor_first_packet",
+    "fullpage_donor_selection",
+    "hero_redesign",
+    "homepage_polish",
+    "landscape_homepage",
+    "law_firm_homepage",
+    "local_service_layout",
+    "med_spa_homepage",
+    "plumbing_homepage",
+    "premium_service_website",
+    "roofing_homepage"
+  ],
+  "anti_patterns": [
+    "full corpus dump",
+    "irrelevant stock imagery",
+    "marketing-agency vibe",
+    "soft SaaS gradients",
+    "template feel",
+    "unbounded donor sprawl"
+  ],
+  "token_budget_hint": 18000,
+  "confidence_score": 5,
+  "example_ids": [
+    "silverwave-medspa-augusta",
+    "ashgrove-landscape-macon",
+    "lumena-wellness-macon",
+    "cedarbrook-dental-associates-athens",
+    "mosswood-landscaping-savannah",
+    "summitline-roofing-atlanta",
+    "hale-winslow-columbus",
+    "axlecraft-garage-door-jefferson",
+    "quayside-dental-savannah",
+    "foster-quinn-athens",
+    "gatewood-fence-marietta",
+    "gullwing-roofing-savannah",
+    "thermaline-heating-air-atlanta",
+    "stillwater-plumbing-kennesaw",
+    "pipewise-plumbing-marietta",
+    "willowbend-dental-savannah",
+    "aurelia-med-spa-macon",
+    "terraverde-ecoscapes-macon",
+    "spa-larkspur-augusta",
+    "solace-medical-spa-macon",
+    "velvet-fig-wax-atlanta",
+    "rivergate-dental-augusta"
+  ],
+  "source_dirs": {
+    "silverwave-medspa-augusta": "examples/silverwave-medspa-augusta/source",
+    "ashgrove-landscape-macon": "examples/ashgrove-landscape-macon/source",
+    "lumena-wellness-macon": "examples/lumena-wellness-macon/source",
+    "cedarbrook-dental-associates-athens": "examples/cedarbrook-dental-associates-athens/source",
+    "mosswood-landscaping-savannah": "examples/mosswood-landscaping-savannah/source",
+    "summitline-roofing-atlanta": "examples/summitline-roofing-atlanta/source",
+    "hale-winslow-columbus": "examples/hale-winslow-columbus/source",
+    "axlecraft-garage-door-jefferson": "examples/axlecraft-garage-door-jefferson/source",
+    "quayside-dental-savannah": "examples/quayside-dental-savannah/source",
+    "foster-quinn-athens": "examples/foster-quinn-athens/source",
+    "gatewood-fence-marietta": "examples/gatewood-fence-marietta/source",
+    "gullwing-roofing-savannah": "examples/gullwing-roofing-savannah/source",
+    "thermaline-heating-air-atlanta": "examples/thermaline-heating-air-atlanta/source",
+    "stillwater-plumbing-kennesaw": "examples/stillwater-plumbing-kennesaw/source",
+    "pipewise-plumbing-marietta": "examples/pipewise-plumbing-marietta/source",
+    "willowbend-dental-savannah": "examples/willowbend-dental-savannah/source",
+    "aurelia-med-spa-macon": "examples/aurelia-med-spa-macon/source",
+    "terraverde-ecoscapes-macon": "examples/terraverde-ecoscapes-macon/source",
+    "spa-larkspur-augusta": "examples/spa-larkspur-augusta/source",
+    "solace-medical-spa-macon": "examples/solace-medical-spa-macon/source",
+    "velvet-fig-wax-atlanta": "examples/velvet-fig-wax-atlanta/source",
+    "rivergate-dental-augusta": "examples/rivergate-dental-augusta/source"
+  },
+  "example_strengths": {
+    "silverwave-medspa-augusta": [
+      "light_clarity",
+      "headline_hierarchy",
+      "service_clarity",
+      "trust_rail",
+      "cta_placement",
+      "premium_spacing"
+    ],
+    "ashgrove-landscape-macon": [
+      "light_clarity",
+      "premium_spacing",
+      "service_clarity",
+      "section_sequencing",
+      "visual_restraint",
+      "map_or_coverage_signal"
+    ],
+    "lumena-wellness-macon": [
+      "light_clarity",
+      "headline_hierarchy",
+      "service_clarity",
+      "trust_rail",
+      "premium_spacing",
+      "visual_restraint"
+    ],
+    "cedarbrook-dental-associates-athens": [
+      "light_clarity",
+      "headline_hierarchy",
+      "service_clarity",
+      "navigation_clarity",
+      "trust_rail",
+      "premium_spacing"
+    ],
+    "mosswood-landscaping-savannah": [
+      "light_clarity",
+      "premium_spacing",
+      "service_clarity",
+      "section_sequencing",
+      "visual_restraint",
+      "map_or_coverage_signal"
+    ],
+    "summitline-roofing-atlanta": [
+      "hero_treatment",
+      "trust_rail",
+      "dark_contrast",
+      "proof_density",
+      "service_clarity",
+      "headline_hierarchy"
+    ],
+    "hale-winslow-columbus": [
+      "headline_hierarchy",
+      "proof_density",
+      "premium_spacing",
+      "visual_restraint",
+      "navigation_clarity",
+      "trust_rail"
+    ],
+    "axlecraft-garage-door-jefferson": [
+      "hero_treatment",
+      "dark_contrast",
+      "cta_placement",
+      "service_clarity",
+      "phone_visibility",
+      "headline_hierarchy"
+    ],
+    "quayside-dental-savannah": [
+      "light_clarity",
+      "headline_hierarchy",
+      "service_clarity",
+      "navigation_clarity",
+      "trust_rail",
+      "premium_spacing"
+    ],
+    "foster-quinn-athens": [
+      "headline_hierarchy",
+      "proof_density",
+      "premium_spacing",
+      "visual_restraint",
+      "navigation_clarity",
+      "trust_rail"
+    ],
+    "gatewood-fence-marietta": [
+      "light_clarity",
+      "premium_spacing",
+      "service_clarity",
+      "section_sequencing",
+      "visual_restraint",
+      "headline_hierarchy"
+    ],
+    "gullwing-roofing-savannah": [
+      "hero_treatment",
+      "dark_contrast",
+      "service_clarity",
+      "phone_visibility",
+      "headline_hierarchy",
+      "trust_rail"
+    ],
+    "thermaline-heating-air-atlanta": [
+      "hero_treatment",
+      "dark_contrast",
+      "service_clarity",
+      "headline_hierarchy",
+      "proof_density",
+      "navigation_clarity"
+    ],
+    "stillwater-plumbing-kennesaw": [
+      "hero_treatment",
+      "cta_placement",
+      "service_clarity",
+      "phone_visibility",
+      "headline_hierarchy",
+      "section_sequencing"
+    ],
+    "pipewise-plumbing-marietta": [
+      "hero_treatment",
+      "proof_density",
+      "service_clarity",
+      "cta_placement",
+      "headline_hierarchy",
+      "section_sequencing"
+    ],
+    "willowbend-dental-savannah": [
+      "light_clarity",
+      "headline_hierarchy",
+      "service_clarity",
+      "proof_density",
+      "trust_rail",
+      "visual_restraint"
+    ],
+    "aurelia-med-spa-macon": [
+      "light_clarity",
+      "headline_hierarchy",
+      "service_clarity",
+      "premium_spacing",
+      "visual_restraint",
+      "trust_rail"
+    ],
+    "terraverde-ecoscapes-macon": [
+      "light_clarity",
+      "premium_spacing",
+      "service_clarity",
+      "section_sequencing",
+      "visual_restraint",
+      "map_or_coverage_signal"
+    ],
+    "spa-larkspur-augusta": [
+      "light_clarity",
+      "headline_hierarchy",
+      "service_clarity",
+      "navigation_clarity",
+      "trust_rail",
+      "premium_spacing"
+    ],
+    "solace-medical-spa-macon": [
+      "headline_hierarchy",
+      "service_clarity",
+      "trust_rail",
+      "premium_spacing",
+      "visual_restraint",
+      "section_sequencing"
+    ],
+    "velvet-fig-wax-atlanta": [
+      "light_clarity",
+      "premium_spacing",
+      "headline_hierarchy",
+      "service_clarity",
+      "visual_restraint",
+      "trust_rail"
+    ],
+    "rivergate-dental-augusta": [
+      "light_clarity",
+      "headline_hierarchy",
+      "service_clarity",
+      "navigation_clarity",
+      "trust_rail",
+      "visual_restraint"
+    ]
+  },
+  "motif_overlaps": {
+    "silverwave-medspa-augusta": [
+      "hero_shell",
+      "light_precision",
+      "split_hero",
+      "glass_panel",
+      "cta_treatment"
+    ],
+    "ashgrove-landscape-macon": [
+      "hero_shell",
+      "light_precision",
+      "material_showcase",
+      "split_hero",
+      "service_map"
+    ],
+    "lumena-wellness-macon": [
+      "hero_shell",
+      "light_precision",
+      "glass_panel",
+      "split_hero",
+      "trust_rail"
+    ],
+    "cedarbrook-dental-associates-athens": [
+      "hero_shell",
+      "light_precision",
+      "split_hero",
+      "trust_rail",
+      "phone_pill"
+    ],
+    "mosswood-landscaping-savannah": [
+      "hero_shell",
+      "light_precision",
+      "process_timeline",
+      "material_showcase",
+      "service_map"
+    ],
+    "summitline-roofing-atlanta": [
+      "hero_shell",
+      "dark_texture",
+      "proof_cards",
+      "high_contrast_blocking",
+      "trust_rail"
+    ],
+    "hale-winslow-columbus": [
+      "hero_shell",
+      "dark_texture",
+      "proof_cards",
+      "high_contrast_blocking",
+      "sticky_nav"
+    ],
+    "axlecraft-garage-door-jefferson": [
+      "hero_shell",
+      "cta_treatment",
+      "phone_pill",
+      "high_contrast_blocking",
+      "industrial_frame"
+    ],
+    "quayside-dental-savannah": [
+      "hero_shell",
+      "light_precision",
+      "split_hero",
+      "trust_rail",
+      "glass_panel"
+    ],
+    "foster-quinn-athens": [
+      "hero_shell",
+      "dark_texture",
+      "proof_cards",
+      "high_contrast_blocking",
+      "trust_rail"
+    ],
+    "gatewood-fence-marietta": [
+      "hero_shell",
+      "light_precision",
+      "material_showcase",
+      "process_timeline",
+      "sticky_nav"
+    ],
+    "gullwing-roofing-savannah": [
+      "hero_shell",
+      "dark_texture",
+      "cta_treatment",
+      "phone_pill",
+      "high_contrast_blocking"
+    ],
+    "thermaline-heating-air-atlanta": [
+      "hero_shell",
+      "high_contrast_blocking",
+      "grid_backdrop",
+      "trust_rail",
+      "industrial_frame"
+    ],
+    "stillwater-plumbing-kennesaw": [
+      "hero_shell",
+      "cta_treatment",
+      "phone_pill",
+      "split_hero",
+      "process_timeline"
+    ],
+    "pipewise-plumbing-marietta": [
+      "hero_shell",
+      "proof_cards",
+      "cta_treatment",
+      "process_timeline",
+      "phone_pill"
+    ],
+    "willowbend-dental-savannah": [
+      "hero_shell",
+      "light_precision",
+      "proof_cards",
+      "testimonial_density",
+      "trust_rail"
+    ],
+    "aurelia-med-spa-macon": [
+      "hero_shell",
+      "light_precision",
+      "split_hero",
+      "glass_panel",
+      "headline_hierarchy"
+    ],
+    "terraverde-ecoscapes-macon": [
+      "hero_shell",
+      "light_precision",
+      "process_timeline",
+      "material_showcase",
+      "split_hero"
+    ],
+    "spa-larkspur-augusta": [
+      "hero_shell",
+      "light_precision",
+      "glass_panel",
+      "split_hero",
+      "trust_rail"
+    ],
+    "solace-medical-spa-macon": [
+      "hero_shell",
+      "light_precision",
+      "glass_panel",
+      "process_timeline",
+      "split_hero"
+    ],
+    "velvet-fig-wax-atlanta": [
+      "hero_shell",
+      "light_precision",
+      "glass_panel",
+      "split_hero",
+      "trust_rail"
+    ],
+    "rivergate-dental-augusta": [
+      "hero_shell",
+      "light_precision",
+      "trust_rail",
+      "split_hero",
+      "proof_cards"
+    ]
+  },
+  "example_ux_roles": {
+    "silverwave-medspa-augusta": [
+      "consultation_flow",
+      "service_lane_set",
+      "form_intake",
+      "trust_rail"
+    ],
+    "ashgrove-landscape-macon": [
+      "consultation_flow",
+      "process_steps",
+      "service_area_signal",
+      "coverage_signal"
+    ],
+    "lumena-wellness-macon": [
+      "consultation_flow",
+      "service_lane_set"
+    ],
+    "cedarbrook-dental-associates-athens": [
+      "consultation_flow",
+      "form_intake",
+      "trust_rail",
+      "proof_rail"
+    ],
+    "mosswood-landscaping-savannah": [
+      "consultation_flow",
+      "process_steps",
+      "service_area_signal",
+      "coverage_signal"
+    ],
+    "summitline-roofing-atlanta": [
+      "form_intake",
+      "proof_rail",
+      "process_steps",
+      "phone_priority_layout"
+    ],
+    "hale-winslow-columbus": [
+      "consultation_flow",
+      "trust_rail",
+      "proof_rail",
+      "form_intake"
+    ],
+    "axlecraft-garage-door-jefferson": [
+      "form_intake",
+      "phone_priority_layout",
+      "process_steps",
+      "service_area_signal"
+    ],
+    "quayside-dental-savannah": [
+      "consultation_flow",
+      "form_intake",
+      "trust_rail",
+      "proof_rail"
+    ],
+    "foster-quinn-athens": [
+      "consultation_flow",
+      "trust_rail",
+      "proof_rail",
+      "form_intake"
+    ],
+    "gatewood-fence-marietta": [
+      "form_intake",
+      "process_steps",
+      "service_area_signal",
+      "coverage_signal"
+    ],
+    "gullwing-roofing-savannah": [
+      "form_intake",
+      "proof_rail",
+      "process_steps",
+      "phone_priority_layout"
+    ],
+    "thermaline-heating-air-atlanta": [
+      "form_intake",
+      "phone_priority_layout",
+      "service_area_signal",
+      "coverage_signal",
+      "process_steps"
+    ],
+    "stillwater-plumbing-kennesaw": [
+      "form_intake",
+      "phone_priority_layout",
+      "service_area_signal",
+      "coverage_signal"
+    ],
+    "pipewise-plumbing-marietta": [
+      "form_intake",
+      "phone_priority_layout",
+      "service_area_signal",
+      "coverage_signal"
+    ],
+    "willowbend-dental-savannah": [
+      "consultation_flow",
+      "form_intake",
+      "trust_rail",
+      "proof_rail"
+    ],
+    "aurelia-med-spa-macon": [
+      "consultation_flow",
+      "service_lane_set",
+      "form_intake",
+      "trust_rail"
+    ],
+    "terraverde-ecoscapes-macon": [
+      "consultation_flow",
+      "process_steps",
+      "service_area_signal",
+      "coverage_signal"
+    ],
+    "spa-larkspur-augusta": [
+      "consultation_flow",
+      "service_lane_set",
+      "form_intake",
+      "trust_rail"
+    ],
+    "solace-medical-spa-macon": [
+      "consultation_flow",
+      "service_lane_set",
+      "form_intake",
+      "trust_rail"
+    ],
+    "velvet-fig-wax-atlanta": [
+      "consultation_flow",
+      "service_lane_set",
+      "form_intake",
+      "trust_rail"
+    ],
+    "rivergate-dental-augusta": [
+      "consultation_flow",
+      "form_intake",
+      "trust_rail",
+      "proof_rail"
+    ]
+  }
+}

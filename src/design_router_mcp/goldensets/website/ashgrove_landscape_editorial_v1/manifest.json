@@ -1,0 +1,57 @@
+{
+  "pack_id": "ashgrove_landscape_editorial_v1",
+  "role": "anchor",
+  "family": "website.local_service",
+  "source_paths": [
+    "source_snapshot/index.html",
+    "source_snapshot/styles.css"
+  ],
+  "origin_example_ids": [
+    "ashgrove-landscape-macon"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "website"
+  ],
+  "tones": [
+    "premium",
+    "light",
+    "warm",
+    "architectural",
+    "natural",
+    "editorial",
+    "restrained"
+  ],
+  "surfaces": [
+    "homepage",
+    "hero",
+    "landing",
+    "section"
+  ],
+  "motif_tags": [
+    "hero_shell",
+    "sticky_nav",
+    "cta_treatment",
+    "light_precision",
+    "headline_hierarchy",
+    "split_hero",
+    "material_showcase",
+    "process_timeline"
+  ],
+  "supports_tasks": [
+    "hero_redesign",
+    "homepage_polish",
+    "landscape_homepage",
+    "outdoor_living_homepage",
+    "architectural_landscape_website"
+  ],
+  "anti_patterns": [
+    "generic lawn care template",
+    "interior residential hero",
+    "big box patio showroom look",
+    "dashboard shell"
+  ],
+  "token_budget_hint": 4400,
+  "confidence_score": 5
+}

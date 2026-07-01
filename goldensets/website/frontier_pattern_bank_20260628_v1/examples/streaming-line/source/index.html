@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>PULSE · Live Telemetry Console</title>
+<meta name="description" content="A synthetic real-time streaming telemetry console — live canvas charts, breach awareness, auto-rescale." />
+<style>
+/* ============================================================
+   DESIGN TOKENS  (modern-observability dark scope aesthetic)
+   ============================================================ */
+:root{
+  /* neutral ramp */
+  --n-0:#05070b; --n-50:#0a0e15; --n-100:#0f141d; --n-150:#141a25;
+  --n-200:#1a2230; --n-300:#26303f; --n-400:#3a4658; --n-500:#566378;
+  --n-600:#7a899e; --n-700:#9aa8bc; --n-800:#c4cedd; --n-900:#eef2f8;
+
+  /* semantic surfaces */
+  --bg:        var(--n-0);
+  --surface:   var(--n-100);
+  --surface-2: var(--n-150);
+  --surface-3: var(--n-200);
+  --line:      #1d2735;
+  --line-2:    #283445;
+
+  /* text */
+  --fg:     var(--n-900);
+  --fg-dim: var(--n-700);
+  --fg-mut: var(--n-600);
+
+  /* status semantic */
+  --ok:    #34d399; --ok-d:#0c2a22;
+  --warn:  #fbbf24; --warn-d:#2e2410;
+  --crit:  #f43f5e; --crit-d:#2e0f17;
+
+  /* series identity */
+  --s-cpu:#38bdf8; --s-lat:#a78bfa; --s-thr:#34d399; --s-err:#fb7185;
+
+  --accent:#38bdf8;
+
+  /* type scale (ratio-locked fluid, body >=16px) */
+  --t-xs:  clamp(0.69rem, 0.66rem + 0.15vw, 0.75rem);
+  --t-sm:  clamp(0.8rem, 0.77rem + 0.18vw, 0.875rem);
+  --t-base:clamp(1rem, 0.97rem + 0.2vw, 1.0625rem);
+  --t-md:  clamp(1.18rem, 1.1rem + 0.4vw, 1.35rem);
+  --t-lg:  clamp(1.5rem, 1.35rem + 0.7vw, 1.95rem);
+  --t-xl:  clamp(1.9rem, 1.6rem + 1.4vw, 2.7rem);
+
+  /* spacing (4px) */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px;
+  --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px;
+
+  /* radii */
+  --r-sm:6px; --r-md:10px; --r-lg:14px; --r-pill:999px;
+
+  /* elevation (<=3) */
+  --e-1:0 1px 2px rgba(0,0,0,.4);
+  --e-2:0 6px 20px -6px rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.02) inset;
+  --e-3:0 18px 50px -12px rgba(0,0,0,.7);
+
+  /* motion */
+  --dur-1:140ms; --dur-2:220ms; --dur-3:380ms;
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --ease-out:cubic-bezier(.16,1,.3,1);
+
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,system-ui,sans-serif;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(56,189,248,.07), transparent 60%),
+    radial-gradient(900px 500px at 0% 110%, rgba(167,139,250,.06), transparent 55%),
+    var(--bg);
+  color:var(--fg);
+  font-family:var(--sans);
+  font-size:var(--t-base);
+  line-height:1.45;
+  min-height:100dvh;
+  -webkit-font-smoothing:antialiased;
+}
+.app{max-width:1320px;margin:0 auto;padding:var(--sp-5) clamp(var(--sp-3),3vw,var(--sp-8)) var(--sp-10)}
+
+/* skip link */
+.skip{position:fixed;left:var(--sp-3);top:-60px;z-index:100;background:var(--accent);color:#04121d;
+  padding:var(--sp-2) var(--sp-4);border-radius:var(--r-sm);font-weight:700;transition:top var(--dur-2) var(--ease)}
+.skip:focus{top:var(--sp-3)}
+
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:var(--r-sm)}
+
+/* ============================== HEADER ============================== */
+.masthead{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-4) var(--sp-5);
+  padding-bottom:var(--sp-4);border-bottom:1px solid var(--line);margin-bottom:var(--sp-5)}
+.brand{display:flex;align-items:center;gap:var(--sp-3);min-width:0}
+.logo{width:38px;height:38px;flex:0 0 auto;color:var(--accent);filter:drop-shadow(0 0 10px rgba(56,189,248,.35))}
+.brand h1{font-size:var(--t-md);font-weight:700;letter-spacing:.04em;margin:0;line-height:1}
+.brand .sub{font-size:var(--t-xs);color:var(--fg-mut);font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase}
+.synthetic{display:inline-flex;align-items:center;gap:var(--sp-1);font-family:var(--mono);font-size:var(--t-xs);
+  text-transform:uppercase;letter-spacing:.1em;color:var(--warn);background:var(--warn-d);
+  border:1px solid #4a3a12;padding:3px var(--sp-2);border-radius:var(--r-pill);white-space:nowrap}
+.synthetic svg{width:12px;height:12px}
+
+.mast-meters{display:flex;gap:var(--sp-2);margin-left:auto;flex-wrap:wrap}
+.meter{display:flex;flex-direction:column;gap:1px;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r-md);padding:var(--sp-2) var(--sp-3);min-width:76px}
+.meter .mk{font-size:var(--t-xs);color:var(--fg-mut);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.meter .mv{font-family:var(--mono);font-size:var(--t-sm);font-weight:600;color:var(--fg);font-variant-numeric:tabular-nums}
+.meter .mv b{color:var(--accent);font-weight:700}
+
+/* ============================== STATUS BANNER ============================== */
+.banner{display:flex;align-items:center;gap:var(--sp-3);border-radius:var(--r-md);
+  padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-4);border:1px solid var(--line-2);
+  background:var(--surface);transition:background var(--dur-2) var(--ease),border-color var(--dur-2) var(--ease)}
+.banner .b-ico{width:22px;height:22px;flex:0 0 auto}
+.banner .b-txt{font-weight:700;letter-spacing:.04em;font-size:var(--t-sm)}
+.banner .b-sub{color:var(--fg-dim);font-size:var(--t-sm);font-family:var(--mono)}
+.banner .b-time{margin-left:auto;font-family:var(--mono);font-size:var(--t-sm);color:var(--fg-mut);font-variant-numeric:tabular-nums}
+.banner[data-status="ok"]{border-color:#15402f;background:linear-gradient(0deg,var(--surface),var(--ok-d))}
+.banner[data-status="ok"] .b-ico,.banner[data-status="ok"] .b-txt{color:var(--ok)}
+.banner[data-status="warn"]{border-color:#4a3a12;background:linear-gradient(0deg,var(--surface),var(--warn-d))}
+.banner[data-status="warn"] .b-ico,.banner[data-status="warn"] .b-txt{color:var(--warn)}
+.banner[data-status="crit"]{border-color:#511522;background:linear-gradient(0deg,var(--surface),var(--crit-d))}
+.banner[data-status="crit"] .b-ico,.banner[data-status="crit"] .b-txt{color:var(--crit)}
+.banner[data-status="crit"] .b-ico{animation:pulseGlow 1.1s var(--ease) infinite}
+@keyframes pulseGlow{0%,100%{opacity:1}50%{opacity:.45}}
+
+/* ============================== CONTROLS ============================== */
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-3);margin-bottom:var(--sp-5)}
+.ctl-group{display:flex;align-items:center;gap:var(--sp-1);background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r-md);padding:4px}
+.ctl-group>.lab{font-size:var(--t-xs);color:var(--fg-mut);font-family:var(--mono);text-transform:uppercase;
+  letter-spacing:.08em;padding:0 var(--sp-2) 0 var(--sp-2)}
+
+button{font-family:inherit;cursor:pointer}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);
+  min-height:40px;padding:0 var(--sp-4);border-radius:var(--r-sm);border:1px solid var(--line-2);
+  background:var(--surface-3);color:var(--fg);font-size:var(--t-sm);font-weight:600;
+  transition:background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),transform var(--dur-1) var(--ease)}
+.btn svg{width:16px;height:16px}
+.ico-h{display:inline-flex}.ico-h svg{width:16px;height:16px}
+.btn:hover{background:var(--n-300);border-color:var(--n-400)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#04121d}
+.btn.primary:hover{background:#5cc8fb}
+.btn.danger{color:var(--crit);border-color:#3a1620}
+.btn.danger:hover{background:var(--crit-d);border-color:#601a28}
+.btn.bolt{color:var(--warn);border-color:#3a2e10}
+.btn.bolt:hover{background:var(--warn-d);border-color:#5a4516}
+
+/* segmented */
+.seg{display:flex;background:transparent;border-radius:var(--r-sm);overflow:hidden}
+.seg button{min-height:36px;min-width:44px;padding:0 var(--sp-3);border:0;background:transparent;color:var(--fg-dim);
+  font-family:var(--mono);font-size:var(--t-sm);font-weight:600;border-radius:var(--r-sm);transition:all var(--dur-1) var(--ease)}
+.seg button:hover{color:var(--fg);background:var(--surface-3)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#04121d}
+
+/* toggle (freeze on hover) */
+.toggle{display:inline-flex;align-items:center;gap:var(--sp-2);min-height:40px;padding:0 var(--sp-3);
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
+  color:var(--fg-dim);font-size:var(--t-sm);font-weight:600;cursor:pointer;user-select:none}
+.toggle svg{width:16px;height:16px;color:var(--fg-mut)}
+.toggle .track{width:34px;height:20px;border-radius:var(--r-pill);background:var(--n-300);position:relative;
+  transition:background var(--dur-2) var(--ease);flex:0 0 auto}
+.toggle .knob{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--n-700);
+  transition:transform var(--dur-2) var(--ease-out),background var(--dur-2) var(--ease)}
+.toggle[aria-pressed="true"]{color:var(--fg);border-color:var(--line-2)}
+.toggle[aria-pressed="true"] svg{color:var(--accent)}
+.toggle[aria-pressed="true"] .track{background:var(--accent)}
+.toggle[aria-pressed="true"] .knob{transform:translateX(14px);background:#04121d}
+
+/* legend chips */
+.legend{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-bottom:var(--sp-4)}
+.chip{display:inline-flex;align-items:center;gap:var(--sp-2);min-height:40px;padding:0 var(--sp-3);
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-pill);color:var(--fg-dim);
+  font-size:var(--t-sm);font-weight:600;cursor:pointer;transition:all var(--dur-1) var(--ease)}
+.chip .sw{width:11px;height:11px;border-radius:3px;background:var(--c);box-shadow:0 0 8px -1px var(--c)}
+.chip .ck{width:15px;height:15px;color:var(--c)}
+.chip[aria-pressed="false"]{opacity:.5}
+.chip[aria-pressed="false"] .sw{box-shadow:none;background:var(--n-500)}
+.chip[aria-pressed="false"] .ck{visibility:hidden}
+.chip:hover{border-color:var(--line-2);color:var(--fg)}
+
+/* ============================== LAYOUT GRID ============================== */
+.workspace{display:grid;grid-template-columns:1fr 312px;gap:var(--sp-4);align-items:start}
+.panels{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp-4)}
+
+/* ============================== PANEL ============================== */
+.panel{background:linear-gradient(180deg,var(--surface-2),var(--surface));border:1px solid var(--line);
+  border-radius:var(--r-lg);padding:var(--sp-4);box-shadow:var(--e-2);position:relative;overflow:hidden;
+  transition:border-color var(--dur-2) var(--ease)}
+.panel::before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.012) 0 1px,transparent 1px 3px);opacity:.6}
+.panel[data-status="warn"]{border-color:#4a3a12}
+.panel[data-status="crit"]{border-color:#601a28;box-shadow:var(--e-2),0 0 0 1px rgba(244,63,94,.25),0 0 26px -8px rgba(244,63,94,.5)}
+.panel[hidden]{display:none}
+
+.panel-head{display:flex;align-items:flex-start;gap:var(--sp-3);margin-bottom:var(--sp-2);position:relative;z-index:1}
+.ph-left{display:flex;align-items:center;gap:var(--sp-2);min-width:0}
+.ph-dot{width:9px;height:9px;border-radius:50%;background:var(--c);box-shadow:0 0 10px -1px var(--c);flex:0 0 auto}
+.panel-title{font-size:var(--t-sm);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:0;color:var(--fg)}
+.panel-unit{font-family:var(--mono);font-size:var(--t-xs);color:var(--fg-mut)}
+.status-pill{margin-left:auto;font-family:var(--mono);font-size:var(--t-xs);font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;padding:3px var(--sp-2);border-radius:var(--r-pill);border:1px solid currentColor}
+.status-pill[data-s="ok"]{color:var(--ok);background:var(--ok-d)}
+.status-pill[data-s="warn"]{color:var(--warn);background:var(--warn-d)}
+.status-pill[data-s="crit"]{color:var(--crit);background:var(--crit-d)}
+
+.readout-row{display:flex;align-items:flex-end;gap:var(--sp-3);margin-bottom:var(--sp-3);position:relative;z-index:1;flex-wrap:wrap}
+.readout{display:flex;align-items:baseline;gap:var(--sp-1);font-family:var(--mono);line-height:1}
+.readout .rv{font-size:var(--t-lg);font-weight:700;color:var(--fg);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.readout .ru{font-size:var(--t-sm);color:var(--fg-mut)}
+.panel[data-status="warn"] .readout .rv{color:var(--warn)}
+.panel[data-status="crit"] .readout .rv{color:var(--crit)}
+.delta{display:inline-flex;align-items:center;gap:2px;font-family:var(--mono);font-size:var(--t-xs);font-weight:600;
+  padding:2px 6px;border-radius:var(--r-sm);background:var(--surface-3);color:var(--fg-mut)}
+.delta.up{color:var(--ok)} .delta.down{color:var(--crit)}
+.delta svg{width:11px;height:11px}
+
+.thr-form{margin-left:auto;display:flex;flex-direction:column;gap:2px}
+.thr-form label{display:flex;align-items:center;gap:var(--sp-2);font-family:var(--mono);font-size:var(--t-xs);
+  color:var(--fg-mut);text-transform:uppercase;letter-spacing:.06em}
+.thr-form .ti{width:74px;min-height:34px;background:var(--n-50);border:1px solid var(--line-2);border-radius:var(--r-sm);
+  color:var(--fg);font-family:var(--mono);font-size:var(--t-sm);padding:0 var(--sp-2);text-align:right;font-variant-numeric:tabular-nums}
+.thr-form .ti:hover{border-color:var(--n-400)}
+.thr-form .dir{font-size:9px;color:var(--fg-mut)}
+.thr-err{color:var(--crit);font-size:var(--t-xs);font-family:var(--mono);min-height:0;display:none}
+.thr-err.show{display:block}
+
+.canvas-wrap{position:relative;width:100%;height:168px;border-radius:var(--r-md);overflow:hidden;
+  background:radial-gradient(120% 100% at 50% 0%,rgba(56,189,248,.03),transparent 70%),var(--n-50);
+  border:1px solid var(--line);z-index:1}
+.canvas-wrap canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;
+  gap:var(--sp-2);font-family:var(--mono);font-size:var(--t-sm);letter-spacing:.12em;text-transform:uppercase;
+  color:var(--fg-mut);pointer-events:none;opacity:0;transition:opacity var(--dur-2) var(--ease);background:rgba(5,7,11,.45)}
+.overlay.show{opacity:1}
+.overlay svg{width:26px;height:26px;color:var(--fg-mut)}
+.overlay.paused{color:var(--accent)} .overlay.paused svg{color:var(--accent)}
+.overlay .blink{animation:blink 1.4s steps(2,jump-none) infinite}
+@keyframes blink{50%{opacity:.25}}
+
+/* ============================== EVENT LOG RAIL ============================== */
+.rail{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--e-2);
+  display:flex;flex-direction:column;max-height:760px;overflow:hidden;position:sticky;top:var(--sp-4)}
+.rail-head{display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-3) var(--sp-4);border-bottom:1px solid var(--line)}
+.rail-head svg{width:16px;height:16px;color:var(--accent)}
+.rail-head h2{font-size:var(--t-sm);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:0}
+.rail-head .count{margin-left:auto;font-family:var(--mono);font-size:var(--t-xs);color:var(--fg-mut);
+  background:var(--surface-3);padding:2px var(--sp-2);border-radius:var(--r-pill)}
+.log{list-style:none;margin:0;padding:var(--sp-2);overflow-y:auto;display:flex;flex-direction:column;gap:var(--sp-1)}
+.log-empty{padding:var(--sp-8) var(--sp-4);text-align:center;color:var(--fg-mut);font-family:var(--mono);font-size:var(--t-xs);
+  display:flex;flex-direction:column;align-items:center;gap:var(--sp-3)}
+.log-empty svg{width:30px;height:30px;color:var(--ok);opacity:.6}
+.log li{display:grid;grid-template-columns:auto 1fr auto;gap:var(--sp-2);align-items:center;
+  padding:var(--sp-2) var(--sp-3);border-radius:var(--r-sm);background:var(--surface-2);border-left:3px solid var(--n-400);
+  animation:logIn var(--dur-3) var(--ease-out)}
+.log li[data-l="warn"]{border-left-color:var(--warn)}
+.log li[data-l="crit"]{border-left-color:var(--crit)}
+.log .lt{font-family:var(--mono);font-size:var(--t-xs);color:var(--fg-mut);font-variant-numeric:tabular-nums}
+.log .lm{font-size:var(--t-xs);color:var(--fg-dim)}
+.log .lm b{color:var(--fg);font-weight:600}
+.log .lv{font-family:var(--mono);font-size:var(--t-xs);font-weight:700;font-variant-numeric:tabular-nums}
+.log li[data-l="warn"] .lv{color:var(--warn)} .log li[data-l="crit"] .lv{color:var(--crit)}
+@keyframes logIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
+
+/* ============================== CROSSHAIR TOOLTIP ============================== */
+.xtip{position:fixed;z-index:50;pointer-events:none;background:rgba(10,14,21,.96);border:1px solid var(--line-2);
+  border-radius:var(--r-md);padding:var(--sp-2) var(--sp-3);box-shadow:var(--e-3);font-size:var(--t-xs);
+  min-width:148px;opacity:0;transform:translateY(-4px);transition:opacity var(--dur-1) var(--ease)}
+.xtip.show{opacity:1;transform:none}
+.xtip .xt-time{font-family:var(--mono);color:var(--fg-mut);letter-spacing:.04em;margin-bottom:var(--sp-2);
+  padding-bottom:var(--sp-2);border-bottom:1px solid var(--line)}
+.xtip .xt-row{display:flex;align-items:center;gap:var(--sp-2);margin-top:3px}
+.xtip .xt-row .sw{width:8px;height:8px;border-radius:2px;flex:0 0 auto}
+.xtip .xt-row .nm{color:var(--fg-dim);flex:1}
+.xtip .xt-row .vl{font-family:var(--mono);font-weight:700;color:var(--fg);font-variant-numeric:tabular-nums}
+
+/* ============================== TOASTS ============================== */
+.toasts{position:fixed;top:var(--sp-4);right:var(--sp-4);z-index:60;display:flex;flex-direction:column;gap:var(--sp-2);
+  max-width:min(340px,90vw)}
+.toast{display:flex;align-items:center;gap:var(--sp-3);background:var(--surface-2);border:1px solid #601a28;
+  border-left:4px solid var(--crit);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);box-shadow:var(--e-3);
+  animation:toastIn var(--dur-3) var(--ease-out)}
+.toast.out{animation:toastOut var(--dur-2) var(--ease) forwards}
+.toast svg{width:18px;height:18px;color:var(--crit);flex:0 0 auto}
+.toast .tx{font-size:var(--t-sm)} .toast .tx b{color:var(--fg)}
+.toast .tx span{color:var(--fg-mut);font-family:var(--mono);font-size:var(--t-xs)}
+@keyframes toastIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateX(24px)}}
+
+footer{margin-top:var(--sp-8);padding-top:var(--sp-4);border-top:1px solid var(--line);
+  color:var(--fg-mut);font-size:var(--t-xs);font-family:var(--mono);display:flex;flex-wrap:wrap;gap:var(--sp-2) var(--sp-4)}
+
+/* ============================== RESPONSIVE ============================== */
+@media(max-width:980px){
+  .workspace{grid-template-columns:1fr}
+  .rail{position:static;max-height:340px}
+}
+@media(max-width:680px){
+  .panels{grid-template-columns:1fr}
+  .mast-meters{width:100%;margin-left:0}
+  .meter{flex:1}
+}
+@media(max-width:420px){
+  .app{padding:var(--sp-4) var(--sp-3) var(--sp-8)}
+  .thr-form{margin-left:0;width:100%;margin-top:var(--sp-2)}
+  .ph-right{margin-left:auto}
+  .meter{min-width:0}
+  .toolbar .ctl-group{flex:1 1 auto}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to console</a>
+
+<div class="app">
+  <!-- ===== MASTHEAD ===== -->
+  <header class="masthead">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M2 16h6l3-9 5 18 4-13 3 4h7" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="29" cy="16" r="2.4" fill="currentColor"/>
+      </svg>
+      <div>
+        <h1>PULSE</h1>
+        <div class="sub">Live Telemetry Console</div>
+      </div>
+      <span class="synthetic" title="All metrics are generated by a synthetic signal model — not real production data.">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.5v4M8 10.5v4M1.5 8h4M10.5 8h4M3.4 3.4l2.8 2.8M9.8 9.8l2.8 2.8M12.6 3.4 9.8 6.2M6.2 9.8 3.4 12.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        Synthetic data
+      </span>
+    </div>
+    <div class="mast-meters" role="status" aria-live="off" aria-label="Render statistics">
+      <div class="meter"><span class="mk">FPS</span><span class="mv"><b id="m-fps">–</b></span></div>
+      <div class="meter"><span class="mk">Sample/s</span><span class="mv" id="m-rate">–</span></div>
+      <div class="meter"><span class="mk">Buffer</span><span class="mv" id="m-buf">–</span></div>
+    </div>
+  </header>
+
+  <!-- ===== STATUS BANNER ===== -->
+  <div class="banner" id="banner" data-status="ok" role="status" aria-live="polite">
+    <svg class="b-ico" id="banner-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+      <path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="b-txt" id="banner-txt">ALL SYSTEMS NOMINAL</span>
+    <span class="b-sub" id="banner-sub">4 streams within thresholds</span>
+    <span class="b-time" id="banner-time">--:--:--</span>
+  </div>
+
+  <!-- ===== TOOLBAR ===== -->
+  <div class="toolbar" role="toolbar" aria-label="Stream controls">
+    <button class="btn primary" id="btn-pause" aria-label="Pause streaming">
+      <span class="ico-h" id="ico-pause-h" aria-hidden="true"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3.5" y="2.5" width="3" height="11" rx="1"/><rect x="9.5" y="2.5" width="3" height="11" rx="1"/></svg></span>
+      <span id="lbl-pause">Pause</span>
+    </button>
+
+    <div class="ctl-group" role="group" aria-label="Window length">
+      <span class="lab">Window</span>
+      <div class="seg" id="seg-window">
+        <button data-ms="15000" aria-pressed="false">15s</button>
+        <button data-ms="30000" aria-pressed="true">30s</button>
+        <button data-ms="60000" aria-pressed="false">60s</button>
+        <button data-ms="300000" aria-pressed="false">5m</button>
+      </div>
+    </div>
+
+    <div class="ctl-group" role="group" aria-label="Playback speed">
+      <span class="lab">Speed</span>
+      <div class="seg" id="seg-speed">
+        <button data-x="0.5" aria-pressed="false">0.5×</button>
+        <button data-x="1" aria-pressed="true">1×</button>
+        <button data-x="2" aria-pressed="false">2×</button>
+        <button data-x="4" aria-pressed="false">4×</button>
+      </div>
+    </div>
+
+    <button class="btn bolt" id="btn-spike" aria-label="Inject a synthetic anomaly spike">
+      <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M9 1 3 9h4l-1 6 6-8H8l1-6z"/></svg>
+      Inject anomaly
+    </button>
+
+    <button class="toggle" id="tg-freeze" aria-pressed="false" aria-label="Freeze chart while hovering">
+      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1v14M2 4.5l12 7M14 4.5l-12 7M8 1 5.5 3.5M8 1l2.5 2.5M8 15l-2.5-2.5M8 15l2.5-2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Freeze on hover</span>
+      <span class="track"><span class="knob"></span></span>
+    </button>
+
+    <button class="btn danger" id="btn-clear" aria-label="Clear all buffers">
+      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 4h11M6 4V2.5h4V4M4 4l.7 9.5a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9L12 4M6.5 7v4.5M9.5 7v4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Clear
+    </button>
+  </div>
+
+  <!-- ===== LEGEND ===== -->
+  <div class="legend" id="legend" role="group" aria-label="Toggle metric streams"></div>
+
+  <!-- ===== WORKSPACE ===== -->
+  <main id="main" class="workspace">
+    <section class="panels" id="panels" aria-label="Live metric panels"></section>
+
+    <aside class="rail" aria-label="Breach event log">
+      <div class="rail-head">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 4.5v4l2.5 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/></svg>
+        <h2>Event log</h2>
+        <span class="count" id="log-count">0</span>
+      </div>
+      <ul class="log" id="log" aria-live="polite">
+        <li class="log-empty" id="log-empty">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          No breaches — all systems nominal
+        </li>
+      </ul>
+    </aside>
+  </main>
+
+  <footer>
+    <span>PULSE · synthetic ops console</span>
+    <span>Signal model: sine + bounded random-walk + gaussian noise + transient anomalies</span>
+    <span>Canvas 2D · hand-rolled renderer</span>
+  </footer>
+</div>
+
+<div class="xtip" id="xtip" role="tooltip" aria-hidden="true"></div>
+<div class="toasts" id="toasts" aria-live="assertive"></div>
+
+<script>
+"use strict";
+(() => {
+/* ============================================================
+   SYNTHETIC SIGNAL MODEL — clearly NOT real production data.
+   Each series = sine + bounded random-walk + gaussian noise,
+   plus rare spontaneous anomalies and on-demand injected spikes.
+   ============================================================ */
+const SERIES = [
+  { id:'cpu', label:'CPU', unit:'%',     color:'#38bdf8',
+    base:42, amp:13, period:21, noise:2.4, walkStep:.55, walkClamp:14,
+    floor:0, ceil:100, thr:85,  dir:'above', anomProb:.0045, anomMag:.9 },
+  { id:'lat', label:'Latency', unit:'ms', color:'#a78bfa',
+    base:118, amp:34, period:16, noise:9, walkStep:2.4, walkClamp:70,
+    floor:18, ceil:null, thr:300, dir:'above', anomProb:.005, anomMag:1.1 },
+  { id:'thr', label:'Throughput', unit:'req/s', color:'#34d399',
+    base:2580, amp:520, period:27, noise:55, walkStep:34, walkClamp:700,
+    floor:0, ceil:null, thr:1500, dir:'below', anomProb:.004, anomMag:1 },
+  { id:'err', label:'Error rate', unit:'%', color:'#fb7185',
+    base:0.52, amp:.34, period:18, noise:.11, walkStep:.03, walkClamp:.9,
+    floor:0, ceil:null, thr:2.5, dir:'above', anomProb:.0045, anomMag:1 },
+];
+
+const STORE_KEY = 'pulse.console.v1';
+const DPR = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- persisted settings ---------- */
+const defaults = { windowMs:30000, speed:1, freeze:false, density:250,
+  on:{cpu:true,lat:true,thr:true,err:true}, thr:{cpu:85,lat:300,thr:1500,err:2.5} };
+let settings = loadSettings();
+function loadSettings(){
+  try{
+    const s = JSON.parse(localStorage.getItem(STORE_KEY));
+    if(!s || typeof s!=='object') return structuredClone(defaults);
+    return { ...structuredClone(defaults), ...s,
+      on:{...defaults.on, ...(s.on||{})}, thr:{...defaults.thr, ...(s.thr||{})} };
+  }catch{ return structuredClone(defaults); }
+}
+function saveSettings(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(settings)); }catch{/* storage may be unavailable */}
+}
+
+/* ---------- runtime state ---------- */
+let clock = 0;                 // virtual time (ms), pausable
+let lastSampleClock = 0;       // virtual time of last generated sample
+let paused = false;
+let hovering = null;           // panel id currently hovered (for freeze-on-hover + crosshair)
+let cursorT = null;            // virtual time under cursor
+let cursorClient = {x:0,y:0};
+let sampleIntervalMs = settings.windowMs / settings.density;
+
+/* gaussian noise (Box–Muller) */
+let spare=null;
+function randn(){
+  if(spare!==null){ const v=spare; spare=null; return v; }
+  let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random();
+  const m=Math.sqrt(-2*Math.log(u)); spare=m*Math.sin(2*Math.PI*v); return m*Math.cos(2*Math.PI*v);
+}
+const clamp=(x,a,b)=>x<a?a:x>b?b:x;
+
+/* per-series runtime */
+const RT = {};
+for(const s of SERIES){
+  RT[s.id] = {
+    def:s, buf:[], walk:0, phase:Math.random()*Math.PI*2, inj:0,
+    last:null, prev:null, status:'ok',
+    yMin:0, yMax:1, rect:null, ctx:null, canvas:null, wrap:null,
+    el:{}, on:settings.on[s.id]!==false, thr:settings.thr[s.id]
+  };
+}
+
+/* capacity bound: never grow past density + margin */
+function capacity(){ return Math.ceil(settings.density) + 24; }
+
+/* ---------- sample generation ---------- */
+function genValue(s, t){
+  const rt = RT[s.id];
+  const sec = t/1000;
+  let v = s.base + s.amp*Math.sin(2*Math.PI*sec/s.period + rt.phase);
+  rt.walk = clamp(rt.walk + randn()*s.walkStep, -s.walkClamp, s.walkClamp);
+  v += rt.walk + randn()*s.noise;
+  // spontaneous anomaly
+  if(Math.random() < s.anomProb){
+    rt.inj += (s.dir==='below' ? -s.base*0.62 : s.thr*0.85)*s.anomMag;
+  }
+  v += rt.inj; rt.inj *= 0.80;
+  if(s.floor!=null) v = Math.max(s.floor, v);
+  if(s.ceil!=null) v = Math.min(s.ceil, v);
+  return v;
+}
+
+function pushSample(t){
+  for(const s of SERIES){
+    const rt = RT[s.id];
+    const v = genValue(s, t);
+    rt.buf.push({t, v});
+    rt.prev = rt.last; rt.last = {t, v};
+    // bound by capacity (defensive) — time-drop handled in dropOld
+    while(rt.buf.length > capacity()) rt.buf.shift();
+  }
+}
+
+function dropOld(){
+  const cutoff = clock - settings.windowMs - sampleIntervalMs*2;
+  for(const s of SERIES){
+    const b = RT[s.id].buf;
+    let i=0; while(i<b.length && b[i].t < cutoff) i++;
+    if(i>0) b.splice(0,i);
+  }
+}
+
+/* ---------- breach evaluation ---------- */
+function evalStatus(rt){
+  const v = rt.last ? rt.last.v : null;
+  if(v==null) return 'ok';
+  const {dir} = rt.def, thr = rt.thr;
+  if(dir==='above'){
+    if(v >= thr) return 'crit';
+    if(v >= thr*0.88) return 'warn';
+  }else{
+    if(v <= thr) return 'crit';
+    if(v <= thr*1.15) return 'warn';
+  }
+  return 'ok';
+}
+
+/* ============================================================
+   RENDER  — hand-rolled canvas renderer
+   ============================================================ */
+const PAD = {l:46, r:10, t:10, b:20};
+
+function niceTicks(min, max, count){
+  const span = max-min || 1;
+  const step0 = span/count;
+  const mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const norm = step0/mag;
+  const step = (norm<1.5?1:norm<3?2:norm<7?5:10)*mag;
+  const start = Math.ceil(min/step)*step;
+  const ticks=[];
+  for(let v=start; v<=max+step*0.001; v+=step) ticks.push(v);
+  return ticks;
+}
+
+function fmtVal(unit, v){
+  if(!isFinite(v)) return '–';
+  if(unit==='req/s') return Math.abs(v)>=1000 ? (v/1000).toFixed(2)+'k' : Math.round(v).toString();
+  if(unit==='ms')    return Math.round(v).toString();
+  if(unit==='%')     return (Math.abs(v)<10 ? v.toFixed(2) : v.toFixed(1));
+  return v.toFixed(1);
+}
+
+function computeScale(rt){
+  const s = rt.def;
+  let min=Infinity, max=-Infinity;
+  for(const p of rt.buf){ if(p.t < clock-settings.windowMs) continue; if(p.v<min)min=p.v; if(p.v>max)max=p.v; }
+  // always keep threshold visible
+  if(rt.thr<min) min=rt.thr; if(rt.thr>max) max=rt.thr;
+  if(!isFinite(min)||!isFinite(max)){ // empty: default range around threshold
+    if(s.dir==='above'){ min = s.floor!=null?s.floor:0; max = rt.thr*1.15; }
+    else { min = rt.thr*0.5; max = rt.thr*1.5; }
+  }
+  if(max-min < 1e-6) max = min + 1;
+  const padTop = (max-min)*0.14, padBot=(max-min)*0.10;
+  let tMax = max+padTop, tMin = min-padBot;
+  if(s.floor!=null && tMin < s.floor) tMin = s.floor - (max-min)*0.04;
+  // INSTANT EXPAND, slow contract — guarantees the line never escapes the plot
+  if(tMax > rt.yMax) rt.yMax = tMax; else rt.yMax += (tMax-rt.yMax)*0.08;
+  if(tMin < rt.yMin) rt.yMin = tMin; else rt.yMin += (tMin-rt.yMin)*0.08;
+  if(rt.yMax-rt.yMin < 1e-6) rt.yMax = rt.yMin+1;
+}
+
+function drawPanel(rt){
+  const cv=rt.canvas, ctx=rt.ctx; if(!ctx) return;
+  const W=rt.cssW, H=rt.cssH;
+  const plotL=PAD.l, plotR=W-PAD.r, plotT=PAD.t, plotB=H-PAD.b;
+  const plotW=plotR-plotL, plotH=plotB-plotT;
+  rt.rect = {l:plotL,r:plotR,t:plotT,b:plotB,w:plotW,h:plotH};
+
+  computeScale(rt);
+  const yMin=rt.yMin, yMax=rt.yMax;
+  const renderClock = reduceMotion ? lastSampleClock : clock;
+  const X = t => plotR - (renderClock - t)/settings.windowMs * plotW;
+  const Y = v => plotB - (v - yMin)/(yMax-yMin) * plotH;
+
+  ctx.clearRect(0,0,W,H);
+
+  // --- gridlines (y) ---
+  ctx.font='10px '+getMono();
+  ctx.textBaseline='middle';
+  const yt = niceTicks(yMin,yMax,4);
+  ctx.strokeStyle='rgba(255,255,255,.045)'; ctx.lineWidth=1;
+  ctx.fillStyle='#7a899e';
+  ctx.textAlign='right';
+  for(const v of yt){
+    const y=Y(v); if(y<plotT-1||y>plotB+1) continue;
+    ctx.beginPath(); ctx.moveTo(plotL,Math.round(y)+.5); ctx.lineTo(plotR,Math.round(y)+.5); ctx.stroke();
+    ctx.fillText(fmtVal(rt.def.unit,v), plotL-6, y);
+  }
+
+  // --- gridlines (x, scrolling time ticks) ---
+  const winSec = settings.windowMs/1000;
+  const tickStepSec = winSec<=15?3 : winSec<=30?5 : winSec<=60?10 : 60;
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  const newestSec = Math.floor(renderClock/1000);
+  for(let k=0;k<=Math.ceil(winSec/tickStepSec)+1;k++){
+    const labelSec = newestSec - (newestSec % tickStepSec) - k*tickStepSec;
+    const tt = labelSec*1000;
+    const x = X(tt);
+    if(x<plotL-1||x>plotR+1) continue;
+    ctx.strokeStyle='rgba(255,255,255,.03)';
+    ctx.beginPath(); ctx.moveTo(Math.round(x)+.5,plotT); ctx.lineTo(Math.round(x)+.5,plotB); ctx.stroke();
+    const rel = Math.round((labelSec*1000 - renderClock)/1000);
+    ctx.fillStyle='#566378';
+    ctx.fillText(rel===0?'now':rel+'s', x, plotB+5);
+  }
+
+  // --- threshold line ---
+  const thrY = Y(rt.thr);
+  if(thrY>=plotT-2 && thrY<=plotB+2){
+    ctx.save();
+    ctx.setLineDash([5,4]); ctx.lineWidth=1.2;
+    ctx.strokeStyle = rt.status==='crit' ? 'rgba(244,63,94,.85)' : 'rgba(251,191,36,.7)';
+    ctx.beginPath(); ctx.moveTo(plotL,thrY); ctx.lineTo(plotR,thrY); ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = rt.status==='crit' ? '#f43f5e' : '#fbbf24';
+    ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.font='9px '+getMono();
+    ctx.fillText('THR '+fmtVal(rt.def.unit,rt.thr), plotL+4, thrY-2);
+  }
+
+  // --- the series path ---
+  const pts = rt.buf.filter(p=>p.t >= renderClock-settings.windowMs-sampleIntervalMs);
+  if(pts.length>=2){
+    // area fill
+    const fillTop = rt.status==='crit' ? 'rgba(244,63,94,' : rt.status==='warn' ? 'rgba(251,191,36,' : hexA(rt.def.color);
+    const grad=ctx.createLinearGradient(0,plotT,0,plotB);
+    grad.addColorStop(0, fillTop+(rt.status==='ok'?'0.26)':'0.24)'));
+    grad.addColorStop(1, fillTop+'0.01)');
+    ctx.beginPath();
+    ctx.moveTo(X(pts[0].t), plotB);
+    for(const p of pts) ctx.lineTo(X(p.t), Y(p.v));
+    ctx.lineTo(X(pts[pts.length-1].t), plotB);
+    ctx.closePath();
+    ctx.fillStyle=grad; ctx.fill();
+
+    // base line
+    ctx.beginPath();
+    for(let i=0;i<pts.length;i++){ const x=X(pts[i].t), y=Y(pts[i].v); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+    ctx.lineJoin='round'; ctx.lineCap='round';
+    ctx.lineWidth=1.8; ctx.strokeStyle=rt.def.color; ctx.stroke();
+
+    // breach overlay — recolor only the portion beyond threshold
+    if(rt.status!=='ok'){
+      ctx.save();
+      ctx.beginPath();
+      if(rt.def.dir==='above') ctx.rect(plotL,plotT,plotW,Math.max(0,thrY-plotT));
+      else ctx.rect(plotL,Math.max(plotT,thrY),plotW,Math.max(0,plotB-thrY));
+      ctx.clip();
+      ctx.beginPath();
+      for(let i=0;i<pts.length;i++){ const x=X(pts[i].t), y=Y(pts[i].v); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+      ctx.lineWidth=2.1; ctx.strokeStyle = rt.status==='crit'?'#f43f5e':'#fbbf24'; ctx.stroke();
+      ctx.restore();
+    }
+
+    // latest head dot (pulse, unless reduced motion)
+    const head=pts[pts.length-1];
+    const hx=X(head.t), hy=Y(head.v);
+    const pulse = reduceMotion?0: (Math.sin(clock/260)*0.5+0.5);
+    ctx.beginPath(); ctx.arc(hx,hy,3.2+pulse*1.6,0,Math.PI*2);
+    ctx.fillStyle=rt.def.color; ctx.globalAlpha=0.18+pulse*0.16; ctx.fill(); ctx.globalAlpha=1;
+    ctx.beginPath(); ctx.arc(hx,hy,2.4,0,Math.PI*2); ctx.fillStyle=rt.def.color; ctx.fill();
+  }
+
+  // --- crosshair (synchronized across panels) ---
+  if(cursorT!=null){
+    const cx=X(cursorT);
+    if(cx>=plotL && cx<=plotR){
+      ctx.save();
+      ctx.setLineDash([2,3]); ctx.strokeStyle='rgba(196,206,221,.45)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(Math.round(cx)+.5,plotT); ctx.lineTo(Math.round(cx)+.5,plotB); ctx.stroke();
+      ctx.restore();
+      const np = nearest(rt.buf, cursorT);
+      if(np){
+        const py=Y(np.v);
+        ctx.beginPath(); ctx.arc(cx,py,4,0,Math.PI*2); ctx.fillStyle=rt.def.color; ctx.fill();
+        ctx.beginPath(); ctx.arc(cx,py,4,0,Math.PI*2); ctx.strokeStyle='#0a0e15'; ctx.lineWidth=1.5; ctx.stroke();
+      }
+    }
+  }
+
+  // plot frame
+  ctx.strokeStyle='rgba(255,255,255,.05)'; ctx.lineWidth=1;
+  ctx.strokeRect(plotL+.5,plotT+.5,plotW-1,plotH-1);
+}
+
+function nearest(buf, t){
+  if(!buf.length) return null;
+  let lo=0, hi=buf.length-1;
+  while(lo<hi){ const m=(lo+hi)>>1; if(buf[m].t<t) lo=m+1; else hi=m; }
+  const a=buf[lo], b=buf[Math.max(0,lo-1)];
+  return Math.abs(a.t-t)<Math.abs(b.t-t)?a:b;
+}
+function hexA(hex){ // '#rrggbb' -> 'rgba(r,g,b,'
+  const n=parseInt(hex.slice(1),16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},`;
+}
+let _mono=null;
+function getMono(){ if(_mono) return _mono; _mono=getComputedStyle(document.body).getPropertyValue('--mono')||'monospace'; return _mono; }
+
+/* ============================================================
+   DOM BUILD
+   ============================================================ */
+const panelsEl=document.getElementById('panels');
+const legendEl=document.getElementById('legend');
+
+function icoTri(){return '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.6v10.8a1 1 0 0 0 1.5.86l8.5-5.4a1 1 0 0 0 0-1.72L5.5 1.74A1 1 0 0 0 4 2.6z"/></svg>';}
+const icoPause='<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="3.5" y="2.5" width="3" height="11" rx="1"/><rect x="9.5" y="2.5" width="3" height="11" rx="1"/></svg>';
+const checkSvg='<svg class="ck" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+for(const s of SERIES){
+  const rt=RT[s.id];
+  const panel=document.createElement('article');
+  panel.className='panel'; panel.dataset.status='ok'; panel.id='panel-'+s.id;
+  panel.style.setProperty('--c', s.color);
+  panel.hidden = !rt.on;
+  panel.innerHTML = `
+    <div class="panel-head">
+      <div class="ph-left">
+        <span class="ph-dot"></span>
+        <h2 class="panel-title">${s.label}</h2>
+        <span class="panel-unit">${s.unit}</span>
+      </div>
+      <span class="status-pill" data-s="ok" id="pill-${s.id}">OK</span>
+    </div>
+    <div class="readout-row">
+      <div class="readout"><span class="rv" id="rv-${s.id}">–</span><span class="ru">${s.unit}</span></div>
+      <span class="delta" id="dl-${s.id}" aria-hidden="true">–</span>
+      <form class="thr-form" id="thrf-${s.id}" novalidate>
+        <label for="thr-${s.id}">Threshold <span class="dir">${s.dir==='above'?'↑ max':'↓ min'}</span></label>
+        <input class="ti" type="number" id="thr-${s.id}" value="${rt.thr}" step="any" inputmode="decimal"
+          aria-label="${s.label} ${s.dir==='above'?'maximum':'minimum'} threshold in ${s.unit}">
+        <span class="thr-err" id="thre-${s.id}" role="alert"></span>
+      </form>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="cv-${s.id}"></canvas>
+      <div class="overlay" id="ov-empty-${s.id}"><svg viewBox="0 0 24 24" fill="none"><path d="M2 14h5l2-7 4 13 3-9 2 3h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="blink">Awaiting signal</span></div>
+      <div class="overlay paused" id="ov-pause-${s.id}"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1.5"/><rect x="14" y="5" width="4" height="14" rx="1.5"/></svg><span>Paused</span></div>
+    </div>`;
+  panelsEl.appendChild(panel);
+
+  rt.canvas=panel.querySelector('#cv-'+s.id);
+  rt.ctx=rt.canvas.getContext('2d');
+  rt.wrap=panel.querySelector('.canvas-wrap');
+  rt.panel=panel;
+  rt.el={ rv:panel.querySelector('#rv-'+s.id), dl:panel.querySelector('#dl-'+s.id),
+    pill:panel.querySelector('#pill-'+s.id), ovEmpty:panel.querySelector('#ov-empty-'+s.id),
+    ovPause:panel.querySelector('#ov-pause-'+s.id), input:panel.querySelector('#thr-'+s.id),
+    err:panel.querySelector('#thre-'+s.id) };
+
+  // threshold form
+  const form=panel.querySelector('#thrf-'+s.id);
+  form.addEventListener('submit',e=>e.preventDefault());
+  rt.el.input.addEventListener('change',()=>applyThreshold(rt));
+  rt.el.input.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); applyThreshold(rt); }});
+
+  // crosshair hover
+  rt.canvas.addEventListener('pointermove',e=>onHover(rt,e));
+  rt.canvas.addEventListener('pointerenter',()=>{ hovering=s.id; });
+  rt.canvas.addEventListener('pointerleave',()=>{ if(hovering===s.id) hovering=null; clearCursor(); });
+
+  // legend chip
+  const chip=document.createElement('button');
+  chip.className='chip'; chip.id='chip-'+s.id; chip.setAttribute('aria-pressed', String(rt.on));
+  chip.style.setProperty('--c', s.color);
+  chip.innerHTML=`<span class="sw"></span>${checkSvg}<span>${s.label}</span>`;
+  chip.addEventListener('click',()=>toggleSeries(s.id));
+  legendEl.appendChild(chip);
+}
+
+function applyThreshold(rt){
+  const raw=rt.el.input.value.trim();
+  const v=Number(raw);
+  if(raw===''||!isFinite(v)||v<=0){
+    rt.el.err.textContent='Enter a positive number';
+    rt.el.err.classList.add('show');
+    rt.el.input.value=rt.thr; // never lose prior valid value
+    setTimeout(()=>rt.el.err.classList.remove('show'),2600);
+    return;
+  }
+  rt.el.err.classList.remove('show');
+  rt.thr=v; settings.thr[rt.def.id]=v; saveSettings();
+}
+
+function toggleSeries(id){
+  const rt=RT[id]; rt.on=!rt.on;
+  rt.panel.hidden=!rt.on;
+  document.getElementById('chip-'+id).setAttribute('aria-pressed',String(rt.on));
+  settings.on[id]=rt.on; saveSettings();
+  if(rt.on){ sizeCanvas(rt); }
+}
+
+/* ---------- canvas sizing ---------- */
+function sizeCanvas(rt){
+  if(!rt.wrap) return;
+  const r=rt.wrap.getBoundingClientRect();
+  if(r.width<2||r.height<2) return;
+  rt.cssW=r.width; rt.cssH=r.height;
+  rt.canvas.width=Math.round(r.width*DPR);
+  rt.canvas.height=Math.round(r.height*DPR);
+  rt.ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+const ro=new ResizeObserver(entries=>{
+  for(const e of entries){ const id=e.target.dataset.sid; if(id) sizeCanvas(RT[id]); }
+});
+for(const s of SERIES){ RT[s.id].wrap.dataset.sid=s.id; ro.observe(RT[s.id].wrap); }
+
+/* ============================================================
+   CROSSHAIR
+   ============================================================ */
+const xtip=document.getElementById('xtip');
+function onHover(rt,e){
+  const r=rt.canvas.getBoundingClientRect();
+  const mx=e.clientX-r.left;
+  const rect=rt.rect; if(!rect) return;
+  const renderClock = reduceMotion ? lastSampleClock : clock;
+  const t = renderClock - (rect.r - mx)/rect.w*settings.windowMs;
+  cursorT=t; cursorClient={x:e.clientX,y:e.clientY};
+  updateTip();
+}
+function clearCursor(){ cursorT=null; xtip.classList.remove('show'); xtip.setAttribute('aria-hidden','true'); }
+function updateTip(){
+  if(cursorT==null) return;
+  let rows='';
+  for(const s of SERIES){
+    const rt=RT[s.id]; if(!rt.on) continue;
+    const p=nearest(rt.buf, cursorT);
+    rows+=`<div class="xt-row"><span class="sw" style="background:${s.color}"></span><span class="nm">${s.label}</span><span class="vl">${p?fmtVal(s.unit,p.v):'–'}<span style="color:var(--fg-mut)"> ${s.unit==='req/s'?'':s.unit}</span></span></div>`;
+  }
+  const rel=Math.round((cursorT-clock)/100)/10;
+  xtip.innerHTML=`<div class="xt-time">t ${rel>0?'+':''}${rel.toFixed(1)}s · cursor</div>${rows}`;
+  let x=cursorClient.x+14, y=cursorClient.y+14;
+  const tw=xtip.offsetWidth||160, th=xtip.offsetHeight||120;
+  if(x+tw>window.innerWidth-8) x=cursorClient.x-tw-14;
+  if(y+th>window.innerHeight-8) y=cursorClient.y-th-14;
+  xtip.style.left=x+'px'; xtip.style.top=y+'px';
+  xtip.classList.add('show'); xtip.setAttribute('aria-hidden','false');
+}
+
+/* ============================================================
+   STATUS / BANNER / LOG / TOAST
+   ============================================================ */
+const banner=document.getElementById('banner');
+const bannerTxt=document.getElementById('banner-txt');
+const bannerSub=document.getElementById('banner-sub');
+const bannerIco=document.getElementById('banner-ico');
+const bannerTime=document.getElementById('banner-time');
+const logEl=document.getElementById('log');
+const logEmpty=document.getElementById('log-empty');
+const logCount=document.getElementById('log-count');
+const toastsEl=document.getElementById('toasts');
+const okIco='<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+const warnIco='<path d="M12 3 2.5 20h19L12 3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4M12 17.2v.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>';
+const critIco='<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7.5v5M12 16v.3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>';
+const rank={ok:0,warn:1,crit:2};
+let events=[]; let evtId=0;
+
+function pushEvent(rt, level){
+  const now=new Date();
+  const e={ id:++evtId, t:now, series:rt.def.label, level,
+    value:fmtVal(rt.def.unit,rt.last.v)+(rt.def.unit==='req/s'?' req/s':rt.def.unit) };
+  events.unshift(e);
+  if(events.length>60) events.pop();
+  renderLog();
+  if(level==='crit') toast(rt, e);
+}
+function renderLog(){
+  logCount.textContent=events.length;
+  if(!events.length){ logEmpty.style.display='';
+    [...logEl.querySelectorAll('li:not(.log-empty)')].forEach(n=>n.remove()); return; }
+  logEmpty.style.display='none';
+  logEl.querySelectorAll('li:not(.log-empty)').forEach(n=>n.remove());
+  const frag=document.createDocumentFragment();
+  for(const e of events.slice(0,40)){
+    const li=document.createElement('li'); li.dataset.l=e.level;
+    li.innerHTML=`<span class="lt">${hms(e.t)}</span><span class="lm"><b>${e.series}</b> ${e.level==='crit'?'breached threshold':'approaching threshold'}</span><span class="lv">${e.value}</span>`;
+    frag.appendChild(li);
+  }
+  logEl.appendChild(frag);
+}
+function toast(rt, e){
+  const t=document.createElement('div'); t.className='toast'; t.setAttribute('role','alert');
+  t.innerHTML=`<svg viewBox="0 0 24 24" fill="none">${critIco}</svg><div class="tx"><b>${rt.def.label} critical</b><br><span>${e.value} · ${hms(e.t)}</span></div>`;
+  toastsEl.appendChild(t);
+  setTimeout(()=>{ t.classList.add('out'); setTimeout(()=>t.remove(),260); },4200);
+  while(toastsEl.children.length>3) toastsEl.firstChild.remove();
+}
+function hms(d){ return d.toTimeString().slice(0,8); }
+
+function updateBannerAndStatus(){
+  let worst='ok', worstSeries=null, critN=0, warnN=0;
+  for(const s of SERIES){
+    const rt=RT[s.id];
+    const ns=evalStatus(rt);
+    // transition detection (only for visible/active streams; all evaluate but log all)
+    if(ns!==rt.status){
+      if((ns==='crit') || (ns==='warn' && rt.status==='ok')){
+        if(rt.last) pushEvent(rt, ns);
+      }
+      rt.status=ns;
+      rt.panel.dataset.status=ns;
+      rt.el.pill.dataset.s=ns;
+      rt.el.pill.textContent=ns==='crit'?'CRIT':ns.toUpperCase();
+    }
+    if(ns==='crit') critN++; else if(ns==='warn') warnN++;
+    if(rank[ns]>rank[worst]){ worst=ns; worstSeries=rt.def.label; }
+  }
+  banner.dataset.status=worst;
+  if(worst==='ok'){ bannerIco.innerHTML=okIco; bannerTxt.textContent='ALL SYSTEMS NOMINAL'; bannerSub.textContent=`${SERIES.length} streams within thresholds`; }
+  else if(worst==='warn'){ bannerIco.innerHTML=warnIco; bannerTxt.textContent='WARNING'; bannerSub.textContent=`${warnN} stream${warnN>1?'s':''} approaching threshold`; }
+  else { bannerIco.innerHTML=critIco; bannerTxt.textContent='CRITICAL'; bannerSub.textContent=`${critN} stream${critN>1?'s':''} breaching`; }
+}
+
+/* ============================================================
+   READOUTS (per-frame, throttled for text)
+   ============================================================ */
+function updateReadouts(){
+  for(const s of SERIES){
+    const rt=RT[s.id]; if(!rt.on) continue;
+    if(rt.last){
+      rt.el.rv.textContent=fmtVal(s.unit,rt.last.v);
+      rt.el.ovEmpty.classList.remove('show');
+      if(rt.prev){
+        const d=rt.last.v-rt.prev.v;
+        const up=d>=0;
+        rt.el.dl.className='delta '+(Math.abs(d)<1e-6?'':up?'up':'down');
+        rt.el.dl.innerHTML=`${arrowSvg(up)}${(d>=0?'+':'')}${fmtVal(s.unit,d)}`;
+      }
+    } else {
+      rt.el.rv.textContent='–'; rt.el.dl.textContent='–';
+      rt.el.ovEmpty.classList.add('show');
+    }
+    rt.el.ovPause.classList.toggle('show', paused);
+  }
+}
+function arrowSvg(up){
+  return up
+    ? '<svg viewBox="0 0 12 12" fill="none"><path d="M6 2.5v7M3 5.5 6 2.5l3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    : '<svg viewBox="0 0 12 12" fill="none"><path d="M6 9.5v-7M3 6.5 6 9.5l3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+
+/* ============================================================
+   METERS (fps / sample-rate / buffer)
+   ============================================================ */
+const mFps=document.getElementById('m-fps'), mRate=document.getElementById('m-rate'), mBuf=document.getElementById('m-buf');
+let fpsAvg=60, sampleTimes=[], lastMeter=0;
+function totalPoints(){ let n=0; for(const s of SERIES) n+=RT[s.id].buf.length; return n; }
+function updateMeters(ts){
+  if(ts-lastMeter<250) return; lastMeter=ts;
+  mFps.textContent=Math.round(fpsAvg);
+  // sample rate over last second
+  const cut=ts-1000; sampleTimes=sampleTimes.filter(t=>t>cut);
+  mRate.textContent=sampleTimes.length.toString();
+  mBuf.textContent=totalPoints().toLocaleString();
+  bannerTime.textContent=hms(new Date());
+}
+
+/* ============================================================
+   MAIN LOOP
+   ============================================================ */
+let lastFrame=performance.now();
+let started=false;
+function frame(now){
+  const dt=Math.min(100, now-lastFrame); lastFrame=now;
+  if(dt>0){ const inst=1000/dt; fpsAvg += (inst-fpsAvg)*0.12; }
+
+  const active = !paused && !(settings.freeze && hovering);
+  if(active){
+    clock += dt*settings.speed;
+    let guard=0;
+    while(clock-lastSampleClock >= sampleIntervalMs && guard<2000){
+      lastSampleClock += sampleIntervalMs;
+      pushSample(lastSampleClock);
+      sampleTimes.push(now);
+      guard++;
+    }
+  }
+  dropOld();
+  for(const s of SERIES){ const rt=RT[s.id]; if(rt.on) drawPanel(rt); }
+  updateReadouts();
+  updateBannerAndStatus();
+  updateMeters(now);
+  if(cursorT!=null && hovering) updateTip();
+  requestAnimationFrame(frame);
+}
+
+/* ============================================================
+   CONTROLS WIRING
+   ============================================================ */
+const btnPause=document.getElementById('btn-pause');
+const lblPause=document.getElementById('lbl-pause');
+const icoPauseHolder=document.getElementById('ico-pause-h');
+function setPaused(p){
+  paused=p;
+  btnPause.classList.toggle('primary',!p);
+  lblPause.textContent=p?'Resume':'Pause';
+  btnPause.setAttribute('aria-label', p?'Resume streaming':'Pause streaming');
+  icoPauseHolder.innerHTML = p?icoTri():icoPause;
+}
+btnPause.addEventListener('click',()=>setPaused(!paused));
+
+document.getElementById('seg-window').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  setWindow(+b.dataset.ms, b);
+});
+function setWindow(ms, btn){
+  settings.windowMs=ms;
+  settings.density = Math.max(60, Math.min(1000, settings.density)); // keep density constant => point count constant
+  sampleIntervalMs = settings.windowMs/settings.density;
+  segPress('seg-window', btn||[...document.querySelectorAll('#seg-window button')].find(b=>+b.dataset.ms===ms));
+  saveSettings();
+}
+document.getElementById('seg-speed').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  settings.speed=+b.dataset.x; segPress('seg-speed', b); saveSettings();
+});
+function segPress(id, btn){
+  if(!btn) return;
+  document.querySelectorAll('#'+id+' button').forEach(b=>b.setAttribute('aria-pressed','false'));
+  btn.setAttribute('aria-pressed','true');
+}
+
+document.getElementById('btn-spike').addEventListener('click',()=>{
+  // inject a breaching anomaly into a random visible series
+  const vis=SERIES.filter(s=>RT[s.id].on);
+  const pick=(vis.length?vis:SERIES)[Math.floor(Math.random()*(vis.length||SERIES.length))];
+  injectSpike(pick.id);
+});
+function injectSpike(id, mult){
+  const rt=RT[id], s=rt.def;
+  if(mult){ // explicit magnitude (e.g. 10x prior max) — used to prove auto-rescale
+    const curMax=Math.max(s.base, ...rt.buf.map(p=>p.v), rt.last?rt.last.v:s.base);
+    rt.inj += mult*curMax;
+  } else if(s.dir==='below'){
+    rt.inj -= s.base*0.9;
+  } else {
+    rt.inj += s.thr*1.35;
+  }
+}
+
+const tgFreeze=document.getElementById('tg-freeze');
+function setFreeze(v){ settings.freeze=v; tgFreeze.setAttribute('aria-pressed',String(v)); saveSettings(); }
+tgFreeze.addEventListener('click',()=>setFreeze(!settings.freeze));
+
+document.getElementById('btn-clear').addEventListener('click',()=>{
+  for(const s of SERIES){ const rt=RT[s.id]; rt.buf.length=0; rt.last=null; rt.prev=null; rt.inj=0; rt.walk=0; rt.status='ok';
+    rt.panel.dataset.status='ok'; rt.el.pill.dataset.s='ok'; rt.el.pill.textContent='OK';
+    rt.yMin=0; rt.yMax=1; }
+  events=[]; renderLog(); updateBannerAndStatus(); updateReadouts();
+});
+
+/* ============================================================
+   TEST HOOKS  (window.__stream)
+   ============================================================ */
+window.__stream = {
+  ids: SERIES.map(s=>s.id),
+  isPaused:()=>paused,
+  pause:()=>setPaused(true),
+  resume:()=>setPaused(false),
+  clear:()=>document.getElementById('btn-clear').click(),
+  getWindow:()=>settings.windowMs,
+  setWindow:(ms)=>setWindow(ms),
+  setSpeed:(x)=>{ settings.speed=x; },
+  setDensity:(n)=>{ settings.density=n; sampleIntervalMs=settings.windowMs/n; },
+  getDensity:()=>settings.density,
+  injectSpike:(id,mult)=>injectSpike(id,mult),
+  appendNow:(id,v)=>{ const rt=RT[id]; const t=clock; rt.buf.push({t,v}); rt.prev=rt.last; rt.last={t,v};
+    while(rt.buf.length>capacity()) rt.buf.shift(); return {t,v}; },
+  // fill each series with n real generated samples spanning the window (stress the render path honestly)
+  prefill:(n)=>{ const iv=settings.windowMs/n; for(const s of SERIES){ const rt=RT[s.id]; rt.buf.length=0;
+      for(let i=0;i<n;i++){ const t=clock-settings.windowMs+i*iv; rt.buf.push({t, v:genValue(s,t)}); }
+      rt.last=rt.buf[rt.buf.length-1]||null; rt.prev=rt.buf[rt.buf.length-2]||null; }
+    lastSampleClock=clock; },
+  getBuffer:(id)=>RT[id].buf.map(p=>({...p})),
+  getLast:(id)=>RT[id].last?{...RT[id].last}:null,
+  bufferLen:(id)=>RT[id].buf.length,
+  totalPoints,
+  getFps:()=>fpsAvg,
+  clockNow:()=>clock,
+  lastSampleClock:()=>lastSampleClock,
+  status:(id)=>RT[id].status,
+  plotRect:(id)=>RT[id].rect?{...RT[id].rect}:null,
+  yRange:(id)=>({min:RT[id].yMin,max:RT[id].yMax}),
+  valueToY:(id,v)=>{ const rt=RT[id]; if(!rt.rect) return null; return rt.rect.b-(v-rt.yMin)/(rt.yMax-rt.yMin)*rt.rect.h; },
+  lastY:(id)=>{ const rt=RT[id]; if(!rt.rect||!rt.last) return null; return rt.rect.b-(rt.last.v-rt.yMin)/(rt.yMax-rt.yMin)*rt.rect.h; },
+  thr:(id)=>RT[id].thr,
+  eventsCount:()=>events.length,
+  reduceMotion
+};
+
+/* ============================================================
+   INIT
+   ============================================================ */
+// reflect persisted settings into UI
+segPress('seg-window',[...document.querySelectorAll('#seg-window button')].find(b=>+b.dataset.ms===settings.windowMs)||document.querySelector('#seg-window button[data-ms="30000"]'));
+segPress('seg-speed',[...document.querySelectorAll('#seg-speed button')].find(b=>+b.dataset.x===settings.speed)||document.querySelector('#seg-speed button[data-x="1"]'));
+sampleIntervalMs = settings.windowMs/settings.density;
+setFreeze(settings.freeze);
+
+function start(){
+  if(started) return; started=true;
+  for(const s of SERIES) if(RT[s.id].on) sizeCanvas(RT[s.id]);
+  // also size hidden ones so toggling on is instant
+  for(const s of SERIES) sizeCanvas(RT[s.id]);
+  renderLog();
+  updateReadouts();
+  lastFrame=performance.now();
+  requestAnimationFrame(frame);
+}
+if(document.readyState==='complete'||document.readyState==='interactive') start();
+else document.addEventListener('DOMContentLoaded', start);
+window.addEventListener('load', ()=>{ for(const s of SERIES) sizeCanvas(RT[s.id]); });
+})();
+</script>
+</body>
+</html>

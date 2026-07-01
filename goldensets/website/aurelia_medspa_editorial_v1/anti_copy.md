@@ -1,0 +1,4 @@
+- Do not reuse Aurelia wording, Macon-specific references, modality names, or the exact `Medical precision. Couture results.` headline.
+- Do not copy the exact black, rose, and gold palette or the same proof-module list one-to-one.
+- Do not preserve Aurelia-specific membership, consultation, or brand-language details unless the target business truly owns them.
+- Borrow the treatment-led split hero, proof framing, and med-spa editorial cadence only.

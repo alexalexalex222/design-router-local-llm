@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Tessa — Seamless SVG Pattern Studio</title>
+<style>
+/* ============================================================
+   TESSA — Seamless SVG Pattern Studio
+   Crisp Swiss / geometric design tool. Tokens-first.
+   ============================================================ */
+:root{
+  /* ---- neutral ramp (paper → ink) ---- */
+  --paper:    #f4f3ee;   /* app canvas */
+  --surface:  #fbfaf7;   /* panels */
+  --surface-2:#ffffff;   /* raised wells / inputs */
+  --surface-3:#eceae3;   /* hover wells */
+  --line:     #d9d6cc;   /* hairline */
+  --line-2:   #c4c0b4;   /* stronger divider */
+  --ink-1:    #16150f;   /* primary */
+  --ink-2:    #3c3a32;   /* secondary */
+  --ink-3:    #6d6a5e;   /* meta */
+  --ink-4:    #97948a;   /* faint / hint */
+
+  /* ---- brand: swiss red ---- */
+  --brand:     #e2231a;
+  --brand-ink: #b81710;
+  --brand-tint:#fbe3e1;
+  --focus:     #1d4ed8;  /* focus blue, AA on paper */
+
+  --ok:#1f9d57;
+
+  /* ---- radii ---- */
+  --r-xs:3px; --r-sm:5px; --r-md:8px; --r-lg:12px;
+
+  /* ---- elevation ---- */
+  --e-1:0 1px 0 rgba(22,21,15,.04), 0 1px 2px rgba(22,21,15,.05);
+  --e-2:0 2px 4px rgba(22,21,15,.06), 0 8px 24px rgba(22,21,15,.08);
+  --e-3:0 12px 40px rgba(22,21,15,.18);
+
+  /* ---- type scale (fluid, ratio-locked) ---- */
+  --t-xs:  clamp(11px, 0.70rem + 0.05vw, 12px);
+  --t-sm:  clamp(12px, 0.78rem + 0.05vw, 13px);
+  --t-base:clamp(14px, 0.86rem + 0.10vw, 15px);
+  --t-md:  clamp(16px, 0.95rem + 0.20vw, 18px);
+  --t-lg:  clamp(20px, 1.10rem + 0.55vw, 26px);
+  --t-xl:  clamp(28px, 1.40rem + 1.60vw, 46px);
+
+  /* ---- spacing (4px scale) ---- */
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:20px;
+  --s-6:24px; --s-8:32px; --s-10:40px; --s-12:48px;
+
+  /* ---- motion ---- */
+  --dur:180ms;
+  --ease:cubic-bezier(.2,.7,.2,1);
+
+  --mono:"SFMono-Regular",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
+}
+
+*{box-sizing:border-box;}
+*::selection{background:var(--brand);color:#fff;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  margin:0;
+  font-family:var(--sans);
+  font-size:var(--t-base);
+  line-height:1.5;
+  color:var(--ink-1);
+  background:var(--paper);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+h1,h2,h3,p{margin:0;}
+button{font:inherit;color:inherit;}
+
+.skip{
+  position:absolute;left:var(--s-3);top:-60px;z-index:100;
+  background:var(--ink-1);color:#fff;padding:var(--s-2) var(--s-4);
+  border-radius:var(--r-sm);text-decoration:none;font-size:var(--t-sm);
+  transition:top var(--dur) var(--ease);
+}
+.skip:focus{top:var(--s-3);}
+
+/* ============================================================ TOPBAR */
+.topbar{
+  display:flex;align-items:center;gap:var(--s-4);
+  padding:var(--s-3) clamp(var(--s-4),3vw,var(--s-8));
+  border-bottom:1px solid var(--line);
+  background:var(--surface);
+  position:sticky;top:0;z-index:30;
+}
+.brand{display:flex;align-items:center;gap:var(--s-3);min-width:0;}
+.mark{flex:none;display:block;}
+.brand-txt{display:flex;flex-direction:column;line-height:1.1;min-width:0;}
+.brand-txt b{
+  font-size:var(--t-md);font-weight:680;letter-spacing:-.01em;
+}
+.brand-txt span{
+  font-size:var(--t-xs);color:var(--ink-3);letter-spacing:.14em;
+  text-transform:uppercase;font-weight:600;
+}
+.topbar-spacer{flex:1;}
+.topbar-meta{
+  display:none;font-size:var(--t-xs);color:var(--ink-4);
+  font-family:var(--mono);letter-spacing:.04em;
+}
+@media(min-width:760px){.topbar-meta{display:block;}}
+
+/* ============================================================ LAYOUT */
+.app{
+  display:grid;
+  grid-template-columns:1fr;
+  min-height:calc(100dvh - 57px);
+}
+@media(min-width:880px){
+  .app{grid-template-columns:1fr 360px;}
+}
+@media(min-width:1200px){
+  .app{grid-template-columns:1fr 400px;}
+}
+
+/* ============================================================ STAGE */
+.stage{
+  position:relative;
+  padding:clamp(var(--s-4),3.5vw,var(--s-10));
+  display:flex;flex-direction:column;gap:var(--s-5);
+  min-width:0;
+  background:
+    linear-gradient(var(--paper),var(--paper)) padding-box,
+    repeating-linear-gradient(0deg,transparent 0 23px,rgba(22,21,15,.025) 23px 24px),
+    repeating-linear-gradient(90deg,transparent 0 23px,rgba(22,21,15,.025) 23px 24px);
+}
+.stage-head{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  gap:var(--s-4);flex-wrap:wrap;
+}
+.eyebrow{
+  font-size:var(--t-xs);letter-spacing:.18em;text-transform:uppercase;
+  color:var(--brand);font-weight:700;
+  display:flex;align-items:center;gap:var(--s-2);
+}
+.eyebrow::before{
+  content:"";width:18px;height:2px;background:var(--brand);display:block;
+}
+h1.title{
+  font-size:var(--t-xl);font-weight:720;letter-spacing:-.025em;
+  line-height:1.02;margin-top:var(--s-2);max-width:14ch;
+}
+.title em{font-style:normal;color:var(--brand);}
+.stage-sub{
+  color:var(--ink-3);font-size:var(--t-sm);max-width:42ch;margin-top:var(--s-2);
+}
+
+/* preview canvas */
+.canvas-wrap{
+  position:relative;flex:1;min-height:340px;
+  border:1px solid var(--line-2);border-radius:var(--r-lg);
+  background:var(--surface-2);
+  box-shadow:var(--e-2);
+  overflow:hidden;
+}
+/* faint registration corner ticks */
+.canvas-wrap::before,.canvas-wrap::after{
+  content:"";position:absolute;width:14px;height:14px;z-index:3;
+  pointer-events:none;
+}
+.canvas-wrap::before{
+  top:10px;left:10px;
+  border-top:2px solid var(--line-2);border-left:2px solid var(--line-2);
+}
+.canvas-wrap::after{
+  bottom:10px;right:10px;
+  border-bottom:2px solid var(--line-2);border-right:2px solid var(--line-2);
+}
+#preview{display:block;width:100%;height:100%;position:absolute;inset:0;}
+
+.canvas-foot{
+  display:flex;align-items:center;gap:var(--s-3);flex-wrap:wrap;
+  font-size:var(--t-xs);color:var(--ink-3);font-family:var(--mono);
+}
+.chip{
+  display:inline-flex;align-items:center;gap:var(--s-2);
+  padding:4px var(--s-2);border:1px solid var(--line);border-radius:var(--r-xs);
+  background:var(--surface);letter-spacing:.02em;
+}
+.chip b{color:var(--ink-1);font-weight:600;}
+.canvas-foot .sep{flex:1;}
+
+/* tile-guide toggle */
+.ghost-toggle{
+  margin-left:auto;display:inline-flex;align-items:center;gap:var(--s-2);
+  font-family:var(--sans);cursor:pointer;color:var(--ink-2);
+  border:1px solid var(--line);background:var(--surface);
+  padding:6px var(--s-3);border-radius:var(--r-sm);min-height:34px;
+  transition:background var(--dur) var(--ease),border-color var(--dur) var(--ease);
+}
+.ghost-toggle:hover{background:var(--surface-3);}
+.ghost-toggle:focus-within{outline:2px solid var(--focus);outline-offset:2px;}
+.ghost-toggle input{position:absolute;opacity:0;width:1px;height:1px;}
+.ghost-toggle .box{
+  width:15px;height:15px;border:1.5px solid var(--line-2);border-radius:3px;
+  display:grid;place-items:center;flex:none;transition:all var(--dur) var(--ease);
+}
+.ghost-toggle input:checked + .box{background:var(--ink-1);border-color:var(--ink-1);}
+.ghost-toggle input:checked + .box svg{opacity:1;}
+.ghost-toggle .box svg{opacity:0;color:#fff;}
+
+/* ============================================================ PANEL */
+.panel{
+  border-left:1px solid var(--line);
+  background:var(--surface);
+  display:flex;flex-direction:column;
+  min-width:0;
+}
+@media(max-width:879px){
+  .panel{border-left:none;border-top:1px solid var(--line);}
+}
+.panel-scroll{
+  overflow-y:auto;padding:var(--s-5) var(--s-5) var(--s-6);
+  display:flex;flex-direction:column;gap:var(--s-6);
+}
+.group{display:flex;flex-direction:column;gap:var(--s-3);}
+.group-label{
+  display:flex;align-items:center;gap:var(--s-2);
+  font-size:var(--t-xs);letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:700;
+}
+.group-label .num{
+  font-family:var(--mono);color:var(--brand);font-size:10px;
+  border:1px solid var(--brand);border-radius:3px;padding:0 4px;line-height:1.4;
+}
+
+/* style grid */
+.style-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s-2);
+}
+.style-btn{
+  aspect-ratio:1;border:1px solid var(--line);background:var(--surface-2);
+  border-radius:var(--r-sm);padding:6px;cursor:pointer;position:relative;
+  display:grid;place-items:center;
+  transition:border-color var(--dur) var(--ease),background var(--dur) var(--ease),
+             box-shadow var(--dur) var(--ease),transform var(--dur) var(--ease);
+}
+.style-btn svg{width:100%;height:100%;display:block;color:var(--ink-2);}
+.style-btn:hover{border-color:var(--line-2);background:var(--surface-3);}
+.style-btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px;z-index:1;}
+.style-btn:active{transform:scale(.96);}
+.style-btn[aria-pressed="true"]{
+  border-color:var(--ink-1);box-shadow:0 0 0 1px var(--ink-1);background:var(--surface-2);
+}
+.style-btn[aria-pressed="true"] svg{color:var(--ink-1);}
+.style-btn[aria-pressed="true"]::after{
+  content:"";position:absolute;top:5px;right:5px;width:6px;height:6px;
+  border-radius:50%;background:var(--brand);
+}
+.style-name{
+  font-size:var(--t-xs);color:var(--ink-3);font-family:var(--mono);
+  letter-spacing:.02em;min-height:1.2em;
+}
+.style-name b{color:var(--ink-1);font-weight:600;text-transform:capitalize;}
+
+/* sliders */
+.ctrl{display:flex;flex-direction:column;gap:6px;}
+.ctrl-top{
+  display:flex;align-items:baseline;justify-content:space-between;gap:var(--s-2);
+}
+.ctrl-top label{font-size:var(--t-sm);color:var(--ink-2);font-weight:550;}
+.ctrl-val{
+  font-family:var(--mono);font-size:var(--t-xs);color:var(--ink-1);
+  background:var(--surface-3);border-radius:var(--r-xs);padding:2px 6px;
+  min-width:46px;text-align:right;font-variant-numeric:tabular-nums;
+}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:24px;
+  background:transparent;cursor:pointer;margin:0;
+}
+input[type=range]::-webkit-slider-runnable-track{
+  height:4px;border-radius:2px;
+  background:linear-gradient(var(--ink-1),var(--ink-1)) no-repeat,var(--line);
+  background-size:var(--fill,0%) 100%;
+}
+input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--line);}
+input[type=range]::-moz-range-progress{height:4px;border-radius:2px;background:var(--ink-1);}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:16px;height:16px;margin-top:-6px;
+  border-radius:50%;background:var(--surface-2);border:2px solid var(--ink-1);
+  box-shadow:var(--e-1);transition:transform var(--dur) var(--ease);
+}
+input[type=range]::-moz-range-thumb{
+  width:16px;height:16px;border-radius:50%;background:var(--surface-2);
+  border:2px solid var(--ink-1);box-shadow:var(--e-1);
+}
+input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.12);}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.0);background:var(--brand-tint);}
+input[type=range]:focus-visible{outline:none;}
+input[type=range]:focus-visible::-webkit-slider-thumb{
+  outline:2px solid var(--focus);outline-offset:3px;border-color:var(--focus);
+}
+input[type=range]:focus-visible::-moz-range-thumb{
+  outline:2px solid var(--focus);outline-offset:3px;border-color:var(--focus);
+}
+
+/* color rows */
+.color-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-3);}
+.swatch{
+  display:flex;flex-direction:column;gap:6px;
+}
+.swatch > span{font-size:var(--t-sm);color:var(--ink-2);font-weight:550;}
+.swatch-ctl{
+  display:flex;align-items:center;gap:var(--s-2);
+  border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--surface-2);padding:5px 5px 5px 6px;
+  transition:border-color var(--dur) var(--ease);
+}
+.swatch-ctl:focus-within{border-color:var(--focus);box-shadow:0 0 0 2px rgba(29,78,216,.18);}
+.swatch-ctl input[type=color]{
+  -webkit-appearance:none;appearance:none;width:30px;height:30px;flex:none;
+  border:none;border-radius:var(--r-xs);background:none;cursor:pointer;padding:0;
+}
+.swatch-ctl input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
+.swatch-ctl input[type=color]::-webkit-color-swatch{border:1px solid var(--line-2);border-radius:var(--r-xs);}
+.swatch-ctl input[type=color]::-moz-color-swatch{border:1px solid var(--line-2);border-radius:var(--r-xs);}
+.swatch-ctl input[type=color]:focus-visible{outline:2px solid var(--focus);outline-offset:1px;}
+.hex{
+  font-family:var(--mono);font-size:var(--t-sm);color:var(--ink-1);
+  border:none;background:none;width:100%;min-width:0;padding:0;text-transform:uppercase;
+}
+.hex:focus{outline:none;}
+
+/* presets */
+.preset-row{
+  display:flex;gap:var(--s-2);overflow-x:auto;padding-bottom:var(--s-2);
+  scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+}
+.preset-row::-webkit-scrollbar{height:6px;}
+.preset-row::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:3px;}
+.preset{
+  flex:none;width:62px;scroll-snap-align:start;cursor:pointer;
+  border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface-2);
+  padding:5px;display:flex;flex-direction:column;gap:5px;
+  transition:border-color var(--dur) var(--ease),transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease);
+}
+.preset:hover{border-color:var(--ink-2);box-shadow:var(--e-1);transform:translateY(-1px);}
+.preset:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+.preset:active{transform:translateY(0);}
+.preset .pv{
+  width:100%;aspect-ratio:1;border-radius:var(--r-xs);overflow:hidden;
+  border:1px solid var(--line);
+}
+.preset .pv svg{display:block;width:100%;height:100%;}
+.preset .pn{
+  font-size:9px;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--ink-3);text-align:center;font-weight:600;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;
+}
+
+/* buttons */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--s-2);
+  min-height:44px;padding:0 var(--s-4);border-radius:var(--r-sm);
+  border:1px solid var(--line-2);background:var(--surface-2);
+  color:var(--ink-1);font-size:var(--t-sm);font-weight:600;cursor:pointer;
+  letter-spacing:.01em;position:relative;
+  transition:background var(--dur) var(--ease),border-color var(--dur) var(--ease),
+             transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease),color var(--dur) var(--ease);
+}
+.btn svg{width:16px;height:16px;flex:none;}
+.btn:hover{background:var(--surface-3);border-color:var(--ink-3);}
+.btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+.btn:active{transform:translateY(1px);}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn-line{
+  background:none;border-color:var(--line);min-height:40px;color:var(--ink-2);
+}
+.btn-line:hover{background:var(--surface-3);color:var(--ink-1);}
+.btn.is-ok{background:var(--ok);border-color:var(--ok);color:#fff;}
+.btn.is-ok:hover{background:var(--ok);border-color:var(--ok);}
+
+.export-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-2);}
+.export-grid .btn{width:100%;}
+
+.row-2{display:flex;gap:var(--s-2);}
+.row-2 .btn{flex:1;}
+
+.hr{height:1px;background:var(--line);border:none;margin:0;}
+
+/* live region toast */
+.toast{
+  position:fixed;left:50%;bottom:var(--s-6);transform:translate(-50%,16px);
+  background:var(--ink-1);color:var(--surface-2);
+  padding:var(--s-3) var(--s-5);border-radius:var(--r-md);
+  box-shadow:var(--e-3);font-size:var(--t-sm);font-weight:550;
+  display:flex;align-items:center;gap:var(--s-3);
+  opacity:0;pointer-events:none;z-index:80;
+  transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease);
+}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+.toast svg{color:var(--ok);width:18px;height:18px;flex:none;}
+
+.foot-note{
+  font-size:var(--t-xs);color:var(--ink-4);line-height:1.5;
+}
+.foot-note code{font-family:var(--mono);color:var(--ink-3);}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition-duration:0ms !important;animation-duration:0ms !important;}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#controls">Skip to controls</a>
+
+<header class="topbar">
+  <div class="brand">
+    <!-- bespoke mark: interlocking seamless tile -->
+    <svg class="mark" width="30" height="30" viewBox="0 0 30 30" aria-hidden="true">
+      <rect x="1" y="1" width="28" height="28" rx="6" fill="#16150f"/>
+      <path d="M9 9h12v12H9z" fill="none" stroke="#f4f3ee" stroke-width="1.6"/>
+      <circle cx="9" cy="9" r="3" fill="#e2231a"/>
+      <circle cx="21" cy="9" r="3" fill="#f4f3ee"/>
+      <circle cx="9" cy="21" r="3" fill="#f4f3ee"/>
+      <circle cx="21" cy="21" r="3" fill="#e2231a"/>
+      <circle cx="15" cy="15" r="2" fill="#f4f3ee"/>
+    </svg>
+    <span class="brand-txt">
+      <b>Tessa</b>
+      <span>Pattern Studio</span>
+    </span>
+  </div>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-meta" id="metaReadout">SVG · userSpaceOnUse</div>
+</header>
+
+<div class="app">
+  <!-- ====================== STAGE ====================== -->
+  <main class="stage" aria-label="Pattern preview">
+    <div class="stage-head">
+      <div>
+        <p class="eyebrow">Seamless tiling</p>
+        <h1 class="title">Build a pattern that <em>never seams.</em></h1>
+        <p class="stage-sub">A vector tile engine. Tune the motif, then leave with clean SVG, a CSS data-URI, or a crisp PNG.</p>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <div id="preview" role="img" aria-label="Live tiled pattern preview"></div>
+    </div>
+
+    <div class="canvas-foot">
+      <span class="chip">tile <b id="tileReadout">48 × 48</b></span>
+      <span class="chip">repeat <b id="repeatReadout">48px</b></span>
+      <span class="sep"></span>
+      <label class="ghost-toggle" title="Show the tile boundary so you can confirm seamless wrap">
+        <input type="checkbox" id="guideToggle">
+        <span class="box"><svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 5.5 4.3 8 9 2.5"/></svg></span>
+        <span>Tile guides</span>
+      </label>
+    </div>
+  </main>
+
+  <!-- ====================== PANEL ====================== -->
+  <aside class="panel" id="controls" aria-label="Pattern controls">
+    <div class="panel-scroll">
+
+      <!-- 01 — STYLE -->
+      <section class="group">
+        <h2 class="group-label"><span class="num">01</span> Motif</h2>
+        <div class="style-grid" id="styleGrid" role="group" aria-label="Pattern style"></div>
+        <p class="style-name">Style — <b id="styleName">dots</b></p>
+      </section>
+
+      <hr class="hr">
+
+      <!-- 02 — GEOMETRY -->
+      <section class="group" aria-label="Geometry">
+        <h2 class="group-label"><span class="num">02</span> Geometry</h2>
+
+        <div class="ctrl">
+          <div class="ctrl-top">
+            <label for="scale">Tile scale</label>
+            <span class="ctrl-val" id="scaleVal">48 px</span>
+          </div>
+          <input type="range" id="scale" min="16" max="160" step="1" value="48"
+                 aria-describedby="scaleVal">
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-top">
+            <label for="stroke">Stroke width</label>
+            <span class="ctrl-val" id="strokeVal">2.0</span>
+          </div>
+          <input type="range" id="stroke" min="0" max="14" step="0.5" value="2"
+                 aria-describedby="strokeVal">
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-top">
+            <label for="spacing">Spacing / weight</label>
+            <span class="ctrl-val" id="spacingVal">100%</span>
+          </div>
+          <input type="range" id="spacing" min="35" max="170" step="1" value="100"
+                 aria-describedby="spacingVal">
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-top">
+            <label for="rotate">Rotation</label>
+            <span class="ctrl-val" id="rotateVal">0°</span>
+          </div>
+          <input type="range" id="rotate" min="0" max="360" step="1" value="0"
+                 aria-describedby="rotateVal">
+        </div>
+      </section>
+
+      <hr class="hr">
+
+      <!-- 03 — COLOR -->
+      <section class="group" aria-label="Color">
+        <h2 class="group-label"><span class="num">03</span> Color</h2>
+        <div class="color-row">
+          <div class="swatch">
+            <span>Foreground</span>
+            <div class="swatch-ctl">
+              <input type="color" id="fg" value="#16150f" aria-label="Foreground color">
+              <input type="text" class="hex" id="fgHex" value="#16150F" aria-label="Foreground hex" maxlength="7" spellcheck="false">
+            </div>
+          </div>
+          <div class="swatch">
+            <span>Background</span>
+            <div class="swatch-ctl">
+              <input type="color" id="bg" value="#f4f3ee" aria-label="Background color">
+              <input type="text" class="hex" id="bgHex" value="#F4F3EE" aria-label="Background hex" maxlength="7" spellcheck="false">
+            </div>
+          </div>
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-top">
+            <label for="fgOpacity">Foreground opacity</label>
+            <span class="ctrl-val" id="fgOpacityVal">100%</span>
+          </div>
+          <input type="range" id="fgOpacity" min="0" max="100" step="1" value="100"
+                 aria-describedby="fgOpacityVal">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-top">
+            <label for="bgOpacity">Background opacity</label>
+            <span class="ctrl-val" id="bgOpacityVal">100%</span>
+          </div>
+          <input type="range" id="bgOpacity" min="0" max="100" step="1" value="100"
+                 aria-describedby="bgOpacityVal">
+        </div>
+      </section>
+
+      <hr class="hr">
+
+      <!-- 04 — PRESETS -->
+      <section class="group" aria-label="Presets">
+        <h2 class="group-label"><span class="num">04</span> Presets</h2>
+        <div class="preset-row" id="presetRow" role="group" aria-label="Curated presets"></div>
+      </section>
+
+      <div class="row-2">
+        <button class="btn btn-line" id="randomBtn" type="button">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <rect x="2" y="2" width="12" height="12" rx="3"/>
+            <circle cx="5.5" cy="5.5" r="1" fill="currentColor" stroke="none"/>
+            <circle cx="10.5" cy="10.5" r="1" fill="currentColor" stroke="none"/>
+            <circle cx="10.5" cy="5.5" r="1" fill="currentColor" stroke="none"/>
+          </svg>
+          Randomize
+        </button>
+        <button class="btn btn-line" id="resetBtn" type="button">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path d="M13 8a5 5 0 1 1-1.46-3.54M13 2v3h-3"/>
+          </svg>
+          Reset
+        </button>
+      </div>
+
+      <hr class="hr">
+
+      <!-- 05 — EXPORT -->
+      <section class="group" aria-label="Export">
+        <h2 class="group-label"><span class="num">05</span> Export</h2>
+        <div class="export-grid">
+          <button class="btn" id="copyCss" type="button">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3a2 2 0 0 0-2-2H3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/></svg>
+            Copy CSS
+          </button>
+          <button class="btn" id="copySvg" type="button">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 2H3a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1h-2"/><path d="M6 1h4v3H6z"/></svg>
+            Copy SVG
+          </button>
+          <button class="btn btn-line" id="dlSvg" type="button">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 1v9m0 0L5 7m3 3 3-3M2 13h12"/></svg>
+            .SVG
+          </button>
+          <button class="btn btn-line" id="dlPng" type="button">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 1v9m0 0L5 7m3 3 3-3M2 13h12"/></svg>
+            .PNG
+          </button>
+        </div>
+        <p class="foot-note">CSS copies a <code>background-image:url(data:image/svg+xml,…)</code> data-URI. SVG copies a standalone <code>&lt;svg&gt;</code> with a <code>&lt;pattern&gt;</code> def — paste either anywhere.</p>
+      </section>
+
+    </div>
+  </aside>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 9.5 7 13.5 15 4.5"/></svg>
+  <span id="toastMsg">Copied</span>
+</div>
+
+<script>
+"use strict";
+(function(){
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  style: "dots",
+  scale: 48,
+  stroke: 2,
+  spacing: 100,   // percent — controls motif density/weight inside the tile
+  rotate: 0,
+  fg: "#16150f",
+  bg: "#f4f3ee",
+  fgOpacity: 100,
+  bgOpacity: 100,
+  guides: false
+};
+
+/* ============================================================
+   MOTIF LIBRARY
+   Each builds the inner content of ONE tile of size T (square).
+   The tile MUST wrap seamlessly: any element crossing an edge is
+   duplicated on the opposite edge. Returns an SVG markup string.
+   Stroke width `w`, density factor `d` (from spacing %, 0.35–1.70).
+   All use currentColor so a single fg drives them.
+   ============================================================ */
+const round = (n)=>Math.round(n*1000)/1000;
+
+const MOTIFS = {
+  dots(T,w,d){
+    // dot radius scales with density; corner dots duplicated on all 4 corners + center
+    const r = round(Math.max(1, T*0.16*d));
+    const c = round(T/2);
+    let p = `<circle cx="${c}" cy="${c}" r="${r}"/>`;
+    // corners (quarter each, wrap seamlessly)
+    [[0,0],[T,0],[0,T],[T,T]].forEach(([x,y])=>{ p+=`<circle cx="${x}" cy="${y}" r="${r}"/>`; });
+    return `<g fill="currentColor" stroke="none">${p}</g>`;
+  },
+  grid(T,w){
+    const h = round(w/2);
+    // lines on two edges; opposite edges shared by neighbor → seamless
+    return `<g fill="none" stroke="currentColor" stroke-width="${w}">`+
+      `<path d="M0 ${h}H${T}"/><path d="M${h} 0V${T}"/>`+
+      `</g>`;
+  },
+  lines(T,w){
+    const q = round(T/4);
+    return `<g fill="none" stroke="currentColor" stroke-width="${w}">`+
+      `<path d="M0 ${q}H${T}"/><path d="M0 ${round(q*3)}H${T}"/>`+
+      `</g>`;
+  },
+  diagonal(T,w){
+    // 45° lines that wrap: a main diagonal plus the two offset wrapped halves
+    return `<g fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="square">`+
+      `<path d="M0 0L${T} ${T}"/>`+
+      `<path d="M${round(-T/2)} ${round(T/2)}L${round(T/2)} ${round(T*1.5)}"/>`+
+      `<path d="M${round(T/2)} ${round(-T/2)}L${round(T*1.5)} ${round(T/2)}"/>`+
+      `</g>`;
+  },
+  crosses(T,w){
+    const c = round(T/2), a = round(T*0.18);
+    let p = "";
+    const plus = (x,y)=>`<path d="M${round(x-a)} ${y}H${round(x+a)}M${x} ${round(y-a)}V${round(y+a)}"/>`;
+    p += plus(c,c);
+    [[0,0],[T,0],[0,T],[T,T]].forEach(([x,y])=>{ p+=plus(x,y); });
+    return `<g fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round">${p}</g>`;
+  },
+  chevron(T,w){
+    const h = round(T/2);
+    // zig-zag spanning full width, repeated top+bottom band; wraps horizontally & vertically
+    return `<g fill="none" stroke="currentColor" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round">`+
+      `<path d="M0 ${round(T*0.35)}L${h} ${round(T*0.05)}L${T} ${round(T*0.35)}"/>`+
+      `<path d="M0 ${round(T*0.85)}L${h} ${round(T*0.55)}L${T} ${round(T*0.85)}"/>`+
+      `</g>`;
+  },
+  triangles(T){
+    const h = round(T/2);
+    // two opposing filled triangles meeting at the tile center — seamless on all edges
+    return `<g fill="currentColor" stroke="none">`+
+      `<path d="M0 0L${h} ${h}L0 ${T}Z"/>`+
+      `<path d="M${T} 0L${h} ${h}L${T} ${T}Z"/>`+
+      `</g>`;
+  },
+  waves(T,w){
+    const h = round(T/2), q = round(T/4);
+    // smooth wave full width using cubic; wraps because endpoints share y at x=0/T
+    const wave=(y)=>`<path d="M0 ${y}C${q} ${round(y-h*0.55)} ${round(T-q)} ${round(y+h*0.55)} ${T} ${y}"/>`;
+    return `<g fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round">`+
+      wave(h)+`</g>`;
+  },
+  scales(T,w){
+    // fish-scale: arcs whose ends sit on tile corners → seamless wrap
+    const r = round(T/2);
+    return `<g fill="none" stroke="currentColor" stroke-width="${w}">`+
+      `<path d="M0 0A${r} ${r} 0 0 0 ${T} 0"/>`+
+      `<path d="M${round(-r)} ${T}A${r} ${r} 0 0 0 ${r} ${T}"/>`+
+      `<path d="M${r} ${T}A${r} ${r} 0 0 0 ${round(T*1.5)} ${T}"/>`+
+      `</g>`;
+  },
+  hexgrid(T,w){
+    // honeycomb-ish: half hexes on top/bottom edges that mate with the neighbor tile
+    const c=round(T/2), q=round(T/4), e=round(T*0.29);
+    return `<g fill="none" stroke="currentColor" stroke-width="${w}" stroke-linejoin="round">`+
+      `<path d="M0 ${q}L${c} 0L${T} ${q}M0 ${round(T*0.75)}L${c} ${T}L${T} ${round(T*0.75)}"/>`+
+      `<path d="M${c} 0V${round(-e+q)}M${c} ${T}V${round(T+e-q)}"/>`+
+      `<path d="M0 ${q}V${round(T*0.75)}M${T} ${q}V${round(T*0.75)}"/>`+
+      `</g>`;
+  },
+  rings(T,w){
+    const c=round(T/2), r=round(T*0.34);
+    let p=`<circle cx="${c}" cy="${c}" r="${r}"/>`;
+    [[0,0],[T,0],[0,T],[T,T]].forEach(([x,y])=>{ p+=`<circle cx="${x}" cy="${y}" r="${r}"/>`; });
+    return `<g fill="none" stroke="currentColor" stroke-width="${w}">${p}</g>`;
+  },
+  weave(T,w){
+    // basket weave: horizontal + vertical bars, offset — wraps via full-width/height segments
+    return `<g fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round">`+
+      `<path d="M0 ${round(T*0.25)}H${T}"/>`+
+      `<path d="M0 ${round(T*0.75)}H${T}"/>`+
+      `<path d="M${round(T*0.25)} 0V${T}"/>`+
+      `<path d="M${round(T*0.75)} 0V${T}"/>`+
+      `</g>`;
+  }
+};
+
+const STYLES = [
+  ["dots","Dots"],["grid","Grid"],["lines","Lines"],["diagonal","Diagonal"],
+  ["crosses","Crosses"],["chevron","Chevron"],["triangles","Triangles"],["waves","Waves"],
+  ["scales","Scales"],["hexgrid","Hex"],["rings","Rings"],["weave","Weave"]
+];
+
+const PRESETS = [
+  {name:"Blueprint", style:"grid",     scale:32, stroke:1,   spacing:100, rotate:0,  fg:"#1d4ed8", bg:"#eef2ff"},
+  {name:"Carbon",    style:"diagonal", scale:24, stroke:2,   spacing:100, rotate:0,  fg:"#0a0a0a", bg:"#1c1c1c"},
+  {name:"Polka",     style:"dots",     scale:40, stroke:0,   spacing:90,  rotate:0,  fg:"#e2231a", bg:"#fbe3e1"},
+  {name:"Topo",      style:"waves",    scale:72, stroke:1.5, spacing:100, rotate:0,  fg:"#0e7c66", bg:"#e6f5f0"},
+  {name:"Argyle",    style:"triangles",scale:56, stroke:0,   spacing:100, rotate:45, fg:"#7c3aed", bg:"#f3edff"},
+  {name:"Seigaiha",  style:"scales",   scale:60, stroke:2,   spacing:100, rotate:0,  fg:"#1e3a8a", bg:"#eaf0fb"},
+  {name:"Graph",     style:"crosses",  scale:36, stroke:2,   spacing:100, rotate:0,  fg:"#334155", bg:"#f8fafc"},
+  {name:"Zigzag",    style:"chevron",  scale:48, stroke:3,   spacing:100, rotate:0,  fg:"#d97706", bg:"#fff7ed"},
+  {name:"Honey",     style:"hexgrid",  scale:54, stroke:2,   spacing:100, rotate:0,  fg:"#b45309", bg:"#fffbeb"},
+  {name:"Ledger",    style:"lines",    scale:30, stroke:1,   spacing:100, rotate:0,  fg:"#16150f", bg:"#f4f3ee"}
+];
+
+/* ============================================================
+   SVG BUILDERS
+   ============================================================ */
+const NS = "http://www.w3.org/2000/svg";
+
+function densityFactor(){ return state.spacing/100; }
+
+// inner motif markup at a given tile size
+function motifMarkup(T){
+  const w = round(state.stroke);
+  const d = densityFactor();
+  return MOTIFS[state.style](T, w, d);
+}
+
+// build a full standalone <svg> string (for SVG export + preview) covering w×h.
+function buildPatternSVG(opts){
+  const T = state.scale;
+  const id = "tessa";
+  const fgO = state.fgOpacity/100;
+  const bgO = state.bgOpacity/100;
+  const rot = state.rotate;
+  const patTransform = rot ? ` patternTransform="rotate(${rot} ${round(T/2)} ${round(T/2)})"` : "";
+  const w = (opts && opts.w) || 600;
+  const h = (opts && opts.h) || 600;
+  const inner = motifMarkup(T);
+  const guides = (opts && opts.guides)
+    ? `<rect x="0" y="0" width="${T}" height="${T}" fill="none" stroke="#1d4ed8" stroke-width="0.75" stroke-dasharray="3 3" vector-effect="non-scaling-stroke" opacity="0.9"/>`
+    : "";
+  // background rect always present (so opacity 0 fg → only bg)
+  return `<svg xmlns="${NS}" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">`+
+    `<defs>`+
+    `<pattern id="${id}" patternUnits="userSpaceOnUse" width="${T}" height="${T}"${patTransform}>`+
+      `<g color="${state.fg}" opacity="${round(fgO)}">${inner}</g>`+
+      guides+
+    `</pattern>`+
+    `</defs>`+
+    `<rect width="${w}" height="${h}" fill="${state.bg}" opacity="${round(bgO)}"/>`+
+    `<rect width="${w}" height="${h}" fill="url(#${id})"/>`+
+  `</svg>`;
+}
+
+// minimal tile-only SVG for CSS data-URI: exactly ONE tile, repeated by CSS background-repeat.
+function buildTileSVG(){
+  const T = state.scale;
+  const fgO = state.fgOpacity/100;
+  const bgO = state.bgOpacity/100;
+  const rot = state.rotate;
+  const inner = motifMarkup(T);
+  // rotation handled via patternTransform so the single-tile data-URI still tiles seamlessly.
+  const patTransform = rot ? ` patternTransform="rotate(${rot} ${round(T/2)} ${round(T/2)})"` : "";
+  return `<svg xmlns="${NS}" width="${T}" height="${T}" viewBox="0 0 ${T} ${T}">`+
+    `<defs><pattern id="t" patternUnits="userSpaceOnUse" width="${T}" height="${T}"${patTransform}>`+
+      `<g color="${state.fg}" opacity="${round(fgO)}">${inner}</g>`+
+    `</pattern></defs>`+
+    `<rect width="${T}" height="${T}" fill="${state.bg}" opacity="${round(bgO)}"/>`+
+    `<rect width="${T}" height="${T}" fill="url(#t)"/>`+
+  `</svg>`;
+}
+
+function dataUri(svg){
+  // encodeURIComponent then restore a few safe chars for compactness/readability
+  return "data:image/svg+xml,"+encodeURIComponent(svg)
+    .replace(/%20/g,' ').replace(/%3D/g,'=').replace(/%3A/g,':').replace(/%2F/g,'/');
+}
+
+function cssSnippet(){
+  const uri = dataUri(buildTileSVG());
+  return `background-color:${state.bg};\n`+
+    `background-image:url("${uri}");\n`+
+    `background-size:${state.scale}px ${state.scale}px;\n`+
+    `background-repeat:repeat;`;
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+const $ = (id)=>document.getElementById(id);
+const preview = $("preview");
+
+function renderPreview(){
+  // size the SVG to the live canvas so we see many repeats
+  const rect = preview.getBoundingClientRect();
+  const w = Math.max(120, Math.round(rect.width));
+  const h = Math.max(120, Math.round(rect.height));
+  preview.innerHTML = buildPatternSVG({w,h,guides:state.guides});
+  // readouts
+  $("tileReadout").textContent = `${state.scale} × ${state.scale}`;
+  $("repeatReadout").textContent = `${state.scale}px`;
+  $("metaReadout").textContent = `${state.style} · ${state.scale}px · ${state.rotate}°`;
+}
+
+/* ============================================================
+   STYLE GRID + PRESET previews (tiny standalone SVGs)
+   ============================================================ */
+let _pvSeq = 0;
+function tinyPreviewSVG(style, fg, bg, w){
+  // fixed 16px tile rendered into a 48px box (≈3×3 repeats)
+  // unique pattern id per instance: multiple inline <pattern> share one document,
+  // so a fixed id would make every url(#id) resolve to the first one (all-dots bug).
+  const T=16;
+  const sw = (w!=null)?w:2;
+  const inner = MOTIFS[style](T, sw, 1);
+  const size=48;
+  const pid = "pv"+(_pvSeq++);
+  return `<svg xmlns="${NS}" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">`+
+    `<defs><pattern id="${pid}" patternUnits="userSpaceOnUse" width="${T}" height="${T}">`+
+      `<g color="${fg}">${inner}</g></pattern></defs>`+
+    `<rect width="${size}" height="${size}" fill="${bg}"/>`+
+    `<rect width="${size}" height="${size}" fill="url(#${pid})"/></svg>`;
+}
+
+function buildStyleGrid(){
+  const grid = $("styleGrid");
+  grid.innerHTML = "";
+  STYLES.forEach(([id,label])=>{
+    const btn = document.createElement("button");
+    btn.type="button";
+    btn.className="style-btn";
+    btn.setAttribute("aria-pressed", String(id===state.style));
+    btn.setAttribute("aria-label", label+" pattern");
+    btn.title=label;
+    btn.dataset.style=id;
+    btn.innerHTML = tinyPreviewSVG(id, "#16150f", "#fbfaf7", 1.4);
+    btn.addEventListener("click",()=>{
+      state.style=id;
+      $("styleName").textContent=label.toLowerCase();
+      grid.querySelectorAll(".style-btn").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.style===id)));
+      renderPreview();
+    });
+    grid.appendChild(btn);
+  });
+}
+
+function buildPresets(){
+  const row = $("presetRow");
+  row.innerHTML = "";
+  PRESETS.forEach(p=>{
+    const b = document.createElement("button");
+    b.type="button"; b.className="preset"; b.title=p.name+" preset";
+    b.setAttribute("aria-label","Apply "+p.name+" preset");
+    b.innerHTML = `<span class="pv">${tinyPreviewSVG(p.style,p.fg,p.bg,Math.max(1,p.stroke||1))}</span><span class="pn">${p.name}</span>`;
+    b.addEventListener("click",()=>applyPreset(p));
+    row.appendChild(b);
+  });
+}
+
+/* ============================================================
+   CONTROL WIRING
+   ============================================================ */
+function setFill(input){
+  const min = parseFloat(input.min), max=parseFloat(input.max);
+  const pct = ((parseFloat(input.value)-min)/(max-min))*100;
+  input.style.setProperty("--fill", pct+"%");
+}
+
+function fmtVal(id,v){
+  switch(id){
+    case "scale": return v+" px";
+    case "stroke": return parseFloat(v).toFixed(1);
+    case "rotate": return v+"°";
+    default: return v+"%";
+  }
+}
+
+["scale","stroke","spacing","rotate","fgOpacity","bgOpacity"].forEach(id=>{
+  const el=$(id);
+  const out=$(id+"Val");
+  const apply=()=>{
+    const v = (id==="stroke") ? parseFloat(el.value) : parseInt(el.value,10);
+    state[id]=v;
+    out.textContent = fmtVal(id, el.value);
+    setFill(el);
+    renderPreview();
+  };
+  el.addEventListener("input",apply);
+  setFill(el);
+});
+
+// color sync (picker <-> hex)
+function wireColor(pickerId, hexId, key){
+  const picker=$(pickerId), hex=$(hexId);
+  picker.addEventListener("input",()=>{
+    state[key]=picker.value;
+    hex.value=picker.value.toUpperCase();
+    renderPreview();
+  });
+  hex.addEventListener("input",()=>{
+    let v=hex.value.trim();
+    if(!v.startsWith("#")) v="#"+v;
+    if(/^#[0-9a-fA-F]{6}$/.test(v)){
+      state[key]=v.toLowerCase();
+      picker.value=v.toLowerCase();
+      renderPreview();
+    }
+  });
+  hex.addEventListener("blur",()=>{ hex.value=state[key].toUpperCase(); });
+}
+wireColor("fg","fgHex","fg");
+wireColor("bg","bgHex","bg");
+
+// guides
+$("guideToggle").addEventListener("change",e=>{ state.guides=e.target.checked; renderPreview(); });
+
+/* ============================================================
+   PRESETS / RANDOM / RESET
+   ============================================================ */
+function syncControlsFromState(){
+  $("scale").value=state.scale;        $("scaleVal").textContent=fmtVal("scale",state.scale);
+  $("stroke").value=state.stroke;      $("strokeVal").textContent=fmtVal("stroke",state.stroke);
+  $("spacing").value=state.spacing;    $("spacingVal").textContent=fmtVal("spacing",state.spacing);
+  $("rotate").value=state.rotate;      $("rotateVal").textContent=fmtVal("rotate",state.rotate);
+  $("fgOpacity").value=state.fgOpacity;$("fgOpacityVal").textContent=fmtVal("fgOpacity",state.fgOpacity);
+  $("bgOpacity").value=state.bgOpacity;$("bgOpacityVal").textContent=fmtVal("bgOpacity",state.bgOpacity);
+  ["scale","stroke","spacing","rotate","fgOpacity","bgOpacity"].forEach(id=>setFill($(id)));
+  $("fg").value=state.fg; $("fgHex").value=state.fg.toUpperCase();
+  $("bg").value=state.bg; $("bgHex").value=state.bg.toUpperCase();
+  const label = (STYLES.find(s=>s[0]===state.style)||["",state.style])[1];
+  $("styleName").textContent=label.toLowerCase();
+  document.querySelectorAll(".style-btn").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.style===state.style)));
+}
+
+function applyPreset(p){
+  Object.assign(state,{
+    style:p.style, scale:p.scale, stroke:p.stroke, spacing:p.spacing,
+    rotate:p.rotate, fg:p.fg, bg:p.bg, fgOpacity:100, bgOpacity:100, guides:state.guides
+  });
+  syncControlsFromState();
+  renderPreview();
+  toast(p.name+" applied");
+}
+
+$("randomBtn").addEventListener("click",()=>{
+  const s = STYLES[Math.floor(Math.random()*STYLES.length)][0];
+  const rndHue=()=>Math.floor(Math.random()*360);
+  const hsl=(h,sat,l)=>{
+    // convert hsl → hex
+    sat/=100;l/=100;
+    const k=n=>(n+h/30)%12, a=sat*Math.min(l,1-l);
+    const f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));
+    const to=x=>Math.round(x*255).toString(16).padStart(2,"0");
+    return "#"+to(f(0))+to(f(8))+to(f(4));
+  };
+  const h=rndHue();
+  Object.assign(state,{
+    style:s,
+    scale:[24,32,40,48,56,64,80][Math.floor(Math.random()*7)],
+    stroke:[0,1,1.5,2,2.5,3,4][Math.floor(Math.random()*7)],
+    spacing:80+Math.floor(Math.random()*60),
+    rotate:[0,0,0,15,30,45,90][Math.floor(Math.random()*7)],
+    fg:hsl(h,Math.random()<.5?70:55,Math.random()<.5?28:42),
+    bg:hsl((h+(Math.random()<.5?0:180))%360,40,95),
+    fgOpacity:100,bgOpacity:100
+  });
+  syncControlsFromState();
+  renderPreview();
+  toast("Randomized");
+});
+
+const DEFAULT = JSON.parse(JSON.stringify(state));
+$("resetBtn").addEventListener("click",()=>{
+  Object.assign(state, JSON.parse(JSON.stringify(DEFAULT)), {guides:state.guides});
+  syncControlsFromState();
+  renderPreview();
+  toast("Reset to default");
+});
+
+/* ============================================================
+   EXPORT
+   ============================================================ */
+let toastTimer=null;
+function toast(msg){
+  const t=$("toast"); $("toastMsg").textContent=msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove("show"),1900);
+}
+
+function flashOk(btn, label){
+  const orig = btn.innerHTML;
+  btn.classList.add("is-ok");
+  btn.innerHTML = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4"/></svg> ${label}`;
+  setTimeout(()=>{ btn.classList.remove("is-ok"); btn.innerHTML=orig; },1500);
+}
+
+async function copyText(text, btn, okLabel, toastMsg){
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(text);
+    }else{
+      const ta=document.createElement("textarea");
+      ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
+      document.body.appendChild(ta); ta.select();
+      document.execCommand("copy"); ta.remove();
+    }
+    flashOk(btn, okLabel);
+    toast(toastMsg);
+  }catch(e){
+    toast("Copy blocked — select & copy manually");
+  }
+}
+
+$("copyCss").addEventListener("click",e=>{
+  copyText(cssSnippet(), e.currentTarget, "Copied", "CSS copied to clipboard");
+});
+$("copySvg").addEventListener("click",e=>{
+  const svg = buildPatternSVG({w:state.scale*8, h:state.scale*8, guides:false});
+  copyText(svg, e.currentTarget, "Copied", "SVG markup copied");
+});
+
+function download(filename, blob){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.download=filename; document.body.appendChild(a); a.click();
+  a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+$("dlSvg").addEventListener("click",()=>{
+  const svg = buildPatternSVG({w:state.scale*8, h:state.scale*8, guides:false});
+  download(`tessa-${state.style}.svg`, new Blob([svg],{type:"image/svg+xml"}));
+  toast("SVG downloaded");
+});
+
+$("dlPng").addEventListener("click",e=>{
+  const btn=e.currentTarget;
+  const SIZE=1024;
+  const svg = buildPatternSVG({w:SIZE,h:SIZE,guides:false});
+  const img=new Image();
+  const blob=new Blob([svg],{type:"image/svg+xml"});
+  const url=URL.createObjectURL(blob);
+  img.onload=()=>{
+    const cv=document.createElement("canvas");
+    cv.width=SIZE; cv.height=SIZE;
+    const ctx=cv.getContext("2d");
+    ctx.drawImage(img,0,0,SIZE,SIZE);
+    URL.revokeObjectURL(url);
+    cv.toBlob(b=>{
+      if(b){ download(`tessa-${state.style}.png`, b); flashOk(btn,".PNG"); toast("PNG downloaded (1024²)"); }
+      else toast("PNG export failed");
+    },"image/png");
+  };
+  img.onerror=()=>{ URL.revokeObjectURL(url); toast("PNG export failed"); };
+  img.src=url;
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function init(){
+  buildStyleGrid();
+  buildPresets();
+  syncControlsFromState();
+  renderPreview();
+}
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",init);
+}else{ init(); }
+
+// re-render on resize (debounced) so the preview keeps filling the canvas
+let rT=null;
+window.addEventListener("resize",()=>{ clearTimeout(rT); rT=setTimeout(renderPreview,120); });
+
+// expose for self-test harness
+window.__tessa = { state, buildTileSVG, buildPatternSVG, cssSnippet, dataUri };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!-- faq_accordion_v1 — accessible disclosure accordion. Each header is a
+     <button aria-expanded aria-controls>; each panel is a labelled region with
+     a smooth height transition (collapses instantly under reduced-motion).
+     Keyboard operable. Fonts (Fraunces + Inter) are the REQUIRED load.
+     Pair with snippet.css and snippet.js. Without JS every panel is open and
+     readable (progressive enhancement). -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap"
+  rel="stylesheet"
+/>
+
+<section class="faq" aria-labelledby="faq-title">
+  <div class="faq__shell">
+    <header class="faq__head">
+      <span class="faq__kicker">Common questions</span>
+      <h2 id="faq-title" class="faq__title">Before you reach out</h2>
+      <p class="faq__lead">Quick answers to what people ask most. Still unsure? Send a note and we'll help.</p>
+    </header>
+
+    <!-- Each item: a heading wrapping a toggle button, then a region panel.
+         aria-expanded reflects open/closed; aria-controls links to the panel;
+         the panel's aria-labelledby points back at the button. -->
+    <div class="accordion" id="faq-accordion">
+      <div class="accordion__item">
+        <h3 class="accordion__heading">
+          <button class="accordion__trigger" id="faq-q1" type="button"
+                  aria-expanded="false" aria-controls="faq-p1">
+            <span class="accordion__label">How fast will I hear back?</span>
+            <span class="accordion__icon" aria-hidden="true">
+              <svg viewBox="0 0 16 16" focusable="false">
+                <path class="accordion__icon-v" d="M8 3v10" />
+                <path d="M3 8h10" />
+              </svg>
+            </span>
+          </button>
+        </h3>
+        <div class="accordion__panel" id="faq-p1" role="region" aria-labelledby="faq-q1" hidden>
+          <div class="accordion__inner">
+            <p>We reply within [RESPONSE_WINDOW]. Detailed scoping questions may take an extra business day.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion__item">
+        <h3 class="accordion__heading">
+          <button class="accordion__trigger" id="faq-q2" type="button"
+                  aria-expanded="false" aria-controls="faq-p2">
+            <span class="accordion__label">Do you work with my budget?</span>
+            <span class="accordion__icon" aria-hidden="true">
+              <svg viewBox="0 0 16 16" focusable="false">
+                <path class="accordion__icon-v" d="M8 3v10" />
+                <path d="M3 8h10" />
+              </svg>
+            </span>
+          </button>
+        </h3>
+        <div class="accordion__panel" id="faq-p2" role="region" aria-labelledby="faq-q2" hidden>
+          <div class="accordion__inner">
+            <p>Projects typically start at [LOW_RANGE]. We'll be honest on the first call about whether the scope fits.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion__item">
+        <h3 class="accordion__heading">
+          <button class="accordion__trigger" id="faq-q3" type="button"
+                  aria-expanded="false" aria-controls="faq-p3">
+            <span class="accordion__label">What do you need from me to start?</span>
+            <span class="accordion__icon" aria-hidden="true">
+              <svg viewBox="0 0 16 16" focusable="false">
+                <path class="accordion__icon-v" d="M8 3v10" />
+                <path d="M3 8h10" />
+              </svg>
+            </span>
+          </button>
+        </h3>
+        <div class="accordion__panel" id="faq-p3" role="region" aria-labelledby="faq-q3" hidden>
+          <div class="accordion__inner">
+            <p>A rough goal and any deadline. We handle discovery from there — no formal brief required up front.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion__item">
+        <h3 class="accordion__heading">
+          <button class="accordion__trigger" id="faq-q4" type="button"
+                  aria-expanded="false" aria-controls="faq-p4">
+            <span class="accordion__label">Can we adjust scope partway through?</span>
+            <span class="accordion__icon" aria-hidden="true">
+              <svg viewBox="0 0 16 16" focusable="false">
+                <path class="accordion__icon-v" d="M8 3v10" />
+                <path d="M3 8h10" />
+              </svg>
+            </span>
+          </button>
+        </h3>
+        <div class="accordion__panel" id="faq-p4" role="region" aria-labelledby="faq-q4" hidden>
+          <div class="accordion__inner">
+            <p>Yes. We work in checkpoints, so you can refine direction at each one without restarting the whole project.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

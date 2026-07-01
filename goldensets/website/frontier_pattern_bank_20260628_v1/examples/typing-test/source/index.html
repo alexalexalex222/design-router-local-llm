@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="graphite">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kinetik — Typing Speed Test</title>
+<meta name="description" content="A calm, kinetic typing speed test. Live WPM, accuracy, and a moving caret.">
+<style>
+/* ============================== TOKENS ============================== */
+:root {
+  /* fluid type scale (ratio-locked, body >=16px) */
+  --fs-300: clamp(0.75rem, 0.72rem + 0.15vw, 0.82rem);
+  --fs-400: clamp(0.875rem, 0.84rem + 0.18vw, 0.95rem);
+  --fs-500: clamp(1rem, 0.96rem + 0.2vw, 1.1rem);
+  --fs-600: clamp(1.2rem, 1.1rem + 0.5vw, 1.45rem);
+  --fs-prompt: clamp(1.45rem, 1.05rem + 2vw, 2.05rem);
+  --fs-900: clamp(3rem, 2rem + 6vw, 5.25rem);
+  --fs-700: clamp(1.6rem, 1.2rem + 1.8vw, 2.4rem);
+  /* spacing — 4px scale */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px;
+  --s6: 32px; --s7: 48px; --s8: 64px; --s9: 96px;
+  /* radii */
+  --r-sm: 6px; --r-md: 10px; --r-lg: 16px; --r-pill: 999px;
+  /* motion */
+  --dur-1: 130ms; --dur-2: 200ms; --dur-3: 420ms;
+  --ease: cubic-bezier(.22,.61,.36,1);
+  --ease-caret: cubic-bezier(.32,.72,.28,1);
+  /* fonts */
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+/* ---- Graphite (dark) ---- */
+[data-theme="graphite"] {
+  --bg:#121419; --bg-elev:#171a20; --panel:#1b1f27; --panel-2:#21262f;
+  --border:#272d38; --border-soft:#20252e;
+  --text:#eef1f6;            /* correct / primary */
+  --text-pending:#565d6b;    /* untyped glyphs */
+  --text-sub:#8b93a1;        /* secondary chrome text */
+  --text-faint:#646c7a;
+  --accent:#f4c44d;          /* caret + active */
+  --accent-soft:rgba(244,196,77,.16);
+  --error:#e35d72;           /* incorrect */
+  --error-bg:rgba(227,93,114,.13);
+  --extra:#9a4a57;           /* extra chars */
+  --good:#52c79a;
+  --shadow:0 18px 50px -22px rgba(0,0,0,.7), 0 2px 8px -4px rgba(0,0,0,.5);
+  --caret-glow:0 0 14px rgba(244,196,77,.55);
+  color-scheme: dark;
+}
+/* ---- Paper (light) ---- */
+[data-theme="paper"] {
+  --bg:#f3efe6; --bg-elev:#f8f5ee; --panel:#fbf9f3; --panel-2:#f1ece1;
+  --border:#e0d9ca; --border-soft:#e8e2d5;
+  --text:#23262c;
+  --text-pending:#bcb4a3;
+  --text-sub:#7c7568;
+  --text-faint:#9a9384;
+  --accent:#bd7c12;
+  --accent-soft:rgba(189,124,18,.14);
+  --error:#c0392b;
+  --error-bg:rgba(192,57,43,.10);
+  --extra:#b07a73;
+  --good:#1f8a5b;
+  --shadow:0 18px 44px -24px rgba(80,66,40,.5), 0 2px 6px -3px rgba(80,66,40,.25);
+  --caret-glow:0 0 10px rgba(189,124,18,.4);
+  color-scheme: light;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text-sub);
+  font-family: var(--font-ui);
+  font-size: var(--fs-400);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  transition: background var(--dur-3) var(--ease), color var(--dur-3) var(--ease);
+}
+.app {
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: clamp(var(--s4), 3vw, var(--s7)) clamp(var(--s4), 4vw, var(--s7));
+  gap: clamp(var(--s5), 4vh, var(--s8));
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--r-sm); }
+
+.skip {
+  position: absolute; left: var(--s4); top: -60px;
+  background: var(--accent); color: #14161b; padding: var(--s2) var(--s4);
+  border-radius: var(--r-sm); font-weight: 700; z-index: 50;
+  transition: top var(--dur-2) var(--ease);
+}
+.skip:focus { top: var(--s4); }
+
+/* ============================== HEADER ============================== */
+.head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--s4);
+  transition: opacity var(--dur-3) var(--ease);
+}
+.brand { display: flex; align-items: center; gap: var(--s3); }
+.brand-mark {
+  width: 30px; height: 30px; color: var(--accent);
+  flex: 0 0 auto;
+}
+.brand-name {
+  font-family: var(--font-mono); font-weight: 600;
+  font-size: var(--fs-500); letter-spacing: -.02em; color: var(--text);
+}
+.brand-name b { color: var(--accent); font-weight: 600; }
+.head-right { display: flex; align-items: center; gap: var(--s2); }
+.best {
+  display: flex; align-items: baseline; gap: var(--s2);
+  font-size: var(--fs-300); color: var(--text-sub);
+  padding: var(--s2) var(--s3); border-radius: var(--r-pill);
+  border: 1px solid var(--border-soft); white-space: nowrap;
+}
+.best b { font-family: var(--font-mono); color: var(--accent); font-size: var(--fs-400); }
+.icon-btn {
+  width: 44px; height: 44px; display: grid; place-items: center;
+  background: transparent; border: 1px solid transparent; border-radius: var(--r-md);
+  color: var(--text-sub); cursor: pointer;
+  transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
+}
+.icon-btn:hover { background: var(--panel); color: var(--text); }
+.icon-btn:active { transform: scale(.93); }
+.icon-btn svg { width: 20px; height: 20px; }
+
+/* ============================== CONFIG BAR ============================== */
+.config {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: var(--s2);
+  background: var(--panel);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-pill);
+  padding: var(--s2);
+  width: max-content; max-width: 100%;
+  margin: 0 auto;
+  font-size: var(--fs-300);
+  box-shadow: var(--shadow);
+  transition: opacity var(--dur-3) var(--ease), transform var(--dur-3) var(--ease);
+}
+.config .sep { width: 1px; align-self: stretch; background: var(--border); margin: var(--s1) var(--s1); }
+.cfg-group { display: flex; align-items: center; gap: 2px; }
+.chip {
+  appearance: none; border: none; background: transparent;
+  color: var(--text-sub); font-family: var(--font-ui); font-size: var(--fs-300);
+  font-weight: 600; letter-spacing: .01em;
+  padding: var(--s2) var(--s3); min-height: 32px; border-radius: var(--r-pill);
+  cursor: pointer; display: inline-flex; align-items: center; gap: var(--s2);
+  transition: color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
+  white-space: nowrap;
+}
+.chip svg { width: 15px; height: 15px; opacity: .9; }
+.chip:hover { color: var(--text); }
+.chip[aria-pressed="true"], .chip.active { color: var(--accent); background: var(--accent-soft); }
+.chip.toggle[aria-pressed="true"] { color: var(--accent); }
+@media (max-width: 560px) {
+  .config { border-radius: var(--r-lg); }
+  .config .sep { display: none; }
+  .cfg-group { flex-wrap: wrap; justify-content: center; }
+}
+
+/* ============================== STAGE ============================== */
+.stage { display: flex; flex-direction: column; gap: var(--s5); align-items: stretch; justify-content: center; }
+
+/* live readout */
+.live {
+  display: flex; align-items: baseline; gap: var(--s5);
+  min-height: 40px;
+  font-family: var(--font-mono);
+  opacity: 0; transform: translateY(4px);
+  transition: opacity var(--dur-2) var(--ease), transform var(--dur-2) var(--ease);
+  pointer-events: none;
+}
+.live.show { opacity: 1; transform: none; }
+.live .metric { display: flex; align-items: baseline; gap: var(--s2); }
+.live .metric .v { font-size: var(--fs-700); color: var(--accent); line-height: 1; font-variant-numeric: tabular-nums; min-width: 1ch; }
+.live .metric .l { font-size: var(--fs-300); color: var(--text-faint); font-family: var(--font-ui); text-transform: lowercase; letter-spacing: .04em; }
+.live .metric.sub .v { font-size: var(--fs-600); color: var(--text-sub); }
+
+/* the prompt */
+.typecard { position: relative; }
+.words-window {
+  position: relative;
+  height: calc(3 * var(--line-h, 3.1em));
+  overflow: hidden;
+  cursor: text;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+          mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+}
+.words {
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: var(--fs-prompt);
+  line-height: 1.55;
+  font-weight: 450;
+  letter-spacing: .005em;
+  color: var(--text-pending);
+  will-change: transform;
+  transition: transform var(--dur-2) var(--ease);
+  user-select: none;
+}
+.word { display: inline-block; margin-right: .42ch; border-bottom: 2px solid transparent; padding-bottom: 1px; }
+.word.bad { border-bottom-color: color-mix(in srgb, var(--error) 55%, transparent); }
+.letter { position: relative; transition: color var(--dur-1) linear; }
+.letter.correct { color: var(--text); }
+.letter.incorrect { color: var(--error); }
+.letter.extra { color: var(--extra); opacity: .85; }
+
+/* caret */
+.caret {
+  position: absolute; top: 0; left: 0;
+  width: 2.5px; height: 1.28em;
+  background: var(--accent);
+  border-radius: 2px;
+  box-shadow: var(--caret-glow);
+  transform: translate(0, .12em);
+  transition: transform var(--dur-1) var(--ease-caret), opacity var(--dur-1) linear;
+  will-change: transform;
+}
+.caret.blink { animation: blink 1.05s steps(1) infinite; }
+@keyframes blink { 0%,55% { opacity: 1; } 56%,100% { opacity: .12; } }
+
+/* focus overlay */
+.focus-veil {
+  position: absolute; inset: -8px -4px; z-index: 5;
+  display: grid; place-items: center;
+  gap: var(--s2);
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  backdrop-filter: blur(4px);
+  border-radius: var(--r-md);
+  color: var(--text-sub); font-size: var(--fs-400); font-weight: 600;
+  opacity: 0; visibility: hidden;
+  transition: opacity var(--dur-2) var(--ease), visibility var(--dur-2);
+  cursor: pointer;
+}
+.focus-veil svg { width: 22px; height: 22px; }
+.typecard.blurred .focus-veil { opacity: 1; visibility: visible; }
+.typecard.blurred .words { filter: blur(4px); transition: filter var(--dur-2) var(--ease); }
+
+.io { position: absolute; opacity: 0; width: 1px; height: 1px; top: 50%; left: 50%; pointer-events: none; }
+
+/* hint row */
+.hint {
+  display: flex; align-items: center; justify-content: center; gap: var(--s4);
+  font-size: var(--fs-300); color: var(--text-faint);
+  transition: opacity var(--dur-3) var(--ease);
+  flex-wrap: wrap;
+}
+.hint .keys { display: inline-flex; align-items: center; gap: var(--s2); }
+kbd {
+  font-family: var(--font-mono); font-size: .82em;
+  background: var(--panel-2); color: var(--text-sub);
+  border: 1px solid var(--border); border-bottom-width: 2px;
+  border-radius: var(--r-sm); padding: 1px 7px; min-width: 20px; text-align: center;
+}
+.btn-restart {
+  appearance: none; background: transparent; border: none; cursor: pointer;
+  color: var(--text-faint); padding: var(--s2); border-radius: var(--r-md);
+  display: inline-grid; place-items: center;
+  transition: color var(--dur-1) var(--ease), background var(--dur-1) var(--ease), transform var(--dur-2) var(--ease);
+}
+.btn-restart:hover { color: var(--text); background: var(--panel); }
+.btn-restart:active svg { transform: rotate(-90deg); }
+.btn-restart svg { width: 20px; height: 20px; transition: transform var(--dur-3) var(--ease); }
+
+/* focus-mode: dim chrome while typing */
+.app.typing .head,
+.app.typing .config,
+.app.typing .hint { opacity: .18; }
+.app.typing .head:hover,
+.app.typing .config:hover { opacity: 1; }
+.app.focusmode.typing .head,
+.app.focusmode.typing .config,
+.app.focusmode.typing .hint { opacity: 0; pointer-events: none; }
+
+/* ============================== RESULTS ============================== */
+.results {
+  display: none;
+  animation: rise var(--dur-3) var(--ease) both;
+}
+.results.show { display: block; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.app.done .stage { display: none; }
+.app.done .hint { display: none; }
+
+.res-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 230px) 1fr;
+  gap: clamp(var(--s5), 4vw, var(--s8));
+  align-items: start;
+}
+.res-headline { display: flex; flex-direction: column; gap: var(--s5); align-self: center; }
+.res-big .label { font-size: var(--fs-300); color: var(--text-faint); text-transform: lowercase; letter-spacing: .08em; }
+.res-big .num {
+  font-family: var(--font-mono); font-size: var(--fs-900); line-height: .9;
+  color: var(--accent); font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+}
+.res-big.acc .num { color: var(--text); }
+.res-big .unit { font-size: var(--fs-500); color: var(--text-faint); margin-left: var(--s2); }
+
+.res-main { display: flex; flex-direction: column; gap: var(--s5); }
+.chart-wrap {
+  background: var(--panel); border: 1px solid var(--border-soft);
+  border-radius: var(--r-lg); padding: var(--s5) var(--s5) var(--s4);
+  box-shadow: var(--shadow);
+}
+.chart-legend { display: flex; gap: var(--s5); font-size: var(--fs-300); color: var(--text-sub); margin-bottom: var(--s3); }
+.chart-legend span { display: inline-flex; align-items: center; gap: var(--s2); }
+.dot { width: 9px; height: 9px; border-radius: 50%; }
+.dot.wpm { background: var(--accent); }
+.dot.raw { background: var(--text-faint); }
+.dot.err { background: var(--error); }
+.chart-wrap svg { display: block; width: 100%; height: auto; }
+.chart-empty { color: var(--text-faint); font-size: var(--fs-300); text-align: center; padding: var(--s5) 0; }
+
+.res-stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--s2) var(--s5);
+}
+.stat .k { font-size: var(--fs-300); color: var(--text-faint); text-transform: lowercase; letter-spacing: .04em; }
+.stat .v { font-family: var(--font-mono); font-size: var(--fs-600); color: var(--text); font-variant-numeric: tabular-nums; }
+.stat .v small { font-size: .62em; color: var(--text-faint); margin-left: 2px; }
+
+.res-actions { display: flex; gap: var(--s3); flex-wrap: wrap; margin-top: var(--s2); }
+.btn {
+  appearance: none; cursor: pointer; font-family: var(--font-ui); font-weight: 600;
+  font-size: var(--fs-400); padding: var(--s3) var(--s5); min-height: 44px;
+  border-radius: var(--r-md); border: 1px solid var(--border);
+  background: var(--panel); color: var(--text);
+  display: inline-flex; align-items: center; gap: var(--s2);
+  transition: background var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease), transform var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+.btn svg { width: 17px; height: 17px; }
+.btn:hover { border-color: var(--text-faint); background: var(--panel-2); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: var(--accent); color: #16181d; border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.06); }
+[data-theme="paper"] .btn.primary { color: #fff; }
+
+/* history */
+.history { margin-top: var(--s4); }
+.history h3 { font-size: var(--fs-300); color: var(--text-faint); text-transform: lowercase; letter-spacing: .08em; font-weight: 600; margin-bottom: var(--s3); }
+.hist-list { display: flex; flex-direction: column; gap: 2px; }
+.hist-row {
+  display: grid; grid-template-columns: 1fr auto auto auto; gap: var(--s4); align-items: baseline;
+  font-size: var(--fs-300); padding: var(--s2) var(--s3); border-radius: var(--r-sm);
+  color: var(--text-sub);
+}
+.hist-row:nth-child(odd) { background: color-mix(in srgb, var(--panel) 60%, transparent); }
+.hist-row .hw { font-family: var(--font-mono); color: var(--accent); font-size: var(--fs-400); }
+.hist-row .hm { color: var(--text-faint); }
+.hist-empty { font-size: var(--fs-300); color: var(--text-faint); font-style: italic; }
+
+/* footer */
+.foot {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s4);
+  font-size: var(--fs-300); color: var(--text-faint);
+  border-top: 1px solid var(--border-soft); padding-top: var(--s4);
+  flex-wrap: wrap;
+}
+.foot a { text-decoration: none; border-bottom: 1px solid var(--border); padding-bottom: 1px; transition: color var(--dur-1), border-color var(--dur-1); }
+.foot a:hover { color: var(--text); border-color: var(--text-faint); }
+
+@media (max-width: 720px) {
+  .res-grid { grid-template-columns: 1fr; gap: var(--s5); }
+  .res-headline { flex-direction: row; gap: var(--s7); align-items: flex-end; }
+}
+@media (max-width: 420px) {
+  .live { gap: var(--s4); }
+  .res-headline { gap: var(--s5); }
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+  .caret { transition: none; }
+  .caret.blink { animation: none; opacity: 1; }
+  .words { transition: none; }
+}
+
+/* toast */
+.toast {
+  position: fixed; left: 50%; bottom: var(--s6); transform: translateX(-50%) translateY(12px);
+  background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+  padding: var(--s3) var(--s5); border-radius: var(--r-pill); font-size: var(--fs-300); font-weight: 600;
+  box-shadow: var(--shadow); opacity: 0; pointer-events: none; z-index: 40;
+  transition: opacity var(--dur-2) var(--ease), transform var(--dur-2) var(--ease);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<a class="skip" href="#typecard">Skip to typing test</a>
+<main class="app" id="app">
+
+  <!-- ===== HEADER ===== -->
+  <header class="head">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <rect x="2.5" y="9" width="27" height="14.5" rx="3.5" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M8 13.5h0M12 13.5h0M16 13.5h0M20 13.5h0M24 13.5h0M8 17h0M12 17h0M20 17h0M24 17h0" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+        <rect x="11.5" y="16" width="9" height="2.6" rx="1.3" fill="currentColor"/>
+      </svg>
+      <span class="brand-name">kine<b>tik</b></span>
+    </div>
+    <div class="head-right">
+      <div class="best" title="Your best result on this device">
+        <span>best</span><b id="bestWpm">—</b><span>wpm</span>
+      </div>
+      <button class="icon-btn" id="focusBtn" type="button" aria-pressed="false" title="Focus mode (Ctrl+F)" aria-label="Toggle focus mode">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 12C5 8 8.5 5.5 12 5.5S19 8 20.5 12C19 16 15.5 18.5 12 18.5S5 16 3.5 12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="icon-btn" id="themeBtn" type="button" title="Switch theme" aria-label="Switch theme">
+        <svg id="themeIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== STAGE ===== -->
+  <section class="stage" aria-label="Typing test">
+    <!-- config -->
+    <div class="config" role="toolbar" aria-label="Test settings">
+      <div class="cfg-group" role="group" aria-label="Toggles">
+        <button class="chip toggle" data-toggle="punctuation" type="button" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 8.5a3 3 0 1 1 3 3c-1 0-1.5.6-1.5 1.6V14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9.6" cy="17" r="1.1" fill="currentColor"/><path d="M16 12v3M16 17.2v0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          punctuation
+        </button>
+        <button class="chip toggle" data-toggle="numbers" type="button" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5 7 19M17 5l-2 14M5 9h14M4 15h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          numbers
+        </button>
+      </div>
+      <span class="sep" aria-hidden="true"></span>
+      <div class="cfg-group" role="group" aria-label="Test mode">
+        <button class="chip" data-mode="time" type="button" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="13" r="7.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 9.5V13l2.5 1.8M9.5 3.5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          time
+        </button>
+        <button class="chip" data-mode="words" type="button" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h11M4 12h16M4 17h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          words
+        </button>
+        <button class="chip" data-mode="quote" type="button" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.5 7C7 8 5.5 10 5.5 12.5c0 1.7 1.1 3 2.7 3 1.4 0 2.5-1 2.5-2.5S9.7 10.5 8.3 10.5c-.3 0-.6 0-.8.1.4-1 1.3-1.9 2.6-2.5L9.5 7ZM18 7c-2.5 1-4 3-4 5.5 0 1.7 1.1 3 2.7 3 1.4 0 2.5-1 2.5-2.5s-1-2.5-2.4-2.5c-.3 0-.6 0-.8.1.4-1 1.3-1.9 2.6-2.5L18 7Z" fill="currentColor"/></svg>
+          quote
+        </button>
+      </div>
+      <span class="sep" aria-hidden="true"></span>
+      <div class="cfg-group" id="optGroup" role="group" aria-label="Mode options"></div>
+      <span class="sep" aria-hidden="true"></span>
+      <div class="cfg-group" role="group" aria-label="Strict mode">
+        <button class="chip toggle" data-toggle="strict" type="button" aria-pressed="false" title="Stop on error — a wrong key won't register until corrected">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.5 4.5 7v5c0 4.4 3 7.4 7.5 8.5 4.5-1.1 7.5-4.1 7.5-8.5V7L12 3.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.5 12l1.8 1.8L15 9.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          strict
+        </button>
+      </div>
+    </div>
+
+    <!-- live readout -->
+    <div class="live" id="live" aria-live="off">
+      <div class="metric"><span class="v" id="liveMain">0</span><span class="l" id="liveMainL">wpm</span></div>
+      <div class="metric sub"><span class="v" id="liveAcc">100<small>%</small></span><span class="l">acc</span></div>
+    </div>
+
+    <!-- prompt -->
+    <div class="typecard" id="typecard">
+      <div class="words-window" id="window">
+        <div class="words" id="words" aria-hidden="true"></div>
+        <div class="caret blink" id="caret"></div>
+      </div>
+      <div class="focus-veil" id="veil" role="button" tabindex="0" aria-label="Click to refocus the typing test">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12s3.5-7 9-7 9 7 9 7-3.5 7-9 7-9-7-9-7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="1.8"/></svg>
+        <span>Click or press any key to focus</span>
+      </div>
+      <input class="io" id="io" autocomplete="off" autocorrect="off" autocapitalize="off"
+             spellcheck="false" aria-label="Typing input" tabindex="0">
+    </div>
+
+    <!-- hint -->
+    <div class="hint" id="hint">
+      <span class="keys"><kbd>tab</kbd> restart</span>
+      <span class="keys"><kbd>esc</kbd> new test</span>
+      <button class="btn-restart" id="restartInline" type="button" aria-label="Restart test">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.1-5M19 4.5V9h-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== RESULTS ===== -->
+  <section class="results" id="results" aria-label="Results" aria-live="polite">
+    <div class="res-grid">
+      <div class="res-headline">
+        <div class="res-big">
+          <div class="label">wpm</div>
+          <div class="num" id="rWpm">0</div>
+        </div>
+        <div class="res-big acc">
+          <div class="label">accuracy</div>
+          <div class="num" id="rAcc">0<span class="unit">%</span></div>
+        </div>
+      </div>
+      <div class="res-main">
+        <div class="chart-wrap">
+          <div class="chart-legend">
+            <span><i class="dot wpm"></i>wpm</span>
+            <span><i class="dot raw"></i>raw</span>
+            <span><i class="dot err"></i>errors</span>
+          </div>
+          <div id="chartHost"></div>
+        </div>
+        <div class="res-stats">
+          <div class="stat"><div class="k">raw</div><div class="v" id="rRaw">0</div></div>
+          <div class="stat"><div class="k">consistency</div><div class="v" id="rCons">0<small>%</small></div></div>
+          <div class="stat"><div class="k">characters</div><div class="v" id="rChars">0/0/0/0</div></div>
+          <div class="stat"><div class="k">test</div><div class="v" id="rMode">—</div></div>
+          <div class="stat"><div class="k">time</div><div class="v" id="rTime">0<small>s</small></div></div>
+        </div>
+        <div class="res-actions">
+          <button class="btn primary" id="nextBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Next test
+          </button>
+          <button class="btn" id="repeatBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.1-5M19 4.5V9h-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Repeat
+          </button>
+        </div>
+        <div class="history">
+          <h3>recent</h3>
+          <div class="hist-list" id="histList"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="foot">
+    <span>Kinetik · a focused typing test</span>
+    <span>Quotes are <a href="#" id="quoteNote" title="These quotes are illustrative sample text, not real attributed quotations.">illustrative</a> · bests stored locally</span>
+  </footer>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+(function () {
+  /* ====== test seam: a single guarded clock so timing is controllable in tests ====== */
+  const nowMs = () => (window.__ttNow != null ? window.__ttNow : performance.now());
+
+  /* ============================== DATA ============================== */
+  const WORDS = ("the of to and a in is it you that he was for on are with as i his they be at one have this from or had by hot but some what there we can out other were all your when up use word how said an each she which do their time if will way about many then them write would like so these her long make thing see him two has look more day could go come did my sound no most number who over know water than call first people may down side been now find any new work part take get place made live where after back little only round man year came show every good me give our under name very through just form much great think say help low line before turn cause same mean differ move right boy old too does tell sentence set three want air well also play small end put home read hand port large spell add even land here must big high such follow act why ask men change went light kind off need house picture try us again animal point mother world near build self earth father").split(" ");
+  const PUNCT_END = [".", ".", ".", ",", ",", "!", "?", ";", ":"];
+  const QUOTES = [
+    { text: "The caret keeps a quiet rhythm; each correct letter is a small, certain step forward.", source: "Illustrative" },
+    { text: "Speed without accuracy is only noise. Aim for the clean keystroke first, and the pace will follow on its own.", source: "Illustrative" },
+    { text: "A focused mind feels like an empty desk: nothing on it but the single thing in front of you, and the patience to do that thing well, again and again, until it becomes effortless.", source: "Illustrative" },
+    { text: "Practice is not about forcing a result. It is about returning, calmly, to the same simple motion until the hands remember what the mind no longer needs to think about.", source: "Illustrative" }
+  ];
+
+  /* ============================== STATE ============================== */
+  const cfg = { mode: "time", time: 30, words: 25, quote: 1, punctuation: false, numbers: false, strict: false };
+  const QUOTE_LEN = [{ k: 0, label: "short" }, { k: 1, label: "medium" }, { k: 2, label: "long" }];
+  let words = [];          // target words
+  let input = [];          // typed string per word
+  let wordIdx = 0;
+  let started = false, finished = false;
+  let startT = 0;
+  let total = 0, correct = 0;     // keystroke counters (accuracy)
+  let history = [];               // per-second samples {t,wpm,raw,err}
+  let lastSec = -1, lastSecErr = 0, lastSecTotalErr = 0;
+  let tick = null;
+  let blinkTimer = null;
+
+  /* ============================== ELEMENTS ============================== */
+  const $ = (id) => document.getElementById(id);
+  const app = $("app"), wordsEl = $("words"), winEl = $("window"), caret = $("caret"),
+        io = $("io"), liveEl = $("live"), typecard = $("typecard"), veil = $("veil"),
+        toastEl = $("toast"), optGroup = $("optGroup");
+
+  /* ============================== HELPERS ============================== */
+  const rnd = (n) => Math.floor(Math.random() * n);
+  function toast(msg) {
+    toastEl.textContent = msg; toastEl.classList.add("show");
+    clearTimeout(toast._t); toast._t = setTimeout(() => toastEl.classList.remove("show"), 1500);
+  }
+  function elapsedMs() { return started ? nowMs() - startT : 0; }
+  function minutes() { return elapsedMs() / 60000; }
+
+  /* ============================== WORD GENERATION ============================== */
+  function maybePunctuate(list) {
+    // capitalize first; sprinkle commas + sentence-ending punctuation
+    if (!list.length) return list;
+    let sentenceStart = true;
+    for (let i = 0; i < list.length; i++) {
+      let w = list[i];
+      if (sentenceStart) { w = w[0].toUpperCase() + w.slice(1); sentenceStart = false; }
+      const last = i === list.length - 1;
+      if (last) { w += "."; }
+      else if (Math.random() < 0.16) {
+        const p = PUNCT_END[rnd(PUNCT_END.length)];
+        w += p;
+        if (p === "." || p === "!" || p === "?") sentenceStart = true;
+      }
+      list[i] = w;
+    }
+    return list;
+  }
+  function maybeNumbers(list) {
+    for (let i = 0; i < list.length; i++) {
+      if (Math.random() < 0.12) list[i] = String(rnd(900) + 10);
+    }
+    return list;
+  }
+  function sampleWords(n) {
+    const out = [];
+    let prev = -1;
+    for (let i = 0; i < n; i++) {
+      let k = rnd(WORDS.length);
+      if (k === prev) k = (k + 1) % WORDS.length;
+      prev = k; out.push(WORDS[k]);
+    }
+    if (cfg.numbers) maybeNumbers(out);
+    if (cfg.punctuation) maybePunctuate(out);
+    return out;
+  }
+  function buildTarget() {
+    if (cfg.mode === "quote") {
+      const q = QUOTES.filter((_, i) => true);
+      // choose by length bucket
+      const buckets = [
+        QUOTES.filter(x => x.text.length < 110),
+        QUOTES.filter(x => x.text.length >= 110 && x.text.length < 200),
+        QUOTES.filter(x => x.text.length >= 200)
+      ];
+      const b = buckets[cfg.quote].length ? buckets[cfg.quote] : QUOTES;
+      const chosen = b[rnd(b.length)];
+      words = chosen.text.split(" ");
+    } else if (cfg.mode === "words") {
+      words = sampleWords(cfg.words);
+    } else {
+      words = sampleWords(80); // generous buffer for time mode; extend if needed
+    }
+  }
+  function extend() { // time mode: keep feeding words
+    const more = sampleWords(40);
+    words = words.concat(more);
+    renderWords();
+  }
+
+  /* ============================== RENDER ============================== */
+  function renderWords() {
+    const frag = document.createDocumentFragment();
+    for (let w = 0; w < words.length; w++) {
+      const wEl = document.createElement("span");
+      wEl.className = "word"; wEl.dataset.w = w;
+      const tw = words[w], tin = input[w] || "";
+      const len = Math.max(tw.length, tin.length);
+      for (let c = 0; c < len; c++) {
+        const ch = document.createElement("span");
+        ch.className = "letter";
+        if (c < tw.length) {
+          ch.textContent = tw[c];
+          if (c < tin.length) ch.classList.add(tin[c] === tw[c] ? "correct" : "incorrect");
+        } else {
+          ch.textContent = tin[c]; ch.classList.add("extra");
+        }
+        wEl.appendChild(ch);
+      }
+      if (w < wordIdx && input[w] !== undefined && input[w] !== tw) wEl.classList.add("bad");
+      frag.appendChild(wEl);
+    }
+    wordsEl.innerHTML = "";
+    wordsEl.appendChild(frag);
+    measureLine();
+    positionCaret();
+  }
+  // incremental: re-render only active word for snappiness
+  function refreshActiveWord() {
+    const wEl = wordsEl.querySelector('.word[data-w="' + wordIdx + '"]');
+    if (!wEl) { renderWords(); return; }
+    const tw = words[wordIdx], tin = input[wordIdx] || "";
+    const len = Math.max(tw.length, tin.length);
+    wEl.innerHTML = "";
+    for (let c = 0; c < len; c++) {
+      const ch = document.createElement("span");
+      ch.className = "letter";
+      if (c < tw.length) {
+        ch.textContent = tw[c];
+        if (c < tin.length) ch.classList.add(tin[c] === tw[c] ? "correct" : "incorrect");
+      } else { ch.textContent = tin[c]; ch.classList.add("extra"); }
+      wEl.appendChild(ch);
+    }
+    positionCaret();
+  }
+  let lineH = 0;
+  function measureLine() {
+    const first = wordsEl.querySelector(".letter");
+    if (first) {
+      lineH = first.offsetHeight || 0;
+      winEl.style.setProperty("--line-h", lineH ? lineH + "px" : "3.1em");
+      document.documentElement.style.setProperty("--line-h", lineH + "px");
+      winEl.style.height = (lineH * 3) + "px";
+    }
+  }
+  function positionCaret() {
+    const wEl = wordsEl.querySelector('.word[data-w="' + wordIdx + '"]');
+    if (!wEl) return;
+    const letters = wEl.querySelectorAll(".letter");
+    const pos = (input[wordIdx] || "").length;
+    let x, y;
+    if (letters.length === 0) {
+      x = wEl.offsetLeft; y = wEl.offsetTop;
+    } else if (pos < letters.length) {
+      const l = letters[pos]; x = l.offsetLeft; y = l.offsetTop;
+    } else {
+      const l = letters[letters.length - 1]; x = l.offsetLeft + l.offsetWidth; y = l.offsetTop;
+    }
+    const caretH = lineH * 0.66;
+    caret.style.transform = "translate(" + x + "px," + (y + (lineH - caretH) / 2) + "px)";
+    caret.style.height = caretH + "px";
+    // vertical scroll: keep active line as 2nd visible line
+    const linesDown = lineH ? Math.round(y / lineH) : 0;
+    const scroll = Math.max(0, (linesDown - 1)) * lineH;
+    wordsEl.style.transform = "translateY(" + (-scroll) + "px)";
+  }
+  function pokeCaret() {
+    caret.classList.remove("blink");
+    clearTimeout(blinkTimer);
+    if (!finished) blinkTimer = setTimeout(() => caret.classList.add("blink"), 900);
+  }
+
+  /* ============================== STATS ============================== */
+  function liveCounts() {
+    // correct chars across completed words (+ their spaces) and active word
+    let cc = 0;
+    for (let w = 0; w <= wordIdx && w < words.length; w++) {
+      const tw = words[w], tin = input[w] || "";
+      const lim = Math.min(tw.length, tin.length);
+      for (let c = 0; c < lim; c++) if (tin[c] === tw[c]) cc++;
+      if (w < wordIdx) { // a completed word contributes its trailing space if perfectly matched length-wise
+        if (tin.length >= tw.length && tin.slice(0, tw.length) === tw) cc++; // the space keystroke was correct
+      }
+    }
+    return cc;
+  }
+  function allTypedChars() {
+    let n = 0;
+    for (let w = 0; w <= wordIdx && w < words.length; w++) {
+      n += (input[w] || "").length;
+      if (w < wordIdx) n += 1; // space
+    }
+    return n;
+  }
+  function curWpm() {
+    const m = minutes();
+    if (m <= 0) return 0;
+    return (liveCounts() / 5) / m;
+  }
+  function curRaw() {
+    const m = minutes();
+    if (m <= 0) return 0;
+    return (allTypedChars() / 5) / m;
+  }
+  function curAcc() {
+    if (total === 0) return 100;
+    return (correct / total) * 100;
+  }
+
+  /* ============================== LIVE LOOP ============================== */
+  function startTickLoop() {
+    if (tick) return;
+    tick = setInterval(() => {
+      if (!started || finished) return;
+      const sec = Math.floor(elapsedMs() / 1000);
+      // sample once per elapsed second
+      if (sec > lastSec) {
+        for (let s = lastSec + 1; s <= sec; s++) {
+          history.push({ t: s + 1, wpm: Math.round(curWpm()), raw: Math.round(curRaw()), err: total - correct - lastSecTotalErr });
+          lastSecTotalErr = total - correct;
+        }
+        lastSec = sec;
+      }
+      updateLive();
+      if (cfg.mode === "time") {
+        const remain = cfg.time - elapsedMs() / 1000;
+        $("liveMain").textContent = Math.max(0, Math.ceil(remain));
+        if (remain <= 0) { finish(); return; }
+        // feed more words if running low
+        if (wordIdx > words.length - 25) extend();
+      }
+    }, 100);
+  }
+  function updateLive() {
+    if (cfg.mode === "time") {
+      $("liveMainL").textContent = "seconds";
+    } else {
+      $("liveMainL").textContent = cfg.mode === "quote" ? "wpm" : "wpm";
+      if (cfg.mode === "words") { $("liveMain").textContent = wordIdx + "/" + cfg.words; $("liveMainL").textContent = "words"; }
+      else { $("liveMain").textContent = Math.round(curWpm()); }
+    }
+    $("liveAcc").innerHTML = Math.round(curAcc()) + "<small>%</small>";
+  }
+
+  /* ============================== INPUT ============================== */
+  function onFirstKey() {
+    if (started) return;
+    started = true; startT = nowMs();
+    lastSec = -1; lastSecTotalErr = 0;
+    app.classList.add("typing");
+    liveEl.classList.add("show");
+    startTickLoop();
+  }
+  function handleChar(ch) {
+    if (finished) return;
+    if (!started) onFirstKey();
+    const tw = words[wordIdx];
+    if (ch === " ") {
+      if ((input[wordIdx] || "").length === 0) return; // ignore leading space
+      // the space keystroke matches the target word-boundary space -> always a correct keystroke
+      total++; correct++;
+      // advance
+      if (cfg.mode !== "time" && wordIdx >= words.length - 1) { finish(); return; }
+      wordIdx++;
+      if (input[wordIdx] === undefined) input[wordIdx] = "";
+      if (cfg.mode === "time" && wordIdx > words.length - 25) extend();
+      renderWords();
+      return;
+    }
+    const cur = input[wordIdx] || "";
+    const expected = tw[cur.length];
+    const isCorrect = ch === expected;
+    if (cfg.strict && !isCorrect) {
+      // stop-on-error: don't register the wrong char, but it still counts against accuracy
+      total++;
+      shake();
+      return;
+    }
+    total++;
+    if (isCorrect) correct++;
+    input[wordIdx] = cur + ch;
+    refreshActiveWord();
+    // completion: last word fully typed (word/quote mode)
+    if (cfg.mode !== "time" && wordIdx === words.length - 1 && input[wordIdx].length >= tw.length) {
+      finish(); return;
+    }
+  }
+  function handleBackspace(word) {
+    if (finished || !started) return;
+    const cur = input[wordIdx] || "";
+    if (cur.length > 0) {
+      input[wordIdx] = word ? "" : cur.slice(0, -1);
+      refreshActiveWord();
+    } else if (wordIdx > 0) {
+      wordIdx--;
+      renderWords();
+    }
+  }
+  function shake() {
+    typecard.animate(
+      [{ transform: "translateX(0)" }, { transform: "translateX(-4px)" }, { transform: "translateX(4px)" }, { transform: "translateX(0)" }],
+      { duration: 160, easing: "ease-in-out" }
+    );
+  }
+
+  // key handling on the hidden input
+  io.addEventListener("keydown", (e) => {
+    if (e.key === "Tab") { e.preventDefault(); restart(false); return; }
+    if (e.key === "Escape") { e.preventDefault(); restart(true); return; }
+    if (e.metaKey || e.altKey) return;
+    if (e.key === "Backspace") { e.preventDefault(); handleBackspace(e.ctrlKey); if (started && !finished) updateLive(); pokeCaret(); return; }
+    if (e.ctrlKey) return;
+    if (e.key.length === 1) {
+      e.preventDefault();
+      handleChar(e.key);
+      if (started && !finished) updateLive();
+      pokeCaret();
+    }
+  });
+  // keep value empty (mobile)
+  io.addEventListener("input", () => { io.value = ""; });
+
+  /* ============================== FOCUS ============================== */
+  function focusIO() { io.focus({ preventScroll: true }); }
+  function setBlurred(b) { typecard.classList.toggle("blurred", b && !finished); if (!b) pokeCaret(); }
+  io.addEventListener("focus", () => setBlurred(false));
+  io.addEventListener("blur", () => setBlurred(true));
+  winEl.addEventListener("mousedown", (e) => { e.preventDefault(); focusIO(); });
+  veil.addEventListener("click", focusIO);
+  veil.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); focusIO(); } });
+  // global: typing anywhere (not in a control) refocuses + feeds the key
+  document.addEventListener("keydown", (e) => {
+    if (finished) return;
+    if (document.activeElement === io) return;
+    const tag = (document.activeElement && document.activeElement.tagName) || "";
+    if (/INPUT|BUTTON|A|TEXTAREA/.test(tag) && document.activeElement !== veil) return;
+    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      focusIO();
+    }
+  });
+
+  /* ============================== FINISH / RESULTS ============================== */
+  function finish() {
+    if (finished) return;
+    finished = true;
+    clearInterval(tick); tick = null;
+    caret.classList.remove("blink");
+    app.classList.remove("typing");
+    app.classList.add("done");
+    $("results").classList.add("show");
+    liveEl.classList.remove("show");
+
+    // final character breakdown
+    let cCorrect = 0, cIncorrect = 0, cExtra = 0, cMissed = 0;
+    const upto = cfg.mode === "time" ? wordIdx : words.length;
+    for (let w = 0; w < upto && w < words.length; w++) {
+      const tw = words[w], tin = input[w] || "";
+      const isActive = (w === wordIdx);
+      const consider = (w < wordIdx) || (cfg.mode !== "time" && w === words.length - 1);
+      for (let c = 0; c < tw.length; c++) {
+        if (c < tin.length) { if (tin[c] === tw[c]) cCorrect++; else cIncorrect++; }
+        else if (w < wordIdx) cMissed++;            // skipped chars in a completed word
+      }
+      if (tin.length > tw.length) cExtra += tin.length - tw.length;
+      if (w < wordIdx) cCorrect += 1;               // counted spaces (between words)
+    }
+    // active (last partial) word in time mode
+    if (cfg.mode === "time") {
+      const tw = words[wordIdx] || "", tin = input[wordIdx] || "";
+      for (let c = 0; c < tin.length; c++) {
+        if (c < tw.length) { if (tin[c] === tw[c]) cCorrect++; else cIncorrect++; }
+        else cExtra++;
+      }
+    }
+
+    const m = minutes();
+    const finalWpm = m > 0 ? (liveCounts() / 5) / m : 0;
+    const finalRaw = m > 0 ? (allTypedChars() / 5) / m : 0;
+    const finalAcc = curAcc();
+    const cons = consistency();
+
+    $("rWpm").textContent = Math.round(finalWpm);
+    $("rAcc").innerHTML = Math.round(finalAcc) + '<span class="unit">%</span>';
+    $("rRaw").textContent = Math.round(finalRaw);
+    $("rCons").innerHTML = Math.round(cons) + "<small>%</small>";
+    $("rChars").textContent = cCorrect + "/" + cIncorrect + "/" + cExtra + "/" + cMissed;
+    $("rMode").textContent = modeLabel();
+    $("rTime").innerHTML = (m * 60).toFixed(1) + "<small>s</small>";
+
+    drawChart();
+    saveResult(Math.round(finalWpm), Math.round(finalAcc));
+    $("nextBtn").focus();
+  }
+  function modeLabel() {
+    if (cfg.mode === "time") return "time " + cfg.time + "s";
+    if (cfg.mode === "words") return "words " + cfg.words;
+    return "quote";
+  }
+  function consistency() {
+    const arr = history.map(h => h.raw).filter(v => v > 0);
+    if (arr.length < 2) return arr.length ? 100 : 0;
+    const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+    if (mean === 0) return 0;
+    const variance = arr.reduce((a, b) => a + (b - mean) ** 2, 0) / arr.length;
+    const cv = Math.sqrt(variance) / mean;
+    return Math.max(0, Math.min(100, (1 - cv) * 100));
+  }
+
+  /* ============================== CHART (inline SVG) ============================== */
+  function drawChart() {
+    const host = $("chartHost");
+    const data = history.slice();
+    if (data.length < 2) {
+      host.innerHTML = '<div class="chart-empty">Run a longer test to see the per-second graph.</div>';
+      return;
+    }
+    const W = 600, H = 190, padL = 34, padR = 12, padT = 14, padB = 24;
+    const maxY = Math.max(40, ...data.map(d => Math.max(d.wpm, d.raw))) * 1.28;
+    const n = data.length;
+    const xAt = (i) => padL + (i / (n - 1)) * (W - padL - padR);
+    const yAt = (v) => padT + (1 - v / maxY) * (H - padT - padB);
+    const line = (key) => data.map((d, i) => (i ? "L" : "M") + xAt(i).toFixed(1) + " " + yAt(d[key]).toFixed(1)).join(" ");
+    const area = "M" + xAt(0) + " " + yAt(data[0].wpm) + " " +
+      data.map((d, i) => "L" + xAt(i).toFixed(1) + " " + yAt(d.wpm).toFixed(1)).join(" ") +
+      " L" + xAt(n - 1) + " " + (H - padB) + " L" + xAt(0) + " " + (H - padB) + " Z";
+    // y gridlines
+    const ticks = 3; let grid = "";
+    for (let t = 0; t <= ticks; t++) {
+      const v = (maxY / ticks) * t;
+      const y = yAt(v);
+      grid += '<line x1="' + padL + '" y1="' + y.toFixed(1) + '" x2="' + (W - padR) + '" y2="' + y.toFixed(1) + '" class="grid"/>';
+      grid += '<text x="' + (padL - 6) + '" y="' + (y + 3).toFixed(1) + '" class="ylab">' + Math.round(v) + "</text>";
+    }
+    // error markers
+    let errs = "";
+    data.forEach((d, i) => { if (d.err > 0) errs += '<circle cx="' + xAt(i).toFixed(1) + '" cy="' + (H - padB - 3) + '" r="3" class="errdot"/>'; });
+    host.innerHTML =
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Words per minute over time">' +
+      '<defs><linearGradient id="afg" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="var(--accent)" stop-opacity="0.26"/>' +
+      '<stop offset="0.7" stop-color="var(--accent)" stop-opacity="0.05"/>' +
+      '<stop offset="1" stop-color="var(--accent)" stop-opacity="0"/>' +
+      '</linearGradient></defs>' +
+      '<style>' +
+      '.grid{stroke:var(--border);stroke-width:1}' +
+      '.ylab{fill:var(--text-faint);font:500 10px var(--font-mono);text-anchor:end}' +
+      '.xlab{fill:var(--text-faint);font:500 10px var(--font-mono);text-anchor:middle}' +
+      '.lwpm{fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}' +
+      '.lraw{fill:none;stroke:var(--text-faint);stroke-width:1.4;stroke-dasharray:2 5;stroke-linecap:round;stroke-linejoin:round;opacity:.65}' +
+      '.afill{fill:url(#afg)}' +
+      '.errdot{fill:var(--error)}' +
+      '</style>' +
+      grid +
+      '<path d="' + area + '" class="afill"/>' +
+      '<path d="' + line("raw") + '" class="lraw"/>' +
+      '<path d="' + line("wpm") + '" class="lwpm"/>' +
+      errs +
+      '<text x="' + xAt(0) + '" y="' + (H - 6) + '" class="xlab" style="text-anchor:start">0s</text>' +
+      '<text x="' + xAt(n - 1) + '" y="' + (H - 6) + '" class="xlab" style="text-anchor:end">' + data[n - 1].t + 's</text>' +
+      '</svg>';
+  }
+
+  /* ============================== PERSISTENCE ============================== */
+  const LS = "kinetik_v1";
+  function load() {
+    try { const d = JSON.parse(localStorage.getItem(LS) || "{}"); return d && typeof d === "object" ? d : {}; }
+    catch (e) { return {}; }
+  }
+  function save(d) { try { localStorage.setItem(LS, JSON.stringify(d)); } catch (e) {} }
+  function saveResult(wpm, acc) {
+    const d = load();
+    d.best = Math.max(d.best || 0, wpm);
+    d.history = (d.history || []);
+    d.history.unshift({ wpm, acc, mode: modeLabel(), t: Date.now() });
+    d.history = d.history.slice(0, 12);
+    save(d);
+    renderBest(); renderHistory();
+  }
+  function renderBest() {
+    const d = load();
+    $("bestWpm").textContent = d.best ? d.best : "—";
+  }
+  function renderHistory() {
+    const d = load(); const list = $("histList");
+    const h = d.history || [];
+    if (!h.length) { list.innerHTML = '<div class="hist-empty">No tests yet — your recent results will appear here.</div>'; return; }
+    list.innerHTML = h.slice(0, 6).map(r => {
+      const dt = new Date(r.t);
+      const ago = timeAgo(dt);
+      return '<div class="hist-row"><span class="hw">' + r.wpm + ' wpm</span><span>' + r.acc + '%</span><span class="hm">' + r.mode + '</span><span class="hm">' + ago + '</span></div>';
+    }).join("");
+  }
+  function timeAgo(d) {
+    const s = Math.floor((Date.now() - d.getTime()) / 1000);
+    if (s < 60) return "just now";
+    if (s < 3600) return Math.floor(s / 60) + "m ago";
+    if (s < 86400) return Math.floor(s / 3600) + "h ago";
+    return Math.floor(s / 86400) + "d ago";
+  }
+
+  /* ============================== RESTART ============================== */
+  function restart(newTest) {
+    finished = false; started = false; startT = 0;
+    wordIdx = 0; total = 0; correct = 0;
+    history = []; lastSec = -1; lastSecTotalErr = 0;
+    clearInterval(tick); tick = null;
+    app.classList.remove("typing", "done");
+    $("results").classList.remove("show");
+    liveEl.classList.remove("show");
+    $("liveMain").textContent = "0";
+    $("liveMainL").textContent = "wpm";
+    $("liveAcc").innerHTML = '100<small>%</small>';
+    if (newTest) buildTarget();
+    input = []; input[0] = "";
+    wordsEl.style.transform = "translateY(0)";
+    renderWords();
+    pokeCaret();
+    focusIO();
+  }
+
+  /* ============================== CONFIG UI ============================== */
+  const OPTIONS = {
+    time: [{ v: 15 }, { v: 30 }, { v: 60 }, { v: 120 }],
+    words: [{ v: 10 }, { v: 25 }, { v: 50 }],
+    quote: QUOTE_LEN.map(q => ({ v: q.k, label: q.label }))
+  };
+  function renderOptions() {
+    optGroup.innerHTML = "";
+    OPTIONS[cfg.mode].forEach(o => {
+      const b = document.createElement("button");
+      b.className = "chip"; b.type = "button";
+      const val = o.v;
+      const cur = cfg.mode === "time" ? cfg.time : cfg.mode === "words" ? cfg.words : cfg.quote;
+      b.setAttribute("aria-pressed", String(val === cur));
+      b.textContent = o.label != null ? o.label : o.v;
+      b.addEventListener("click", () => {
+        if (cfg.mode === "time") cfg.time = val;
+        else if (cfg.mode === "words") cfg.words = val;
+        else cfg.quote = val;
+        renderOptions();
+        restart(true);
+      });
+      optGroup.appendChild(b);
+    });
+  }
+  document.querySelectorAll("[data-mode]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      cfg.mode = btn.dataset.mode;
+      document.querySelectorAll("[data-mode]").forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
+      renderOptions();
+      restart(true);
+    });
+  });
+  document.querySelectorAll("[data-toggle]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const k = btn.dataset.toggle;
+      cfg[k] = !cfg[k];
+      btn.setAttribute("aria-pressed", String(cfg[k]));
+      if (k === "punctuation" || k === "numbers") restart(true);
+      else toast(cfg.strict ? "Strict mode on — wrong keys won't register" : "Strict mode off");
+    });
+  });
+
+  /* ============================== THEME / FOCUS MODE ============================== */
+  function applyTheme(t) {
+    document.documentElement.setAttribute("data-theme", t);
+    save(Object.assign(load(), { theme: t }));
+    requestAnimationFrame(() => { measureLine(); positionCaret(); });
+  }
+  $("themeBtn").addEventListener("click", () => {
+    const cur = document.documentElement.getAttribute("data-theme");
+    applyTheme(cur === "graphite" ? "paper" : "graphite");
+  });
+  const focusBtn = $("focusBtn");
+  focusBtn.addEventListener("click", () => {
+    const on = app.classList.toggle("focusmode");
+    focusBtn.setAttribute("aria-pressed", String(on));
+    toast(on ? "Focus mode on" : "Focus mode off");
+    focusIO();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "f" && e.ctrlKey) { e.preventDefault(); focusBtn.click(); }
+  });
+
+  $("restartInline").addEventListener("click", () => restart(false));
+  $("repeatBtn").addEventListener("click", () => restart(false));
+  $("nextBtn").addEventListener("click", () => restart(true));
+  $("quoteNote").addEventListener("click", (e) => { e.preventDefault(); toast("Quotes are illustrative sample text, not real attributed quotations."); });
+
+  /* ============================== INIT ============================== */
+  function init() {
+    const d = load();
+    if (d.theme) document.documentElement.setAttribute("data-theme", d.theme);
+    renderBest(); renderHistory();
+    renderOptions();
+    buildTarget();
+    input = []; input[0] = "";
+    renderWords();
+    requestAnimationFrame(() => { measureLine(); positionCaret(); });
+    window.addEventListener("resize", () => { measureLine(); positionCaret(); }, { passive: true });
+    // test hook (read-only state for verification)
+    window.__tt = {
+      get state() { return { started, finished, wordIdx, total, correct, wpm: curWpm(), acc: curAcc(), input: input.slice(), words: words.slice() }; },
+      caretX: () => { const m = /translate\(([-\d.]+)px/.exec(caret.style.transform); return m ? parseFloat(m[1]) : 0; }
+    };
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
+</script>
+</body>
+</html>

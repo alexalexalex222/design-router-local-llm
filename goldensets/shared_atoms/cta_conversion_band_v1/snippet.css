@@ -1,0 +1,218 @@
+/* =========================================================================
+   cta_conversion_band_v1
+   Asymmetric conversion band: value headline + supporting line (left, wide)
+   and primary + secondary actions (right). One tasteful motion: a slow sheen
+   sweep across the panel on hover/focus-within. Token-driven; deep teal panel
+   with a warm accent. Self-contained token subset mirrors the foundation.
+   ========================================================================= */
+
+:root {
+  --font-display: "Sora", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+
+  --color-page:         #eef1f0;
+  --color-panel-1:      #0f3b39;   /* deep teal */
+  --color-panel-2:      #0a2b2a;
+  --color-text:         #f3f8f6;
+  --color-text-muted:   #a9c5c0;
+  --color-accent:       #f2b34b;   /* warm amber */
+  --color-accent-hover: #f7c163;
+  --color-accent-active:#e0a236;
+  --color-on-accent:    #1a1206;
+  --color-focus-ring:   #f2b34b;
+  --color-line:         rgba(243, 248, 246, 0.22);
+
+  --cta-accent-1: #f2b34b;
+  --cta-accent-2: #5ec5b6;
+
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-8: 3rem;
+
+  --text-sm:   clamp(0.875rem, 0.84rem + 0.18vw, 0.9375rem);
+  --text-base: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
+  --text-lead: clamp(1.0625rem, 1rem + 0.4vw, 1.1875rem);
+  --text-xl:   clamp(1.85rem, 1.3rem + 2.6vw, 2.9rem);
+
+  --radius-md:   14px;
+  --radius-lg:   24px;
+  --radius-pill: 999px;
+
+  --shadow-3: 0 26px 60px rgba(10, 43, 42, 0.30);
+
+  --duration-fast: 150ms;
+  --duration-base: 220ms;
+  --duration-sheen: 600ms;
+  --ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--color-page);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  -webkit-font-smoothing: antialiased;
+}
+
+.cta-band {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding: clamp(2rem, 6vw, 4rem) clamp(1.25rem, 5vw, 4rem);
+}
+
+.cta-band__panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  /* Asymmetry: copy column is wider than the action column. */
+  grid-template-columns: 1.55fr auto;
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  padding: clamp(1.75rem, 4vw, 3rem) clamp(1.5rem, 4vw, 3rem);
+  background:
+    linear-gradient(135deg, var(--color-panel-1) 0%, var(--color-panel-2) 100%);
+  color: var(--color-text);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-3);
+}
+
+/* Decorative corner arcs */
+.cta-band__texture {
+  position: absolute;
+  top: -40px;
+  right: -30px;
+  width: clamp(180px, 30vw, 280px);
+  height: auto;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* One tasteful motion: a soft diagonal sheen sweeps on hover / focus-within. */
+.cta-band__panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 62%
+  );
+  transform: translateX(-120%);
+  transition: transform var(--duration-sheen) var(--ease-emphasis);
+}
+.cta-band__panel:hover::after,
+.cta-band__panel:focus-within::after { transform: translateX(120%); }
+
+.cta-band__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+.cta-band__eyebrow::before {
+  content: "";
+  width: 24px;
+  height: 2px;
+  background: var(--color-accent);
+}
+
+.cta-band__title {
+  margin: var(--space-4) 0 0;
+  max-width: 22ch;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--text-xl);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.cta-band__sub {
+  margin: var(--space-4) 0 0;
+  max-width: 50ch;
+  font-size: var(--text-lead);
+  line-height: 1.5;
+  color: var(--color-text-muted);
+  text-wrap: pretty;
+}
+
+.cta-band__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: stretch;
+  min-width: max(220px, 16vw);
+}
+
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 52px;
+  padding: 0 var(--space-6);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--text-base);
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  border-radius: var(--radius-pill);
+  transition: background var(--duration-base) var(--ease-emphasis),
+              border-color var(--duration-base) var(--ease-emphasis),
+              transform var(--duration-fast) var(--ease-emphasis);
+}
+.cta-btn--primary {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+.cta-btn--primary:hover  { background: var(--color-accent-hover); transform: translateY(-2px); }
+.cta-btn--primary:active { background: var(--color-accent-active); transform: translateY(0); }
+.cta-btn--primary svg { transition: transform var(--duration-base) var(--ease-emphasis); }
+.cta-btn--primary:hover svg { transform: translateX(4px); }
+
+.cta-btn--secondary {
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-line);
+}
+.cta-btn--secondary:hover  { border-color: var(--color-accent); transform: translateY(-2px); }
+.cta-btn--secondary:active { transform: translateY(0); }
+
+.cta-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-panel-2), 0 0 0 5px var(--color-focus-ring);
+}
+
+/* Responsive: stack, actions go full width below the copy. */
+@media (max-width: 760px) {
+  .cta-band__panel {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .cta-band__actions { min-width: 0; }
+}
+@media (max-width: 360px) {
+  .cta-band__panel { padding: var(--space-5) var(--space-4); }
+}
+
+/* MANDATORY reduced-motion fallback: no sheen sweep, no hover lift/shift. */
+@media (prefers-reduced-motion: reduce) {
+  .cta-band__panel::after { transition: none; }
+  .cta-band__panel:hover::after,
+  .cta-band__panel:focus-within::after { transform: translateX(-120%); }
+  .cta-btn { transition: none; }
+  .cta-btn--primary:hover,
+  .cta-btn--secondary:hover { transform: none; }
+  .cta-btn--primary:hover svg { transform: none; }
+}

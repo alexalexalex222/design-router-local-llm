@@ -1,0 +1,70 @@
+<!-- nav_sticky_header_v1 — sticky site header.
+     Fonts (Space Grotesk display + Inter body). Pair with snippet.css + snippet.js. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
+  rel="stylesheet"
+/>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header" data-elevated="false">
+  <div class="site-header__inner">
+    <a class="brand" href="#top" aria-label="[BUSINESS_NAME] — home">
+      <span class="brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="28" height="28" focusable="false">
+          <rect x="1.5" y="1.5" width="29" height="29" rx="9" fill="none"
+                stroke="currentColor" stroke-width="2.5" />
+          <path d="M9 21 L16 8 L23 21" fill="none" stroke="currentColor"
+                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          <line x1="12" y1="16" x2="20" y2="16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+        </svg>
+      </span>
+      <span class="brand__name">[BUSINESS_NAME]</span>
+    </a>
+
+    <nav class="site-nav" aria-label="Primary">
+      <ul class="site-nav__list">
+        <li><a class="site-nav__link" href="#services">Services</a></li>
+        <li><a class="site-nav__link" href="#work">Our Work</a></li>
+        <li><a class="site-nav__link" href="#about">About</a></li>
+        <li><a class="site-nav__link" href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+
+    <div class="site-header__actions">
+      <a class="header-cta" href="#book">Book a visit</a>
+      <button
+        class="nav-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+        aria-label="Open menu"
+      >
+        <span class="nav-toggle__bars" aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile panel; toggled by snippet.js. Hidden from a11y tree when closed. -->
+  <div class="mobile-nav" id="mobile-nav" hidden>
+    <nav aria-label="Mobile">
+      <ul class="mobile-nav__list">
+        <li><a class="mobile-nav__link" href="#services">Services</a></li>
+        <li><a class="mobile-nav__link" href="#work">Our Work</a></li>
+        <li><a class="mobile-nav__link" href="#about">About</a></li>
+        <li><a class="mobile-nav__link" href="#contact">Contact</a></li>
+      </ul>
+      <a class="header-cta header-cta--block" href="#book">Book a visit</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Demo content so the sticky behavior + scroll-margin anchors are visible. -->
+<main id="main">
+  <section id="services" class="demo-block"><h2>Services</h2><p>Scroll to test the sticky header and anchored sections.</p></section>
+  <section id="work" class="demo-block"><h2>Our Work</h2></section>
+  <section id="about" class="demo-block"><h2>About</h2></section>
+  <section id="contact" class="demo-block"><h2>Contact</h2></section>
+</main>

@@ -1,0 +1,156 @@
+<!-- card_profile_v1 — team / profile card. SVG monogram inside a portrait frame
+     (NO fake photo). [NAME] / [ROLE] are intentional placeholders. Social links
+     are real <a>s with visually-hidden text labels (icon-only buttons MUST be
+     labelled). Fonts (Fraunces + Inter) are the REQUIRED load. Pair with
+     snippet.css. No JS needed — interactions are CSS-only. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap"
+  rel="stylesheet"
+/>
+
+<section class="team" aria-labelledby="team-title">
+  <div class="team__shell">
+    <header class="team__head">
+      <span class="team__kicker">The people</span>
+      <h2 id="team-title" class="team__title">Who you'll work with</h2>
+    </header>
+
+    <ul class="team__grid" role="list">
+      <li class="profile">
+        <!-- Portrait frame holds a generated SVG monogram, NOT a stock photo.
+             aria-hidden because [NAME] is announced by the heading below. -->
+        <span class="profile__frame" aria-hidden="true">
+          <svg class="profile__art" viewBox="0 0 120 120" focusable="false">
+            <defs>
+              <linearGradient id="pf-a" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="var(--brand-300)"/>
+                <stop offset="1" stop-color="var(--brand-600)"/>
+              </linearGradient>
+            </defs>
+            <rect width="120" height="120" rx="24" fill="url(#pf-a)"/>
+            <circle cx="60" cy="60" r="40" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
+            <text x="60" y="60" class="profile__monogram" dominant-baseline="central" text-anchor="middle">[I]</text>
+          </svg>
+        </span>
+        <h3 class="profile__name">[NAME]</h3>
+        <p class="profile__role">[ROLE]</p>
+        <p class="profile__bio">[ONE_LINE_BIO] — a sentence on focus area and the kind of work they lead.</p>
+        <ul class="profile__social" role="list">
+          <li>
+            <a class="profile__social-link" href="#profile-website">
+              <span class="visually-hidden">[NAME] — personal website</span>
+              <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+                <circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M2.5 10h15M10 2.5c2.5 2.4 2.5 12.6 0 15M10 2.5c-2.5 2.4-2.5 12.6 0 15" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a class="profile__social-link" href="#profile-email">
+              <span class="visually-hidden">Email [NAME]</span>
+              <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+                <rect x="2.5" y="4.5" width="15" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                <path d="m3.5 6 6.5 4.5L16.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a class="profile__social-link" href="#profile-network">
+              <span class="visually-hidden">[NAME] on [NETWORK]</span>
+              <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+                <circle cx="6" cy="6" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M5 9.5V16M5 12.5c0-2 1.2-3 2.7-3S10 10.5 10 12.5V16M14 9.5V16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <li class="profile">
+        <span class="profile__frame" aria-hidden="true">
+          <svg class="profile__art" viewBox="0 0 120 120" focusable="false">
+            <rect width="120" height="120" rx="24" fill="url(#pf-a)"/>
+            <circle cx="60" cy="60" r="40" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
+            <text x="60" y="60" class="profile__monogram" dominant-baseline="central" text-anchor="middle">[II]</text>
+          </svg>
+        </span>
+        <h3 class="profile__name">[NAME]</h3>
+        <p class="profile__role">[ROLE]</p>
+        <p class="profile__bio">[ONE_LINE_BIO] — a sentence on focus area and the kind of work they lead.</p>
+        <ul class="profile__social" role="list">
+          <li>
+            <a class="profile__social-link" href="#profile-website">
+              <span class="visually-hidden">[NAME] — personal website</span>
+              <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+                <circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M2.5 10h15M10 2.5c2.5 2.4 2.5 12.6 0 15M10 2.5c-2.5 2.4-2.5 12.6 0 15" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a class="profile__social-link" href="#profile-email">
+              <span class="visually-hidden">Email [NAME]</span>
+              <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+                <rect x="2.5" y="4.5" width="15" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                <path d="m3.5 6 6.5 4.5L16.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a class="profile__social-link" href="#profile-network">
+              <span class="visually-hidden">[NAME] on [NETWORK]</span>
+              <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+                <circle cx="6" cy="6" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M5 9.5V16M5 12.5c0-2 1.2-3 2.7-3S10 10.5 10 12.5V16M14 9.5V16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <li class="profile">
+        <span class="profile__frame" aria-hidden="true">
+          <svg class="profile__art" viewBox="0 0 120 120" focusable="false">
+            <rect width="120" height="120" rx="24" fill="url(#pf-a)"/>
+            <circle cx="60" cy="60" r="40" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
+            <text x="60" y="60" class="profile__monogram" dominant-baseline="central" text-anchor="middle">[III]</text>
+          </svg>
+        </span>
+        <h3 class="profile__name">[NAME]</h3>
+        <p class="profile__role">[ROLE]</p>
+        <p class="profile__bio">[ONE_LINE_BIO] — a sentence on focus area and the kind of work they lead.</p>
+        <ul class="profile__social" role="list">
+          <li>
+            <a class="profile__social-link" href="#profile-website">
+              <span class="visually-hidden">[NAME] — personal website</span>
+              <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+                <circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M2.5 10h15M10 2.5c2.5 2.4 2.5 12.6 0 15M10 2.5c-2.5 2.4-2.5 12.6 0 15" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a class="profile__social-link" href="#profile-email">
+              <span class="visually-hidden">Email [NAME]</span>
+              <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+                <rect x="2.5" y="4.5" width="15" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                <path d="m3.5 6 6.5 4.5L16.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a class="profile__social-link" href="#profile-network">
+              <span class="visually-hidden">[NAME] on [NETWORK]</span>
+              <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+                <circle cx="6" cy="6" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M5 9.5V16M5 12.5c0-2 1.2-3 2.7-3S10 10.5 10 12.5V16M14 9.5V16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</section>

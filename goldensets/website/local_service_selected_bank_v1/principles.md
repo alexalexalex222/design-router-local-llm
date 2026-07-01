@@ -1,0 +1,3 @@
+- Use the support bank to widen the design vocabulary without losing the anchor pack's center of gravity.
+- Prefer examples that solve a specific layout problem the task actually has.
+- Keep support examples short and surgical.

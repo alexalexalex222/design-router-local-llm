@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ashgrove Landscape & Design | Macon, GA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        moss: '#4a5d23',
+                        moss_dark: '#384719',
+                        bronze: '#9c8465',
+                        bronze_light: '#b59e7f',
+                        charcoal: '#1c1b1a',
+                        limestone: '#e8e5df',
+                        cream: '#f4f1eb',
+                        paper: '#fbfaf8',
+                        blueprint: '#828c78'
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['"Manrope"', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'architect-grid': `linear-gradient(to right, rgba(232, 229, 223, 0.6) 1px, transparent 1px), linear-gradient(to bottom, rgba(232, 229, 223, 0.6) 1px, transparent 1px)`,
+                        'architect-grid-fine': `linear-gradient(to right, rgba(232, 229, 223, 0.3) 1px, transparent 1px), linear-gradient(to bottom, rgba(232, 229, 223, 0.3) 1px, transparent 1px)`
+                    },
+                    backgroundSize: {
+                        'grid-lg': '40px 40px',
+                        'grid-sm': '10px 10px'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f4f1eb;
+            color: #1c1b1a;
+        }
+        .nav-link {
+            position: relative;
+            text-decoration: none;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 1px;
+            bottom: -2px;
+            left: 0;
+            background-color: #9c8465;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        .fade-in-up {
+            animation: fadeInUp 1s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Custom shapes for the abstract landscape folio */
+        .tree-top {
+            border: 1px dashed #4a5d23;
+            background-color: rgba(74, 93, 35, 0.05);
+            border-radius: 50%;
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tree-top::after {
+            content: '';
+            width: 4px;
+            height: 4px;
+            background-color: #4a5d23;
+            border-radius: 50%;
+        }
+        .tree-top-solid {
+            border: 1px solid #4a5d23;
+            background-color: rgba(74, 93, 35, 0.15);
+            border-radius: 50%;
+            position: absolute;
+        }
+        .deck-lines {
+            background: repeating-linear-gradient(
+                to right,
+                transparent,
+                transparent 4px,
+                rgba(156, 132, 101, 0.2) 4px,
+                rgba(156, 132, 101, 0.2) 5px
+            );
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans overflow-x-hidden">
+
+    <!-- Navigation -->
+    <header class="w-full border-b border-limestone relative z-20 bg-cream/90 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-6 lg:px-12 h-24 flex items-center justify-between">
+            <div class="flex flex-col">
+                <span class="font-serif text-2xl tracking-wide uppercase text-charcoal font-semibold">Ashgrove</span>
+                <span class="text-[0.65rem] tracking-[0.2em] text-bronze uppercase font-medium mt-0.5">Landscape & Design</span>
+            </div>
+            
+            <nav class="hidden md:flex space-x-10 text-sm font-medium tracking-wide text-charcoal/80">
+                <a href="#" class="nav-link hover:text-moss transition-colors">Hardscaping</a>
+                <a href="#" class="nav-link hover:text-moss transition-colors">Irrigation</a>
+                <a href="#" class="nav-link hover:text-moss transition-colors">Maintenance</a>
+                <a href="#" class="nav-link hover:text-moss transition-colors">About the Studio</a>
+            </nav>
+
+            <div class="flex items-center space-x-6">
+                <div class="hidden lg:flex flex-col text-right">
+                    <span class="text-xs text-charcoal/50 uppercase tracking-wider font-semibold">Direct Line</span>
+                    <a href="tel:478-555-0138" class="font-serif text-lg text-moss hover:text-moss_dark transition-colors">478-555-0138</a>
+                </div>
+                <button class="md:hidden text-charcoal p-2 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <main class="flex-grow flex items-center relative z-10 w-full pt-12 pb-24 lg:py-0">
+        <div class="max-w-7xl mx-auto px-6 lg:px-12 w-full grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+            
+            <!-- Left Column: Copy -->
+            <div class="lg:col-span-5 flex flex-col z-20">
+                <div class="flex items-center space-x-4 mb-6 fade-in-up">
+                    <div class="h-px w-8 bg-bronze"></div>
+                    <span class="text-xs font-bold tracking-[0.15em] text-bronze uppercase">Macon, Georgia</span>
+                </div>
+                
+                <h1 class="font-serif text-5xl lg:text-6xl leading-[1.1] text-charcoal mb-6 fade-in-up delay-100">
+                    Architectural <br/>
+                    <span class="italic text-moss font-light">Landscapes</span> & <br/>
+                    Enduring Forms.
+                </h1>
+                
+                <p class="text-lg text-charcoal/70 leading-relaxed mb-10 max-w-lg font-light fade-in-up delay-200">
+                    We bring luxury landscape design to life. From structural retaining walls and custom patios to complete irrigation and estate-level grounds management, we build polished environments meant to be lived in. 
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4 mb-12 fade-in-up delay-300">
+                    <a href="#" class="inline-flex items-center justify-center px-8 py-4 bg-moss text-white text-sm font-semibold tracking-wide uppercase hover:bg-moss_dark transition-all duration-300 shadow-lg shadow-moss/20">
+                        Request a Consultation
+                    </a>
+                    <a href="#" class="inline-flex items-center justify-center px-8 py-4 border border-charcoal/20 text-charcoal text-sm font-semibold tracking-wide uppercase hover:border-bronze hover:text-bronze transition-all duration-300 bg-transparent">
+                        Explore Folio
+                    </a>
+                </div>
+
+                <div class="flex items-center gap-6 text-sm text-charcoal/60 font-medium fade-in-up delay-400">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-bronze" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Over 20 Years Experience
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-bronze" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                        Fully Bonded
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Abstract Architectural Plan -->
+            <div class="lg:col-span-7 relative h-[500px] lg:h-[700px] w-full fade-in-up delay-200">
+                <!-- Frame / Canvas -->
+                <div class="absolute inset-0 bg-paper border border-limestone shadow-2xl shadow-charcoal/5 overflow-hidden">
+                    
+                    <!-- Blueprint Grid Background -->
+                    <div class="absolute inset-0 bg-architect-grid bg-grid-lg opacity-60"></div>
+                    <div class="absolute inset-0 bg-architect-grid-fine bg-grid-sm opacity-40"></div>
+
+                    <!-- Layout Lines -->
+                    <div class="absolute top-[15%] left-0 w-full border-t border-dashed border-blueprint/30"></div>
+                    <div class="absolute top-[60%] left-0 w-full border-t border-dashed border-blueprint/30"></div>
+                    <div class="absolute top-0 left-[30%] h-full border-l border-dashed border-blueprint/30"></div>
+                    
+                    <!-- Abstract Composition Elements -->
+                    
+                    <!-- Main Lawn/Terrace Area -->
+                    <div class="absolute bottom-0 right-0 w-[80%] h-[55%] bg-[#edf0ea] border-t border-l border-moss/10 flex items-end justify-end p-6">
+                        <span class="text-[0.55rem] tracking-widest text-moss/40 uppercase font-mono">Terrace Level 01</span>
+                    </div>
+
+                    <!-- Hardscape / Decking Abstraction -->
+                    <div class="absolute top-[20%] left-[10%] w-[45%] h-[35%] bg-limestone border border-bronze/40 shadow-lg shadow-charcoal/5 deck-lines flex flex-col justify-between p-4">
+                        <span class="text-[0.55rem] tracking-widest text-charcoal/40 uppercase font-mono">Proposed Hardscape / Deck</span>
+                        <div class="w-full border-t border-charcoal/10 flex justify-between pt-2">
+                            <span class="text-[10px] text-charcoal/30">A</span>
+                            <span class="text-[10px] text-charcoal/30">B</span>
+                        </div>
+                    </div>
+
+                    <!-- Retaining Wall Line -->
+                    <div class="absolute bottom-[55%] right-0 w-[55%] h-3 bg-bronze/10 border-y border-bronze/30"></div>
+
+                    <!-- Trees / Top-Down View -->
+                    <!-- Large Tree -->
+                    <div class="tree-top w-48 h-48 -right-12 top-[5%]">
+                        <div class="absolute inset-0 m-auto w-32 h-32 border border-dashed border-moss/40 rounded-full"></div>
+                    </div>
+                    <!-- Clustered Trees -->
+                    <div class="tree-top-solid w-24 h-24 left-[40%] bottom-[15%] shadow-md shadow-moss/10"></div>
+                    <div class="tree-top w-32 h-32 left-[25%] bottom-[10%] backdrop-blur-[2px]"></div>
+                    <div class="tree-top-solid w-20 h-20 left-[50%] bottom-[25%] shadow-md shadow-moss/10"></div>
+
+                    <!-- Circular Feature (Fire pit / Fountain) -->
+                    <div class="absolute top-[30%] left-[65%] w-16 h-16 rounded-full border border-bronze bg-cream flex items-center justify-center shadow-inner">
+                        <div class="w-8 h-8 rounded-full border border-bronze/50 flex items-center justify-center">
+                            <div class="w-2 h-2 rounded-full bg-bronze/80"></div>
+                        </div>
+                    </div>
+
+                    <!-- Plan Data / Title Block (Bottom Left) -->
+                    <div class="absolute bottom-6 left-6 border border-charcoal/10 bg-paper/80 backdrop-blur-sm p-4 w-48 shadow-sm">
+                        <div class="border-b border-charcoal/10 pb-2 mb-2">
+                            <div class="text-[0.6rem] text-charcoal/50 uppercase tracking-widest mb-1">Project</div>
+                            <div class="text-xs font-serif text-charcoal font-semibold">Ashgrove L.D.</div>
+                        </div>
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <div class="text-[0.6rem] text-charcoal/50 uppercase tracking-widest">Scale</div>
+                                <div class="text-[0.65rem] font-mono text-charcoal">1/4" = 1'-0"</div>
+                            </div>
+                            <div class="text-[0.6rem] font-mono text-moss font-semibold">N&uarr;</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Measurement tick marks -->
+                    <div class="absolute top-0 right-0 h-full w-4 flex flex-col justify-between py-10 opacity-30">
+                        <div class="w-2 h-px bg-charcoal"></div>
+                        <div class="w-1 h-px bg-charcoal"></div>
+                        <div class="w-2 h-px bg-charcoal"></div>
+                        <div class="w-1 h-px bg-charcoal"></div>
+                        <div class="w-2 h-px bg-charcoal"></div>
+                    </div>
+
+                    <!-- Elegant Floating Service Tags -->
+                    <div class="absolute top-8 left-8 flex flex-col gap-2">
+                        <span class="px-2 py-1 bg-white/60 backdrop-blur-md border border-charcoal/5 text-[0.65rem] tracking-wider uppercase text-charcoal shadow-sm">Irrigation Install</span>
+                        <span class="px-2 py-1 bg-white/60 backdrop-blur-md border border-charcoal/5 text-[0.65rem] tracking-wider uppercase text-charcoal shadow-sm">Debris & Removal</span>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+<style id="below-fold-patch">
+    /* Structural stability and premium aesthetics */
+    .bg-grid-charcoal {
+        background-image: 
+            linear-gradient(to right, rgba(232, 229, 223, 0.6) 1px, transparent 1px), 
+            linear-gradient(to bottom, rgba(232, 229, 223, 0.6) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+    .service-card {
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .service-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px -10px rgba(28, 27, 26, 0.08);
+        border-color: rgba(156, 132, 101, 0.4);
+    }
+</style>
+
+<!-- Services Section -->
+<section class="w-full relative z-20 bg-paper py-24 border-t border-limestone overflow-hidden">
+    <div class="absolute inset-0 bg-grid-charcoal opacity-40"></div>
+    <div class="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+            <div class="max-w-xl">
+                <div class="flex items-center space-x-4 mb-4">
+                    <div class="h-px w-8 bg-bronze"></div>
+                    <span class="text-xs font-bold tracking-[0.15em] text-bronze uppercase">Core Disciplines</span>
+                </div>
+                <h2 class="font-serif text-4xl lg:text-5xl text-charcoal leading-tight">
+                    Structural Integrity Meets <span class="italic text-moss font-light">Natural Form.</span>
+                </h2>
+            </div>
+            <a href="#" class="inline-flex items-center gap-3 text-sm font-semibold tracking-widest uppercase text-charcoal hover:text-bronze transition-colors group">
+                View Complete Folio
+                <svg class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Service 1 -->
+            <div class="service-card bg-cream p-10 relative group overflow-hidden border border-limestone">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-moss/5 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+                <span class="text-xs font-mono text-bronze mb-6 block">01 /</span>
+                <h3 class="font-serif text-2xl text-charcoal mb-4">Hardscaping & Retaining Walls</h3>
+                <p class="text-charcoal/70 leading-relaxed font-light mb-8">Architecturally sound retaining walls, custom stone patios, and terraced elevations built to endure decades of weathering.</p>
+                <div class="w-full h-px bg-limestone mb-6"></div>
+                <ul class="space-y-3">
+                    <li class="flex items-center text-sm text-charcoal/80"><div class="w-1.5 h-1.5 rounded-full bg-bronze mr-3"></div> Natural Stone & Pavers</li>
+                    <li class="flex items-center text-sm text-charcoal/80"><div class="w-1.5 h-1.5 rounded-full bg-bronze mr-3"></div> Structural Terracing</li>
+                    <li class="flex items-center text-sm text-charcoal/80"><div class="w-1.5 h-1.5 rounded-full bg-bronze mr-3"></div> Engineered Foundations</li>
+                </ul>
+            </div>
+
+            <!-- Service 2 -->
+            <div class="service-card bg-charcoal p-10 relative group overflow-hidden border border-charcoal">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-bronze/10 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+                <span class="text-xs font-mono text-bronze_light mb-6 block">02 /</span>
+                <h3 class="font-serif text-2xl text-paper mb-4">Estate Irrigation Systems</h3>
+                <p class="text-paper/70 leading-relaxed font-light mb-8">Precision-engineered water management systems ensuring optimal hydration while preventing erosion and structural damage.</p>
+                <div class="w-full h-px bg-white/10 mb-6"></div>
+                <ul class="space-y-3">
+                    <li class="flex items-center text-sm text-paper/80"><div class="w-1.5 h-1.5 rounded-full bg-bronze_light mr-3"></div> Zoned Coverage</li>
+                    <li class="flex items-center text-sm text-paper/80"><div class="w-1.5 h-1.5 rounded-full bg-bronze_light mr-3"></div> Smart Controller Integration</li>
+                    <li class="flex items-center text-sm text-paper/80"><div class="w-1.5 h-1.5 rounded-full bg-bronze_light mr-3"></div> Drainage Solutions</li>
+                </ul>
+            </div>
+
+            <!-- Service 3 -->
+            <div class="service-card bg-cream p-10 relative group overflow-hidden border border-limestone">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-moss/5 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+                <span class="text-xs font-mono text-bronze mb-6 block">03 /</span>
+                <h3 class="font-serif text-2xl text-charcoal mb-4">Grounds Management</h3>
+                <p class="text-charcoal/70 leading-relaxed font-light mb-8">Comprehensive, scheduled care for high-value properties. Meticulous pruning, soil health, and seasonal aesthetic refinement.</p>
+                <div class="w-full h-px bg-limestone mb-6"></div>
+                <ul class="space-y-3">
+                    <li class="flex items-center text-sm text-charcoal/80"><div class="w-1.5 h-1.5 rounded-full bg-bronze mr-3"></div> Horticultural Pruning</li>
+                    <li class="flex items-center text-sm text-charcoal/80"><div class="w-1.5 h-1.5 rounded-full bg-bronze mr-3"></div> Turf & Soil Optimization</li>
+                    <li class="flex items-center text-sm text-charcoal/80"><div class="w-1.5 h-1.5 rounded-full bg-bronze mr-3"></div> Debris Removal</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Abstract Process / Philosophy Section -->
+<section class="w-full relative z-20 bg-[#edf0ea] border-y border-moss/10 overflow-hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-2">
+        <!-- Visual Abstraction -->
+        <div class="relative h-[400px] lg:h-auto border-b lg:border-b-0 lg:border-r border-moss/20 p-8 lg:p-16 flex items-center justify-center">
+            <!-- Blueprint grid -->
+            <div class="absolute inset-0 bg-architect-grid-fine bg-grid-sm opacity-50"></div>
+            
+            <div class="relative w-full max-w-sm aspect-square border border-charcoal/20 bg-paper/60 backdrop-blur-sm p-6 shadow-xl flex flex-col justify-between z-10">
+                <div class="border-b border-charcoal/10 pb-4">
+                    <span class="text-[0.6rem] font-mono text-moss uppercase tracking-widest block mb-2">Phase_01 / Topography</span>
+                    <div class="w-full h-1 bg-gradient-to-r from-moss to-bronze"></div>
+                </div>
+                
+                <!-- Abstract contour lines -->
+                <div class="flex-grow relative mt-4 overflow-hidden opacity-40">
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-24 border border-charcoal rounded-[100%]"></div>
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-20 border border-charcoal rounded-[100%] translate-y-2"></div>
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-16 border border-charcoal rounded-[100%] translate-y-4"></div>
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-12 border border-charcoal rounded-[100%] translate-y-6"></div>
+                </div>
+
+                <div class="flex justify-between items-end border-t border-charcoal/10 pt-4">
+                    <span class="text-xs font-serif text-charcoal">Design & Execution</span>
+                    <span class="text-[0.65rem] font-mono text-charcoal/50">Ashgrove L.D.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Copy -->
+        <div class="p-10 lg:p-24 flex flex-col justify-center bg-cream">
+            <div class="flex items-center space-x-4 mb-8">
+                <div class="h-px w-8 bg-moss"></div>
+                <span class="text-xs font-bold tracking-[0.15em] text-moss uppercase">The Approach</span>
+            </div>
+            <h2 class="font-serif text-4xl lg:text-5xl text-charcoal leading-tight mb-8">
+                We design with physics.<br/>
+                <span class="italic text-bronze font-light">We build for generations.</span>
+            </h2>
+            <div class="space-y-6 text-lg text-charcoal/70 font-light leading-relaxed max-w-xl">
+                <p>
+                    A beautiful landscape that washes away in the first major storm is a failure of design. Our approach begins beneath the surface. We analyze grading, soil composition, and water flow before moving a single stone.
+                </p>
+                <p>
+                    By combining engineering principles with architectural aesthetics, we create outdoor environments that don't just look spectacular on day one—they mature, settle, and grow more striking over decades.
+                </p>
+            </div>
+            
+            <div class="mt-12 flex items-center gap-8">
+                <div class="flex flex-col">
+                    <span class="font-serif text-4xl text-moss mb-1">20+</span>
+                    <span class="text-[0.65rem] tracking-widest uppercase text-charcoal/60 font-semibold">Years Active</span>
+                </div>
+                <div class="w-px h-12 bg-charcoal/10"></div>
+                <div class="flex flex-col">
+                    <span class="font-serif text-4xl text-moss mb-1">100%</span>
+                    <span class="text-[0.65rem] tracking-widest uppercase text-charcoal/60 font-semibold">Bonded & Insured</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA / Contact Section -->
+<section class="w-full relative z-20 bg-charcoal text-paper py-24 lg:py-32 overflow-hidden">
+    <div class="absolute inset-0 bg-architect-grid-fine bg-grid-lg opacity-10"></div>
+    <!-- Abstract accent line -->
+    <div class="absolute top-0 left-1/2 w-px h-full bg-gradient-to-b from-bronze/0 via-bronze/30 to-bronze/0"></div>
+
+    <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+        <span class="text-xs font-bold tracking-[0.2em] text-bronze_light uppercase block mb-6">Begin Your Project</span>
+        <h2 class="font-serif text-5xl lg:text-6xl mb-8 leading-tight">
+            Ready to transform your<br/>
+            <span class="italic text-limestone font-light">property's exterior?</span>
+        </h2>
+        <p class="text-lg text-paper/60 font-light max-w-2xl mx-auto mb-12">
+            Schedule an on-site consultation. We'll walk your property, discuss your vision, and outline a structural design strategy.
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+            <a href="tel:478-555-0138" class="inline-flex items-center justify-center px-10 py-5 bg-moss text-white text-sm font-semibold tracking-wider uppercase hover:bg-moss_dark transition-all duration-300 w-full sm:w-auto shadow-lg shadow-moss/20">
+                Call 478-555-0138
+            </a>
+            <a href="#" class="inline-flex items-center justify-center px-10 py-5 border border-paper/20 text-paper text-sm font-semibold tracking-wider uppercase hover:border-bronze_light hover:text-bronze_light transition-all duration-300 w-full sm:w-auto">
+                Submit an Inquiry
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="w-full relative z-20 bg-paper border-t border-limestone pt-20 pb-10">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
+            <!-- Brand -->
+            <div class="lg:col-span-1">
+                <div class="flex flex-col mb-6">
+                    <span class="font-serif text-2xl tracking-wide uppercase text-charcoal font-semibold">Ashgrove</span>
+                    <span class="text-[0.65rem] tracking-[0.2em] text-moss uppercase font-medium mt-0.5">Landscape & Design</span>
+                </div>
+                <p class="text-sm text-charcoal/60 font-light leading-relaxed pr-4">
+                    Architectural landscapes, precision hardscaping, and estate grounds management for Macon and Middle Georgia.
+                </p>
+            </div>
+
+            <!-- Contact -->
+            <div>
+                <h4 class="text-xs font-bold tracking-[0.15em] text-charcoal uppercase mb-6">Contact</h4>
+                <ul class="space-y-4 text-sm text-charcoal/70 font-light">
+                    <li><a href="tel:478-555-0138" class="hover:text-moss transition-colors">478-555-0138</a></li>
+                    <li>Macon, GA 31210</li>
+                    <li>Serving Middle Georgia</li>
+                </ul>
+            </div>
+
+            <!-- Services -->
+            <div>
+                <h4 class="text-xs font-bold tracking-[0.15em] text-charcoal uppercase mb-6">Expertise</h4>
+                <ul class="space-y-4 text-sm text-charcoal/70 font-light">
+                    <li><a href="#" class="hover:text-moss transition-colors">Retaining Walls</a></li>
+                    <li><a href="#" class="hover:text-moss transition-colors">Custom Hardscaping</a></li>
+                    <li><a href="#" class="hover:text-moss transition-colors">Irrigation Systems</a></li>
+                    <li><a href="#" class="hover:text-moss transition-colors">Debris Removal</a></li>
+                </ul>
+            </div>
+
+            <!-- Legal/Cert -->
+            <div>
+                <h4 class="text-xs font-bold tracking-[0.15em] text-charcoal uppercase mb-6">Credentials</h4>
+                <ul class="space-y-4 text-sm text-charcoal/70 font-light">
+                    <li class="flex items-center gap-3"><div class="w-1.5 h-1.5 rounded-full bg-bronze"></div> Fully Bonded</li>
+                    <li class="flex items-center gap-3"><div class="w-1.5 h-1.5 rounded-full bg-bronze"></div> Licensed & Insured</li>
+                    <li class="flex items-center gap-3"><div class="w-1.5 h-1.5 rounded-full bg-bronze"></div> 20+ Years Expertise</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-limestone pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p class="text-[0.7rem] text-charcoal/50 uppercase tracking-wider">&copy; 2026 Ashgrove Landscape & Design. All rights reserved.</p>
+            <div class="flex gap-6 text-[0.7rem] text-charcoal/50 uppercase tracking-wider">
+                <a href="#" class="hover:text-charcoal transition-colors">Privacy</a>
+                <a href="#" class="hover:text-charcoal transition-colors">Terms</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

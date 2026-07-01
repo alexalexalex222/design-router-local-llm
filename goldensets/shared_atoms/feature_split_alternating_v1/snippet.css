@@ -1,0 +1,231 @@
+/* =========================================================================
+   feature_split_alternating_v1
+   Alternating text/visual feature rows. The visual flips sides each row via
+   .feat-row--flip. On mobile every row collapses to a single column with the
+   visual first. Tokens mirror foundation_design_tokens_v1 (same vocabulary);
+   palette + display face are tuned for a cool, technical "product" tone.
+   ========================================================================= */
+.feat {
+  /* ---- Neutral ramp + cool-indigo brand (re-skin via roles below) ---- */
+  --neutral-0:   #ffffff;
+  --neutral-50:  #f7f8fb;
+  --neutral-100: #eef0f6;
+  --neutral-200: #e0e3ee;
+  --neutral-300: #c6cbdd;
+  --neutral-500: #757c93;
+  --neutral-700: #434a61;
+  --neutral-900: #181c2b;
+
+  --brand-300: #9bb6ff;
+  --brand-500: #4361ee;
+  --brand-600: #314fd0;
+  --brand-700: #2540a8;
+  --accent-500: #16b8a6;
+
+  /* Semantic roles */
+  --color-bg:            var(--neutral-50);
+  --color-surface:       var(--neutral-0);
+  --color-border:        var(--neutral-200);
+  --color-text:          var(--neutral-900);
+  --color-text-muted:    var(--neutral-500);
+  --color-text-subtle:   var(--neutral-700);
+  --color-primary:       var(--brand-500);
+  --color-primary-hover: var(--brand-600);
+  --color-accent:        var(--accent-500);
+  --color-focus-ring:    var(--brand-500);
+
+  /* SVG art palette (consumed by inline SVGs) */
+  --c-art-wash:  var(--neutral-100);
+  --c-art-track: var(--neutral-200);
+  --c-art-line:  var(--brand-300);
+  --c-art-1:     var(--brand-500);
+  --c-art-2:     var(--accent-500);
+  --c-art-3:     var(--brand-300);
+
+  /* Typography */
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body:    "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --text-sm:   clamp(0.875rem, 0.84rem + 0.18vw, 0.9375rem);
+  --text-base: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
+  --text-md:   clamp(1.125rem, 1.06rem + 0.32vw, 1.25rem);
+  --text-xl:   clamp(1.6rem, 1.35rem + 1vw, 2.1rem);
+  --text-2xl:  clamp(2.1rem, 1.7rem + 1.9vw, 2.9rem);
+  --leading-tight: 1.08;
+  --leading-normal: 1.6;
+  --tracking-tight: -0.02em;
+  --tracking-caps: 0.16em;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-black: 800;
+
+  /* Spacing / layout */
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+  --space-5: 1.5rem;  --space-6: 2rem;   --space-7: 2.5rem;  --space-8: 3rem;
+  --space-9: 4rem;    --space-10: 6rem;
+  --container-max: 1140px;
+  --container-pad: clamp(1.25rem, 5vw, 4rem);
+
+  /* Radii / elevation / motion */
+  --radius-sm: 8px; --radius-md: 14px; --radius-lg: 22px; --radius-xl: 30px;
+  --radius-pill: 999px;
+  --shadow-2: 0 8px 24px rgba(24,28,43,0.08), 0 2px 6px rgba(24,28,43,0.05);
+  --duration-fast: 150ms; --duration-base: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
+  --ring: 0 0 0 3px var(--color-surface), 0 0 0 5px var(--color-focus-ring);
+
+  box-sizing: border-box;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  padding-block: clamp(var(--space-8), 8vw, var(--space-10));
+  -webkit-font-smoothing: antialiased;
+}
+.feat *, .feat *::before, .feat *::after { box-sizing: border-box; }
+
+.feat__inner {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+}
+
+/* ---- Section header ---- */
+.feat__head { max-width: 60ch; margin-bottom: clamp(var(--space-7), 6vw, var(--space-9)); }
+.feat__kicker {
+  display: inline-block;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: var(--space-3);
+}
+.feat__title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  margin: 0 0 var(--space-4);
+}
+.feat__lead { font-size: var(--text-md); color: var(--color-text-subtle); margin: 0; }
+
+/* ---- Alternating row grid ---- */
+.feat-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: clamp(var(--space-6), 6vw, var(--space-10));
+  padding-block: clamp(var(--space-6), 5vw, var(--space-8));
+}
+.feat-row + .feat-row { border-top: 1px solid var(--color-border); }
+
+/* The flip: place the visual in column 1 on wide screens. */
+.feat-row--flip .feat-row__visual { order: -1; }
+
+.feat-row__index {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-caps);
+  color: var(--color-accent);
+  margin-bottom: var(--space-3);
+}
+.feat-row__heading {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  margin: 0 0 var(--space-3);
+}
+.feat-row__body { color: var(--color-text-subtle); margin: 0 0 var(--space-4); max-width: 46ch; }
+
+.feat-row__points {
+  list-style: none;
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+.feat-row__points li {
+  position: relative;
+  padding-left: var(--space-6);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+}
+.feat-row__points li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0.1em;
+  width: 1.15rem; height: 1.15rem;
+  border-radius: var(--radius-pill);
+  background:
+    linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
+    var(--color-accent) border-box;
+  border: 2px solid transparent;
+  /* tiny inline tick drawn with a rotated box */
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-accent) 22%, transparent);
+}
+.feat-row__points li::after {
+  content: "";
+  position: absolute;
+  left: 0.38rem; top: 0.28em;
+  width: 0.3rem; height: 0.55rem;
+  border: solid var(--color-accent);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* ---- Inline text link with sliding arrow ---- */
+.feat-row__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-sm);
+  color: var(--color-primary);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+.feat-row__arrow { transition: transform var(--duration-base) var(--ease-emphasis); }
+.feat-row__link:hover { color: var(--color-primary-hover); }
+.feat-row__link:hover .feat-row__arrow { transform: translateX(4px); }
+.feat-row__link:focus-visible { outline: none; box-shadow: var(--ring); }
+
+/* ---- Visual frame ---- */
+.feat-row__visual {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: clamp(var(--space-4), 3vw, var(--space-6));
+  box-shadow: var(--shadow-2);
+  transition: transform var(--duration-base) var(--ease-emphasis);
+}
+.feat-row:hover .feat-row__visual { transform: translateY(-3px); }
+.feat-art { display: block; width: 100%; height: auto; }
+
+/* ---- Responsive: single column, visual first, comfortable on 360–375px --- */
+@media (max-width: 760px) {
+  .feat-row {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+  }
+  .feat-row__visual { order: -1; }            /* visual leads on mobile */
+  .feat-row--flip .feat-row__visual { order: -1; }
+  .feat-row__body, .feat-row__points li { max-width: none; }
+}
+
+/* ---- MANDATORY reduced-motion fallback ---- */
+@media (prefers-reduced-motion: reduce) {
+  .feat-row__arrow,
+  .feat-row__visual { transition: none; }
+  .feat-row:hover .feat-row__visual { transform: none; }
+  .feat-row__link:hover .feat-row__arrow { transform: none; }
+}

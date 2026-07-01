@@ -1,0 +1,224 @@
+/* =========================================================================
+   faq_accordion_v1
+   Accessible disclosure accordion. Header = <button aria-expanded
+   aria-controls>; panel = labelled region. Smooth height via animated
+   grid-template-rows (0fr -> 1fr) — no JS height measuring, no max-height
+   guessing. Collapses INSTANTLY under prefers-reduced-motion.
+   Tokens mirror foundation_design_tokens_v1. Font: Fraunces + Inter.
+   ========================================================================= */
+:root {
+  --neutral-0:   #ffffff;
+  --neutral-50:  #f6f5f2;
+  --neutral-100: #eceae4;
+  --neutral-200: #ddd9cf;
+  --neutral-300: #c4bdac;
+  --neutral-500: #837a66;
+  --neutral-700: #4c4636;
+  --neutral-900: #211e16;
+
+  --brand-500:   #b5612a;
+  --brand-600:   #964d1f;
+  --brand-700:   #743a17;
+
+  --color-bg:             var(--neutral-50);
+  --color-surface:        var(--neutral-0);
+  --color-surface-sunken: var(--neutral-100);
+  --color-border:         var(--neutral-200);
+  --color-border-strong:  var(--neutral-300);
+  --color-text:           var(--neutral-900);
+  --color-text-muted:     var(--neutral-500);
+  --color-text-subtle:    var(--neutral-700);
+  --color-primary:        var(--brand-500);
+  --color-primary-hover:  var(--brand-600);
+  --color-focus-ring:     var(--brand-600);
+
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-body:    "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --text-xs:   clamp(0.75rem, 0.72rem + 0.15vw, 0.8125rem);
+  --text-sm:   clamp(0.875rem, 0.84rem + 0.18vw, 0.9375rem);
+  --text-base: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
+  --text-md:   clamp(1.125rem, 1.06rem + 0.32vw, 1.25rem);
+  --text-xl:   clamp(1.75rem, 1.5rem + 1.2vw, 2.25rem);
+  --leading-tight:  1.1;
+  --leading-normal: 1.6;
+  --tracking-tight: -0.02em;
+  --tracking-caps:  0.16em;
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem;
+  --space-4: 1rem;    --space-5: 1.5rem; --space-6: 2rem;
+  --space-7: 2.5rem;  --space-8: 3rem;
+
+  --radius-sm:  8px;
+  --radius-md:  14px;
+  --radius-lg:  22px;
+  --shadow-1: 0 1px 2px rgba(33, 30, 22, 0.06), 0 1px 1px rgba(33, 30, 22, 0.04);
+  --shadow-2: 0 10px 30px rgba(33, 30, 22, 0.07), 0 2px 6px rgba(33, 30, 22, 0.04);
+
+  --ring: 0 0 0 3px var(--color-surface), 0 0 0 5px var(--color-focus-ring);
+
+  --duration-fast: 150ms;
+  --duration-base: 220ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+.faq {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  padding: var(--space-8) var(--space-4);
+  -webkit-font-smoothing: antialiased;
+}
+
+.faq__shell { max-width: 720px; margin-inline: auto; }
+
+.faq__head { margin-bottom: var(--space-6); max-width: 52ch; }
+.faq__kicker {
+  display: inline-block;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: var(--space-2);
+}
+.faq__title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  margin: 0 0 var(--space-3);
+}
+.faq__lead { margin: 0; color: var(--color-text-subtle); font-size: var(--text-sm); }
+
+/* ---------- Accordion ---------- */
+.accordion {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.accordion__item {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+  transition: border-color var(--duration-base) var(--ease-standard),
+              box-shadow var(--duration-base) var(--ease-standard);
+}
+.accordion__item:has(.accordion__trigger[aria-expanded="true"]) {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-2);
+}
+
+.accordion__heading { margin: 0; font: inherit; }
+
+/* The trigger button is the whole header row */
+.accordion__trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-4) var(--space-5);
+  min-height: 56px;            /* generous touch target */
+  font-family: var(--font-body);
+  color: var(--color-text);
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+.accordion__trigger:hover { background: var(--color-surface-sunken); }
+.accordion__trigger:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+  border-radius: var(--radius-sm);
+}
+.accordion__label {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  line-height: 1.25;
+}
+
+/* Plus/minus icon: the vertical stroke rotates+fades to make a minus */
+.accordion__icon {
+  flex: none;
+  width: 28px; height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-surface-sunken);
+  color: var(--color-primary);
+  transition: background-color var(--duration-base) var(--ease-standard),
+              color var(--duration-base) var(--ease-standard);
+}
+.accordion__icon svg { width: 16px; height: 16px; }
+.accordion__icon svg path {
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+.accordion__icon-v {
+  transform-origin: center;
+  transition: transform var(--duration-base) var(--ease-standard),
+              opacity var(--duration-base) var(--ease-standard);
+}
+.accordion__trigger[aria-expanded="true"] .accordion__icon {
+  background: var(--color-primary);
+  color: var(--color-surface);
+}
+.accordion__trigger[aria-expanded="true"] .accordion__icon-v {
+  transform: rotate(90deg);
+  opacity: 0;
+}
+
+/* ---------- Panel: animated grid-rows for smooth height ----------
+   Closed = 0fr (collapsed), open = 1fr (natural height). The inner wrapper
+   has min-height:0 + overflow:hidden so it clips during the transition. */
+.accordion__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--duration-base) var(--ease-standard);
+}
+/* When JS opens it, [hidden] is removed and .is-open is added */
+.accordion__panel.is-open { grid-template-rows: 1fr; }
+
+.accordion__inner {
+  min-height: 0;
+  overflow: hidden;
+}
+.accordion__inner p {
+  margin: 0;
+  padding: 0 var(--space-5) var(--space-5);
+  color: var(--color-text-subtle);
+  font-size: var(--text-sm);
+  max-width: 60ch;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 400px) {
+  .faq { padding: var(--space-5) var(--space-3); }
+  .accordion__trigger { padding: var(--space-3) var(--space-4); gap: var(--space-3); }
+  .accordion__inner p { padding: 0 var(--space-4) var(--space-4); }
+}
+
+/* ---------- MANDATORY reduced-motion fallback ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .accordion__item,
+  .accordion__trigger,
+  .accordion__icon,
+  .accordion__icon-v,
+  .accordion__panel { transition: none; }
+  /* Open/close becomes instant, no height animation. */
+}

@@ -1,0 +1,13 @@
+{
+  "atom_id": "card_service_v1",
+  "category": "card",
+  "summary": "Premium service card with bespoke SVG icon and whole-card-clickable target done accessibly via a stretched heading link (no div-onclick); hover lift + shadow, card-level focus-visible ring.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": ["service_lane_set"],
+  "tags": ["card", "service", "stretched-link", "hover-lift", "svg-icon", "focus-within", "clickable-card", "accessibility"],
+  "tone": ["premium", "confident", "modern"],
+  "files": ["snippet.html", "snippet.css", "snippet.js"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

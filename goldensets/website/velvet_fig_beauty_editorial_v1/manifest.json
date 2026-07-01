@@ -1,0 +1,58 @@
+{
+  "pack_id": "velvet_fig_beauty_editorial_v1",
+  "role": "anchor",
+  "family": "website.local_service",
+  "source_paths": [
+    "source_snapshot/index.html",
+    "source_snapshot/styles.css"
+  ],
+  "origin_example_ids": [
+    "velvet-fig-wax-atlanta"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "website"
+  ],
+  "tones": [
+    "premium",
+    "light",
+    "beauty",
+    "editorial",
+    "restrained",
+    "calm"
+  ],
+  "surfaces": [
+    "homepage",
+    "hero",
+    "landing",
+    "section"
+  ],
+  "motif_tags": [
+    "hero_shell",
+    "sticky_nav",
+    "cta_treatment",
+    "light_precision",
+    "headline_hierarchy",
+    "trust_rail",
+    "phone_pill",
+    "split_hero",
+    "glass_panel"
+  ],
+  "supports_tasks": [
+    "hero_redesign",
+    "homepage_polish",
+    "beauty_service_website",
+    "light_editorial_beauty_theme",
+    "medspa_homepage"
+  ],
+  "anti_patterns": [
+    "template feel",
+    "generic luxury mush",
+    "influencer landing page",
+    "residential contractor framing",
+    "clinical dashboard shell"
+  ],
+  "token_budget_hint": 4200,
+  "confidence_score": 5
+}

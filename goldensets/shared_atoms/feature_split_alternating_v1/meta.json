@@ -1,0 +1,13 @@
+{
+  "atom_id": "feature_split_alternating_v1",
+  "category": "feature",
+  "summary": "Alternating text/visual feature rows; the visual side flips each row, and each row carries its own distinct bespoke inline-SVG diagram.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": ["service_lane_set"],
+  "tags": ["feature", "alternating", "split", "zig-zag", "inline-svg", "editorial", "rows"],
+  "tone": ["technical", "premium", "confident"],
+  "files": ["snippet.html", "snippet.css"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cedarbrook Dental Associates | Refined Care</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ivory: #FDFDFB;
+    --ivory-dark: #F5F4F0;
+    --sea-glass: #8EACA0;
+    --sea-glass-light: #E2EBE7;
+    --champagne: #C0A483;
+    --champagne-light: #DFD0C0;
+    --champagne-hover: #A88B68;
+    --deep-slate: #242E32;
+    --soft-slate: #66757A;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--ivory);
+    color: var(--deep-slate);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .hero-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Left Column */
+  .split-left {
+    width: 46%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 3rem 4rem 3rem 5rem;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 10;
+    background: radial-gradient(circle at 0% 0%, rgba(192, 164, 131, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(142, 172, 160, 0.1) 0%, transparent 40%);
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.35rem;
+    line-height: 1.1;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--deep-slate);
+    text-transform: uppercase;
+  }
+
+  .main-nav {
+    display: flex;
+    gap: 2.5rem;
+  }
+
+  .main-nav a {
+    text-decoration: none;
+    color: var(--soft-slate);
+    font-size: 0.85rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color 0.4s ease;
+  }
+
+  .main-nav a:hover {
+    color: var(--champagne);
+  }
+
+  /* Main Content */
+  .content {
+    max-width: 520px;
+    margin-top: -4rem;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--sea-glass);
+    font-weight: 500;
+    margin-bottom: 2.5rem;
+  }
+
+  .badge::before {
+    content: '';
+    display: block;
+    width: 30px;
+    height: 1px;
+    background-color: var(--sea-glass);
+  }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 5.2rem;
+    line-height: 1.05;
+    font-weight: 400;
+    color: var(--deep-slate);
+    margin: 0 0 1.5rem 0;
+    letter-spacing: -0.01em;
+  }
+
+  h1 i {
+    font-style: italic;
+    color: var(--champagne);
+    font-weight: 300;
+  }
+
+  .content p {
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: var(--soft-slate);
+    margin: 0 0 3.5rem 0;
+    font-weight: 300;
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--champagne);
+    color: #fff;
+    text-decoration: none;
+    padding: 1.2rem 2.8rem;
+    border-radius: 50px;
+    font-size: 0.95rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 12px 24px rgba(192, 164, 131, 0.25);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--champagne-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 16px 32px rgba(192, 164, 131, 0.35);
+  }
+
+  .btn-text {
+    text-decoration: none;
+    color: var(--deep-slate);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-style: italic;
+    position: relative;
+    transition: color 0.4s ease;
+  }
+
+  .btn-text::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0%;
+    height: 1px;
+    background-color: var(--sea-glass);
+    transition: width 0.4s ease;
+  }
+
+  .btn-text:hover {
+    color: var(--sea-glass);
+  }
+
+  .btn-text:hover::after {
+    width: 100%;
+  }
+
+  /* Footer Note */
+  .footer-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+  }
+
+  .footer-note svg {
+    width: 20px;
+    height: 20px;
+    color: var(--sea-glass);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .footer-note span {
+    font-size: 0.9rem;
+    color: var(--soft-slate);
+    line-height: 1.6;
+    max-width: 320px;
+    font-weight: 300;
+  }
+
+  /* Right Column */
+  .split-right {
+    width: 54%;
+    padding: 2rem 2rem 2rem 0;
+    display: flex;
+    align-items: center;
+    position: relative;
+    box-sizing: border-box;
+  }
+
+  .image-wrapper {
+    width: 100%;
+    height: 100%;
+    border-radius: 200px 32px 32px 200px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 30px 60px rgba(36, 46, 50, 0.08);
+    background-color: var(--ivory-dark);
+  }
+
+  .image-border {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 180px 20px 20px 180px;
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  @keyframes slowPan {
+    0% { transform: scale(1.05) translate(0, 0); }
+    100% { transform: scale(1.02) translate(-1.5%, 1.5%); }
+  }
+
+  .image-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 2;
+    background-color: var(--sea-glass);
+    background-image: linear-gradient(135deg, rgba(142, 172, 160, 0.3), rgba(192, 164, 131, 0.1)), url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1600');
+    background-size: cover;
+    background-position: center;
+    animation: slowPan 30s ease-in-out infinite alternate;
+  }
+
+  .overlay-card {
+    position: absolute;
+    bottom: 12%;
+    left: -80px;
+    background: rgba(253, 253, 251, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    padding: 3rem;
+    border-radius: 24px;
+    width: 400px;
+    box-shadow: 0 24px 50px rgba(36, 46, 50, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    z-index: 20;
+  }
+
+  .overlay-card .stars {
+    display: flex;
+    gap: 4px;
+    color: var(--champagne);
+    margin-bottom: 1.5rem;
+  }
+
+  .overlay-card .stars svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+  }
+
+  .overlay-card p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.45rem;
+    font-style: italic;
+    color: var(--deep-slate);
+    margin: 0 0 1.5rem 0;
+    line-height: 1.45;
+  }
+
+  .overlay-card .author {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .overlay-card .author::before {
+    content: '';
+    display: block;
+    width: 20px;
+    height: 1px;
+    background-color: var(--soft-slate);
+  }
+
+  .overlay-card span {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--soft-slate);
+    font-weight: 500;
+  }
+
+  /* Contact Button Header */
+  .header-contact {
+    display: flex;
+    align-items: center;
+  }
+
+  .phone-link {
+    color: var(--champagne);
+    font-family: 'Outfit', sans-serif;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    border: 1px solid var(--champagne-light);
+    padding: 0.6rem 1.5rem;
+    border-radius: 40px;
+    transition: all 0.4s ease;
+  }
+
+  .phone-link:hover {
+    background-color: var(--champagne);
+    color: #fff;
+    border-color: var(--champagne);
+  }
+
+  /* Responsive Design */
+  @media (max-width: 1200px) {
+    h1 { font-size: 4.2rem; }
+    .split-left { padding: 2rem 3rem; }
+    .overlay-card { left: -40px; width: 340px; padding: 2rem; }
+    .main-nav { display: none; }
+  }
+
+  @media (max-width: 992px) {
+    .hero-container {
+      flex-direction: column;
+      height: auto;
+    }
+    .split-left, .split-right {
+      width: 100%;
+      padding: 3rem 2rem;
+    }
+    .split-left {
+      min-height: 60vh;
+      align-items: center;
+      text-align: center;
+    }
+    .content {
+      margin-top: 4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .actions {
+      justify-content: center;
+    }
+    .badge::before {
+      display: none;
+    }
+    .footer-note {
+      margin-top: 4rem;
+      justify-content: center;
+      text-align: left;
+    }
+    .split-right {
+      height: 700px;
+      padding-bottom: 5rem;
+    }
+    .image-wrapper {
+      border-radius: 40px;
+    }
+    .image-border {
+      border-radius: 28px;
+    }
+    .overlay-card {
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: -30px;
+      width: 90%;
+      max-width: 400px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    h1 { font-size: 3.2rem; }
+    .actions { flex-direction: column; gap: 1.5rem; }
+    .split-left { padding: 2rem 1.5rem; }
+    .split-right { height: 600px; padding: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero-container">
+  
+  <!-- Left Content -->
+  <div class="split-left">
+    <header>
+      <div class="logo">Cedarbrook Dental<br>Associates</div>
+      <nav class="main-nav">
+        <a href="#">Our Practice</a>
+        <a href="#">Treatments</a>
+        <a href="#">Patient Info</a>
+      </nav>
+      <div class="header-contact">
+        <a href="tel:+17065550143" class="phone-link">706.555.0143</a>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="badge">Athens, Georgia</div>
+      <h1>Generations of gentle,<br><i>refined care.</i></h1>
+      <p>Since 1976, we’ve practiced dentistry with a quiet dedication to comfort and clinical excellence. Dr. Erin Caldwell and our long-tenured team welcome your family to a higher standard of care.</p>
+      
+      <div class="actions">
+        <a href="#" class="btn-primary">Request an Appointment</a>
+        <a href="#" class="btn-text">Meet Dr. Lindsey</a>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M12 21s-7.5-6.818-7.5-12a7.5 7.5 0 0 1 15 0c0 5.182-7.5 12-7.5 12z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="12" cy="9" r="2.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Located on Hawthorne Avenue. Proudly serving Athens families for over four decades.</span>
+    </div>
+  </div>
+
+  <!-- Right Visual -->
+  <div class="split-right">
+    <div class="image-wrapper">
+      <div class="image-inner"></div>
+      <div class="image-border"></div>
+    </div>
+    
+    <div class="overlay-card">
+      <div class="stars">
+        <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+      </div>
+      <p>“A beautifully calming environment with a team that truly knows our family. Dentistry as it should be.”</p>
+      <div class="author">
+        <span>The Harrison Family</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+
+<style id="below-fold-patch">
+  /* Global reset for lower sections to ensure no overflow */
+  .lower-fold-section {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  /* Philosophy Section */
+  .philosophy-section {
+    background-color: var(--ivory);
+    padding: 8rem 4rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .philosophy-container {
+    max-width: 1200px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 6rem;
+  }
+
+  .philosophy-image {
+    flex: 1;
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(36, 46, 50, 0.05);
+  }
+
+  .philosophy-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 24px;
+    transition: transform 0.8s ease;
+  }
+  
+  .philosophy-image:hover img {
+    transform: scale(1.03);
+  }
+
+  .philosophy-content {
+    flex: 1;
+  }
+
+  .section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--sea-glass);
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-label::before {
+    content: '';
+    display: block;
+    width: 30px;
+    height: 1px;
+    background-color: var(--sea-glass);
+  }
+
+  .philosophy-content h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.5rem;
+    line-height: 1.1;
+    font-weight: 400;
+    color: var(--deep-slate);
+    margin: 0 0 2rem 0;
+  }
+
+  .philosophy-content p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--soft-slate);
+    margin: 0 0 2rem 0;
+    font-weight: 300;
+  }
+
+  /* Services Section */
+  .services-section {
+    background-color: var(--ivory-dark);
+    padding: 8rem 4rem;
+    position: relative;
+  }
+
+  .services-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .services-header {
+    text-align: center;
+    margin-bottom: 5rem;
+  }
+  
+  .services-header .section-label {
+    justify-content: center;
+  }
+  
+  .services-header .section-label::before,
+  .services-header .section-label::after {
+    content: '';
+    display: block;
+    width: 30px;
+    height: 1px;
+    background-color: var(--sea-glass);
+  }
+
+  .services-header h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.5rem;
+    font-weight: 400;
+    color: var(--deep-slate);
+    margin: 0;
+  }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.5rem;
+  }
+
+  .service-card {
+    background: var(--ivory);
+    padding: 3rem 2.5rem;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(36, 46, 50, 0.03);
+    border: 1px solid rgba(192, 164, 131, 0.1);
+    transition: all 0.4s ease;
+  }
+
+  .service-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(36, 46, 50, 0.06);
+    border-color: var(--champagne);
+  }
+
+  .service-icon {
+    width: 50px;
+    height: 50px;
+    background-color: var(--sea-glass-light);
+    color: var(--sea-glass);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+
+  .service-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 1.5;
+  }
+
+  .service-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 500;
+    color: var(--deep-slate);
+    margin: 0 0 1rem 0;
+  }
+
+  .service-card p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--soft-slate);
+    margin: 0 0 2rem 0;
+    font-weight: 300;
+  }
+
+  .service-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--champagne);
+    text-decoration: none;
+    font-weight: 500;
+    transition: gap 0.3s ease;
+  }
+
+  .service-card:hover .service-link {
+    gap: 0.75rem;
+  }
+
+  /* Environment Section */
+  .environment-section {
+    background-color: var(--deep-slate);
+    color: var(--ivory);
+    padding: 8rem 4rem;
+  }
+
+  .environment-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 5rem;
+  }
+
+  .environment-content {
+    flex: 1;
+  }
+
+  .environment-content .section-label {
+    color: var(--sea-glass-light);
+  }
+
+  .environment-content .section-label::before {
+    background-color: var(--sea-glass-light);
+  }
+
+  .environment-content h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.5rem;
+    line-height: 1.1;
+    font-weight: 400;
+    margin: 0 0 2rem 0;
+    color: var(--ivory);
+  }
+
+  .environment-content p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: rgba(253, 253, 251, 0.8);
+    font-weight: 300;
+    margin-bottom: 2.5rem;
+  }
+
+  .environment-stats {
+    display: flex;
+    gap: 3rem;
+    border-top: 1px solid rgba(253, 253, 251, 0.1);
+    padding-top: 2.5rem;
+  }
+
+  .stat-item h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3rem;
+    font-weight: 300;
+    color: var(--champagne);
+    margin: 0 0 0.5rem 0;
+    line-height: 1;
+  }
+
+  .stat-item p {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0;
+    color: rgba(253, 253, 251, 0.6);
+  }
+
+  .environment-image {
+    flex: 1;
+    position: relative;
+  }
+  
+  .environment-image img {
+    width: 100%;
+    border-radius: 200px 32px 32px 200px;
+    display: block;
+  }
+
+  /* Footer */
+  .site-footer {
+    background-color: var(--ivory);
+    padding: 6rem 4rem 3rem 4rem;
+    border-top: 1px solid var(--ivory-dark);
+  }
+
+  .footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1.5fr;
+    gap: 4rem;
+    margin-bottom: 4rem;
+  }
+
+  .footer-brand .logo {
+    margin-bottom: 1.5rem;
+  }
+
+  .footer-brand p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--soft-slate);
+    font-weight: 300;
+    max-width: 300px;
+    margin-bottom: 2rem;
+  }
+
+  .footer-heading {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--deep-slate);
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+  }
+
+  .footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .footer-links li {
+    margin-bottom: 1rem;
+  }
+
+  .footer-links a {
+    text-decoration: none;
+    color: var(--soft-slate);
+    font-size: 0.95rem;
+    transition: color 0.3s ease;
+  }
+
+  .footer-links a:hover {
+    color: var(--champagne);
+  }
+
+  .footer-contact p {
+    color: var(--soft-slate);
+    font-size: 0.95rem;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .footer-contact a {
+    color: var(--champagne);
+    text-decoration: none;
+    font-size: 1.2rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    display: block;
+    margin-top: 1rem;
+  }
+
+  .footer-bottom {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(102, 117, 122, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--soft-slate);
+    font-size: 0.85rem;
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 1024px) {
+    .philosophy-container,
+    .environment-container {
+      flex-direction: column;
+      gap: 3rem;
+    }
+    
+    .services-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .footer-container {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .philosophy-section,
+    .services-section,
+    .environment-section,
+    .site-footer {
+      padding: 4rem 2rem;
+    }
+
+    .philosophy-content h2,
+    .services-header h2,
+    .environment-content h2 {
+      font-size: 2.5rem;
+    }
+
+    .services-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .footer-container {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+    
+    .environment-image img {
+      border-radius: 40px;
+    }
+  }
+</style>
+
+<section class="lower-fold-section philosophy-section">
+  <div class="philosophy-container">
+    <div class="philosophy-image">
+      <img src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&q=80&w=800" alt="Comfortable, modern dental treatment room">
+    </div>
+    <div class="philosophy-content">
+      <div class="section-label">Our Philosophy</div>
+      <h2>Dentistry defined by grace and precision.</h2>
+      <p>We believe that exceptional clinical care should be delivered in an atmosphere of complete tranquility. From the moment you step into our practice, every detail is considered to ensure your comfort and peace of mind.</p>
+      <p>Dr. Lindsey and our dedicated team combine decades of foundational experience with modern, gentle techniques. We listen deeply, plan meticulously, and treat conservatively, ensuring your smile remains healthy and beautiful for a lifetime.</p>
+      <a href="#" class="btn-text" style="margin-top: 1rem; display: inline-block;">Learn About Our Approach</a>
+    </div>
+  </div>
+</section>
+
+<section class="lower-fold-section services-section">
+  <div class="services-container">
+    <div class="services-header">
+      <div class="section-label">Clinical Excellence</div>
+      <h2>Comprehensive Care</h2>
+    </div>
+    
+    <div class="services-grid">
+      <!-- Service 1 -->
+      <div class="service-card">
+        <div class="service-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <h3>Preventative Health</h3>
+        <p>The foundation of a lasting smile. Routine hygiene, comprehensive exams, and proactive diagnostics to maintain optimal oral wellness.</p>
+        <a href="#" class="service-link">View Details <span>&rarr;</span></a>
+      </div>
+
+      <!-- Service 2 -->
+      <div class="service-card">
+        <div class="service-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+          </svg>
+        </div>
+        <h3>Cosmetic Refinement</h3>
+        <p>Subtle, natural-looking enhancements. From professional whitening to custom porcelain veneers tailored to your unique facial aesthetics.</p>
+        <a href="#" class="service-link">View Details <span>&rarr;</span></a>
+      </div>
+
+      <!-- Service 3 -->
+      <div class="service-card">
+        <div class="service-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+          </svg>
+        </div>
+        <h3>Restorative Care</h3>
+        <p>Restoring function and form with precision. Crowns, bridges, and implant restorations crafted from the finest biocompatible materials.</p>
+        <a href="#" class="service-link">View Details <span>&rarr;</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="lower-fold-section environment-section">
+  <div class="environment-container">
+    <div class="environment-content">
+      <div class="section-label">A Legacy of Trust</div>
+      <h2>Rooted in the Athens community since 1976.</h2>
+      <p>For nearly fifty years, Cedarbrook Dental Associates has been a cornerstone of care for generations of families. Our practice was built on a foundation of integrity, and we continue that legacy today by providing unhurried, deeply personalized attention to every patient.</p>
+      
+      <div class="environment-stats">
+        <div class="stat-item">
+          <h4>48</h4>
+          <p>Years in Practice</p>
+        </div>
+        <div class="stat-item">
+          <h4>3rd</h4>
+          <p>Generation Patients</p>
+        </div>
+        <div class="stat-item">
+          <h4>5</h4>
+          <p>Star Rated Care</p>
+        </div>
+      </div>
+    </div>
+    <div class="environment-image">
+      <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&q=80&w=800" alt="Cedarbrook Dental Associates Practice Details">
+    </div>
+  </div>
+</section>
+
+<footer class="lower-fold-section site-footer">
+  <div class="footer-container">
+    <div class="footer-brand">
+      <div class="logo" style="font-family: 'Cormorant Garamond', serif; font-size: 1.35rem; line-height: 1.1; font-weight: 500; letter-spacing: 0.02em; color: var(--deep-slate); text-transform: uppercase;">Cedarbrook Dental<br>Associates</div>
+      <p>A beautifully calming environment with a team that truly knows your family. Dentistry as it should be.</p>
+      <a href="#" class="btn-primary" style="padding: 0.8rem 1.8rem; font-size: 0.8rem; margin-top: 1rem;">Schedule Visit</a>
+    </div>
+    
+    <div class="footer-nav">
+      <h4 class="footer-heading">Practice</h4>
+      <ul class="footer-links">
+        <li><a href="#">About Dr. Lindsey</a></li>
+        <li><a href="#">Meet the Team</a></li>
+        <li><a href="#">Office Tour</a></li>
+        <li><a href="#">Patient Reviews</a></li>
+      </ul>
+    </div>
+    
+    <div class="footer-nav">
+      <h4 class="footer-heading">Services</h4>
+      <ul class="footer-links">
+        <li><a href="#">Preventative Care</a></li>
+        <li><a href="#">Cosmetic Dentistry</a></li>
+        <li><a href="#">Restorative Care</a></li>
+        <li><a href="#">New Patients</a></li>
+      </ul>
+    </div>
+    
+    <div class="footer-contact">
+      <h4 class="footer-heading">Contact & Location</h4>
+      <p>Hawthorne Avenue</p>
+      <p>Athens, GA</p>
+      <br>
+      <p>Mon-Thu: 8:00am - 5:00pm</p>
+      <p>Friday: By Appointment</p>
+      <a href="tel:+17065550143">706.555.0143</a>
+    </div>
+  </div>
+  
+  <div class="footer-bottom">
+    <div class="copyright">&copy; 2026 Cedarbrook Dental Associates. All rights reserved.</div>
+    <div class="legal">
+      <a href="#" style="color: inherit; text-decoration: none; margin-right: 1rem;">Privacy Policy</a>
+      <a href="#" style="color: inherit; text-decoration: none;">Terms of Service</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

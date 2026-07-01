@@ -1,0 +1,106 @@
+{
+  "pack_id": "iron_circuit_fight_academy_black_copper_v1",
+  "role": "anchor",
+  "family": "website.local_service",
+  "source_paths": [
+    "source_snapshot/index.html",
+    "source_snapshot/styles.css",
+    "source_snapshot/script.js"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "website"
+  ],
+  "tones": [
+    "premium",
+    "industrial",
+    "high-contrast",
+    "dark",
+    "athletic",
+    "restrained",
+    "grounded"
+  ],
+  "surfaces": [
+    "homepage",
+    "hero",
+    "landing",
+    "section",
+    "schedule",
+    "booking_form"
+  ],
+  "motif_tags": [
+    "hero_shell",
+    "sticky_nav",
+    "mat_grid",
+    "taped_corner",
+    "fight_card_structure",
+    "bracket_schedule",
+    "cta_treatment",
+    "dark_texture",
+    "high_contrast_blocking",
+    "headline_hierarchy",
+    "program_tabs",
+    "schedule_matrix",
+    "onboarding_timeline",
+    "proof_safe_roster",
+    "booking_flow",
+    "faq_disclosure",
+    "mobile_sticky_cta"
+  ],
+  "supports_tasks": [
+    "hero_redesign",
+    "homepage_polish",
+    "combat_sports_landing",
+    "martial_arts_academy_website",
+    "mma_striking_grappling_program_page",
+    "class_schedule_matrix_layout",
+    "trial_booking_conversion_flow",
+    "beginner_friendly_fitness_onboarding",
+    "dark_high_contrast_training_facility"
+  ],
+  "anti_patterns": [
+    "ufc broadcast clone",
+    "family karate feel",
+    "generic fitness club",
+    "wellness spa softness",
+    "fake belts records or championships",
+    "fake testimonials or ratings",
+    "stock fighter silhouettes",
+    "emoji glove icons",
+    "template three-equal-card row",
+    "near-duplicate of emberforge black/red palette"
+  ],
+  "screenshot_paths": [],
+  "token_budget_hint": 6200,
+  "confidence_score": 5,
+  "origin_type": "synthetic",
+  "reusable_atoms": [
+    "class_schedule_matrix_v1",
+    "program_selector_tabs_v1",
+    "trial_class_booking_flow_v1",
+    "coach_roster_proof_safe_v1",
+    "mat_zone_diagram_svg_v1",
+    "first_week_timeline_v1",
+    "mobile_sticky_trial_cta_v1"
+  ],
+  "routing_tokens": [
+    "combat_sports",
+    "martial_arts",
+    "mma",
+    "striking",
+    "grappling",
+    "bjj",
+    "muay_thai",
+    "boxing",
+    "fight_academy",
+    "gym",
+    "trial_class",
+    "class_schedule",
+    "black_copper",
+    "dark_industrial",
+    "athletic_condensed_display"
+  ],
+  "proof_policy": "no invented claims; proof placeholders only unless operator provides verified evidence",
+  "qa_status": "static-pass; public snapshot omits screenshot artifacts"
+}

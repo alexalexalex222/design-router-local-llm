@@ -1,0 +1,2123 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="lattice">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light" />
+<title>Lattice — Formula Spreadsheet</title>
+<meta name="description" content="A precise, calm spreadsheet with a real hand-rolled formula engine: A1 references, ranges, functions, a dependency graph with topological recalc, and cycle detection." />
+<style>
+  /* ============================================================
+     LATTICE — design tokens
+     A precise, calm, modern spreadsheet. Warm paper neutrals,
+     one cool-ink accent, crisp hairline gridlines, tabular figures.
+     ============================================================ */
+  :root {
+    color-scheme: light;
+
+    /* --- paper / surface ramp (warm neutral, 6 steps) --- */
+    --paper-0:   #ffffff;   /* cell field */
+    --paper-1:   #faf9f6;   /* app background */
+    --paper-2:   #f3f1ec;   /* headers, toolbar, name-box */
+    --paper-3:   #ebe8e1;   /* hover header / pressed surface */
+    --paper-4:   #e2ded4;   /* active header band */
+
+    /* --- hairlines --- */
+    --line:        #e6e2d9;  /* gridlines */
+    --line-2:      #d8d3c7;  /* stronger dividers */
+    --line-faint:  #efece5;  /* whisper divider */
+
+    /* --- ink / text ramp (>=4 steps, AA-checked on paper) --- */
+    --ink:        #1c1f25;   /* primary cell text (16.5:1 on cells) */
+    --ink-2:      #3c414b;   /* secondary UI text (9:1 on toolbar) */
+    --muted:      #5f636b;   /* header glyphs / labels (5.3:1 on paper-2, AA) */
+    --faint:      #747883;   /* supplementary / disabled / decorative (~4:1) */
+
+    /* --- signature accent: a confident cool ink-blue --- */
+    --accent:        #2f5fd9;
+    --accent-press:  #2249b8;
+    --accent-bright: #4574ec;
+    --accent-wash:   rgba(47, 95, 217, 0.10);   /* range fill */
+    --accent-wash-2: rgba(47, 95, 217, 0.16);   /* header-in-range */
+    --accent-edge:   rgba(47, 95, 217, 0.62);   /* range outline */
+    --accent-soft:   rgba(47, 95, 217, 0.12);   /* focus tint */
+
+    /* --- semantic --- */
+    --err:        #c0392b;
+    --err-wash:   rgba(192, 57, 43, 0.075);
+    --err-edge:   rgba(192, 57, 43, 0.42);
+    --ok:         #2f9e6e;
+    --warn:       #c77a17;
+
+    /* --- reference-highlight palette (formula editing) --- */
+    --ref-1: #2f5fd9;  --ref-2: #2f9e6e;  --ref-3: #c77a17;
+    --ref-4: #8b5cf6;  --ref-5: #d6457f;  --ref-6: #0e9bb0;
+
+    /* --- fluid UI type scale (ratio ~1.2; body >=16px) --- */
+    --fs-xs:   clamp(0.6875rem, 0.665rem + 0.09vw, 0.75rem);
+    --fs-sm:   clamp(0.8125rem, 0.79rem + 0.09vw, 0.875rem);
+    --fs-base: clamp(1rem,      0.97rem + 0.13vw, 1.0625rem);
+    --fs-md:   clamp(1.125rem,  1.07rem + 0.22vw, 1.25rem);
+    --fs-lg:   clamp(1.375rem,  1.25rem + 0.5vw,  1.75rem);
+
+    /* --- grid metrics (fixed px for pixel-true overlay alignment) --- */
+    --col-w:     96px;
+    --row-h:     30px;
+    --rowhead-w: 50px;
+    --cell-fs:   13px;
+
+    /* --- spacing (4px base) --- */
+    --sp-1: 0.25rem; --sp-2: 0.5rem; --sp-3: 0.75rem; --sp-4: 1rem;
+    --sp-5: 1.25rem; --sp-6: 1.5rem; --sp-8: 2rem;
+
+    /* --- radii --- */
+    --r-1: 6px; --r-2: 9px; --r-3: 13px; --r-full: 999px;
+
+    /* --- elevation (<=3 tiers) --- */
+    --sh-1: 0 1px 2px rgba(28,31,37,.06);
+    --sh-2: 0 10px 30px -12px rgba(28,31,37,.20), 0 3px 8px -4px rgba(28,31,37,.12);
+    --sh-3: 0 26px 64px -20px rgba(28,31,37,.30), 0 8px 20px -10px rgba(28,31,37,.16);
+    --sh-head: 0 8px 10px -10px rgba(28,31,37,.32);   /* under sticky header when scrolled */
+
+    /* --- motion --- */
+    --dur-1: 140ms; --dur-2: 200ms; --dur-3: 240ms;
+    --ease:    cubic-bezier(.2,.7,.2,1);
+    --ease-io: cubic-bezier(.55,0,.25,1);
+
+    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "SF Mono", "SFMono-Regular", ui-monospace, "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+
+    --tnum: "tnum" 1, "cv01" 1, "ss01" 1;
+  }
+
+  /* ============================================================
+     RESET / BASE
+     ============================================================ */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: var(--font-sans);
+    font-size: var(--fs-base);
+    color: var(--ink);
+    background: var(--paper-1);
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow: hidden;            /* the app owns scroll; the grid frame scrolls internally */
+  }
+  button { font: inherit; color: inherit; }
+  input { font: inherit; }
+  :focus { outline: none; }
+
+  /* tabular figures wherever numbers live */
+  .tnum { font-variant-numeric: tabular-nums; font-feature-settings: var(--tnum); }
+
+  .visually-hidden {
+    position: absolute !important; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0);
+    white-space: nowrap; border: 0;
+  }
+  .skip-link {
+    position: absolute; left: var(--sp-2); top: -60px; z-index: 200;
+    background: var(--paper-0); color: var(--accent);
+    padding: 10px 14px; border-radius: var(--r-1);
+    box-shadow: var(--sh-2); font-weight: 600; font-size: var(--fs-sm);
+    transition: top var(--dur-2) var(--ease);
+  }
+  .skip-link:focus-visible { top: var(--sp-2); }
+
+  /* ============================================================
+     APP SHELL
+     ============================================================ */
+  .app {
+    display: flex; flex-direction: column;
+    height: 100dvh; min-height: 0; width: 100%;
+    background: var(--paper-1);
+  }
+
+  /* --- brand / title bar --- */
+  .brandbar {
+    display: flex; align-items: center; gap: var(--sp-3);
+    padding: 10px clamp(12px, 2.4vw, 22px);
+    border-bottom: 1px solid var(--line);
+    background: var(--paper-1);
+    min-width: 0;
+  }
+  .mark {
+    width: 30px; height: 30px; flex: 0 0 auto;
+    border-radius: 8px; background: var(--paper-0);
+    border: 1px solid var(--line-2); box-shadow: var(--sh-1);
+    display: grid; place-items: center;
+  }
+  .mark svg { display: block; }
+  .brandtext { display: flex; flex-direction: column; min-width: 0; }
+  .brandname {
+    font-size: var(--fs-md); font-weight: 650; letter-spacing: -0.012em;
+    line-height: 1.05; color: var(--ink);
+  }
+  .brandsub {
+    font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--faint); font-weight: 600; line-height: 1.4;
+  }
+  .brand-spacer { flex: 1 1 auto; min-width: 0; }
+  .sample-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: var(--fs-xs); font-weight: 600; letter-spacing: .02em;
+    color: var(--accent-press); background: var(--accent-soft);
+    border: 1px solid var(--accent-edge); border-radius: var(--r-full);
+    padding: 4px 11px; white-space: nowrap;
+  }
+  .sample-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .save-status {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: var(--fs-xs); color: var(--muted); white-space: nowrap;
+    min-width: 86px; justify-content: flex-end;
+  }
+  .save-status .sdot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--ok);
+    box-shadow: 0 0 0 0 rgba(47,158,110,.5);
+  }
+  .save-status.saving .sdot { background: var(--warn); }
+  .save-status.flash .sdot { animation: pulse var(--dur-3) var(--ease); }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(47,158,110,.45); }
+    100% { box-shadow: 0 0 0 7px rgba(47,158,110,0); }
+  }
+
+  /* ============================================================
+     TOOLBAR
+     ============================================================ */
+  .toolbar {
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    padding: 7px clamp(10px, 2.4vw, 20px);
+    background: var(--paper-2);
+    border-bottom: 1px solid var(--line);
+    min-width: 0;
+  }
+  .tgroup { display: flex; align-items: center; gap: 3px; }
+  .tdiv { width: 1px; align-self: stretch; background: var(--line-2); margin: 4px 5px; }
+
+  .tbtn {
+    appearance: none; border: 1px solid transparent; background: transparent;
+    min-width: 44px; height: 44px; padding: 0 9px;
+    border-radius: var(--r-1); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    color: var(--ink-2); font-size: var(--fs-sm); font-weight: 560;
+    transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease),
+                border-color var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
+  }
+  .tbtn svg { display: block; }
+  .tbtn .tlabel { font-variant-numeric: tabular-nums; }
+  .tbtn:hover { background: var(--paper-3); color: var(--ink); }
+  .tbtn:active { transform: translateY(0.5px); background: var(--paper-4); }
+  .tbtn:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .tbtn[aria-pressed="true"] {
+    background: var(--accent); color: #fff; border-color: var(--accent-press);
+    box-shadow: var(--sh-1);
+  }
+  .tbtn[aria-pressed="true"]:hover { background: var(--accent-press); color:#fff; }
+  .tbtn:disabled { color: var(--faint); cursor: not-allowed; background: transparent; transform: none; }
+  .tbtn.icon-only { padding: 0; }
+  .tbtn.ghost-danger:hover { color: var(--err); background: var(--err-wash); }
+
+  /* segmented number-format control */
+  .segmented { display: inline-flex; background: var(--paper-0); border: 1px solid var(--line-2);
+               border-radius: var(--r-2); padding: 2px; box-shadow: var(--sh-1); }
+  .segmented .tbtn { height: 40px; min-width: 42px; border-radius: 7px; font-weight: 600; }
+  .segmented .tbtn[aria-pressed="true"] { box-shadow: var(--sh-1); }
+
+  /* ============================================================
+     FORMULA BAR
+     ============================================================ */
+  .formulabar {
+    display: flex; align-items: stretch; gap: 0;
+    padding: 8px clamp(10px, 2.4vw, 20px);
+    background: var(--paper-1);
+    border-bottom: 1px solid var(--line);
+    min-width: 0;
+  }
+  .namebox {
+    flex: 0 0 auto; width: 88px; min-width: 72px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--paper-2); border: 1px solid var(--line-2);
+    border-radius: var(--r-1) 0 0 var(--r-1); border-right: none;
+    font-weight: 650; font-size: var(--fs-sm); color: var(--ink);
+    font-variant-numeric: tabular-nums; letter-spacing: .01em;
+    user-select: none;
+  }
+  .fx {
+    flex: 0 0 auto; width: 38px;
+    display: grid; place-items: center;
+    background: var(--paper-0); border: 1px solid var(--line-2); border-left: none; border-right: none;
+    color: var(--muted);
+  }
+  .fx svg { display: block; }
+  .fwrap { position: relative; flex: 1 1 auto; min-width: 0; display: flex; }
+  .finput {
+    flex: 1 1 auto; min-width: 0;
+    border: 1px solid var(--line-2);
+    border-radius: 0 var(--r-1) var(--r-1) 0; border-left: none;
+    background: var(--paper-0); color: var(--ink);
+    padding: 9px 12px; font-size: var(--fs-sm);
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    transition: box-shadow var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease);
+  }
+  .finput::placeholder { color: var(--faint); font-family: var(--font-sans); }
+  .formulabar:focus-within .namebox { border-color: var(--accent); color: var(--accent-press); }
+  .formulabar:focus-within .fx { border-color: var(--accent); color: var(--accent); }
+  .finput:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+  /* ============================================================
+     GRID
+     ============================================================ */
+  .grid-frame {
+    position: relative; flex: 1 1 auto; min-height: 0; min-width: 0;
+    overflow: auto; background: var(--paper-1);
+    scrollbar-width: thin; scrollbar-color: var(--line-2) transparent;
+    overscroll-behavior: contain;
+  }
+  .grid-frame::-webkit-scrollbar { width: 12px; height: 12px; }
+  .grid-frame::-webkit-scrollbar-thumb {
+    background: var(--line-2); border-radius: 10px;
+    border: 3px solid var(--paper-1); background-clip: padding-box;
+  }
+  .grid-frame::-webkit-scrollbar-thumb:hover { background: #c8c2b4; background-clip: padding-box; }
+  .grid-frame::-webkit-scrollbar-corner { background: var(--paper-1); }
+
+  .sheet {
+    position: relative;
+    display: grid;
+    grid-auto-rows: var(--row-h);
+    width: max-content;
+    background: var(--paper-0);
+    font-variant-numeric: tabular-nums; font-feature-settings: var(--tnum);
+  }
+
+  .corner, .ch, .rh {
+    position: sticky; user-select: none;
+    background: var(--paper-2); color: var(--muted);
+    font-size: 11px; font-weight: 600; letter-spacing: .04em;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .corner {
+    top: 0; left: 0; z-index: 5;
+    border-right: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2);
+    cursor: pointer;
+  }
+  .corner svg { color: var(--faint); }
+  .corner:hover svg { color: var(--accent); }
+  .ch {
+    top: 0; z-index: 3;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line-2);
+    text-transform: none; cursor: pointer;
+    transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+  }
+  .rh {
+    left: 0; z-index: 3;
+    border-right: 1px solid var(--line-2);
+    border-bottom: 1px solid var(--line);
+    font-variant-numeric: tabular-nums; cursor: pointer;
+    transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+  }
+  .ch:hover, .rh:hover { background: var(--paper-3); color: var(--ink-2); }
+  .ch.hl, .rh.hl { background: var(--accent-wash-2); color: var(--accent-press); }
+  .ch.active, .rh.active { background: var(--accent); color: #fff; }
+  /* depth cue under sticky headers when scrolled */
+  .grid-frame.scrolled-y .ch { box-shadow: var(--sh-head); }
+  .grid-frame.scrolled-x .rh { box-shadow: 8px 0 10px -10px rgba(28,31,37,.32); }
+  .grid-frame.scrolled-y.scrolled-x .corner { box-shadow: var(--sh-head); }
+
+  .cell {
+    position: relative; z-index: 0;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 0 7px;
+    display: flex; align-items: center;
+    font-size: var(--cell-fs); color: var(--ink);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    cursor: cell; background: var(--paper-0);
+  }
+  .cell.t-num   { justify-content: flex-end; }
+  .cell.t-text  { justify-content: flex-start; }
+  .cell.t-bool  { justify-content: center; color: var(--ink-2); font-weight: 600; letter-spacing: .04em; }
+  .cell.t-err {
+    justify-content: center; color: var(--err); font-weight: 650;
+    background: var(--err-wash); font-size: 12px; letter-spacing: .01em;
+  }
+  .cell.in-range { background: var(--accent-wash); }
+  .cell.t-err.in-range { background: var(--err-wash); }
+  /* reference highlight while editing a formula */
+  .cell.ref-hl {
+    box-shadow: inset 0 0 0 2px var(--ref-c, var(--accent));
+    border-radius: 2px; z-index: 2;
+  }
+  .cell.ref-hl::after {
+    content: ""; position: absolute; inset: 0;
+    background: var(--ref-c, var(--accent)); opacity: .08; pointer-events: none;
+  }
+
+  /* selection / active overlays (crisp single rectangles, pointer-transparent) */
+  .ov { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 4; }
+  .sel-rect {
+    border: 1.5px solid var(--accent-edge);
+    background: transparent; border-radius: 2px;
+    transition: transform var(--dur-1) var(--ease), width var(--dur-1) var(--ease), height var(--dur-1) var(--ease);
+  }
+  .active-rect {
+    border: 2px solid var(--accent);
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.85) inset, var(--sh-1);
+    transition: transform var(--dur-1) var(--ease), width var(--dur-1) var(--ease), height var(--dur-1) var(--ease);
+  }
+  .active-rect.hidden, .sel-rect.hidden { display: none; }
+  /* fill handle */
+  .fill-handle {
+    position: absolute; width: 8px; height: 8px; z-index: 6;
+    background: var(--accent); border: 1.5px solid #fff; border-radius: 2px;
+    box-shadow: var(--sh-1); cursor: crosshair; pointer-events: auto;
+    transition: transform var(--dur-1) var(--ease);
+  }
+  .fill-handle.hidden { display: none; }
+
+  /* in-cell editor */
+  .cell-input {
+    position: absolute; top: 0; left: 0; z-index: 8;
+    border: 2px solid var(--accent);
+    background: var(--paper-0); color: var(--ink);
+    padding: 0 6px; font-size: var(--cell-fs);
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    box-shadow: var(--sh-2); border-radius: 2px;
+    min-width: var(--col-w);
+  }
+  .cell-input.hidden { display: none; }
+
+  /* error tooltip */
+  .tooltip {
+    position: fixed; z-index: 60; max-width: 260px;
+    background: var(--ink); color: #fff;
+    font-size: var(--fs-xs); line-height: 1.4;
+    padding: 7px 10px; border-radius: var(--r-1);
+    box-shadow: var(--sh-2); pointer-events: none;
+    opacity: 0; transform: translateY(3px);
+    transition: opacity var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
+  }
+  .tooltip.show { opacity: 1; transform: translateY(0); }
+  .tooltip code { font-family: var(--font-mono); color: #ffd9a0; }
+
+  /* empty-state overlay */
+  .empty-state {
+    position: absolute; inset: 0; z-index: 7;
+    display: none; place-items: center; pointer-events: none;
+    background: linear-gradient(var(--paper-1), rgba(250,249,246,.0) 40%);
+  }
+  .empty-state.show { display: grid; }
+  .empty-card {
+    pointer-events: auto; text-align: center; max-width: 340px;
+    padding: var(--sp-6); margin-top: 8vh;
+  }
+  .empty-card .em-mark { margin: 0 auto var(--sp-4); width: 52px; height: 52px;
+    display: grid; place-items: center; border-radius: 14px;
+    background: var(--paper-0); border: 1px solid var(--line-2); box-shadow: var(--sh-1); }
+  .empty-card h2 { margin: 0 0 6px; font-size: var(--fs-md); font-weight: 650; letter-spacing: -.01em; }
+  .empty-card p { margin: 0 0 var(--sp-4); color: var(--muted); font-size: var(--fs-sm); }
+  .btn-primary {
+    appearance: none; border: 1px solid var(--accent-press); cursor: pointer;
+    background: var(--accent); color: #fff; font-weight: 600; font-size: var(--fs-sm);
+    padding: 10px 18px; border-radius: var(--r-1); box-shadow: var(--sh-1);
+    transition: background var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
+    min-height: 44px;
+  }
+  .btn-primary:hover { background: var(--accent-press); }
+  .btn-primary:active { transform: translateY(.5px); }
+  .btn-primary:focus-visible { box-shadow: 0 0 0 3px var(--accent-soft); }
+
+  /* ============================================================
+     STATUS BAR
+     ============================================================ */
+  .statusbar {
+    display: flex; align-items: center; gap: var(--sp-4);
+    padding: 7px clamp(10px, 2.4vw, 20px);
+    background: var(--paper-2); border-top: 1px solid var(--line);
+    font-size: var(--fs-xs); color: var(--muted);
+    min-width: 0; overflow-x: auto; scrollbar-width: none;
+  }
+  .statusbar::-webkit-scrollbar { display: none; }
+  .status-sel {
+    font-weight: 600; color: var(--ink-2); white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    flex: 0 0 auto;
+  }
+  .status-stats { display: flex; align-items: center; gap: var(--sp-4); flex: 1 1 auto; min-width: 0; }
+  .stat { display: inline-flex; align-items: baseline; gap: 5px; white-space: nowrap; }
+  .stat .k { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .stat .v { font-weight: 650; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .status-spacer { flex: 1 1 auto; }
+  .status-meta { white-space: nowrap; color: var(--faint); flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+  .status-hint { white-space: nowrap; color: var(--faint); flex: 0 0 auto; }
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  @media (max-width: 640px) {
+    :root { --col-w: 84px; --rowhead-w: 42px; }
+    .brandsub { display: none; }
+    .toolbar .tlabel { display: none; }   /* icon-only toolbar */
+    .toolbar .tbtn { padding: 0; min-width: 44px; }
+    .segmented .tbtn { min-width: 40px; }
+    .namebox { width: 64px; min-width: 56px; }
+    .status-hint { display: none; }
+  }
+  @media (max-width: 420px) {
+    .sample-pill .ptext { display: none; }
+    .sample-pill { padding: 6px; }
+    .save-status .stext { display: none; }
+    .save-status { min-width: 0; }
+    .status-meta { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
+    }
+  }
+  @media (prefers-contrast: more) {
+    :root { --line: #c9c4b8; --line-2: #b4ae9f; --muted: #54585f; }
+  }
+</style>
+</head>
+<body>
+  <a class="skip-link" href="#grid-frame">Skip to grid</a>
+
+  <div class="app">
+    <!-- BRAND BAR -->
+    <header class="brandbar">
+      <span class="mark" aria-hidden="true">
+        <!-- bespoke mark: a 3x3 grid glyph with one accent cell -->
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <rect x="1.5" y="1.5" width="17" height="17" rx="3.2" stroke="var(--line-2)" stroke-width="1.3"/>
+          <path d="M7.17 1.8v16.4M12.83 1.8v16.4M1.8 7.17h16.4M1.8 12.83h16.4" stroke="var(--line-2)" stroke-width="1"/>
+          <rect x="7.55" y="7.55" width="4.9" height="4.9" rx="1" fill="var(--accent)"/>
+        </svg>
+      </span>
+      <div class="brandtext">
+        <span class="brandname">Lattice</span>
+        <span class="brandsub">Formula Spreadsheet</span>
+      </div>
+      <div class="brand-spacer"></div>
+      <span class="sample-pill" id="sample-pill" title="This sheet starts with a clearly-labeled demo. Clear it any time.">
+        <span class="dot" aria-hidden="true"></span><span class="ptext">Sample sheet</span>
+      </span>
+      <span class="save-status" id="save-status" role="status" aria-live="off">
+        <span class="sdot" aria-hidden="true"></span><span class="stext" id="save-text">Saved</span>
+      </span>
+    </header>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar" role="toolbar" aria-label="Spreadsheet tools">
+      <div class="tgroup">
+        <button class="tbtn icon-only" id="btn-undo" type="button" aria-label="Undo (Ctrl+Z)" title="Undo  ·  Ctrl+Z">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5H11a4 4 0 0 1 0 8H6"/><path d="M6.5 6.5 3.5 3.5M6.5 6.5l-3 3"/></svg>
+        </button>
+        <button class="tbtn icon-only" id="btn-redo" type="button" aria-label="Redo (Ctrl+Y)" title="Redo  ·  Ctrl+Y">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 6.5H7a4 4 0 0 0 0 8h5"/><path d="m11.5 6.5 3-3M11.5 6.5l3 3"/></svg>
+        </button>
+      </div>
+
+      <div class="tdiv" aria-hidden="true"></div>
+
+      <div class="segmented tgroup" role="group" aria-label="Number format">
+        <button class="tbtn icon-only" id="fmt-general" type="button" aria-pressed="true" aria-label="General (automatic) format" title="General  ·  automatic format">
+          <svg width="22" height="16" viewBox="0 0 26 16" fill="none"><text x="1" y="12.4" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="12.5" font-weight="700" fill="currentColor" letter-spacing="0.4">123</text></svg>
+        </button>
+        <button class="tbtn icon-only" id="fmt-number" type="button" aria-pressed="false" aria-label="Number format (thousands)" title="Number  ·  1,234.00">
+          <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4.2 4.6 13.8M11.4 4.2 10 13.8M3.4 7.3h10.8M2.9 10.7h10.8"/></svg>
+        </button>
+        <button class="tbtn icon-only" id="fmt-percent" type="button" aria-pressed="false" aria-label="Percent format" title="Percent  ·  12.0%">
+          <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4.5 13.5 13.5 4.5"/><circle cx="5.6" cy="5.6" r="2"/><circle cx="12.4" cy="12.4" r="2"/></svg>
+        </button>
+        <button class="tbtn icon-only" id="fmt-currency" type="button" aria-pressed="false" aria-label="Currency format" title="Currency  ·  $1,234.00">
+          <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2.6v12.8"/><path d="M12 5.2a3.1 3.1 0 0 0-3-1.9c-1.7 0-3 1-3 2.5 0 3.4 6 1.8 6 5.1 0 1.6-1.4 2.7-3.2 2.7A3.3 3.3 0 0 1 5.7 13"/></svg>
+        </button>
+      </div>
+
+      <div class="tgroup">
+        <button class="tbtn icon-only" id="dec-less" type="button" aria-label="Decrease decimal places" title="Decrease decimals">
+          <svg width="22" height="18" viewBox="0 0 24 18" fill="none"><text x="1" y="13" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="700" fill="currentColor" letter-spacing="-.3">.0</text><path d="M15.5 7.5 18.5 10.5 21.5 7.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="tbtn icon-only" id="dec-more" type="button" aria-label="Increase decimal places" title="Increase decimals">
+          <svg width="24" height="18" viewBox="0 0 26 18" fill="none"><text x="0.5" y="13" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" font-weight="700" fill="currentColor" letter-spacing="-.3">.00</text><path d="M17.5 10.5 20.5 7.5 23.5 10.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <div class="tdiv" aria-hidden="true"></div>
+
+      <div class="tgroup">
+        <button class="tbtn" id="btn-fill" type="button" aria-label="Fill down (Ctrl+D)" title="Fill down  ·  Ctrl+D">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v9"/><path d="m5.5 8.5 3.5 3.5 3.5-3.5"/><path d="M4 15h10"/></svg>
+          <span class="tlabel">Fill</span>
+        </button>
+        <button class="tbtn" id="btn-clear" type="button" aria-label="Clear contents of selection (Delete)" title="Clear selection  ·  Delete">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4.5h12"/><path d="M7.2 4.5V3.4h3.6v1.1"/><path d="M5 4.5 5.7 14a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9L13 4.5"/></svg>
+          <span class="tlabel">Clear</span>
+        </button>
+      </div>
+
+      <div class="brand-spacer"></div>
+
+      <div class="tgroup">
+        <button class="tbtn ghost-danger" id="btn-reset" type="button" aria-label="Clear the whole sheet" title="Clear the whole sheet (undoable)">
+          <span class="tlabel">Clear sheet</span>
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 9a5.5 5.5 0 1 1 1.7 4"/><path d="M3.2 14.2 5.2 13l-.9 2.3"/></svg>
+        </button>
+        <button class="tbtn" id="btn-sample" type="button" aria-label="Load the sample sheet" title="Load the sample sheet">
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="12" height="12" rx="2"/><path d="M3 7h12M7 7v8"/></svg>
+          <span class="tlabel">Sample</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- FORMULA BAR -->
+    <div class="formulabar">
+      <div class="namebox" id="namebox" aria-hidden="true">A1</div>
+      <div class="fx" aria-hidden="true">
+        <svg width="20" height="14" viewBox="0 0 24 16" fill="none"><text x="2" y="13" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="15" fill="currentColor">fx</text></svg>
+      </div>
+      <div class="fwrap">
+        <label class="visually-hidden" for="finput">Formula or value for the active cell</label>
+        <input class="finput" id="finput" type="text" spellcheck="false" autocomplete="off"
+               autocapitalize="off" placeholder="Enter a value, or =A1+B1 to start a formula" />
+      </div>
+    </div>
+
+    <!-- GRID -->
+    <main class="grid-frame" id="grid-frame" tabindex="-1">
+      <div class="sheet" id="sheet" role="grid" aria-label="Spreadsheet" aria-rowcount="50" aria-colcount="26">
+        <!-- built by JS -->
+        <div class="ov sel-rect hidden" id="sel-rect" aria-hidden="true"></div>
+        <div class="ov active-rect hidden" id="active-rect" aria-hidden="true"></div>
+        <div class="fill-handle hidden" id="fill-handle" aria-hidden="true"></div>
+        <input class="cell-input hidden" id="cell-input" type="text" spellcheck="false"
+               autocomplete="off" autocapitalize="off" aria-label="Cell editor" />
+      </div>
+      <div class="empty-state" id="empty-state" aria-hidden="true">
+        <div class="empty-card">
+          <div class="em-mark" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="none"><rect x="1.5" y="1.5" width="17" height="17" rx="3.2" stroke="var(--line-2)" stroke-width="1.3"/><path d="M7.17 1.8v16.4M12.83 1.8v16.4M1.8 7.17h16.4M1.8 12.83h16.4" stroke="var(--line-2)" stroke-width="1"/><rect x="7.55" y="7.55" width="4.9" height="4.9" rx="1" fill="var(--accent)"/></svg>
+          </div>
+          <h2>An empty sheet</h2>
+          <p>Click any cell and start typing. Begin a formula with <strong>=</strong>, like <code>=SUM(A1:A3)</code>.</p>
+          <button class="btn-primary" id="empty-load-sample" type="button">Load the sample sheet</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- STATUS BAR -->
+    <footer class="statusbar" aria-label="Selection summary">
+      <span class="status-sel tnum" id="status-sel">A1</span>
+      <div class="status-stats" id="status-stats" aria-hidden="true"></div>
+      <span class="status-spacer"></span>
+      <span class="status-hint" id="status-hint">Type to edit · Enter / Tab to commit · arrows to move</span>
+      <span class="status-meta tnum" id="status-meta"></span>
+    </footer>
+  </div>
+
+  <div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
+  <div class="visually-hidden" id="aria-live" aria-live="polite" role="status"></div>
+
+<script>
+"use strict";
+/* =====================================================================
+   LATTICE — a real formula engine + a calm spreadsheet UI (vanilla JS)
+   Pipeline: tokenizer -> Pratt/precedence-climbing parser -> AST ->
+   evaluator with a function table; A1<->(row,col); a dependency DAG with
+   Kahn topological recalc (only the edited cell's dependency subtree is
+   recomputed) and cycle detection -> #CIRCULAR.
+   ===================================================================== */
+(function () {
+  const NROWS = 50, NCOLS = 26;          // sheet bounds (A..Z, 1..50)
+  const LS_KEY = "lattice.sheet.v1";
+
+  /* ---------------------------------------------------------------
+     A1 <-> (row, col)
+     --------------------------------------------------------------- */
+  function colToIndex(letters) {         // "A"->0, "Z"->25, "AA"->26
+    let n = 0;
+    for (let i = 0; i < letters.length; i++) n = n * 26 + (letters.charCodeAt(i) - 64);
+    return n - 1;
+  }
+  function indexToCol(i) {                // 0->"A"
+    let s = "", x = i + 1;
+    while (x > 0) { const r = (x - 1) % 26; s = String.fromCharCode(65 + r) + s; x = Math.floor((x - 1) / 26); }
+    return s;
+  }
+  const cellKey = (r, c) => r * NCOLS + c;
+  const a1 = (r, c) => indexToCol(c) + (r + 1);
+  function parseA1(ref) {                 // "A1" / "$A$1" -> {r,c,absR,absC} | null
+    const m = /^(\$?)([A-Za-z]+)(\$?)(\d+)$/.exec(ref);
+    if (!m) return null;
+    const c = colToIndex(m[2].toUpperCase());
+    const r = parseInt(m[4], 10) - 1;
+    return { r, c, absR: m[3] === "$", absC: m[1] === "$" };
+  }
+  const inBounds = (r, c) => r >= 0 && r < NROWS && c >= 0 && c < NCOLS;
+
+  /* ---------------------------------------------------------------
+     Errors — first-class values that propagate through evaluation
+     --------------------------------------------------------------- */
+  const ERR = {
+    DIV0: "#DIV/0!", REF: "#REF!", NAME: "#NAME?", VALUE: "#VALUE!",
+    CIRC: "#CIRCULAR", NA: "#N/A", NUM: "#NUM!", PARSE: "#ERROR!"
+  };
+  class CellError {
+    constructor(type, msg) { this.type = type; this.message = msg || ""; this.isError = true; }
+    toString() { return this.type; }
+  }
+  const isErr = (v) => v instanceof CellError;
+  const isRange = (v) => v && v.isRange === true;
+
+  /* ---------------------------------------------------------------
+     TOKENIZER
+     --------------------------------------------------------------- */
+  const T = { NUM:"num", STR:"str", BOOL:"bool", REF:"ref", IDENT:"ident",
+              OP:"op", LP:"lp", RP:"rp", COMMA:"comma", COLON:"colon",
+              PERCENT:"percent", ERRLIT:"errlit", EOF:"eof" };
+
+  function tokenize(src) {
+    const toks = []; let i = 0; const n = src.length;
+    const peek = () => src[i];
+    while (i < n) {
+      const ch = src[i];
+      if (ch === " " || ch === "\t" || ch === "\n" || ch === "\r") { i++; continue; }
+      // number (incl. leading dot + scientific)
+      if ((ch >= "0" && ch <= "9") || (ch === "." && src[i + 1] >= "0" && src[i + 1] <= "9")) {
+        let j = i;
+        while (j < n && src[j] >= "0" && src[j] <= "9") j++;
+        if (src[j] === ".") { j++; while (j < n && src[j] >= "0" && src[j] <= "9") j++; }
+        if (src[j] === "e" || src[j] === "E") {
+          let k = j + 1; if (src[k] === "+" || src[k] === "-") k++;
+          if (src[k] >= "0" && src[k] <= "9") { j = k; while (j < n && src[j] >= "0" && src[j] <= "9") j++; }
+        }
+        toks.push({ t: T.NUM, v: parseFloat(src.slice(i, j)) }); i = j; continue;
+      }
+      // string
+      if (ch === '"') {
+        let j = i + 1, out = "";
+        while (j < n) {
+          if (src[j] === '"') { if (src[j + 1] === '"') { out += '"'; j += 2; continue; } break; }
+          out += src[j++];
+        }
+        if (j >= n) throw new SyntaxError("Unterminated string");
+        toks.push({ t: T.STR, v: out }); i = j + 1; continue;
+      }
+      // error literal (#DIV/0! etc.)
+      if (ch === "#") {
+        const m = /^#(DIV\/0!|REF!|NAME\?|VALUE!|N\/A|NUM!|CIRCULAR|ERROR!)/.exec(src.slice(i));
+        if (m) { toks.push({ t: T.ERRLIT, v: "#" + m[1] }); i += m[0].length; continue; }
+        throw new SyntaxError("Unexpected '#'");
+      }
+      // identifier / cell-ref / boolean / function name
+      if (/[A-Za-z_]/.test(ch)) {
+        let j = i + 1;
+        while (j < n && /[A-Za-z0-9_.]/.test(src[j])) j++;
+        const word = src.slice(i, j);
+        const up = word.toUpperCase();
+        // a cell ref is letters+digits NOT immediately followed by '(' (function call)
+        let k = j; while (k < n && (src[k] === " " || src[k] === "\t")) k++;
+        if (/^[A-Za-z]+[0-9]+$/.test(word) && src[k] !== "(") {
+          toks.push({ t: T.REF, v: up }); i = j; continue;
+        }
+        if (up === "TRUE" || up === "FALSE") { toks.push({ t: T.BOOL, v: up === "TRUE" }); i = j; continue; }
+        toks.push({ t: T.IDENT, v: up }); i = j; continue;
+      }
+      // multi-char operators
+      const two = src.slice(i, i + 2);
+      if (two === "<>" || two === "<=" || two === ">=") { toks.push({ t: T.OP, v: two }); i += 2; continue; }
+      // single-char
+      if ("+-*/^&=<>".includes(ch)) { toks.push({ t: T.OP, v: ch }); i++; continue; }
+      if (ch === "(") { toks.push({ t: T.LP }); i++; continue; }
+      if (ch === ")") { toks.push({ t: T.RP }); i++; continue; }
+      if (ch === ",") { toks.push({ t: T.COMMA }); i++; continue; }
+      if (ch === ":") { toks.push({ t: T.COLON }); i++; continue; }
+      if (ch === "%") { toks.push({ t: T.PERCENT }); i++; continue; }
+      if (ch === "$") {  // part of an absolute ref like $A$1
+        const m = /^(\$[A-Za-z]+\$?[0-9]+|\$?[A-Za-z]+\$[0-9]+)/.exec(src.slice(i));
+        if (m) { toks.push({ t: T.REF, v: m[0].toUpperCase() }); i += m[0].length; continue; }
+        throw new SyntaxError("Unexpected '$'");
+      }
+      throw new SyntaxError("Unexpected character '" + ch + "'");
+    }
+    toks.push({ t: T.EOF });
+    return toks;
+  }
+
+  /* ---------------------------------------------------------------
+     PARSER  (precedence climbing)
+     Unary +/- bind tighter than ^ (Excel: -2^2 = 4). All binary ops
+     are left-associative.
+     --------------------------------------------------------------- */
+  const INFIX_BP = {
+    "=": 1, "<>": 1, "<": 1, ">": 1, "<=": 1, ">=": 1,   // comparison
+    "&": 2,                                               // concat
+    "+": 3, "-": 3,                                       // additive
+    "*": 4, "/": 4,                                       // multiplicative
+    "^": 5                                                // power (left-assoc here)
+  };
+
+  function makeRefNode(word) {
+    const p = parseA1(word);
+    return { type: "ref", r: p.r, c: p.c, absR: p.absR, absC: p.absC };
+  }
+
+  function parse(src) {
+    const toks = tokenize(src);
+    let pos = 0;
+    const peek = () => toks[pos];
+    const next = () => toks[pos++];
+    const expect = (t) => { if (peek().t !== t) throw new SyntaxError("Expected " + t); return next(); };
+
+    function parseExpr(minBp) {
+      let left = parseOperand();
+      for (;;) {
+        const tk = peek();
+        if (tk.t !== T.OP) break;
+        const bp = INFIX_BP[tk.v];
+        if (bp == null || bp < minBp) break;
+        next();
+        const right = parseExpr(bp + 1);             // left-assoc
+        left = { type: "binary", op: tk.v, left, right };
+      }
+      return left;
+    }
+    // operand = unary signs (tightest) -> postfix % -> primary
+    function parseOperand() {
+      const tk = peek();
+      if (tk.t === T.OP && (tk.v === "+" || tk.v === "-")) {
+        next();
+        return { type: "unary", op: tk.v, arg: parseOperand() };
+      }
+      return parsePostfix();
+    }
+    function parsePostfix() {
+      let node = parsePrimary();
+      while (peek().t === T.PERCENT) { next(); node = { type: "postfix", op: "%", arg: node }; }
+      return node;
+    }
+    function parsePrimary() {
+      const tk = next();
+      switch (tk.t) {
+        case T.NUM:    return { type: "num", value: tk.v };
+        case T.STR:    return { type: "str", value: tk.v };
+        case T.BOOL:   return { type: "bool", value: tk.v };
+        case T.ERRLIT: return { type: "err", value: new CellError(tk.v) };
+        case T.LP: {
+          const e = parseExpr(0); expect(T.RP); return e;
+        }
+        case T.REF: {
+          const a = makeRefNode(tk.v);
+          if (peek().t === T.COLON) {
+            next();
+            const rt = next();
+            if (rt.t !== T.REF) throw new SyntaxError("Expected cell after ':'");
+            const b = makeRefNode(rt.v);
+            return { type: "range", a, b };
+          }
+          return a;
+        }
+        case T.IDENT: {
+          // function call
+          if (peek().t === T.LP) {
+            next();
+            const args = [];
+            if (peek().t !== T.RP) {
+              args.push(parseExpr(0));
+              while (peek().t === T.COMMA) { next(); args.push(parseExpr(0)); }
+            }
+            expect(T.RP);
+            return { type: "call", name: tk.v, args };
+          }
+          // bare name (e.g. PI) -> zero-arg function if known, else #NAME?
+          return { type: "call", name: tk.v, args: [], bare: true };
+        }
+        default:
+          throw new SyntaxError("Unexpected token");
+      }
+    }
+
+    const ast = parseExpr(0);
+    if (peek().t !== T.EOF) throw new SyntaxError("Unexpected trailing input");
+    return ast;
+  }
+
+  /* ---------------------------------------------------------------
+     Collect the precedent cell keys a formula reads (ranges expanded
+     and clamped to the sheet) — drives the dependency DAG.
+     --------------------------------------------------------------- */
+  function collectPrecedents(ast, set) {
+    if (!ast || typeof ast !== "object") return;
+    switch (ast.type) {
+      case "ref":
+        if (inBounds(ast.r, ast.c)) set.add(cellKey(ast.r, ast.c));
+        break;
+      case "range": {
+        const r1 = Math.min(ast.a.r, ast.b.r), r2 = Math.max(ast.a.r, ast.b.r);
+        const c1 = Math.min(ast.a.c, ast.b.c), c2 = Math.max(ast.a.c, ast.b.c);
+        for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++)
+          if (inBounds(r, c)) set.add(cellKey(r, c));
+        break;
+      }
+      case "unary": case "postfix": collectPrecedents(ast.arg, set); break;
+      case "binary": collectPrecedents(ast.left, set); collectPrecedents(ast.right, set); break;
+      case "call": ast.args.forEach((a) => collectPrecedents(a, set)); break;
+    }
+  }
+
+  /* ---------------------------------------------------------------
+     VALUE COERCION
+     --------------------------------------------------------------- */
+  function toNum(v) {
+    if (isErr(v)) return v;
+    if (v == null || v === "") return 0;          // empty cell behaves as 0 in arithmetic
+    if (typeof v === "number") return v;
+    if (typeof v === "boolean") return v ? 1 : 0;
+    if (typeof v === "string") {
+      const s = v.trim();
+      if (s === "") return 0;
+      const n = Number(s);
+      return isNaN(n) ? new CellError(ERR.VALUE, "‘" + v + "’ is not a number") : n;
+    }
+    return new CellError(ERR.VALUE);
+  }
+  function toStr(v) {
+    if (isErr(v)) return v;
+    if (v == null) return "";
+    if (typeof v === "boolean") return v ? "TRUE" : "FALSE";
+    if (typeof v === "number") return fmtGeneral(v);
+    return String(v);
+  }
+  function toBool(v) {
+    if (isErr(v)) return v;
+    if (typeof v === "boolean") return v;
+    if (typeof v === "number") return v !== 0;
+    if (v == null || v === "") return false;
+    if (typeof v === "string") {
+      const s = v.trim().toUpperCase();
+      if (s === "TRUE") return true; if (s === "FALSE") return false;
+      const n = Number(s); if (!isNaN(n)) return n !== 0;
+    }
+    return new CellError(ERR.VALUE);
+  }
+
+  /* ---------------------------------------------------------------
+     FUNCTION TABLE
+     --------------------------------------------------------------- */
+  // flatten args to a numeric list; returns CellError if any error present.
+  function numericList(args, opts) {
+    opts = opts || {};
+    const out = [];
+    for (const a of args) {
+      if (isErr(a)) return a;
+      if (isRange(a)) {
+        for (const cell of a.cells) {
+          const v = cell.v;
+          if (isErr(v)) return v;
+          if (typeof v === "number") out.push(v);
+          else if (typeof v === "boolean" && opts.boolInRange) out.push(v ? 1 : 0);
+          // text & blank inside ranges are ignored (Excel behavior)
+        }
+      } else {
+        if (a == null || a === "") { if (opts.keepBlankScalar) out.push(0); continue; }
+        const n = toNum(a);
+        if (isErr(n)) return n;
+        out.push(n);
+      }
+    }
+    return out;
+  }
+  function flattenAll(args) {     // every value (for COUNTA / CONCAT), errors propagate
+    const out = [];
+    for (const a of args) {
+      if (isErr(a)) return a;
+      if (isRange(a)) { for (const cell of a.cells) { if (isErr(cell.v)) return cell.v; out.push(cell.v); } }
+      else out.push(a);
+    }
+    return out;
+  }
+  const numGuard = (x) => (isFinite(x) ? x : new CellError(ERR.NUM));
+
+  function matchCriteria(value, crit) {
+    // crit like ">5", "<=3", "<>x", "=foo", or a bare value
+    let op = "=", rhs = crit;
+    const m = /^(<=|>=|<>|<|>|=)?\s*(.*)$/s.exec(String(crit));
+    if (m && m[1]) { op = m[1]; rhs = m[2]; }
+    const rn = Number(rhs);
+    const numeric = rhs !== "" && !isNaN(rn) && typeof value === "number";
+    if (numeric) {
+      switch (op) { case "=": return value === rn; case "<>": return value !== rn;
+        case "<": return value < rn; case ">": return value > rn;
+        case "<=": return value <= rn; case ">=": return value >= rn; }
+    }
+    const a = (value == null ? "" : String(value)).toLowerCase();
+    const b = String(rhs).toLowerCase();
+    switch (op) { case "=": return a === b; case "<>": return a !== b;
+      case "<": return a < b; case ">": return a > b; case "<=": return a <= b; case ">=": return a >= b; }
+    return false;
+  }
+
+  const FUNCS = {
+    // --- aggregation ---
+    SUM:     { fn: (a) => { const l = numericList(a); return isErr(l) ? l : l.reduce((s, x) => s + x, 0); } },
+    PRODUCT: { fn: (a) => { const l = numericList(a); return isErr(l) ? l : l.reduce((s, x) => s * x, 1); } },
+    AVERAGE: { fn: (a) => { const l = numericList(a); if (isErr(l)) return l; return l.length ? l.reduce((s, x) => s + x, 0) / l.length : new CellError(ERR.DIV0); } },
+    MIN:     { fn: (a) => { const l = numericList(a); if (isErr(l)) return l; return l.length ? Math.min(...l) : 0; } },
+    MAX:     { fn: (a) => { const l = numericList(a); if (isErr(l)) return l; return l.length ? Math.max(...l) : 0; } },
+    MEDIAN:  { fn: (a) => { const l = numericList(a); if (isErr(l)) return l; if (!l.length) return new CellError(ERR.NUM); const s = [...l].sort((x, y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; } },
+    COUNT:   { fn: (a) => { const l = numericList(a); return isErr(l) ? l : l.length; } },
+    COUNTA:  { fn: (a) => { const l = flattenAll(a); if (isErr(l)) return l; return l.filter((v) => v != null && v !== "").length; } },
+    COUNTBLANK: { fn: (a) => { const l = flattenAll(a); if (isErr(l)) return l; return l.filter((v) => v == null || v === "").length; } },
+
+    // --- conditional aggregation ---
+    SUMIF:   { fn: (a) => condAgg(a, "sum") },
+    COUNTIF: { fn: (a) => condAgg(a, "count") },
+    AVERAGEIF: { fn: (a) => condAgg(a, "avg") },
+
+    // --- logic (lazy where useful) ---
+    IF:      { lazy: true, fn: (n, ev) => { const c = ev(n[0]); if (isErr(c)) return c; const b = toBool(c); if (isErr(b)) return b; return b ? ev(n[1]) : (n[2] !== undefined ? ev(n[2]) : false); } },
+    IFERROR: { lazy: true, fn: (n, ev) => { const v = ev(n[0]); return isErr(v) ? (n[1] !== undefined ? ev(n[1]) : "") : v; } },
+    AND:     { lazy: true, fn: (n, ev) => { for (const node of n) { const b = toBool(ev(node)); if (isErr(b)) return b; if (!b) return false; } return true; } },
+    OR:      { lazy: true, fn: (n, ev) => { for (const node of n) { const b = toBool(ev(node)); if (isErr(b)) return b; if (b) return true; } return false; } },
+    NOT:     { fn: (a) => { const b = toBool(a[0]); return isErr(b) ? b : !b; } },
+    TRUE:    { fn: () => true },
+    FALSE:   { fn: () => false },
+    ISERROR: { lazy: true, fn: (n, ev) => isErr(ev(n[0])) },
+    ISBLANK: { lazy: true, fn: (n, ev) => { const v = ev(n[0]); return v == null || v === ""; } },
+    ISNUMBER:{ fn: (a) => typeof a[0] === "number" },
+
+    // --- math ---
+    ABS:   { fn: (a) => { const n = toNum(a[0]); return isErr(n) ? n : Math.abs(n); } },
+    ROUND: { fn: (a) => roundTo(a, "round") },
+    ROUNDUP:   { fn: (a) => roundTo(a, "up") },
+    ROUNDDOWN: { fn: (a) => roundTo(a, "down") },
+    INT:   { fn: (a) => { const n = toNum(a[0]); return isErr(n) ? n : Math.floor(n); } },
+    TRUNC: { fn: (a) => { const n = toNum(a[0]); return isErr(n) ? n : Math.trunc(n); } },
+    SIGN:  { fn: (a) => { const n = toNum(a[0]); return isErr(n) ? n : Math.sign(n); } },
+    SQRT:  { fn: (a) => { const n = toNum(a[0]); if (isErr(n)) return n; return n < 0 ? new CellError(ERR.NUM, "sqrt of a negative") : Math.sqrt(n); } },
+    POWER: { fn: (a) => { const x = toNum(a[0]), y = toNum(a[1]); if (isErr(x)) return x; if (isErr(y)) return y; return numGuard(Math.pow(x, y)); } },
+    EXP:   { fn: (a) => { const n = toNum(a[0]); return isErr(n) ? n : numGuard(Math.exp(n)); } },
+    LN:    { fn: (a) => { const n = toNum(a[0]); if (isErr(n)) return n; return n <= 0 ? new CellError(ERR.NUM) : Math.log(n); } },
+    LOG10: { fn: (a) => { const n = toNum(a[0]); if (isErr(n)) return n; return n <= 0 ? new CellError(ERR.NUM) : Math.log10(n); } },
+    LOG:   { fn: (a) => { const n = toNum(a[0]); if (isErr(n)) return n; const b = a[1] !== undefined ? toNum(a[1]) : 10; if (isErr(b)) return b; return n <= 0 ? new CellError(ERR.NUM) : Math.log(n) / Math.log(b); } },
+    MOD:   { fn: (a) => { const x = toNum(a[0]), y = toNum(a[1]); if (isErr(x)) return x; if (isErr(y)) return y; if (y === 0) return new CellError(ERR.DIV0); return x - Math.floor(x / y) * y; } },
+    FLOOR: { fn: (a) => { const x = toNum(a[0]); const s = a[1] !== undefined ? toNum(a[1]) : 1; if (isErr(x)) return x; if (isErr(s)) return s; if (s === 0) return new CellError(ERR.DIV0); return Math.floor(x / s) * s; } },
+    CEILING:{ fn: (a) => { const x = toNum(a[0]); const s = a[1] !== undefined ? toNum(a[1]) : 1; if (isErr(x)) return x; if (isErr(s)) return s; if (s === 0) return new CellError(ERR.DIV0); return Math.ceil(x / s) * s; } },
+    PI:    { fn: () => Math.PI },
+    SUMPRODUCT: { fn: (a) => { const l = numericList(a); return isErr(l) ? l : l.reduce((s, x) => s + x, 0); } },
+
+    // --- text ---
+    CONCAT:      { fn: (a) => concatFn(a) },
+    CONCATENATE: { fn: (a) => concatFn(a) },
+    LEN:   { fn: (a) => { const s = toStr(a[0]); return isErr(s) ? s : s.length; } },
+    LEFT:  { fn: (a) => { const s = toStr(a[0]); if (isErr(s)) return s; const n = a[1] !== undefined ? toNum(a[1]) : 1; return isErr(n) ? n : s.slice(0, Math.max(0, n)); } },
+    RIGHT: { fn: (a) => { const s = toStr(a[0]); if (isErr(s)) return s; const n = a[1] !== undefined ? toNum(a[1]) : 1; return isErr(n) ? n : (n <= 0 ? "" : s.slice(-n)); } },
+    MID:   { fn: (a) => { const s = toStr(a[0]); if (isErr(s)) return s; const st = toNum(a[1]), ln = toNum(a[2]); if (isErr(st)) return st; if (isErr(ln)) return ln; return s.substr(Math.max(0, st - 1), Math.max(0, ln)); } },
+    UPPER: { fn: (a) => { const s = toStr(a[0]); return isErr(s) ? s : s.toUpperCase(); } },
+    LOWER: { fn: (a) => { const s = toStr(a[0]); return isErr(s) ? s : s.toLowerCase(); } },
+    TRIM:  { fn: (a) => { const s = toStr(a[0]); return isErr(s) ? s : s.replace(/\s+/g, " ").trim(); } },
+    REPT:  { fn: (a) => { const s = toStr(a[0]); if (isErr(s)) return s; const n = toNum(a[1]); if (isErr(n)) return n; return n > 0 ? s.repeat(Math.min(n, 10000)) : ""; } },
+    VALUE: { fn: (a) => { const n = toNum(a[0]); return n; } }
+  };
+
+  function concatFn(args) {
+    const flat = flattenAll(args);
+    if (isErr(flat)) return flat;
+    let out = "";
+    for (const v of flat) { const s = toStr(v); if (isErr(s)) return s; out += s; }
+    return out;
+  }
+  function roundTo(args, mode) {
+    const n = toNum(args[0]); if (isErr(n)) return n;
+    let d = args[1] !== undefined ? toNum(args[1]) : 0; if (isErr(d)) return d;
+    d = Math.trunc(d);
+    const f = Math.pow(10, d);
+    const x = n * f;
+    let r;
+    if (mode === "up") r = (x < 0 ? -Math.ceil(-x) : Math.ceil(x));
+    else if (mode === "down") r = Math.trunc(x);
+    else r = Math.round(Math.abs(x)) * Math.sign(x || 1) * (x === 0 ? 0 : 1);
+    return r / f;
+  }
+  function condAgg(args, mode) {
+    const rangeVal = args[0];
+    if (!isRange(rangeVal)) return new CellError(ERR.VALUE, "first argument must be a range");
+    const crit = args[1];
+    if (isErr(crit)) return crit;
+    const sumRange = args[2];
+    let total = 0, count = 0;
+    rangeVal.cells.forEach((cell, idx) => {
+      if (isErr(cell.v)) return;
+      if (matchCriteria(cell.v, crit)) {
+        let target = cell.v;
+        if (mode !== "count" && isRange(sumRange) && sumRange.cells[idx]) target = sumRange.cells[idx].v;
+        if (mode === "count") count++;
+        else if (typeof target === "number") { total += target; count++; }
+      }
+    });
+    if (mode === "count") return count;
+    if (mode === "avg") return count ? total / count : new CellError(ERR.DIV0);
+    return total;
+  }
+
+  /* =====================================================================
+     SHEET MODEL + DEPENDENCY DAG
+     ===================================================================== */
+  // cell: { raw, isFormula, ast, value, format, decimals, precedents:Set, dependents:Set, evals }
+  const cells = new Map();     // key -> cell (only non-default cells stored)
+  const state = { evalCount: 0 };
+
+  function getCell(r, c) { return cells.get(cellKey(r, c)); }
+  function ensureCell(r, c) {
+    const k = cellKey(r, c);
+    let cell = cells.get(k);
+    if (!cell) { cell = { r, c, raw: "", isFormula: false, ast: null, value: null, format: "general", decimals: null, precedents: new Set(), dependents: new Set(), evals: 0 }; cells.set(k, cell); }
+    return cell;
+  }
+  function cellValue(r, c) {            // for ref evaluation
+    if (!inBounds(r, c)) return new CellError(ERR.REF);
+    const cell = getCell(r, c);
+    return cell ? cell.value : null;
+  }
+
+  /* ---- classify a literal cell input ---- */
+  function classifyLiteral(raw) {
+    const s = raw.trim();
+    if (s === "") return { value: null, format: "general", decimals: null };
+    let m;
+    if ((m = /^(-?)(?:\$\s?)(\d[\d,]*\.?\d*)$/.exec(s))) {   // $1,234.50
+      const num = parseFloat((m[1] || "") + m[2].replace(/,/g, ""));
+      if (!isNaN(num)) return { value: num, format: "currency", decimals: 2 };
+    }
+    if ((m = /^(-?\d*\.?\d+)\s?%$/.exec(s))) {               // 12.5%
+      const num = parseFloat(m[1]) / 100;
+      if (!isNaN(num)) return { value: num, format: "percent", decimals: countDecimals(m[1]) };
+    }
+    if (/^-?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/.test(s)) {     // plain number
+      const num = Number(s);
+      if (!isNaN(num)) return { value: num, format: "preserve", decimals: null };
+    }
+    const up = s.toUpperCase();
+    if (up === "TRUE") return { value: true, format: "general", decimals: null };
+    if (up === "FALSE") return { value: false, format: "general", decimals: null };
+    return { value: raw, format: "text", decimals: null };    // string (keep original, incl. leading spaces)
+  }
+  function countDecimals(s) { const i = s.indexOf("."); return i < 0 ? 0 : (s.length - i - 1); }
+
+  /* ---- set a cell's raw content; updates DAG; recomputes the subtree ---- */
+  function setCellRaw(r, c, raw, opts) {
+    opts = opts || {};
+    if (!inBounds(r, c)) return;
+    const cell = ensureCell(r, c);
+
+    // remove old DAG edges
+    cell.precedents.forEach((pk) => { const p = cells.get(pk); if (p) p.dependents.delete(cell.r * NCOLS + cell.c); });
+    cell.precedents.clear();
+
+    cell.raw = raw;
+    cell.isFormula = raw.length > 0 && raw[0] === "=";
+
+    if (cell.isFormula) {
+      const body = raw.slice(1);
+      try {
+        cell.ast = parse(body);
+        cell.parseError = null;
+        collectPrecedents(cell.ast, cell.precedents);
+        // add reverse edges
+        cell.precedents.forEach((pk) => { const p = cells.get(pk) || (() => { const nr = Math.floor(pk / NCOLS), nc = pk % NCOLS; return ensureCell(nr, nc); })(); p.dependents.add(cellKey(r, c)); });
+        cell.value = undefined;   // pending eval
+      } catch (e) {
+        cell.ast = null;
+        cell.parseError = e.message || "Could not parse formula";
+        cell.value = new CellError(ERR.PARSE, cell.parseError);
+      }
+      // formula keeps current display format unless still general
+    } else {
+      cell.ast = null; cell.parseError = null;
+      const lit = classifyLiteral(raw);
+      cell.value = lit.value;
+      // A typed $ / % literal sets that display format; a plain number keeps the cell's
+      // existing numeric format (or clears a stale "text" one); text/boolean leave it be.
+      if (lit.format === "currency" || lit.format === "percent") { cell.format = lit.format; cell.decimals = lit.decimals; }
+      else if (lit.format === "preserve") { if (cell.format === "text") cell.format = "general"; }
+    }
+
+    // Recompute this cell + its dependency subtree. When called silently the caller
+    // (applyEdits / load / restore) owns a single recompute over the union of edits, so
+    // we defer — recomputing here too would evaluate every dependent twice per edit.
+    if (!opts.silent) { recompute(closure([cellKey(r, c)])); afterMutation(opts); }
+  }
+
+  /* ---- the dependency subtree to recompute: edited cells + all transitive dependents ---- */
+  function closure(rootKeys) {
+    const dirty = new Set(rootKeys);
+    const stack = [...rootKeys];
+    while (stack.length) {
+      const k = stack.pop();
+      const cell = cells.get(k);
+      if (!cell) continue;
+      cell.dependents.forEach((dk) => { if (!dirty.has(dk)) { dirty.add(dk); stack.push(dk); } });
+    }
+    return dirty;
+  }
+
+  /* ---- Kahn topological recalc over the dirty set; leftovers => cycle => #CIRCULAR ---- */
+  function recompute(dirty) {
+    // induced subgraph in-degrees (precedents that are themselves dirty)
+    const indeg = new Map();
+    dirty.forEach((k) => {
+      const cell = cells.get(k);
+      let d = 0;
+      if (cell) cell.precedents.forEach((pk) => { if (dirty.has(pk)) d++; });
+      indeg.set(k, d);
+    });
+    const queue = [];
+    indeg.forEach((d, k) => { if (d === 0) queue.push(k); });
+    const order = [];
+    while (queue.length) {
+      const k = queue.shift();
+      order.push(k);
+      const cell = cells.get(k);
+      if (cell) cell.dependents.forEach((dk) => {
+        if (indeg.has(dk)) { const nd = indeg.get(dk) - 1; indeg.set(dk, nd); if (nd === 0) queue.push(dk); }
+      });
+    }
+    const inOrder = new Set(order);
+    // cycle members
+    dirty.forEach((k) => { if (!inOrder.has(k)) { const cell = cells.get(k); if (cell) cell.value = new CellError(ERR.CIRC, "This formula refers back to itself"); } });
+    // evaluate the acyclic part in dependency order
+    for (const k of order) {
+      const cell = cells.get(k);
+      if (!cell) continue;
+      if (cell.isFormula) cell.value = evalCell(cell);
+      // literal cells already have value set by setCellRaw
+    }
+  }
+
+  /* ---- evaluate one formula cell (counts toward the eval counter) ---- */
+  function evalCell(cell) {
+    cell.evals++; state.evalCount++;
+    if (!cell.ast) return new CellError(ERR.PARSE, cell.parseError || "");
+    try {
+      const v = evalNode(cell.ast);
+      if (isRange(v)) return new CellError(ERR.VALUE, "a range is not a single value");
+      return v;
+    } catch (e) {
+      return new CellError(ERR.PARSE, e.message || "evaluation error");
+    }
+  }
+
+  /* ---- AST evaluator ---- */
+  function evalNode(node) {
+    switch (node.type) {
+      case "num":  return node.value;
+      case "str":  return node.value;
+      case "bool": return node.value;
+      case "err":  return node.value;
+      case "ref": {
+        if (!inBounds(node.r, node.c)) return new CellError(ERR.REF);
+        return cellValue(node.r, node.c);
+      }
+      case "range": {
+        const r1 = Math.min(node.a.r, node.b.r), r2 = Math.max(node.a.r, node.b.r);
+        const c1 = Math.min(node.a.c, node.b.c), c2 = Math.max(node.a.c, node.b.c);
+        if (!inBounds(r1, c1) || !inBounds(r2, c2)) return new CellError(ERR.REF);
+        const list = [];
+        for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++) list.push({ r, c, v: cellValue(r, c) });
+        return { isRange: true, cells: list, r1, c1, r2, c2 };
+      }
+      case "unary": {
+        const v = toNum(evalNode(node.arg));
+        if (isErr(v)) return v;
+        return node.op === "-" ? -v : +v;
+      }
+      case "postfix": {     // percent
+        const v = toNum(evalNode(node.arg));
+        return isErr(v) ? v : v / 100;
+      }
+      case "binary": return evalBinary(node);
+      case "call":   return evalCall(node);
+    }
+    return new CellError(ERR.VALUE);
+  }
+
+  function evalBinary(node) {
+    const op = node.op;
+    const L = evalNode(node.left);
+    if (isErr(L)) return L;
+    const R = evalNode(node.right);
+    if (isErr(R)) return R;
+    if (isRange(L) || isRange(R)) return new CellError(ERR.VALUE);
+    if (op === "&") { const a = toStr(L), b = toStr(R); if (isErr(a)) return a; if (isErr(b)) return b; return a + b; }
+    if ("=<>".includes(op) || op === "<>" || op === "<=" || op === ">=") return compare(op, L, R);
+    // arithmetic
+    const a = toNum(L), b = toNum(R);
+    if (isErr(a)) return a; if (isErr(b)) return b;
+    switch (op) {
+      case "+": return a + b;
+      case "-": return a - b;
+      case "*": return a * b;
+      case "/": return b === 0 ? new CellError(ERR.DIV0, "division by zero") : a / b;
+      case "^": return numGuard(Math.pow(a, b));
+    }
+    return new CellError(ERR.VALUE);
+  }
+  function compare(op, L, R) {
+    let a = L, b = R, cmp;
+    const bothNum = typeof a === "number" && typeof b === "number";
+    if (bothNum) cmp = a < b ? -1 : a > b ? 1 : 0;
+    else {
+      // Excel: number < text < FALSE < TRUE; case-insensitive text compare
+      const rank = (v) => typeof v === "number" ? 0 : typeof v === "string" ? 1 : v === false ? 2 : 3;
+      const ra = rank(a), rb = rank(b);
+      if (ra !== rb) cmp = ra < rb ? -1 : 1;
+      else if (typeof a === "string") { const x = a.toLowerCase(), y = b.toLowerCase(); cmp = x < y ? -1 : x > y ? 1 : 0; }
+      else cmp = (a === b) ? 0 : (a ? 1 : -1);
+    }
+    switch (op) {
+      case "=":  return cmp === 0;
+      case "<>": return cmp !== 0;
+      case "<":  return cmp < 0;
+      case ">":  return cmp > 0;
+      case "<=": return cmp <= 0;
+      case ">=": return cmp >= 0;
+    }
+  }
+  function evalCall(node) {
+    const def = FUNCS[node.name];
+    if (!def) return new CellError(ERR.NAME, "Unknown function " + node.name + "()");
+    if (def.lazy) return def.fn(node.args, (n) => evalNode(n));
+    const args = node.args.map((a) => evalNode(a));
+    for (const a of args) if (isErr(a)) { /* let each fn decide; most propagate via helpers */ }
+    return def.fn(args);
+  }
+
+  /* ---------------------------------------------------------------
+     SERIALIZE AST back to a formula string (for fill-down ref shift)
+     --------------------------------------------------------------- */
+  const SER_PREC = { "=": 1, "<>": 1, "<": 1, ">": 1, "<=": 1, ">=": 1, "&": 2, "+": 3, "-": 3, "*": 4, "/": 4, "^": 5 };
+  function refStr(n) { return (n.absC ? "$" : "") + indexToCol(n.c) + (n.absR ? "$" : "") + (n.r + 1); }
+  function serialize(node, parentPrec, isRight) {
+    parentPrec = parentPrec || 0;
+    switch (node.type) {
+      case "num":  return numToStr(node.value);
+      case "str":  return '"' + String(node.value).replace(/"/g, '""') + '"';
+      case "bool": return node.value ? "TRUE" : "FALSE";
+      case "err":  return node.value.type;
+      case "ref":  return node.bad ? "#REF!" : refStr(node);
+      case "range": return (node.a.bad ? "#REF!" : refStr(node.a)) + ":" + (node.b.bad ? "#REF!" : refStr(node.b));
+      case "unary":   return node.op + serialize(node.arg, 6, false);
+      case "postfix": return serialize(node.arg, 6, false) + "%";
+      case "call":    return node.name + "(" + node.args.map((a) => serialize(a, 0, false)).join(",") + ")";
+      case "binary": {
+        const p = SER_PREC[node.op];
+        const s = serialize(node.left, p, false) + node.op + serialize(node.right, p, true);
+        const wrap = p < parentPrec || (p === parentPrec && isRight);
+        return wrap ? "(" + s + ")" : s;
+      }
+    }
+    return "";
+  }
+  function numToStr(n) { return Number(n.toPrecision(15)).toString(); }
+
+  function shiftRefNode(n, dr, dc) {
+    const nr = n.absR ? n.r : n.r + dr;
+    const nc = n.absC ? n.c : n.c + dc;
+    const bad = !inBounds(nr, nc);
+    return { r: nr, c: nc, absR: n.absR, absC: n.absC, bad };
+  }
+  function shiftAst(node, dr, dc) {
+    switch (node.type) {
+      case "ref":   return Object.assign({ type: "ref" }, shiftRefNode(node, dr, dc));
+      case "range": return { type: "range", a: shiftRefNode(node.a, dr, dc), b: shiftRefNode(node.b, dr, dc) };
+      case "unary":   return { type: "unary", op: node.op, arg: shiftAst(node.arg, dr, dc) };
+      case "postfix": return { type: "postfix", op: node.op, arg: shiftAst(node.arg, dr, dc) };
+      case "binary":  return { type: "binary", op: node.op, left: shiftAst(node.left, dr, dc), right: shiftAst(node.right, dr, dc) };
+      case "call":    return { type: "call", name: node.name, args: node.args.map((a) => shiftAst(a, dr, dc)) };
+      default:        return node;
+    }
+  }
+
+  /* =====================================================================
+     NUMBER FORMATTING / DISPLAY
+     ===================================================================== */
+  function fmtGeneral(n) {
+    if (typeof n !== "number") return String(n);
+    if (!isFinite(n)) return n > 0 ? "∞" : "-∞";
+    if (n === 0) return "0";
+    // kill floating-point noise (0.1+0.2) by rounding to 12 significant digits
+    const cleaned = Number(n.toPrecision(12));
+    const a = Math.abs(cleaned);
+    if (a !== 0 && (a >= 1e12 || a < 1e-9)) return cleaned.toExponential(6).replace(/\.?0+e/, "e");
+    return cleaned.toString();
+  }
+  function formatValue(cell) {
+    const v = cell.value;
+    if (v == null || v === "") return { text: "", cls: "t-text" };
+    if (isErr(v)) return { text: v.type, cls: "t-err", err: v };
+    if (typeof v === "boolean") return { text: v ? "TRUE" : "FALSE", cls: "t-bool" };
+    if (typeof v === "string") return { text: v, cls: "t-text" };
+    // number
+    const fmt = cell.format || "general";
+    const d = cell.decimals;
+    let text;
+    try {
+      if (fmt === "percent") text = (v * 100).toLocaleString("en-US", { minimumFractionDigits: d ?? 1, maximumFractionDigits: d ?? 1 }) + "%";
+      else if (fmt === "currency") text = v.toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: d ?? 2, maximumFractionDigits: d ?? 2 });
+      else if (fmt === "number") text = v.toLocaleString("en-US", { minimumFractionDigits: d ?? 2, maximumFractionDigits: d ?? 2 });
+      else text = fmtGeneral(v);    // general
+    } catch (e) { text = fmtGeneral(v); }
+    return { text, cls: "t-num" };
+  }
+  const FORMAT_LABEL = { general: "General", number: "Number", percent: "Percent", currency: "Currency", text: "General" };
+
+  /* =====================================================================
+     RENDER — build the grid once, then patch cells/selection on change
+     ===================================================================== */
+  const sheetEl = document.getElementById("sheet");
+  const frame = document.getElementById("grid-frame");
+  const selRect = document.getElementById("sel-rect");
+  const activeRect = document.getElementById("active-rect");
+  const fillHandle = document.getElementById("fill-handle");
+  const cellInput = document.getElementById("cell-input");
+  const finput = document.getElementById("finput");
+  const namebox = document.getElementById("namebox");
+  const tooltip = document.getElementById("tooltip");
+  const ariaLive = document.getElementById("aria-live");
+  const emptyState = document.getElementById("empty-state");
+  const saveStatusEl = document.getElementById("save-status");
+  const saveTextEl = document.getElementById("save-text");
+  const samplePill = document.getElementById("sample-pill");
+  const statusSel = document.getElementById("status-sel");
+  const statusStats = document.getElementById("status-stats");
+  const statusMeta = document.getElementById("status-meta");
+
+  const cellEls = [];     // cellEls[r][c]
+  const chEls = [];       // column headers
+  const rhEls = [];       // row headers
+
+  function buildGrid() {
+    sheetEl.style.gridTemplateColumns = `var(--rowhead-w) repeat(${NCOLS}, var(--col-w))`;
+    const frag = document.createDocumentFragment();
+
+    // header row
+    const corner = document.createElement("div");
+    corner.className = "corner"; corner.id = "corner"; corner.setAttribute("role", "presentation");
+    corner.title = "Select all";
+    corner.innerHTML = `<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 9 9 3M9 3v4M9 3H5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    frag.appendChild(corner);
+
+    for (let c = 0; c < NCOLS; c++) {
+      const ch = document.createElement("div");
+      ch.className = "ch"; ch.textContent = indexToCol(c);
+      ch.setAttribute("role", "columnheader"); ch.dataset.c = c;
+      ch.style.gridColumn = (c + 2); ch.style.gridRow = 1;
+      chEls.push(ch); frag.appendChild(ch);
+    }
+
+    for (let r = 0; r < NROWS; r++) {
+      const rh = document.createElement("div");
+      rh.className = "rh"; rh.textContent = (r + 1);
+      rh.setAttribute("role", "rowheader"); rh.dataset.r = r;
+      rh.style.gridColumn = 1; rh.style.gridRow = (r + 2);
+      rhEls.push(rh); frag.appendChild(rh);
+
+      const row = [];
+      for (let c = 0; c < NCOLS; c++) {
+        const el = document.createElement("div");
+        el.className = "cell t-text";
+        el.setAttribute("role", "gridcell");
+        el.tabIndex = -1;
+        el.dataset.r = r; el.dataset.c = c;
+        el.style.gridColumn = (c + 2); el.style.gridRow = (r + 2);
+        el.setAttribute("aria-label", a1(r, c));
+        row.push(el); frag.appendChild(el);
+      }
+      cellEls.push(row);
+    }
+    // overlays must remain last children for stacking; re-append them
+    sheetEl.insertBefore(frag, selRect);
+  }
+
+  function renderCell(r, c) {
+    const el = cellEls[r][c];
+    const cell = getCell(r, c);
+    if (!cell || (cell.raw === "" && cell.value == null)) {
+      el.textContent = "";
+      el.className = "cell t-text" + (isInRange(r, c) ? " in-range" : "");
+      el.removeAttribute("title");
+      return;
+    }
+    const f = formatValue(cell);
+    el.textContent = f.text;
+    let cls = "cell " + f.cls;
+    if (isInRange(r, c)) cls += " in-range";
+    el.className = cls;
+    if (f.err) {
+      el.title = f.err.type + (f.err.message ? " — " + f.err.message : "");
+    } else el.removeAttribute("title");
+  }
+
+  function renderCells(keys) {
+    keys.forEach((k) => { const r = Math.floor(k / NCOLS), c = k % NCOLS; if (cellEls[r]) renderCell(r, c); });
+  }
+  function renderAll() {
+    for (let r = 0; r < NROWS; r++) for (let c = 0; c < NCOLS; c++) renderCell(r, c);
+  }
+
+  /* =====================================================================
+     SELECTION
+     ===================================================================== */
+  const sel = { ar: 0, ac: 0, fr: 0, fc: 0 };   // anchor + focus
+  let editing = null;                            // { r, c, from:'cell'|'bar' } | null
+
+  const selBox = () => ({ r1: Math.min(sel.ar, sel.fr), r2: Math.max(sel.ar, sel.fr),
+                          c1: Math.min(sel.ac, sel.fc), c2: Math.max(sel.ac, sel.fc) });
+  function isInRange(r, c) { const b = selBox(); return r >= b.r1 && r <= b.r2 && c >= b.c1 && c <= b.c2; }
+
+  let prevRangeKeys = new Set();
+  function paintSelection() {
+    // range wash: clear previous, set new
+    const b = selBox();
+    const newKeys = new Set();
+    for (let r = b.r1; r <= b.r2; r++) for (let c = b.c1; c <= b.c2; c++) newKeys.add(cellKey(r, c));
+    prevRangeKeys.forEach((k) => { if (!newKeys.has(k)) { const r = Math.floor(k / NCOLS), c = k % NCOLS; cellEls[r][c].classList.remove("in-range"); } });
+    newKeys.forEach((k) => { const r = Math.floor(k / NCOLS), c = k % NCOLS; cellEls[r][c].classList.add("in-range"); });
+    prevRangeKeys = newKeys;
+
+    // headers
+    chEls.forEach((el, c) => { el.classList.toggle("hl", c >= b.c1 && c <= b.c2); el.classList.toggle("active", c === sel.fc); });
+    rhEls.forEach((el, r) => { el.classList.toggle("hl", r >= b.r1 && r <= b.r2); el.classList.toggle("active", r === sel.fr); });
+
+    // overlays
+    const af = cellEls[sel.fr][sel.fc];
+    activeRect.classList.remove("hidden");
+    activeRect.style.transform = `translate(${af.offsetLeft}px, ${af.offsetTop}px)`;
+    activeRect.style.width = af.offsetWidth + "px";
+    activeRect.style.height = af.offsetHeight + "px";
+
+    const tl = cellEls[b.r1][b.c1], br = cellEls[b.r2][b.c2];
+    const single = (b.r1 === b.r2 && b.c1 === b.c2);
+    selRect.classList.toggle("hidden", single);
+    if (!single) {
+      selRect.style.transform = `translate(${tl.offsetLeft}px, ${tl.offsetTop}px)`;
+      selRect.style.width = (br.offsetLeft + br.offsetWidth - tl.offsetLeft) + "px";
+      selRect.style.height = (br.offsetTop + br.offsetHeight - tl.offsetTop) + "px";
+    }
+    // fill handle at bottom-right of the selection
+    if (!editing) {
+      fillHandle.classList.remove("hidden");
+      fillHandle.style.transform = `translate(${br.offsetLeft + br.offsetWidth - 5}px, ${br.offsetTop + br.offsetHeight - 5}px)`;
+    } else fillHandle.classList.add("hidden");
+
+    // roving tabindex
+    if (lastFocusCell && lastFocusCell !== af) lastFocusCell.tabIndex = -1;
+    af.tabIndex = 0;
+    lastFocusCell = af;
+
+    // gridcell aria-selected
+    updateAriaSelected(newKeys);
+
+    syncFormulaBar();
+    updateStatus();
+    refreshToolbarState();   // keep format buttons in sync with the active cell
+  }
+  let lastFocusCell = null;
+  let prevSelectedAria = new Set();
+  function updateAriaSelected(newKeys) {
+    prevSelectedAria.forEach((k) => { if (!newKeys.has(k)) { const r = Math.floor(k / NCOLS), c = k % NCOLS; cellEls[r][c].removeAttribute("aria-selected"); } });
+    newKeys.forEach((k) => { const r = Math.floor(k / NCOLS), c = k % NCOLS; cellEls[r][c].setAttribute("aria-selected", "true"); });
+    prevSelectedAria = newKeys;
+  }
+
+  function setSelection(ar, ac, fr, fc, opts) {
+    opts = opts || {};
+    sel.ar = clamp(ar, 0, NROWS - 1); sel.ac = clamp(ac, 0, NCOLS - 1);
+    sel.fr = clamp(fr === undefined ? ar : fr, 0, NROWS - 1);
+    sel.fc = clamp(fc === undefined ? ac : fc, 0, NCOLS - 1);
+    paintSelection();
+    if (opts.focus !== false) { try { cellEls[sel.fr][sel.fc].focus({ preventScroll: true }); } catch (e) {} }
+    ensureVisible(sel.fr, sel.fc);
+    announceSelection();
+  }
+  const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+
+  function ensureVisible(r, c) {
+    const el = cellEls[r][c];
+    const headW = rhEls[0] ? rhEls[0].offsetWidth : 50;
+    const headH = chEls[0] ? chEls[0].offsetHeight : 30;
+    const left = el.offsetLeft, top = el.offsetTop, w = el.offsetWidth, h = el.offsetHeight;
+    if (left - headW < frame.scrollLeft) frame.scrollLeft = left - headW;
+    else if (left + w > frame.scrollLeft + frame.clientWidth) frame.scrollLeft = left + w - frame.clientWidth;
+    if (top - headH < frame.scrollTop) frame.scrollTop = top - headH;
+    else if (top + h > frame.scrollTop + frame.clientHeight) frame.scrollTop = top + h - frame.clientHeight;
+  }
+
+  /* =====================================================================
+     FORMULA BAR + STATUS
+     ===================================================================== */
+  function activeRaw() { const cell = getCell(sel.fr, sel.fc); return cell ? cell.raw : ""; }
+  function syncFormulaBar() {
+    namebox.textContent = a1(sel.fr, sel.fc);
+    if (!editing || editing.from === "cell") finput.value = activeRaw();
+  }
+  function announceSelection() {
+    const cell = getCell(sel.fr, sel.fc);
+    let val = "";
+    if (cell && cell.value != null && cell.value !== "") {
+      val = isErr(cell.value) ? cell.value.type : formatValue(cell).text;
+    }
+    const raw = cell && cell.isFormula ? (", formula " + cell.raw) : "";
+    ariaLive.textContent = a1(sel.fr, sel.fc) + (val ? ", " + val : ", empty") + raw;
+  }
+
+  function updateStatus() {
+    const b = selBox();
+    const count = (b.r2 - b.r1 + 1) * (b.c2 - b.c1 + 1);
+    if (count === 1) {
+      const cell = getCell(sel.fr, sel.fc);
+      statusSel.textContent = a1(sel.fr, sel.fc);
+      const typeLabel = cell && cell.isFormula ? "Formula" : (cell && typeof cell.value === "number" ? FORMAT_LABEL[cell.format] || "Number" : (cell && typeof cell.value === "string" && cell.value !== "" ? "Text" : (cell && typeof cell.value === "boolean" ? "Boolean" : "Empty")));
+      statusStats.innerHTML = "";
+      addStat("Type", typeLabel);
+    } else {
+      statusSel.textContent = a1(b.r1, b.c1) + ":" + a1(b.r2, b.c2) + "  ·  " + count + " cells";
+      // aggregate numeric values in the selection
+      const nums = [];
+      for (let r = b.r1; r <= b.r2; r++) for (let c = b.c1; c <= b.c2; c++) {
+        const cl = getCell(r, c);
+        if (cl && typeof cl.value === "number") nums.push(cl.value);
+      }
+      statusStats.innerHTML = "";
+      if (nums.length) {
+        const sum = nums.reduce((s, x) => s + x, 0);
+        addStat("Sum", fmtGeneral(sum));
+        addStat("Avg", fmtGeneral(sum / nums.length));
+        addStat("Min", fmtGeneral(Math.min(...nums)));
+        addStat("Max", fmtGeneral(Math.max(...nums)));
+      }
+      addStat("Count", String(nums.length));
+    }
+    statusMeta.textContent = "evals " + state.evalCount.toLocaleString("en-US");
+  }
+  function addStat(k, v) {
+    const s = document.createElement("span"); s.className = "stat";
+    s.innerHTML = `<span class="k">${k}</span><span class="v">${escapeHtml(v)}</span>`;
+    statusStats.appendChild(s);
+  }
+  function escapeHtml(s) { return String(s).replace(/[&<>]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[m])); }
+
+  /* =====================================================================
+     EDITING
+     ===================================================================== */
+  function beginEdit(mode, initialChar) {
+    const r = sel.fr, c = sel.fc;
+    editing = { r, c, from: "cell" };
+    const el = cellEls[r][c];
+    cellInput.classList.remove("hidden");
+    cellInput.style.transform = `translate(${el.offsetLeft}px, ${el.offsetTop}px)`;
+    cellInput.style.height = el.offsetHeight + "px";
+    cellInput.style.minWidth = el.offsetWidth + "px";
+    fillHandle.classList.add("hidden");
+    let val;
+    if (mode === "replace") val = (initialChar !== undefined ? initialChar : "");
+    else val = activeRaw();
+    cellInput.value = val;
+    finput.value = val;
+    cellInput.focus();
+    if (mode === "replace") cellInput.setSelectionRange(val.length, val.length);
+    else { const L = val.length; cellInput.setSelectionRange(L, L); }
+    highlightRefs(val);
+  }
+  function syncEditors(srcVal, from) {
+    if (from === "cell") finput.value = srcVal; else cellInput.value = srcVal;
+    if (editing) editing.from = from;
+    highlightRefs(srcVal);
+  }
+  function commitEdit(moveDir) {
+    if (!editing) return;
+    const { r, c } = editing;
+    const raw = (editing.from === "bar" ? finput.value : cellInput.value);
+    clearRefHighlights();
+    cellInput.classList.add("hidden");
+    editing = null;
+    applyEdits([{ r, c, raw }]);          // records undo + recomputes
+    // move
+    if (moveDir === "down") setSelection(r + 1, c);
+    else if (moveDir === "up") setSelection(r - 1, c);
+    else if (moveDir === "right") setSelection(r, c + 1);
+    else if (moveDir === "left") setSelection(r, c - 1);
+    else setSelection(r, c);
+    frame.focus({ preventScroll: true });
+    if (sel.fr === r && sel.fc === c) cellEls[r][c].focus({ preventScroll: true });
+  }
+  function cancelEdit() {
+    if (!editing) return;
+    clearRefHighlights();
+    cellInput.classList.add("hidden");
+    const { r, c } = editing; editing = null;
+    syncFormulaBar();
+    paintSelection();
+    cellEls[r][c].focus({ preventScroll: true });
+  }
+
+  /* ---- reference highlighting while editing a formula ---- */
+  let refHlEls = [];
+  function clearRefHighlights() { refHlEls.forEach((el) => { el.classList.remove("ref-hl"); el.style.removeProperty("--ref-c"); }); refHlEls = []; }
+  const REF_COLORS = ["var(--ref-1)", "var(--ref-2)", "var(--ref-3)", "var(--ref-4)", "var(--ref-5)", "var(--ref-6)"];
+  function highlightRefs(buffer) {
+    clearRefHighlights();
+    if (!buffer || buffer[0] !== "=") return;
+    let toks;
+    try { toks = tokenize(buffer.slice(1)); } catch (e) { return; }   // tolerant: partial formulas still highlight
+    const seen = new Map(); let colorIdx = 0;
+    const mark = (r1, c1, r2, c2) => {
+      const id = r1 + "," + c1 + "," + r2 + "," + c2;
+      let color = seen.get(id);
+      if (color === undefined) { color = REF_COLORS[colorIdx % REF_COLORS.length]; colorIdx++; seen.set(id, color); }
+      for (let r = Math.min(r1, r2); r <= Math.max(r1, r2); r++)
+        for (let c = Math.min(c1, c2); c <= Math.max(c1, c2); c++)
+          if (inBounds(r, c)) { const el = cellEls[r][c]; el.classList.add("ref-hl"); el.style.setProperty("--ref-c", color); refHlEls.push(el); }
+    };
+    for (let i = 0; i < toks.length; i++) {
+      const tk = toks[i];
+      if (tk.t === T.REF) {
+        const p = parseA1(tk.v); if (!p) continue;
+        if (toks[i + 1] && toks[i + 1].t === T.COLON && toks[i + 2] && toks[i + 2].t === T.REF) {
+          const q = parseA1(toks[i + 2].v); if (q) { mark(p.r, p.c, q.r, q.c); i += 2; continue; }
+        }
+        mark(p.r, p.c, p.r, p.c);
+      }
+    }
+  }
+
+  /* =====================================================================
+     MUTATIONS + UNDO/REDO
+     ===================================================================== */
+  const undoStack = [], redoStack = [];
+  const MAX_UNDO = 200;
+
+  function snapshotCell(r, c) {
+    const cell = getCell(r, c);
+    return { r, c, raw: cell ? cell.raw : "", format: cell ? cell.format : "general", decimals: cell ? cell.decimals : null };
+  }
+  // edits: [{r,c,raw,(format),(decimals)}]
+  function applyEdits(edits, opts) {
+    opts = opts || {};
+    const before = edits.map((e) => snapshotCell(e.r, e.c));
+    const changedRoots = [];
+    edits.forEach((e) => {
+      if (e.raw !== undefined) { setCellRaw(e.r, e.c, e.raw, { silent: true }); }
+      if (e.format !== undefined) { const cell = ensureCell(e.r, e.c); cell.format = e.format; if (e.decimals !== undefined) cell.decimals = e.decimals; }
+      changedRoots.push(cellKey(e.r, e.c));
+    });
+    // recompute union subtree of all roots (covers multi-cell edits like fill/clear)
+    recompute(closure(changedRoots));
+    if (!opts.noUndo) {
+      undoStack.push({ before, after: edits.map((e) => snapshotCell(e.r, e.c)) });
+      if (undoStack.length > MAX_UNDO) undoStack.shift();
+      redoStack.length = 0;
+    }
+    renderAll();
+    paintSelection();
+    afterMutation();
+    refreshToolbarState();
+  }
+  function restoreSnapshots(list) {
+    const roots = [];
+    list.forEach((s) => {
+      const cell = ensureCell(s.r, s.c);
+      setCellRaw(s.r, s.c, s.raw, { silent: true });
+      cell.format = s.format; cell.decimals = s.decimals;
+      roots.push(cellKey(s.r, s.c));
+    });
+    recompute(closure(roots));
+    renderAll();
+  }
+  function undo() {
+    const op = undoStack.pop(); if (!op) return;
+    restoreSnapshots(op.before);
+    redoStack.push(op);
+    paintSelection(); afterMutation(); refreshToolbarState();
+    flashAria("Undo");
+  }
+  function redo() {
+    const op = redoStack.pop(); if (!op) return;
+    restoreSnapshots(op.after);
+    undoStack.push(op);
+    paintSelection(); afterMutation(); refreshToolbarState();
+    flashAria("Redo");
+  }
+  function flashAria(msg) { ariaLive.textContent = msg; }
+
+  /* =====================================================================
+     PERSISTENCE
+     ===================================================================== */
+  let saveTimer = null, isSampleLoaded = false;
+  function afterMutation() {
+    updateEmptyState();
+    scheduleSave();
+  }
+  function scheduleSave() {
+    saveStatusEl.classList.add("saving"); saveTextEl.textContent = "Saving…";
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveNow, 350);
+  }
+  function saveNow() {
+    try {
+      const data = { v: 1, sample: isSampleLoaded, cells: {} };
+      cells.forEach((cell, k) => {
+        if (cell.raw !== "" || cell.format !== "general" || cell.decimals != null) {
+          data.cells[k] = { raw: cell.raw, format: cell.format, decimals: cell.decimals };
+        }
+      });
+      data.sel = { ar: sel.ar, ac: sel.ac, fr: sel.fr, fc: sel.fc };
+      localStorage.setItem(LS_KEY, JSON.stringify(data));
+    } catch (e) { /* storage may be unavailable; degrade silently */ }
+    saveStatusEl.classList.remove("saving"); saveStatusEl.classList.add("flash");
+    saveTextEl.textContent = "Saved";
+    setTimeout(() => saveStatusEl.classList.remove("flash"), 280);
+  }
+  function loadFromStorage() {
+    let data;
+    try { data = JSON.parse(localStorage.getItem(LS_KEY)); } catch (e) { data = null; }
+    if (!data || !data.cells) return false;
+    isSampleLoaded = !!data.sample;
+    // set literals first, then formulas, so refs resolve; but recompute handles order anyway
+    const keys = Object.keys(data.cells);
+    keys.forEach((k) => {
+      const r = Math.floor(k / NCOLS), c = k % NCOLS;
+      if (!inBounds(r, c)) return;
+      const d = data.cells[k];
+      const cell = ensureCell(r, c);
+      setCellRaw(r, c, d.raw || "", { silent: true });
+      if (d.format) cell.format = d.format;
+      if (d.decimals !== undefined) cell.decimals = d.decimals;
+    });
+    recompute(closure([...cells.keys()]));
+    if (data.sel) { sel.ar = data.sel.ar; sel.ac = data.sel.ac; sel.fr = data.sel.fr; sel.fc = data.sel.fc; }
+    return true;
+  }
+
+  /* =====================================================================
+     SAMPLE SHEET  (clearly labeled demo content — not real data)
+     ===================================================================== */
+  function loadSample(opts) {
+    cells.clear(); state.evalCount = 0;
+    const S = [
+      // header row
+      ["A1", "Item (sample)"], ["B1", "Qty"], ["C1", "Unit price"], ["D1", "Line total"], ["E1", "Share"],
+      ["A2", "Notebook"],  ["B2", "3"],  ["C2", "$4.50"],  ["D2", "=B2*C2"], ["E2", "=D2/$D$7"],
+      ["A3", "Pen pack"],  ["B3", "5"],  ["C3", "$2.20"],  ["D3", "=B3*C3"], ["E3", "=D3/$D$7"],
+      ["A4", "Folder"],    ["B4", "8"],  ["C4", "$1.10"],  ["D4", "=B4*C4"], ["E4", "=D4/$D$7"],
+      ["A5", "Marker set"],["B5", "2"],  ["C5", "$6.75"],  ["D5", "=B5*C5"], ["E5", "=D5/$D$7"],
+      ["A6", "Tape"],      ["B6", "4"],  ["C6", "$3.00"],  ["D6", "=B6*C6"], ["E6", "=D6/$D$7"],
+      // totals
+      ["A7", "Total"], ["B7", "=SUM(B2:B6)"], ["C7", "=AVERAGE(C2:C6)"], ["D7", "=SUM(D2:D6)"], ["E7", "=SUM(E2:E6)"],
+      // a couple of demonstrative formulas
+      ["A9", "Avg line total"], ["D9", "=ROUND(AVERAGE(D2:D6),2)"],
+      ["A10", "Over $15?"],     ["D10", "=IF(D7>15,\"Yes\",\"No\")"],
+      ["A11", "Items counted"], ["D11", "=COUNT(D2:D6)"]
+    ];
+    // set formats for currency/percent display
+    S.forEach(([ref, raw]) => { const p = parseA1(ref); setCellRaw(p.r, p.c, raw, { silent: true }); });
+    // apply percent format to the Share column + currency where natural
+    for (let r = 1; r <= 5; r++) { const cell = ensureCell(r, 4); cell.format = "percent"; cell.decimals = 1; }
+    { const e7 = ensureCell(6, 4); e7.format = "percent"; e7.decimals = 1; }
+    for (let r = 1; r <= 6; r++) { const d = ensureCell(r, 3); d.format = "currency"; d.decimals = 2; }
+    { const d7 = ensureCell(6, 3); d7.format = "currency"; d7.decimals = 2; }
+    { const c7 = ensureCell(6, 2); c7.format = "currency"; c7.decimals = 2; }
+    { const d9 = ensureCell(8, 3); d9.format = "currency"; d9.decimals = 2; }
+    recompute(closure([...cells.keys()]));
+    isSampleLoaded = true;
+    undoStack.length = 0; redoStack.length = 0;
+    renderAll();
+    setSelection(0, 0);
+    if (!(opts && opts.silent)) { saveNow(); }
+    updateEmptyState(); refreshToolbarState();
+  }
+
+  function clearSheet(record) {
+    const before = [];
+    cells.forEach((cell, k) => { if (cell.raw !== "" || cell.format !== "general" || cell.decimals != null) before.push(snapshotCell(cell.r, cell.c)); });
+    cells.clear(); state.evalCount = 0;
+    isSampleLoaded = false;
+    if (record !== false && before.length) {
+      undoStack.push({ before, after: before.map((s) => ({ r: s.r, c: s.c, raw: "", format: "general", decimals: null })) });
+      redoStack.length = 0;
+    }
+    renderAll();
+    setSelection(0, 0);
+    afterMutation(); refreshToolbarState();
+  }
+
+  function updateEmptyState() {
+    let any = false;
+    cells.forEach((cell) => { if (cell.raw !== "") any = true; });
+    emptyState.classList.toggle("show", !any);
+    samplePill.style.display = isSampleLoaded ? "" : "none";
+  }
+
+  /* =====================================================================
+     TOOLBAR ACTIONS
+     ===================================================================== */
+  const fmtButtons = {
+    general: document.getElementById("fmt-general"),
+    number: document.getElementById("fmt-number"),
+    percent: document.getElementById("fmt-percent"),
+    currency: document.getElementById("fmt-currency")
+  };
+  function applyFormatToSelection(fmt) {
+    const b = selBox(); const edits = [];
+    const defDec = fmt === "percent" ? 1 : (fmt === "currency" || fmt === "number") ? 2 : null;
+    for (let r = b.r1; r <= b.r2; r++) for (let c = b.c1; c <= b.c2; c++) {
+      const cur = getCell(r, c);
+      const dec = (cur && cur.decimals != null && fmt !== "general") ? cur.decimals : defDec;
+      edits.push({ r, c, raw: cur ? cur.raw : "", format: fmt, decimals: dec });
+    }
+    applyEdits(edits);
+  }
+  function changeDecimals(delta) {
+    const b = selBox(); const edits = [];
+    for (let r = b.r1; r <= b.r2; r++) for (let c = b.c1; c <= b.c2; c++) {
+      const cur = ensureCell(r, c);
+      let fmt = cur.format;
+      if (fmt === "general" || fmt === "text") fmt = "number";   // adding decimals implies a numeric format
+      let dec = cur.decimals; if (dec == null) dec = (fmt === "percent" ? 1 : 2);
+      dec = clamp(dec + delta, 0, 10);
+      edits.push({ r, c, raw: cur.raw, format: fmt, decimals: dec });
+    }
+    applyEdits(edits);
+  }
+  function refreshToolbarState() {
+    const cell = getCell(sel.fr, sel.fc);
+    const fmt = cell ? (cell.format === "text" ? "general" : cell.format) : "general";
+    Object.keys(fmtButtons).forEach((k) => fmtButtons[k].setAttribute("aria-pressed", String(k === fmt)));
+    document.getElementById("btn-undo").disabled = undoStack.length === 0;
+    document.getElementById("btn-redo").disabled = redoStack.length === 0;
+  }
+  function fillDown() {
+    const b = selBox();
+    if (b.r1 === b.r2) return;                  // need >1 row
+    const edits = [];
+    for (let c = b.c1; c <= b.c2; c++) {
+      const src = getCell(b.r1, c);
+      const srcRaw = src ? src.raw : "";
+      const srcFmt = src ? src.format : "general";
+      const srcDec = src ? src.decimals : null;
+      for (let r = b.r1 + 1; r <= b.r2; r++) {
+        let raw = srcRaw;
+        if (srcRaw && srcRaw[0] === "=" && src.ast) {
+          try { raw = "=" + serialize(shiftAst(src.ast, r - b.r1, 0)); } catch (e) { raw = srcRaw; }
+        }
+        edits.push({ r, c, raw, format: srcFmt, decimals: srcDec });
+      }
+    }
+    applyEdits(edits);
+  }
+  function clearSelectionContents() {
+    const b = selBox(); const edits = [];
+    for (let r = b.r1; r <= b.r2; r++) for (let c = b.c1; c <= b.c2; c++) {
+      const cur = getCell(r, c);
+      if (cur && cur.raw !== "") edits.push({ r, c, raw: "", format: cur.format, decimals: cur.decimals });
+    }
+    if (edits.length) applyEdits(edits);
+  }
+
+  /* =====================================================================
+     EVENTS
+     ===================================================================== */
+  // --- mouse: select / drag-select / edit ---
+  let dragging = false, fillDrag = null;
+  sheetEl.addEventListener("pointerdown", (e) => {
+    const cellEl = e.target.closest(".cell");
+    const chEl = e.target.closest(".ch");
+    const rhEl = e.target.closest(".rh");
+    const cornerEl = e.target.closest(".corner");
+    if (e.target === fillHandle) {
+      e.preventDefault();
+      fillDrag = { startBox: selBox() };
+      sheetEl.setPointerCapture(e.pointerId);
+      return;
+    }
+    if (editing) commitEdit(null);
+    if (cornerEl) { setSelection(0, 0, NROWS - 1, NCOLS - 1); return; }
+    if (chEl) { const c = +chEl.dataset.c; setSelection(0, c, NROWS - 1, c); return; }
+    if (rhEl) { const r = +rhEl.dataset.r; setSelection(r, 0, r, NCOLS - 1); return; }
+    if (!cellEl) return;
+    const r = +cellEl.dataset.r, c = +cellEl.dataset.c;
+    if (e.shiftKey) { setSelection(sel.ar, sel.ac, r, c); }
+    else { setSelection(r, c); dragging = true; sheetEl.setPointerCapture(e.pointerId); }
+  });
+  sheetEl.addEventListener("pointermove", (e) => {
+    if (!dragging && !fillDrag) return;
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const cellEl = el && el.closest && el.closest(".cell");
+    if (!cellEl) return;
+    const r = +cellEl.dataset.r, c = +cellEl.dataset.c;
+    if (fillDrag) {
+      // preview the fill target as an extended selection (single column-band downward)
+      const sb = fillDrag.startBox;
+      const rr = Math.max(sb.r2, r);
+      setSelection(sb.r1, sb.c1, rr, sb.c2, { focus: false });
+    } else {
+      setSelection(sel.ar, sel.ac, r, c, { focus: false });
+    }
+  });
+  sheetEl.addEventListener("pointerup", (e) => {
+    if (fillDrag) { fillDown(); fillDrag = null; try { sheetEl.releasePointerCapture(e.pointerId); } catch (x) {} }
+    dragging = false;
+  });
+  sheetEl.addEventListener("dblclick", (e) => {
+    const cellEl = e.target.closest(".cell"); if (!cellEl) return;
+    const r = +cellEl.dataset.r, c = +cellEl.dataset.c;
+    setSelection(r, c); beginEdit("edit");
+  });
+
+  // --- keyboard on the grid ---
+  frame.addEventListener("keydown", (e) => {
+    if (editing) return;            // editor handles its own keys
+    const k = e.key;
+    const ext = e.shiftKey;
+    const stepRow = (dr) => { if (ext) setSelection(sel.ar, sel.ac, sel.fr + dr, sel.fc); else setSelection(sel.fr + dr, sel.fc); };
+    const stepCol = (dc) => { if (ext) setSelection(sel.ar, sel.ac, sel.fr, sel.fc + dc); else setSelection(sel.fr, sel.fc + dc); };
+
+    if (k === "ArrowUp")    { e.preventDefault(); stepRow(-1); return; }
+    if (k === "ArrowDown")  { e.preventDefault(); stepRow(1); return; }
+    if (k === "ArrowLeft")  { e.preventDefault(); stepCol(-1); return; }
+    if (k === "ArrowRight") { e.preventDefault(); stepCol(1); return; }
+    if (k === "Tab")        { e.preventDefault(); setSelection(sel.fr, sel.fc + (ext ? -1 : 1)); return; }
+    if (k === "Enter")      { e.preventDefault(); if (ext) setSelection(sel.fr - 1, sel.fc); else beginEdit("edit"); return; }
+    if (k === "F2")         { e.preventDefault(); beginEdit("edit"); return; }
+    if (k === "Home")       { e.preventDefault(); if (e.ctrlKey || e.metaKey) setSelection(0, 0); else setSelection(sel.fr, 0); return; }
+    if (k === "End")        { e.preventDefault(); if (e.ctrlKey || e.metaKey) setSelection(NROWS - 1, NCOLS - 1); else setSelection(sel.fr, NCOLS - 1); return; }
+    if (k === "PageUp")     { e.preventDefault(); setSelection(sel.fr - 10, sel.fc); return; }
+    if (k === "PageDown")   { e.preventDefault(); setSelection(sel.fr + 10, sel.fc); return; }
+    if (k === "Delete" || k === "Backspace") { e.preventDefault(); clearSelectionContents(); return; }
+
+    if ((e.ctrlKey || e.metaKey) && !e.altKey) {
+      const lk = k.toLowerCase();
+      if (lk === "z") { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
+      if (lk === "y") { e.preventDefault(); redo(); return; }
+      if (lk === "d") { e.preventDefault(); fillDown(); return; }
+      if (lk === "a") { e.preventDefault(); setSelection(0, 0, NROWS - 1, NCOLS - 1); return; }
+      return;
+    }
+    // printable char -> start replace-edit
+    if (k.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault(); beginEdit("replace", k);
+    }
+  });
+
+  // --- in-cell editor keys ---
+  // NOTE: stopPropagation is essential — the editor lives inside the grid frame, so a
+  // committing Enter/Tab would otherwise bubble to the grid handler (now editing===null)
+  // and immediately reopen an edit on the cell we just moved to.
+  cellInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); commitEdit(e.shiftKey ? "up" : "down"); }
+    else if (e.key === "Tab") { e.preventDefault(); e.stopPropagation(); commitEdit(e.shiftKey ? "left" : "right"); }
+    else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); cancelEdit(); }
+  });
+  cellInput.addEventListener("input", () => syncEditors(cellInput.value, "cell"));
+
+  // --- formula bar ---
+  finput.addEventListener("focus", () => { if (!editing) { editing = { r: sel.fr, c: sel.fc, from: "bar" }; highlightRefs(finput.value); } });
+  finput.addEventListener("input", () => { if (editing) syncEditors(finput.value, "bar"); });
+  finput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); commitEdit("down"); }
+    else if (e.key === "Tab") { e.preventDefault(); commitEdit(e.shiftKey ? "left" : "right"); }
+    else if (e.key === "Escape") { e.preventDefault(); cancelEdit(); }
+  });
+  finput.addEventListener("blur", () => {
+    // commit when focus leaves the bar for something other than the cell editor
+    if (editing && editing.from === "bar") { setTimeout(() => { if (editing && editing.from === "bar" && document.activeElement !== cellInput) commitEdit(null); }, 0); }
+  });
+
+  // --- toolbar wiring ---
+  document.getElementById("btn-undo").addEventListener("click", undo);
+  document.getElementById("btn-redo").addEventListener("click", redo);
+  fmtButtons.general.addEventListener("click", () => applyFormatToSelection("general"));
+  fmtButtons.number.addEventListener("click", () => applyFormatToSelection("number"));
+  fmtButtons.percent.addEventListener("click", () => applyFormatToSelection("percent"));
+  fmtButtons.currency.addEventListener("click", () => applyFormatToSelection("currency"));
+  document.getElementById("dec-less").addEventListener("click", () => changeDecimals(-1));
+  document.getElementById("dec-more").addEventListener("click", () => changeDecimals(1));
+  document.getElementById("btn-fill").addEventListener("click", fillDown);
+  document.getElementById("btn-clear").addEventListener("click", clearSelectionContents);
+  document.getElementById("btn-reset").addEventListener("click", () => clearSheet(true));
+  document.getElementById("btn-sample").addEventListener("click", () => loadSample());
+  document.getElementById("empty-load-sample").addEventListener("click", () => loadSample());
+
+  // --- error tooltip on hover over an error cell ---
+  sheetEl.addEventListener("pointerover", (e) => {
+    const cellEl = e.target.closest(".cell.t-err"); if (!cellEl) return;
+    const r = +cellEl.dataset.r, c = +cellEl.dataset.c; const cell = getCell(r, c);
+    if (!cell || !isErr(cell.value)) return;
+    const msg = cell.value.message || defaultErrMsg(cell.value.type);
+    tooltip.innerHTML = `<strong>${cell.value.type}</strong>${msg ? " — " + escapeHtml(msg) : ""}`;
+    const rect = cellEl.getBoundingClientRect();
+    tooltip.style.left = Math.min(rect.left, window.innerWidth - 270) + "px";
+    tooltip.style.top = (rect.bottom + 6) + "px";
+    tooltip.classList.add("show");
+  });
+  sheetEl.addEventListener("pointerout", (e) => { if (e.target.closest(".cell.t-err")) tooltip.classList.remove("show"); });
+  function defaultErrMsg(type) {
+    return ({
+      "#DIV/0!": "division by zero", "#REF!": "reference is out of range",
+      "#NAME?": "unknown name or function", "#VALUE!": "wrong type of value",
+      "#CIRCULAR": "this formula refers back to itself", "#ERROR!": "the formula could not be parsed"
+    })[type] || "";
+  }
+
+  // --- scroll shadows under sticky headers ---
+  frame.addEventListener("scroll", () => {
+    frame.classList.toggle("scrolled-y", frame.scrollTop > 0);
+    frame.classList.toggle("scrolled-x", frame.scrollLeft > 0);
+  }, { passive: true });
+
+  // keep overlays aligned if the viewport resizes (token col widths change at breakpoints)
+  let resizeRaf = 0;
+  window.addEventListener("resize", () => { cancelAnimationFrame(resizeRaf); resizeRaf = requestAnimationFrame(() => paintSelection()); });
+
+  /* =====================================================================
+     TEST API  (drives the headless self-test; never used by the UI)
+     ===================================================================== */
+  window.__lattice = {
+    setRaw(ref, raw) { const p = parseA1(ref); if (!p) throw new Error("bad ref " + ref); applyEdits([{ r: p.r, c: p.c, raw }]); },
+    getRaw(ref) { const p = parseA1(ref); const cell = getCell(p.r, p.c); return cell ? cell.raw : ""; },
+    getDisplay(ref) { const p = parseA1(ref); const cell = getCell(p.r, p.c); if (!cell) return ""; return formatValue(cell).text; },
+    getValue(ref) { const p = parseA1(ref); const cell = getCell(p.r, p.c); if (!cell) return null; return isErr(cell.value) ? cell.value.type : cell.value; },
+    evalCountOf(ref) { const p = parseA1(ref); const cell = getCell(p.r, p.c); return cell ? cell.evals : 0; },
+    totalEvals() { return state.evalCount; },
+    select(ref) { const p = parseA1(ref); setSelection(p.r, p.c); },
+    formulaBarValue() { return finput.value; },
+    nameBoxValue() { return namebox.textContent; },
+    clearAll() { try { localStorage.removeItem(LS_KEY); } catch (e) {} clearSheet(false); },
+    loadSample() { loadSample(); },
+    flush() { clearTimeout(saveTimer); saveNow(); },
+    isSample() { return isSampleLoaded; }
+  };
+
+  /* =====================================================================
+     BOOT
+     ===================================================================== */
+  buildGrid();
+  const restored = loadFromStorage();
+  if (!restored) loadSample({ silent: false });
+  else { renderAll(); setSelection(sel.ar, sel.ac, sel.fr, sel.fc); updateEmptyState(); refreshToolbarState(); }
+  // initial scroll-shadow state
+  frame.classList.toggle("scrolled-y", frame.scrollTop > 0);
+  frame.classList.toggle("scrolled-x", frame.scrollLeft > 0);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rivergate Dental Associates</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pearl: #FDFDFD;
+            --warm-white: #F8F7F3;
+            --soft-sage: #9FACA3;
+            --sage-light: #E4EBE6;
+            --charcoal: #2C3531;
+            --gold: #C6A87C;
+            --gold-hover: #b39569;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--warm-white);
+            color: var(--charcoal);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 2rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 20;
+        }
+
+        .logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            color: var(--charcoal);
+            text-transform: capitalize;
+            text-decoration: none;
+            line-height: 1.1;
+        }
+
+        .logo span {
+            display: block;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.15em;
+            color: var(--soft-sage);
+            margin-top: 0.2rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--charcoal);
+            font-size: 0.9rem;
+            font-weight: 400;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--gold);
+        }
+
+        .contact-group {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .phone-link {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            color: var(--charcoal);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .phone-link:hover {
+            color: var(--gold);
+        }
+
+        .btn-outline {
+            border: 1px solid rgba(44, 53, 49, 0.2);
+            padding: 0.8rem 1.8rem;
+            border-radius: 2px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            text-decoration: none;
+            color: var(--charcoal);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--charcoal);
+            color: var(--pearl);
+            border-color: var(--charcoal);
+        }
+
+        /* Hero Section Structure */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        /* Left Content Area */
+        .hero-content {
+            padding: 12rem 4rem 6rem 4rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .eyebrow {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--soft-sage);
+            margin-bottom: 2.5rem;
+            font-weight: 500;
+        }
+
+        .eyebrow::before {
+            content: '';
+            width: 40px;
+            height: 1px;
+            background-color: var(--gold);
+        }
+
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 4.8rem;
+            font-weight: 400;
+            line-height: 1.05;
+            margin-bottom: 1.8rem;
+            color: var(--charcoal);
+            letter-spacing: -0.01em;
+        }
+
+        h1 i {
+            font-style: italic;
+            font-weight: 300;
+            color: var(--soft-sage);
+        }
+
+        p.subtitle {
+            font-size: 1.15rem;
+            font-weight: 300;
+            color: #5A625D;
+            max-width: 90%;
+            margin-bottom: 3.5rem;
+            line-height: 1.8;
+        }
+
+        .cta-group {
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+            margin-bottom: 5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--gold);
+            color: var(--pearl);
+            padding: 1.2rem 3rem;
+            border-radius: 2px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 30px rgba(198, 168, 124, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--gold-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(198, 168, 124, 0.25);
+        }
+
+        .btn-primary:hover::after {
+            left: 100%;
+        }
+
+        .btn-secondary {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: var(--charcoal);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 400;
+            transition: color 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            color: var(--gold);
+        }
+
+        .btn-secondary svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-secondary:hover svg {
+            transform: translateX(5px);
+        }
+
+        /* Trust Cues */
+        .trust-cues {
+            display: grid;
+            grid-template-columns: repeat(3, auto);
+            gap: 3rem;
+            padding-top: 3rem;
+            border-top: 1px solid rgba(159, 172, 163, 0.3);
+        }
+
+        .cue {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .cue-number {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.2rem;
+            font-weight: 400;
+            color: var(--charcoal);
+            line-height: 1;
+        }
+
+        .cue-text {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--soft-sage);
+            line-height: 1.4;
+        }
+
+        /* Right Visual Area */
+        .hero-visual {
+            position: relative;
+            background-color: var(--sage-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Abstract structural background elements */
+        .visual-bg-shape-1 {
+            position: absolute;
+            top: -15%;
+            right: -10%;
+            width: 70%;
+            height: 70%;
+            background: radial-gradient(circle, rgba(253,253,253,0.8) 0%, rgba(253,253,253,0) 70%);
+            z-index: 1;
+        }
+
+        .visual-bg-shape-2 {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(248, 247, 243, 1) 0%, rgba(248, 247, 243, 0) 100%);
+            z-index: 2;
+        }
+
+        .image-wrapper {
+            position: relative;
+            width: 75%;
+            height: 80%;
+            z-index: 3;
+            box-shadow: 0 30px 60px rgba(44, 53, 49, 0.08);
+            border-radius: 2px;
+            overflow: hidden;
+            animation: gentleFloat 12s ease-in-out infinite alternate;
+        }
+
+        @keyframes gentleFloat {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0); }
+        }
+
+        .main-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 30%;
+            filter: contrast(1.05) saturate(1.05);
+            transition: transform 10s ease;
+        }
+
+        .image-wrapper:hover .main-image {
+            transform: scale(1.03);
+        }
+
+        /* Contextual Floating Card */
+        .floating-card {
+            position: absolute;
+            bottom: 12%;
+            left: -12%;
+            background-color: var(--pearl);
+            padding: 2.2rem;
+            border-radius: 2px;
+            box-shadow: 0 25px 50px rgba(44, 53, 49, 0.06);
+            z-index: 10;
+            max-width: 320px;
+            border-left: 3px solid var(--gold);
+        }
+
+        .card-icon {
+            margin-bottom: 1.2rem;
+        }
+
+        .card-icon svg {
+            width: 28px;
+            height: 28px;
+            color: var(--soft-sage);
+        }
+
+        .card-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            color: var(--charcoal);
+            margin-bottom: 0.6rem;
+            font-weight: 600;
+        }
+
+        .card-text {
+            font-size: 0.9rem;
+            color: #777;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        /* Media Queries for Responsiveness */
+        @media (max-width: 1400px) {
+            h1 { font-size: 4.2rem; }
+            .hero-content { padding-left: 3rem; padding-right: 3rem; }
+            header { padding: 2rem 3rem; }
+        }
+
+        @media (max-width: 1100px) {
+            .nav-links { display: none; }
+            .hero-content { padding-top: 10rem; padding-left: 2.5rem; padding-right: 2.5rem; }
+            h1 { font-size: 3.8rem; }
+            .trust-cues { gap: 2rem; }
+            .floating-card { left: -5%; max-width: 280px; padding: 1.8rem; }
+        }
+
+        @media (max-width: 900px) {
+            .hero {
+                grid-template-columns: 1fr;
+                min-height: auto;
+            }
+            header {
+                padding: 1.5rem 2rem;
+                background-color: var(--warm-white);
+            }
+            .hero-content {
+                padding: 10rem 2rem 5rem 2rem;
+                align-items: center;
+                text-align: center;
+            }
+            .eyebrow {
+                justify-content: center;
+            }
+            .eyebrow::before {
+                display: none;
+            }
+            p.subtitle {
+                max-width: 100%;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .cta-group {
+                justify-content: center;
+            }
+            .trust-cues {
+                justify-content: center;
+                text-align: left;
+            }
+            .hero-visual {
+                min-height: 600px;
+                padding: 4rem 2rem;
+            }
+            .image-wrapper {
+                width: 90%;
+                height: 90%;
+            }
+            .visual-bg-shape-2 {
+                background: linear-gradient(to bottom, rgba(248, 247, 243, 1) 0%, rgba(248, 247, 243, 0) 30%);
+                width: 100%;
+                height: 100%;
+                top: 0;
+            }
+            .floating-card {
+                left: 5%;
+                bottom: 5%;
+                max-width: 300px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 3.2rem; }
+            .contact-group .phone-link { display: none; }
+            .cta-group { flex-direction: column; gap: 1.5rem; }
+            .trust-cues {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 2rem;
+                border-top: none;
+                padding-top: 1rem;
+            }
+            .floating-card {
+                display: none; /* Hide on very small screens for cleaner look */
+            }
+            .image-wrapper { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="#" class="logo">
+            West Augusta
+            <span>Dental Associates</span>
+        </a>
+        
+        <nav class="nav-links">
+            <a href="#expertise">Our Expertise</a>
+            <a href="#services">Clinical Services</a>
+            <a href="#patients">New Patients</a>
+            <a href="#about">The Practice</a>
+        </nav>
+
+        <div class="contact-group">
+            <a href="tel:+17065550167" class="phone-link">Call to consult: (706) 555-0167</a>
+            <a href="#appointment" class="btn-outline">Request Appointment</a>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            
+            <div class="hero-content">
+                <div class="eyebrow">Welcoming New Patients on Wheeler Road</div>
+                
+                <h1>Quiet hospitality.<br><i>Clinical</i> excellence.</h1>
+                
+                <p class="subtitle">
+                    For over 40 years, we have provided Augusta families with a different kind of dentistry. Whether you need routine care, advanced restorative implants, or gentle sedation after years away, experience personalized care without the rush.
+                </p>
+
+                <div class="cta-group">
+                    <a href="#schedule" class="btn-primary">Schedule Your Visit</a>
+                    <a href="#sedation" class="btn-secondary">
+                        Explore Sedation Dentistry
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                    </a>
+                </div>
+
+                <div class="trust-cues">
+                    <div class="cue">
+                        <span class="cue-number">60+</span>
+                        <span class="cue-text">Years Combined<br>Clinical Experience</span>
+                    </div>
+                    <div class="cue">
+                        <span class="cue-number">40</span>
+                        <span class="cue-text">Years Caring For<br>Augusta Families</span>
+                    </div>
+                    <div class="cue">
+                        <span class="cue-number">IV</span>
+                        <span class="cue-text">Sedation Certified<br>For Anxious Patients</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-visual">
+                <div class="visual-bg-shape-1"></div>
+                <div class="visual-bg-shape-2"></div>
+                
+                <div class="image-wrapper">
+                    <!-- High-quality, tasteful image indicating clinical precision and warmth -->
+                    <img src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?q=80&w=1470&auto=format&fit=crop" alt="Pristine and calming dental treatment environment" class="main-image">
+                </div>
+
+                <div class="floating-card">
+                    <div class="card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <h3 class="card-title">Comprehensive Restorations</h3>
+                    <p class="card-text">From custom veneers to precision implants and crowns, our in-house expertise means fewer referrals and seamless care.</p>
+                </div>
+            </div>
+
+        </section>
+    
+
+<style id="below-fold-patch">
+/* Below Fold Structural Defaults */
+section.below-fold-section {
+    padding: 8rem 4rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.section-header {
+    margin-bottom: 4rem;
+}
+
+.section-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--soft-sage);
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+.section-eyebrow.center {
+    justify-content: center;
+}
+
+.section-eyebrow.center::before,
+.section-eyebrow.center::after {
+    content: '';
+    width: 40px;
+    height: 1px;
+    background-color: var(--gold);
+}
+
+.section-eyebrow:not(.center)::before {
+    content: '';
+    width: 40px;
+    height: 1px;
+    background-color: var(--gold);
+}
+
+.section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.8rem;
+    font-weight: 400;
+    color: var(--charcoal);
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.01em;
+}
+
+.section-title i {
+    font-style: italic;
+    color: var(--soft-sage);
+    font-weight: 300;
+}
+
+/* Philosophy Section */
+.philosophy-section {
+    background-color: var(--sage-light);
+}
+
+.philosophy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    align-items: center;
+}
+
+.philosophy-text {
+    font-size: 1.15rem;
+    color: #5A625D;
+    line-height: 1.8;
+    font-weight: 300;
+    margin-bottom: 2rem;
+}
+
+.philosophy-image-wrap {
+    position: relative;
+    border-radius: 2px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(44, 53, 49, 0.08);
+}
+
+.philosophy-image-wrap img {
+    width: 100%;
+    height: auto;
+    display: block;
+    filter: contrast(1.05) saturate(1.02);
+}
+
+/* Services Section */
+.services-section {
+    background-color: var(--warm-white);
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.5rem;
+}
+
+.service-card {
+    background-color: var(--pearl);
+    padding: 3.5rem 2.5rem;
+    border-radius: 2px;
+    border-top: 3px solid transparent;
+    transition: all 0.4s ease;
+    box-shadow: 0 10px 30px rgba(44, 53, 49, 0.03);
+    position: relative;
+    overflow: hidden;
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+    border-top-color: var(--gold);
+    box-shadow: 0 20px 40px rgba(44, 53, 49, 0.08);
+}
+
+.service-icon {
+    width: 48px;
+    height: 48px;
+    color: var(--gold);
+    margin-bottom: 2rem;
+}
+
+.service-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.2rem;
+    color: var(--charcoal);
+    margin-bottom: 1rem;
+    font-weight: 400;
+}
+
+.service-desc {
+    font-size: 1rem;
+    color: #5A625D;
+    line-height: 1.7;
+    font-weight: 300;
+    margin-bottom: 2.5rem;
+}
+
+.service-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--charcoal);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.service-link:hover {
+    color: var(--gold);
+}
+
+.service-link svg {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.3s ease;
+}
+
+.service-link:hover svg {
+    transform: translateX(4px);
+}
+
+/* Experience Section */
+.experience-section {
+    background-color: var(--charcoal);
+    color: var(--pearl);
+    text-align: center;
+}
+
+.experience-section .section-title {
+    color: var(--pearl);
+}
+
+.experience-section .section-eyebrow {
+    color: var(--soft-sage);
+}
+
+.experience-section .section-eyebrow::before,
+.experience-section .section-eyebrow::after {
+    background-color: var(--gold);
+}
+
+.steps-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3rem;
+    margin-top: 5rem;
+}
+
+.step-item {
+    text-align: center;
+    padding: 0 1rem;
+    position: relative;
+}
+
+.step-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 4.5rem;
+    color: var(--gold);
+    opacity: 0.4;
+    line-height: 1;
+    margin-bottom: 1.5rem;
+    font-weight: 300;
+}
+
+.step-title {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+    color: var(--pearl);
+}
+
+.step-desc {
+    font-size: 0.95rem;
+    color: var(--sage-light);
+    opacity: 0.8;
+    line-height: 1.7;
+    font-weight: 300;
+}
+
+/* Testimonial Section */
+.testimonial-section {
+    background-color: var(--warm-white);
+    padding: 10rem 4rem;
+    text-align: center;
+    position: relative;
+}
+
+.testimonial-content {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+.quote-mark {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 10rem;
+    color: var(--gold);
+    opacity: 0.15;
+    line-height: 0;
+    position: absolute;
+    top: 3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: -1;
+}
+
+.testimonial-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.6rem;
+    font-style: italic;
+    color: var(--charcoal);
+    line-height: 1.3;
+    margin-bottom: 2.5rem;
+}
+
+.testimonial-author {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--soft-sage);
+    font-weight: 500;
+}
+
+/* CTA Section */
+.cta-section {
+    background-color: var(--sage-light);
+    padding: 8rem 4rem;
+}
+
+/* Footer */
+footer.main-footer {
+    background-color: #1A201D;
+    color: var(--pearl);
+    padding: 6rem 4rem 2rem;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1.5fr;
+    gap: 4rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    border-bottom: 1px solid rgba(253, 253, 253, 0.1);
+    padding-bottom: 4rem;
+    margin-bottom: 2rem;
+}
+
+.footer-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--pearl);
+    text-decoration: none;
+    line-height: 1.1;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+}
+
+.footer-logo span {
+    display: block;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    color: var(--soft-sage);
+    margin-top: 0.3rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.footer-text {
+    font-size: 1rem;
+    color: rgba(253, 253, 253, 0.7);
+    line-height: 1.7;
+    max-width: 320px;
+    font-weight: 300;
+}
+
+.footer-title {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    margin-bottom: 2rem;
+    font-weight: 500;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-links li {
+    margin-bottom: 1rem;
+}
+
+.footer-links a {
+    color: rgba(253, 253, 253, 0.7);
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 300;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: var(--gold);
+}
+
+.footer-contact p {
+    font-size: 1rem;
+    color: rgba(253, 253, 253, 0.7);
+    line-height: 1.7;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+}
+
+.footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+    font-size: 0.85rem;
+    color: rgba(253, 253, 253, 0.4);
+    font-weight: 300;
+}
+
+/* Responsive Scaling */
+@media (max-width: 1200px) {
+    .philosophy-grid {
+        grid-template-columns: 1fr;
+        gap: 4rem;
+    }
+    .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .steps-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 4rem 2rem;
+    }
+    .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    section.below-fold-section {
+        padding: 5rem 2rem;
+    }
+    .section-title { font-size: 3rem; }
+    .services-grid { grid-template-columns: 1fr; }
+    .steps-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr; gap: 3rem; }
+    footer.main-footer { padding: 5rem 2rem 2rem; }
+    .testimonial-text { font-size: 2rem; }
+    .testimonial-section, .cta-section { padding: 6rem 2rem; }
+}
+</style>
+
+<section id="about" class="below-fold-section philosophy-section">
+    <div class="container philosophy-grid">
+        <div class="philosophy-content">
+            <div class="section-eyebrow">The Practice</div>
+            <h2 class="section-title">A different kind of <br><i>clinical</i> care.</h2>
+            <p class="philosophy-text">
+                Rivergate Dental Associates is built on a foundation of unhurried precision. We believe that exceptional dentistry requires time, focus, and a serene environment. From the moment you walk through our doors, you will notice the difference—a quiet, hospitable atmosphere where your comfort is our primary metric for success.
+            </p>
+            <p class="philosophy-text">
+                Our team combines over 60 years of clinical experience with advanced restorative techniques, allowing us to handle complex cases in-house with meticulous attention to detail.
+            </p>
+            <a href="#team" class="btn-outline" style="margin-top: 1.5rem; display: inline-block;">Meet the Doctors</a>
+        </div>
+        <div class="philosophy-visual">
+            <div class="philosophy-image-wrap">
+                <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?q=80&w=1470&auto=format&fit=crop" alt="Calm, premium dental clinic interior">
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="services" class="below-fold-section services-section">
+    <div class="container">
+        <div class="section-header text-center">
+            <div class="section-eyebrow center">Our Expertise</div>
+            <h2 class="section-title">Comprehensive <br><i>Restorations</i></h2>
+        </div>
+        
+        <div class="services-grid">
+            <div class="service-card">
+                <svg class="service-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <h3 class="service-title">Dental Implants</h3>
+                <p class="service-desc">Permanent, natural-looking replacements for missing teeth, expertly placed and restored in our clinic for a seamless fit.</p>
+                <a href="#implants" class="service-link">
+                    Explore Implants
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                </a>
+            </div>
+            
+            <div class="service-card">
+                <svg class="service-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                </svg>
+                <h3 class="service-title">Custom Veneers</h3>
+                <p class="service-desc">Hand-crafted porcelain restorations designed to enhance your smile's symmetry, color, and overall aesthetic with premium materials.</p>
+                <a href="#veneers" class="service-link">
+                    Explore Veneers
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                </a>
+            </div>
+            
+            <div class="service-card">
+                <svg class="service-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+                <h3 class="service-title">IV Sedation</h3>
+                <p class="service-desc">For patients with dental anxiety or those undergoing complex procedures, our certified sedation ensures a completely relaxed experience.</p>
+                <a href="#sedation" class="service-link">
+                    Explore Sedation
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="patients" class="below-fold-section experience-section">
+    <div class="container">
+        <div class="section-header text-center">
+            <div class="section-eyebrow center">New Patients</div>
+            <h2 class="section-title">Your first <br><i>visit</i>.</h2>
+        </div>
+        
+        <div class="steps-grid">
+            <div class="step-item">
+                <div class="step-number">01</div>
+                <h4 class="step-title">Consultation</h4>
+                <p class="step-desc">We begin by listening. Your goals and concerns dictate our clinical approach.</p>
+            </div>
+            <div class="step-item">
+                <div class="step-number">02</div>
+                <h4 class="step-title">Diagnostics</h4>
+                <p class="step-desc">Advanced 3D imaging allows us to see the full clinical picture with absolute clarity.</p>
+            </div>
+            <div class="step-item">
+                <div class="step-number">03</div>
+                <h4 class="step-title">The Plan</h4>
+                <p class="step-desc">A transparent, pressure-free discussion of your clinical options and timeline.</p>
+            </div>
+            <div class="step-item">
+                <div class="step-number">04</div>
+                <h4 class="step-title">Restoration</h4>
+                <p class="step-desc">Executing your treatment with precision, advanced sedation, and quiet hospitality.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="testimonial-section">
+    <div class="container">
+        <div class="testimonial-content">
+            <div class="quote-mark">&ldquo;</div>
+            <p class="testimonial-text">The level of care and precision here is unmatched. After avoiding the dentist for years, the IV sedation and their gentle approach completely changed my perspective on dental health.</p>
+            <div class="testimonial-author">Sarah M. &mdash; Augusta, GA</div>
+        </div>
+    </div>
+</section>
+
+<section class="below-fold-section cta-section">
+    <div class="container text-center">
+        <h2 class="section-title">Experience the <br><i>difference</i>.</h2>
+        <p class="service-desc" style="max-width: 600px; margin: 0 auto 3rem;">
+            Whether you need routine care, advanced restorative implants, or gentle sedation after years away, we are ready to welcome you.
+        </p>
+        <div style="display: flex; gap: 2rem; justify-content: center; align-items: center; flex-wrap: wrap;">
+            <a href="#schedule" class="btn-primary">Schedule Your Visit</a>
+            <a href="tel:+17065550167" class="btn-outline" style="background: transparent;">Call (706) 555-0167</a>
+        </div>
+    </div>
+</section>
+
+<footer class="main-footer">
+    <div class="footer-grid">
+        <div class="footer-brand">
+            <a href="#" class="footer-logo">
+                West Augusta
+                <span>Dental Associates</span>
+            </a>
+            <p class="footer-text">
+                Providing Augusta families with a different kind of dentistry. Quiet hospitality meets clinical excellence.
+            </p>
+        </div>
+        
+        <div class="footer-nav">
+            <h4 class="footer-title">Navigation</h4>
+            <ul class="footer-links">
+                <li><a href="#expertise">Our Expertise</a></li>
+                <li><a href="#services">Clinical Services</a></li>
+                <li><a href="#patients">New Patients</a></li>
+                <li><a href="#about">The Practice</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-nav">
+            <h4 class="footer-title">Services</h4>
+            <ul class="footer-links">
+                <li><a href="#implants">Dental Implants</a></li>
+                <li><a href="#veneers">Custom Veneers</a></li>
+                <li><a href="#sedation">IV Sedation</a></li>
+                <li><a href="#general">Preventative Care</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-contact">
+            <h4 class="footer-title">Contact</h4>
+            <p>Wheeler Road</p>
+            <p>Augusta, GA 30909</p>
+            <p style="margin-top: 1.5rem;"><a href="tel:+17065550167" style="color: var(--gold); text-decoration: none; font-size: 1.1rem;">(706) 555-0167</a></p>
+            <p><a href="mailto:care@rivergatedental.example" style="color: rgba(253,253,253,0.7); text-decoration: none;">care@rivergatedental.example</a></p>
+        </div>
+    </div>
+    
+    <div class="footer-bottom">
+        <p>&copy; 2026 Rivergate Dental Associates. All rights reserved.</p>
+        <p>Premium Clinical Care.</p>
+    </div>
+</footer>
+
+</main>
+
+    <!-- Inline Script for subtle interaction if needed -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const primaryBtn = document.querySelector('.btn-primary');
+            
+            // Subtle magnetic pull effect on primary button
+            primaryBtn.addEventListener('mousemove', (e) => {
+                const rect = primaryBtn.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                
+                primaryBtn.style.transform = `translate(${x * 0.1}px, ${y * 0.1 - 2}px)`;
+            });
+
+            primaryBtn.addEventListener('mouseleave', () => {
+                primaryBtn.style.transform = 'translate(0, 0)';
+            });
+        });
+    </script>
+</body>
+</html>

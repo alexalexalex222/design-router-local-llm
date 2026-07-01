@@ -1,0 +1,58 @@
+{
+  "pack_id": "aurelia_medspa_editorial_v1",
+  "role": "anchor",
+  "family": "website.local_service",
+  "source_paths": [
+    "source_snapshot/index.html",
+    "source_snapshot/styles.css"
+  ],
+  "origin_example_ids": [
+    "aurelia-med-spa-macon"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "website"
+  ],
+  "tones": [
+    "premium",
+    "beauty",
+    "clinical",
+    "editorial",
+    "refined",
+    "dark"
+  ],
+  "surfaces": [
+    "homepage",
+    "hero",
+    "landing",
+    "section"
+  ],
+  "motif_tags": [
+    "hero_shell",
+    "sticky_nav",
+    "cta_treatment",
+    "light_precision",
+    "headline_hierarchy",
+    "trust_rail",
+    "split_hero",
+    "glass_panel",
+    "process_timeline"
+  ],
+  "supports_tasks": [
+    "hero_redesign",
+    "homepage_polish",
+    "medspa_homepage",
+    "clinical_beauty_website",
+    "editorial_treatment_page"
+  ],
+  "anti_patterns": [
+    "template feel",
+    "generic luxury mush",
+    "influencer landing page",
+    "residential contractor framing",
+    "dashboard shell"
+  ],
+  "token_budget_hint": 4400,
+  "confidence_score": 5
+}

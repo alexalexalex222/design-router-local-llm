@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Atelier Stroke — SVG line-draw animator</title>
+<style>
+  /* ============================================================
+     DESIGN TOKENS — designer's-studio
+     ============================================================ */
+  :root{
+    /* neutral ramp (paper → ink) */
+    --paper:#ECECE8;          /* app canvas, soft architect grey */
+    --surface:#FFFFFF;         /* panels + gallery mat */
+    --ink-050:#F4F4F1;
+    --ink-100:#E7E7E2;        /* hairlines */
+    --ink-200:#D6D6CF;
+    --ink-300:#B6B6AD;
+    --ink-500:#71716A;        /* muted text */
+    --ink-700:#3C3C37;
+    --ink-900:#17171A;        /* ink black, primary text + line work */
+
+    /* accent — red-pencil vermilion */
+    --accent:#E1402A;
+    --accent-press:#BE3119;
+    --accent-tint:rgba(225,64,42,.10);
+    --accent-line:rgba(225,64,42,.30);
+
+    --focus:#1F6FEB;          /* focus ring, distinct from accent */
+
+    /* type — tuned system grotesk + mono label voice */
+    --sans:"Helvetica Neue",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+    --t-2xs:11px;
+    --t-xs:12px;
+    --t-sm:clamp(.8125rem,.78rem + .15vw,.875rem);
+    --t-base:clamp(1rem,.97rem + .15vw,1.0625rem);
+    --t-lg:clamp(1.15rem,1.05rem + .5vw,1.4rem);
+    --t-xl:clamp(1.6rem,1.3rem + 1.4vw,2.2rem);
+
+    /* 4px spacing */
+    --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:20px;--s6:24px;--s8:32px;--s10:40px;--s12:48px;
+
+    /* radii */
+    --r-sm:4px;--r-md:8px;--r-lg:14px;--r-pill:999px;
+
+    /* elevation (≤3, kept flat/gallery) */
+    --e1:0 1px 2px rgba(23,23,26,.05),0 0 0 1px rgba(23,23,26,.04);
+    --e2:0 6px 20px -6px rgba(23,23,26,.18),0 0 0 1px rgba(23,23,26,.06);
+
+    /* motion */
+    --dur-fast:150ms;--dur-mid:240ms;
+    --ease-out:cubic-bezier(.2,.7,.2,1);
+    --ease-std:cubic-bezier(.4,0,.2,1);
+  }
+
+  *,*::before,*::after{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--paper);color:var(--ink-900);
+    font-family:var(--sans);font-size:var(--t-base);line-height:1.5;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+    height:100vh;height:100dvh;overflow:hidden;display:flex;flex-direction:column;
+  }
+  .mono{font-family:var(--mono);font-feature-settings:"tnum" 1,"ss01" 1}
+  .cap{
+    font-family:var(--mono);text-transform:uppercase;letter-spacing:.14em;
+    font-size:var(--t-2xs);color:var(--ink-500);font-weight:500;
+  }
+  ::selection{background:var(--accent-tint)}
+
+  .skip{
+    position:absolute;left:var(--s3);top:-60px;z-index:50;
+    background:var(--ink-900);color:#fff;padding:var(--s2) var(--s4);
+    border-radius:var(--r-sm);font-size:var(--t-sm);text-decoration:none;
+    transition:top var(--dur-fast) var(--ease-out);
+  }
+  .skip:focus-visible{top:var(--s3)}
+
+  /* ============================================================
+     APP BAR
+     ============================================================ */
+  .app-bar{
+    display:flex;align-items:center;gap:var(--s4);
+    padding:var(--s4) clamp(var(--s4),3vw,var(--s8));
+    border-bottom:1px solid var(--ink-100);background:var(--surface);
+    flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:var(--s3);min-width:0}
+  .brand .nib{width:30px;height:30px;flex:none;color:var(--ink-900)}
+  .brand .nib .acc{color:var(--accent)}
+  .brand-text{display:flex;flex-direction:column;line-height:1.05;min-width:0}
+  .brand-text b{font-size:var(--t-base);font-weight:650;letter-spacing:-.01em}
+  .brand-text span{color:var(--ink-500)}
+
+  .bar-meta{
+    display:flex;align-items:center;gap:var(--s5);margin-left:auto;
+    flex-wrap:wrap;
+  }
+  .stat{display:flex;flex-direction:column;gap:2px;align-items:flex-end}
+  .stat b{font-family:var(--mono);font-size:var(--t-base);font-weight:600;font-variant-numeric:tabular-nums}
+  .bar-actions{display:flex;align-items:center;gap:var(--s2)}
+
+  /* ============================================================
+     LAYOUT
+     ============================================================ */
+  .studio{
+    display:grid;grid-template-columns:minmax(0,1fr) 332px;
+    gap:1px;background:var(--ink-100);
+    flex:1;min-height:0;
+  }
+  .stage-col{background:var(--paper);display:flex;flex-direction:column;min-width:0;min-height:0}
+  .rail{
+    background:var(--surface);overflow-y:auto;
+    display:flex;flex-direction:column;
+  }
+
+  /* ---- STAGE ---- */
+  .stage-wrap{
+    flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:clamp(var(--s4),2.2vw,var(--s6));
+    padding:clamp(var(--s5),3.5vw,var(--s8));position:relative;
+  }
+  .stage{
+    position:relative;width:100%;max-width:min(720px,72vh*1.34);aspect-ratio:4/3;
+    border-radius:var(--r-lg);box-shadow:var(--e1);
+    display:flex;align-items:center;justify-content:center;overflow:hidden;
+    transition:background var(--dur-mid) var(--ease-std);
+  }
+  /* gallery placard */
+  .placard{
+    display:flex;flex-direction:column;align-items:center;gap:var(--s2);text-align:center;
+    max-width:100%;
+  }
+  .placard[hidden]{display:none}
+  .placard .pname{
+    font-family:var(--mono);text-transform:uppercase;letter-spacing:.16em;
+    font-size:var(--t-xs);font-weight:500;color:var(--ink-700);
+  }
+  .placard .pmeta{
+    display:flex;align-items:center;gap:var(--s3);
+    font-family:var(--mono);font-size:var(--t-2xs);color:var(--ink-500);
+    font-variant-numeric:tabular-nums;
+  }
+  .placard .pmeta .dotsep{width:3px;height:3px;border-radius:50%;background:var(--ink-300)}
+  .placard .rule{width:28px;height:1px;background:var(--accent)}
+  .stage.bg-light{background:#fff;--mat-line:var(--ink-100)}
+  .stage.bg-dark{background:#1A1A1E;--mat-line:rgba(255,255,255,.07)}
+  .stage.bg-transparent{
+    background-color:#fff;--mat-line:var(--ink-100);
+    background-image:
+      linear-gradient(45deg,#ececec 25%,transparent 25%),
+      linear-gradient(-45deg,#ececec 25%,transparent 25%),
+      linear-gradient(45deg,transparent 75%,#ececec 75%),
+      linear-gradient(-45deg,transparent 75%,#ececec 75%);
+    background-size:18px 18px;
+    background-position:0 0,0 9px,9px -9px,-9px 0;
+  }
+  /* baseline grid hint on the mat */
+  .stage::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:linear-gradient(var(--mat-line) 1px,transparent 1px);
+    background-size:100% 32px;opacity:.6;
+  }
+  .svg-host{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:7%}
+  .svg-host svg{width:100%;height:100%;overflow:visible;display:block}
+  .svg-host .pen{pointer-events:none}
+
+  /* stage overlays / states */
+  .overlay{
+    position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+    flex-direction:column;gap:var(--s3);text-align:center;padding:var(--s6);
+    background:rgba(255,255,255,.86);backdrop-filter:blur(2px);border-radius:var(--r-lg);
+  }
+  .stage.bg-dark .overlay{background:rgba(26,26,30,.86);color:#fff}
+  .overlay.show{display:flex}
+  .overlay svg{width:40px;height:40px;color:var(--ink-300)}
+  .overlay h3{margin:0;font-size:var(--t-base);font-weight:600;color:var(--ink-900)}
+  .stage.bg-dark .overlay h3{color:#fff}
+  .overlay p{margin:0;max-width:34ch;color:var(--ink-500);font-size:var(--t-sm)}
+  .overlay.error svg{color:var(--accent)}
+  .spin{animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* drag highlight */
+  .stage-wrap.dragging .stage{box-shadow:0 0 0 2px var(--accent),var(--e2)}
+
+  /* ---- TRANSPORT ---- */
+  .transport{
+    display:flex;align-items:center;gap:var(--s4);
+    padding:var(--s3) clamp(var(--s4),3vw,var(--s8));
+    border-top:1px solid var(--ink-100);background:var(--surface);flex-wrap:wrap;
+  }
+  .tbtns{display:flex;gap:var(--s2)}
+  .scrub-wrap{flex:1;display:flex;align-items:center;gap:var(--s3);min-width:160px}
+  .time{font-family:var(--mono);font-size:var(--t-xs);color:var(--ink-500);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .seg{display:inline-flex;background:var(--ink-050);border:1px solid var(--ink-100);border-radius:var(--r-pill);padding:2px}
+  .seg button{
+    border:0;background:transparent;font-family:var(--mono);font-size:var(--t-2xs);
+    text-transform:uppercase;letter-spacing:.08em;color:var(--ink-500);
+    padding:6px var(--s3);border-radius:var(--r-pill);cursor:pointer;min-height:30px;
+    transition:color var(--dur-fast),background var(--dur-fast);
+  }
+  .seg button:hover{color:var(--ink-900)}
+  .seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink-900);box-shadow:var(--e1)}
+  .seg button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+  /* ============================================================
+     CONTROLS / RAIL
+     ============================================================ */
+  .panel{padding:var(--s5) var(--s5);border-bottom:1px solid var(--ink-100)}
+  .panel:last-child{border-bottom:0}
+  .panel > .cap{display:block;margin-bottom:var(--s4)}
+  .field{margin-bottom:var(--s4)}
+  .field:last-child{margin-bottom:0}
+  .field-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:var(--s2)}
+  .field-head label{font-size:var(--t-sm);font-weight:550;color:var(--ink-700)}
+  .field-head .val{font-family:var(--mono);font-size:var(--t-xs);color:var(--ink-900);font-variant-numeric:tabular-nums}
+
+  /* buttons */
+  .btn{
+    --bg:var(--surface);--fg:var(--ink-900);--bd:var(--ink-200);
+    display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);
+    min-height:44px;padding:0 var(--s4);border-radius:var(--r-md);
+    background:var(--bg);color:var(--fg);border:1px solid var(--bd);
+    font-family:var(--sans);font-size:var(--t-sm);font-weight:550;cursor:pointer;
+    transition:background var(--dur-fast),border-color var(--dur-fast),transform var(--dur-fast),box-shadow var(--dur-fast);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn svg{width:17px;height:17px;flex:none}
+  .btn:hover{background:var(--ink-050);border-color:var(--ink-300)}
+  .btn:active{transform:translateY(1px)}
+  .btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  .btn:disabled{opacity:.42;cursor:not-allowed;transform:none;background:var(--surface);border-color:var(--ink-100)}
+  .btn.primary{--bg:var(--ink-900);--fg:#fff;--bd:var(--ink-900)}
+  .btn.primary:hover{--bg:#000;--bd:#000;background:#000}
+  .btn.accent{--bg:var(--accent);--fg:#fff;--bd:var(--accent)}
+  .btn.accent:hover{--bg:var(--accent-press);--bd:var(--accent-press);background:var(--accent-press)}
+  .btn.icon{min-width:44px;padding:0;width:44px}
+  .btn.sm{min-height:36px;font-size:var(--t-xs);padding:0 var(--s3)}
+  .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2)}
+
+  /* dropzone */
+  .drop{
+    border:1.5px dashed var(--ink-200);border-radius:var(--r-md);
+    padding:var(--s5);text-align:center;cursor:pointer;background:var(--ink-050);
+    transition:border-color var(--dur-fast),background var(--dur-fast);
+    display:flex;flex-direction:column;align-items:center;gap:var(--s2);
+  }
+  .drop:hover{border-color:var(--accent);background:var(--accent-tint)}
+  .drop:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  .drop svg{width:24px;height:24px;color:var(--ink-300)}
+  .drop b{font-size:var(--t-sm);font-weight:600;color:var(--ink-900)}
+  .drop span{font-size:var(--t-xs);color:var(--ink-500)}
+  .drop em{color:var(--accent);font-style:normal;font-weight:600}
+
+  /* sample chips */
+  .samples{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2);margin-top:var(--s3)}
+  .chip{
+    display:flex;align-items:center;gap:var(--s2);padding:var(--s2) var(--s3);
+    border:1px solid var(--ink-200);border-radius:var(--r-md);background:var(--surface);
+    cursor:pointer;min-height:44px;text-align:left;
+    transition:border-color var(--dur-fast),background var(--dur-fast);
+  }
+  .chip:hover{border-color:var(--ink-900);background:var(--ink-050)}
+  .chip:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  .chip[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+  .chip svg{width:26px;height:26px;flex:none;color:var(--ink-900)}
+  .chip span{font-size:var(--t-xs);font-weight:550;line-height:1.2}
+
+  /* range inputs */
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;cursor:pointer;margin:0;
+  }
+  input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:var(--r-pill);background:var(--ink-200)}
+  input[type=range]::-moz-range-track{height:4px;border-radius:var(--r-pill);background:var(--ink-200)}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;
+    background:var(--ink-900);border:2px solid var(--surface);box-shadow:var(--e1);margin-top:-7px;
+    transition:transform var(--dur-fast);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:18px;height:18px;border-radius:50%;background:var(--ink-900);
+    border:2px solid var(--surface);box-shadow:var(--e1);
+  }
+  input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.12)}
+  input[type=range]:active::-webkit-slider-thumb{background:var(--accent)}
+  input[type=range]:focus-visible::-webkit-slider-thumb{outline:2px solid var(--focus);outline-offset:2px}
+  input[type=range]:focus-visible::-moz-range-thumb{outline:2px solid var(--focus);outline-offset:2px}
+  input[type=range].scrub::-webkit-slider-thumb{background:var(--accent)}
+
+  /* select */
+  select{
+    width:100%;min-height:44px;padding:0 var(--s8) 0 var(--s3);border:1px solid var(--ink-200);
+    border-radius:var(--r-md);background:var(--surface);font-family:var(--sans);font-size:var(--t-sm);
+    color:var(--ink-900);cursor:pointer;appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%2371716A' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right var(--s3) center;
+  }
+  select:hover{border-color:var(--ink-300)}
+  select:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+  /* color row */
+  .color-row{display:flex;align-items:center;gap:var(--s3)}
+  .color-chip{
+    width:44px;height:44px;border-radius:var(--r-md);border:1px solid var(--ink-200);
+    padding:0;overflow:hidden;cursor:pointer;flex:none;background:var(--surface);
+  }
+  .color-chip:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  input[type=color]{-webkit-appearance:none;appearance:none;width:100%;height:100%;border:0;padding:0;cursor:pointer;background:none}
+  input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+  input[type=color]::-webkit-color-swatch{border:0;border-radius:0}
+  input[type=color]::-moz-color-swatch{border:0}
+
+  /* toggle switch */
+  .toggle{display:flex;align-items:center;justify-content:space-between;gap:var(--s3);min-height:44px}
+  .toggle label{font-size:var(--t-sm);font-weight:550;color:var(--ink-700);cursor:pointer}
+  .switch{position:relative;width:42px;height:24px;flex:none}
+  .switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+  .switch .track{position:absolute;inset:0;background:var(--ink-200);border-radius:var(--r-pill);transition:background var(--dur-fast)}
+  .switch .knob{position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:var(--e1);transition:transform var(--dur-fast) var(--ease-out)}
+  .switch input:checked + .track{background:var(--accent)}
+  .switch input:checked ~ .knob{transform:translateX(18px)}
+  .switch input:focus-visible + .track{outline:2px solid var(--focus);outline-offset:2px}
+
+  /* bezier editor */
+  .bezier{display:none;margin-top:var(--s3)}
+  .bezier.show{display:block}
+  .bezier-pad{position:relative;width:100%;aspect-ratio:1.6/1;background:var(--ink-050);border:1px solid var(--ink-100);border-radius:var(--r-md);overflow:hidden}
+  .bezier-pad svg{position:absolute;inset:0;width:100%;height:100%}
+  .bz-inputs{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s2);margin-top:var(--s2)}
+  .bz-inputs input{
+    width:100%;min-height:36px;border:1px solid var(--ink-200);border-radius:var(--r-sm);
+    text-align:center;font-family:var(--mono);font-size:var(--t-xs);color:var(--ink-900);background:var(--surface);
+  }
+  .bz-inputs input:focus-visible{outline:2px solid var(--focus);outline-offset:1px;border-color:var(--focus)}
+
+  /* path inspector */
+  .paths-empty{font-size:var(--t-sm);color:var(--ink-500);padding:var(--s2) 0}
+  .path-list{display:flex;flex-direction:column;gap:1px;background:var(--ink-100);border:1px solid var(--ink-100);border-radius:var(--r-md);overflow:hidden}
+  .path-row{
+    display:flex;align-items:center;gap:var(--s3);padding:var(--s2) var(--s3);background:var(--surface);
+    cursor:pointer;transition:background var(--dur-fast);min-height:42px;
+  }
+  .path-row:hover,.path-row.hot{background:var(--accent-tint)}
+  .path-row .idx{font-family:var(--mono);font-size:var(--t-xs);color:var(--ink-500);width:22px;flex:none;font-variant-numeric:tabular-nums}
+  .path-row .len{font-family:var(--mono);font-size:var(--t-xs);color:var(--ink-900);margin-left:auto;font-variant-numeric:tabular-nums}
+  .path-row .pc{width:22px;height:22px;border-radius:var(--r-sm);border:1px solid var(--ink-200);padding:0;overflow:hidden;flex:none;cursor:pointer}
+  .path-row .nostroke{font-family:var(--mono);font-size:var(--t-2xs);color:var(--ink-300);text-transform:uppercase;letter-spacing:.08em}
+
+  /* toast */
+  .toast{
+    position:fixed;left:50%;bottom:var(--s6);transform:translate(-50%,20px);
+    background:var(--ink-900);color:#fff;padding:var(--s3) var(--s5);border-radius:var(--r-pill);
+    font-size:var(--t-sm);box-shadow:var(--e2);opacity:0;pointer-events:none;z-index:60;
+    transition:opacity var(--dur-mid),transform var(--dur-mid) var(--ease-out);display:flex;align-items:center;gap:var(--s2);
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .toast svg{width:16px;height:16px;color:var(--accent)}
+
+  /* visually hidden */
+  .vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  @media (max-width:920px){
+    body{display:block;height:auto;overflow:visible}
+    .studio{grid-template-columns:1fr;flex:none;min-height:auto}
+    .rail{order:2;overflow:visible}
+    .stage-col{order:1}
+    .stage-wrap{min-height:auto;padding-block:var(--s6)}
+    .stage{max-width:min(560px,86vw)}
+  }
+  @media (max-width:540px){
+    .bar-meta{width:100%;margin-left:0;justify-content:space-between;gap:var(--s3)}
+    .bar-actions{order:3}
+    .stat{align-items:flex-start}
+    .transport{gap:var(--s3)}
+    .scrub-wrap{order:3;width:100%}
+  }
+  @media (max-width:380px){
+    .samples{grid-template-columns:1fr}
+    .app-bar{padding:var(--s3) var(--s4)}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition-duration:.01ms !important;animation-duration:.01ms !important}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#stage">Skip to preview</a>
+
+<!-- ===================== APP BAR ===================== -->
+<header class="app-bar">
+  <div class="brand">
+    <svg class="nib" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <path class="acc" d="M16 3 L25 12 L18 29 L16 22 L14 29 L7 12 Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M16 3 L16 22" stroke="currentColor" stroke-width="1.6"/>
+      <circle cx="16" cy="18.5" r="2" fill="currentColor"/>
+    </svg>
+    <div class="brand-text">
+      <b>Atelier Stroke</b>
+      <span class="cap">Line-draw animator</span>
+    </div>
+  </div>
+
+  <div class="bar-meta">
+    <div class="stat">
+      <span class="cap">Paths</span>
+      <b id="statPaths">0</b>
+    </div>
+    <div class="stat">
+      <span class="cap">Total length</span>
+      <b id="statLen">0</b>
+    </div>
+    <div class="bar-actions">
+      <button class="btn sm" id="btnCopySvg" type="button" title="Copy inline SVG markup">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>
+        SVG
+      </button>
+      <button class="btn sm" id="btnCopyCss" type="button" title="Copy CSS keyframes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 6 21M18 3l-2 18M3 9h18M2 15h18"/></svg>
+        CSS
+      </button>
+      <button class="btn sm primary" id="btnExport" type="button" title="Download a self-playing animated SVG">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
+        Export
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== STUDIO ===================== -->
+<main class="studio">
+  <!-- STAGE -->
+  <section class="stage-col" aria-label="Animation preview">
+    <div class="stage-wrap" id="stageWrap">
+      <div class="stage bg-light" id="stage" tabindex="-1">
+        <div class="svg-host" id="svgHost" aria-live="polite"></div>
+
+        <!-- states -->
+        <div class="overlay" id="ovEmpty" role="status">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17V5a2 2 0 0 1 2-2h6"/><path d="M14 4h7v7"/><path d="M21 4 11 14"/><path d="M7 21h10a2 2 0 0 0 2-2v-4"/></svg>
+          <h3>Choose a sample or drop an SVG</h3>
+          <p>Stroke-based line art animates as if drawn by hand. Start with one of the built-in studies on the right.</p>
+        </div>
+        <div class="overlay" id="ovLoading" role="status">
+          <svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3a9 9 0 1 0 9 9" /></svg>
+          <h3>Reading SVG…</h3>
+        </div>
+        <div class="overlay error" id="ovError" role="alert">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5"/><circle cx="12" cy="16.5" r=".6" fill="currentColor"/><path d="M10.3 3.9 2.5 17.5A2 2 0 0 0 4.2 20.5h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+          <h3>Couldn't read that file</h3>
+          <p id="ovErrorMsg">That doesn't look like valid SVG markup. Try another file.</p>
+        </div>
+        <div class="overlay" id="ovNothing" role="status">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 9.5c1.5-2 6.5-2 8 0"/><path d="M9 15h6"/></svg>
+          <h3>Nothing to draw</h3>
+          <p>This SVG has fills but no strokes. The draw effect animates outlines — add a stroke, or turn on <strong>Recolor strokes</strong> to trace its edges.</p>
+        </div>
+      </div>
+
+      <div class="placard" id="placard" hidden>
+        <span class="pname" id="placardName">Crest</span>
+        <span class="rule" aria-hidden="true"></span>
+        <span class="pmeta">
+          <span id="placardStrokes">6 strokes</span>
+          <span class="dotsep" aria-hidden="true"></span>
+          <span id="placardLen">1,421 units</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- TRANSPORT -->
+    <div class="transport" role="group" aria-label="Playback">
+      <div class="tbtns">
+        <button class="btn icon" id="btnPlay" type="button" aria-label="Play" disabled>
+          <svg id="icoPlay" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l11-6.5a1 1 0 0 0 0-1.72l-11-6.5A1 1 0 0 0 8 5.5Z"/></svg>
+          <svg id="icoPause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="display:none"><rect x="6.5" y="5" width="4" height="14" rx="1"/><rect x="13.5" y="5" width="4" height="14" rx="1"/></svg>
+        </button>
+        <button class="btn icon" id="btnReplay" type="button" aria-label="Replay from start" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.6-6.3"/><path d="M3 4v4h4"/></svg>
+        </button>
+      </div>
+      <div class="scrub-wrap">
+        <input type="range" class="scrub" id="scrub" min="0" max="1000" value="0" step="1" aria-label="Scrub draw progress" disabled />
+        <span class="time mono" id="timeLabel">0%</span>
+      </div>
+      <div class="seg" role="group" aria-label="Preview background">
+        <button type="button" data-bg="light" aria-pressed="true">Light</button>
+        <button type="button" data-bg="dark" aria-pressed="false">Dark</button>
+        <button type="button" data-bg="transparent" aria-pressed="false">Clear</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RAIL -->
+  <aside class="rail" aria-label="Controls">
+    <!-- SOURCE -->
+    <div class="panel">
+      <span class="cap">Source</span>
+      <button class="drop" id="drop" type="button" aria-label="Upload an SVG file. Or drag and drop.">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L8 8m4-4 4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        <b>Drop an SVG <em>or browse</em></b>
+        <span>Scripts &amp; event handlers are stripped on import</span>
+      </button>
+      <input type="file" id="file" accept=".svg,image/svg+xml" class="vh" />
+      <div class="samples" role="group" aria-label="Built-in samples" id="samples"></div>
+    </div>
+
+    <!-- TIMING -->
+    <div class="panel">
+      <span class="cap">Sequence</span>
+      <div class="field">
+        <div class="field-head"><label id="modeLbl">Stroke order</label></div>
+        <div class="seg" role="group" aria-labelledby="modeLbl" id="modeSeg" style="display:flex;width:100%">
+          <button type="button" data-mode="oneByOne" aria-pressed="true" style="flex:1">One&nbsp;by&nbsp;one</button>
+          <button type="button" data-mode="delayed" aria-pressed="false" style="flex:1">Delayed</button>
+          <button type="button" data-mode="sync" aria-pressed="false" style="flex:1">Sync</button>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-head"><label for="dur">Duration</label><span class="val" id="durVal">1.4 s</span></div>
+        <input type="range" id="dur" min="300" max="6000" step="50" value="1400" aria-describedby="durHint" />
+        <span class="vh" id="durHint">Time the longest stroke takes; every stroke's time scales with its length.</span>
+      </div>
+      <div class="field">
+        <div class="field-head"><label for="ease">Easing</label></div>
+        <select id="ease">
+          <option value="studio">Studio (signature)</option>
+          <option value="ease-out">Ease out</option>
+          <option value="ease-in">Ease in</option>
+          <option value="ease-in-out">Ease in-out</option>
+          <option value="ease">Ease</option>
+          <option value="linear">Linear</option>
+          <option value="custom">Custom cubic-bézier…</option>
+        </select>
+        <div class="bezier" id="bezierBox">
+          <div class="bezier-pad">
+            <svg viewBox="0 0 160 100" id="bezierSvg" aria-hidden="true">
+              <line x1="0" y1="100" x2="160" y2="0" stroke="var(--ink-200)" stroke-width="1" stroke-dasharray="3 3"/>
+              <line id="bzH1" stroke="var(--accent-line)" stroke-width="1"/>
+              <line id="bzH2" stroke="var(--accent-line)" stroke-width="1"/>
+              <path id="bzCurve" fill="none" stroke="var(--ink-900)" stroke-width="2" stroke-linecap="round"/>
+              <circle id="bzP1" r="4" fill="var(--accent)"/>
+              <circle id="bzP2" r="4" fill="var(--accent)"/>
+            </svg>
+          </div>
+          <div class="bz-inputs">
+            <input type="number" id="bz0" value="0.65" step="0.01" min="0" max="1" aria-label="bezier x1"/>
+            <input type="number" id="bz1" value="0" step="0.01" min="-1" max="2" aria-label="bezier y1"/>
+            <input type="number" id="bz2" value="0.35" step="0.01" min="0" max="1" aria-label="bezier x2"/>
+            <input type="number" id="bz3" value="1" step="0.01" min="-1" max="2" aria-label="bezier y2"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STROKE -->
+    <div class="panel">
+      <span class="cap">Stroke</span>
+      <div class="field toggle">
+        <label for="recolor">Recolor strokes</label>
+        <span class="switch"><input type="checkbox" id="recolor" checked /><span class="track"></span><span class="knob"></span></span>
+      </div>
+      <div class="field" id="colorField">
+        <div class="field-head"><label for="globalColor">Ink colour</label><span class="val mono" id="colorVal">auto</span></div>
+        <div class="color-row">
+          <span class="color-chip"><input type="color" id="globalColor" value="#17171a" aria-label="Global stroke colour" /></span>
+          <button class="btn sm" id="colorAuto" type="button">Auto (match background)</button>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-head"><label for="width">Stroke width</label><span class="val" id="widthVal">2.4</span></div>
+        <input type="range" id="width" min="0.5" max="10" step="0.1" value="2.4" />
+      </div>
+      <div class="field toggle">
+        <label for="penToggle">Pen tip indicator</label>
+        <span class="switch"><input type="checkbox" id="penToggle" checked /><span class="track"></span><span class="knob"></span></span>
+      </div>
+    </div>
+
+    <!-- PATH INSPECTOR -->
+    <div class="panel">
+      <span class="cap">Paths</span>
+      <div id="pathInspector"><p class="paths-empty">No artwork loaded yet.</p></div>
+    </div>
+  </aside>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+(function(){
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const $ = (s,r=document)=>r.querySelector(s);
+  const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+
+  /* ---------- built-in original line studies ---------- */
+  // Sample 3 deliberately uses rect / circle / ellipse / line / polyline / polygon
+  // primitives so the path-converter is exercised by a built-in.
+  const SAMPLES = {
+    signature:{
+      label:"Signature",
+      svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 150">
+        <path d="M22 104 C 36 58 52 50 56 78 C 60 106 44 116 50 92 C 58 64 86 44 96 86 C 102 112 86 120 90 98 C 96 66 120 58 128 92 L 134 70 C 138 100 150 104 158 86 C 166 68 158 58 150 70 C 142 82 150 102 168 100 C 188 98 196 70 210 60 C 198 78 196 112 210 110 C 226 108 230 78 244 70 C 236 86 236 110 250 108 C 268 106 276 70 300 64"
+          fill="none" stroke="#17171a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M40 124 C 120 116 230 116 300 122" fill="none" stroke="#e1402a" stroke-width="2" stroke-linecap="round"/>
+        <path d="M306 56 l 14 -10 -4 16 z" fill="none" stroke="#17171a" stroke-width="2.2" stroke-linejoin="round"/>
+      </svg>`
+    },
+    landscape:{
+      label:"One-line vista",
+      svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 210">
+        <path d="M18 168 C 44 168 56 150 78 120 C 92 100 104 100 118 124 C 128 140 138 150 150 132 C 168 104 182 70 206 78 C 224 84 236 120 252 132 C 268 144 286 150 322 150"
+          fill="none" stroke="#17171a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M196 64 C 168 64 168 24 196 24 C 224 24 224 64 196 64 Z" fill="none" stroke="#e1402a" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M30 188 C 110 182 230 182 312 188" fill="none" stroke="#17171a" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>`
+    },
+    monogram:{
+      label:"Crest (mixed)",
+      svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 224">
+        <rect x="26" y="18" width="148" height="188" rx="14" fill="none" stroke="#17171a" stroke-width="2.2"/>
+        <circle cx="100" cy="98" r="56" fill="none" stroke="#17171a" stroke-width="2.2"/>
+        <polygon points="100,56 138,136 62,136" fill="none" stroke="#17171a" stroke-width="2.4" stroke-linejoin="round"/>
+        <line x1="78" y1="116" x2="122" y2="116" stroke="#e1402a" stroke-width="2.4" stroke-linecap="round"/>
+        <ellipse cx="100" cy="98" rx="5.5" ry="5.5" fill="none" stroke="#17171a" stroke-width="2.2"/>
+        <polyline points="58,176 100,192 142,176" fill="none" stroke="#17171a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`
+    },
+    filled:{
+      label:"Ink mark (filled)",
+      svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+        <path d="M52 92 C 40 60 78 36 104 52 C 120 40 156 50 152 80 C 178 92 168 138 138 138 C 132 162 92 168 80 146 C 50 152 34 116 52 92 Z" fill="#17171a"/>
+        <path d="M96 108 C 104 96 120 96 124 110" fill="#ffffff"/>
+      </svg>`
+    }
+  };
+  // tiny preview glyphs for sample chips
+  const SAMPLE_ICONS = {
+    signature:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 21c3-7 5-7 6-3s-1 6 1 4 3-7 5-3 1 6 3 4 4-6 8-6"/></svg>`,
+    landscape:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 24l6-8 4 5 5-9 5 7 6 5"/><circle cx="23" cy="8" r="3"/></svg>`,
+    monogram:`<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="4" width="22" height="24" rx="3"/><circle cx="16" cy="15" r="8"/><path d="M11 18h10"/></svg>`,
+    filled:`<svg viewBox="0 0 32 32" fill="currentColor"><path d="M9 15c-2-5 4-9 8-6 3-2 8 0 7 5 4 2 2 9-3 9-1 4-8 5-10 1-5 1-7-5-2-9Z"/></svg>`
+  };
+
+  /* ---------- state ---------- */
+  const state = {
+    paths:[],            // {el, len, drawable, origStroke, origWidth, start, dur, color}
+    mode:"oneByOne",
+    duration:1400,
+    easing:"studio",
+    bezier:[0.65,0,0.35,1],
+    recolor:true,
+    globalColor:null,    // null = auto (bg-aware)
+    width:2.4,
+    bg:"light",
+    pen:true,
+    total:0,             // timeline ms
+    time:0,
+    playing:false,
+    raf:0,
+    last:0,
+    activeSample:null,
+    viewBox:null
+  };
+  const reduceMotion = matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+  /* ---------- DOM refs ---------- */
+  const host=$("#svgHost"), stage=$("#stage"), stageWrap=$("#stageWrap");
+  const ovEmpty=$("#ovEmpty"),ovLoading=$("#ovLoading"),ovError=$("#ovError"),ovNothing=$("#ovNothing");
+  const btnPlay=$("#btnPlay"),btnReplay=$("#btnReplay"),scrub=$("#scrub"),timeLabel=$("#timeLabel");
+  const icoPlay=$("#icoPlay"),icoPause=$("#icoPause");
+
+  /* ============================================================
+     PATHFORMER — convert primitives to <path> so they animate
+     ============================================================ */
+  function pts(str){ return (str||"").trim().split(/[\s,]+/).map(Number).filter(n=>!isNaN(n)); }
+  function num(el,a,d=0){ const v=parseFloat(el.getAttribute(a)); return isNaN(v)?d:v; }
+
+  function rectPath(el){
+    const x=num(el,"x"),y=num(el,"y"),w=num(el,"width"),h=num(el,"height");
+    let rx=el.hasAttribute("rx")?num(el,"rx"):null, ry=el.hasAttribute("ry")?num(el,"ry"):null;
+    if(rx==null&&ry!=null)rx=ry; if(ry==null&&rx!=null)ry=rx; if(rx==null){rx=0;ry=0;}
+    rx=Math.min(rx,w/2); ry=Math.min(ry,h/2);
+    if(rx<=0||ry<=0) return `M${x} ${y}H${x+w}V${y+h}H${x}Z`;
+    return `M${x+rx} ${y}H${x+w-rx}A${rx} ${ry} 0 0 1 ${x+w} ${y+ry}`+
+           `V${y+h-ry}A${rx} ${ry} 0 0 1 ${x+w-rx} ${y+h}`+
+           `H${x+rx}A${rx} ${ry} 0 0 1 ${x} ${y+h-ry}`+
+           `V${y+ry}A${rx} ${ry} 0 0 1 ${x+rx} ${y}Z`;
+  }
+  function ellipsePath(cx,cy,rx,ry){
+    return `M${cx-rx} ${cy}a${rx} ${ry} 0 1 0 ${rx*2} 0a${rx} ${ry} 0 1 0 ${-rx*2} 0Z`;
+  }
+  const CONVERT = {
+    line:el=>`M${num(el,"x1")} ${num(el,"y1")}L${num(el,"x2")} ${num(el,"y2")}`,
+    rect:rectPath,
+    circle:el=>ellipsePath(num(el,"cx"),num(el,"cy"),num(el,"r"),num(el,"r")),
+    ellipse:el=>ellipsePath(num(el,"cx"),num(el,"cy"),num(el,"rx"),num(el,"ry")),
+    polyline:el=>{const p=pts(el.getAttribute("points"));let d="";for(let i=0;i<p.length-1;i+=2)d+=(i?"L":"M")+p[i]+" "+p[i+1];return d;},
+    polygon:el=>{const p=pts(el.getAttribute("points"));let d="";for(let i=0;i<p.length-1;i+=2)d+=(i?"L":"M")+p[i]+" "+p[i+1];return d+"Z";}
+  };
+  const CARRY=["fill","stroke","stroke-width","stroke-linecap","stroke-linejoin","stroke-dasharray","opacity","stroke-opacity","fill-opacity","transform","style","class"];
+
+  function pathformer(svg){
+    Object.keys(CONVERT).forEach(tag=>{
+      $$(tag,svg).forEach(el=>{
+        const d=CONVERT[tag](el);
+        if(!d) return;
+        const p=document.createElementNS(SVGNS,"path");
+        p.setAttribute("d",d);
+        CARRY.forEach(a=>{ if(el.hasAttribute(a)) p.setAttribute(a,el.getAttribute(a)); });
+        el.replaceWith(p);
+      });
+    });
+  }
+
+  /* ============================================================
+     SANITISE — strip scripts, handlers, external refs
+     ============================================================ */
+  function sanitize(svg){
+    $$("script,foreignObject,a[href^='javascript']",svg).forEach(n=>n.remove());
+    $$("*",svg).forEach(el=>{
+      [...el.attributes].forEach(at=>{
+        const n=at.name.toLowerCase();
+        if(n.startsWith("on")) el.removeAttribute(at.name);
+        if((n==="href"||n==="xlink:href")&&/javascript:/i.test(at.value)) el.removeAttribute(at.name);
+      });
+    });
+  }
+
+  /* ============================================================
+     EASING
+     ============================================================ */
+  const NAMED={linear:[0,0,1,1],ease:[.25,.1,.25,1],"ease-in":[.42,0,1,1],"ease-out":[0,0,.58,1],"ease-in-out":[.42,0,.58,1],studio:[.65,0,.35,1]};
+  function bezPts(){ return state.easing==="custom"?state.bezier:NAMED[state.easing]; }
+  function cubicBezier(x1,y1,x2,y2){
+    if(x1===y1&&x2===y2) return t=>t; // linear
+    const cx=3*x1,bx=3*(x2-x1)-cx,ax=1-cx-bx;
+    const cy=3*y1,by=3*(y2-y1)-cy,ay=1-cy-by;
+    const fx=t=>((ax*t+bx)*t+cx)*t, fy=t=>((ay*t+by)*t+cy)*t, dfx=t=>(3*ax*t+2*bx)*t+cx;
+    return function(x){
+      let t=x;
+      for(let i=0;i<6;i++){const e=fx(t)-x;const d=dfx(t);if(Math.abs(e)<1e-4||d===0)break;t-=e/d;}
+      t=Math.max(0,Math.min(1,t));
+      return fy(t);
+    };
+  }
+  function easeFn(){ const b=bezPts(); return cubicBezier(b[0],b[1],b[2],b[3]); }
+  function cssTiming(){
+    if(NAMED[state.easing]&&state.easing!=="studio") return state.easing;
+    const b=bezPts(); return `cubic-bezier(${b[0]},${b[1]},${b[2]},${b[3]})`;
+  }
+
+  /* ============================================================
+     LOAD
+     ============================================================ */
+  function showOverlay(which){
+    [ovEmpty,ovLoading,ovError,ovNothing].forEach(o=>o.classList.remove("show"));
+    if(which) which.classList.add("show");
+  }
+
+  function loadSVG(text,sampleKey){
+    showOverlay(ovLoading);
+    // microtask so the loading frame can paint for real files
+    setTimeout(()=>{
+      let doc;
+      try{ doc=new DOMParser().parseFromString(text,"image/svg+xml"); }catch(e){ return fail("Could not parse the file."); }
+      const svg=doc.querySelector("svg");
+      if(!svg||doc.querySelector("parser-error,parsererror")) return fail("That doesn't look like valid SVG markup.");
+
+      sanitize(svg);
+      pathformer(svg);
+
+      // normalise dimensions → fill the host, keep aspect
+      if(!svg.getAttribute("viewBox")){
+        const w=svg.getAttribute("width"), h=svg.getAttribute("height");
+        if(w&&h) svg.setAttribute("viewBox",`0 0 ${parseFloat(w)} ${parseFloat(h)}`);
+      }
+      state.viewBox=svg.getAttribute("viewBox");
+      svg.removeAttribute("width"); svg.removeAttribute("height");
+      svg.setAttribute("preserveAspectRatio","xMidYMid meet");
+
+      host.replaceChildren(svg);
+
+      // collect paths
+      const els=$$("path",svg);
+      if(!els.length) return fail("No drawable shapes found in this SVG.");
+
+      state.paths=els.map(el=>{
+        const cs=getComputedStyle(el);
+        const stroke=el.getAttribute("stroke")||cs.stroke;
+        const sw=el.getAttribute("stroke-width")||cs.strokeWidth;
+        const hasStroke = stroke && stroke!=="none" && !/rgba?\([^)]*,\s*0\s*\)/.test(stroke) && parseFloat(sw||1)>0;
+        let len=0; try{ len=el.getTotalLength(); }catch(e){ len=0; }
+        return {el, len, drawable:hasStroke&&len>0, origStroke:stroke, origWidth:parseFloat(sw)||state.width};
+      });
+
+      // pen element (live preview only)
+      const pen=document.createElementNS(SVGNS,"circle");
+      pen.setAttribute("class","pen"); pen.setAttribute("r","0"); pen.setAttribute("fill","#E1402A");
+      svg.appendChild(pen); state.penEl=pen;
+
+      state.activeSample=sampleKey||null;
+      syncSampleChips();
+
+      const drawable=state.paths.filter(p=>p.drawable);
+      if(!drawable.length){
+        // still render (filled art shows), but flag nothing-to-draw
+        applyStrokes(); buildInspector();
+        $("#statPaths").textContent=state.paths.length;
+        $("#statLen").textContent="0";
+        setEnabled(false);
+        setPlacard(null,0,0);
+        showOverlay(ovNothing);
+        return;
+      }
+
+      showOverlay(null);
+      applyStrokes();
+      computeTimeline();
+      buildInspector();
+      const totalLen=drawable.reduce((s,p)=>s+p.len,0);
+      $("#statPaths").textContent=drawable.length;
+      $("#statLen").textContent=Math.round(totalLen).toLocaleString();
+      setPlacard(sampleKey?SAMPLES[sampleKey].label:"Custom artwork", drawable.length, totalLen);
+      setEnabled(true);
+
+      if(reduceMotion){ seek(1); pause(); }
+      else { restart(); }
+    },20);
+  }
+
+  function fail(msg){ $("#ovErrorMsg").textContent=msg; showOverlay(ovError); state.paths=[]; setEnabled(false); $("#statPaths").textContent="0"; $("#statLen").textContent="0"; buildInspector(); setPlacard(null,0,0); }
+
+  function setPlacard(name,strokes,len){
+    const pl=$("#placard");
+    if(!name||strokes<=0){ pl.hidden=true; return; }
+    pl.hidden=false;
+    $("#placardName").textContent=name;
+    $("#placardStrokes").textContent=strokes+(strokes===1?" stroke":" strokes");
+    $("#placardLen").textContent=Math.round(len).toLocaleString()+" units";
+  }
+
+  /* ============================================================
+     STROKE STYLING
+     ============================================================ */
+  function autoInk(){ return state.bg==="dark" ? "#FFFFFF" : "#17171a"; }
+  function effColor(p){
+    if(p.color) return p.color;                 // per-path override
+    if(!state.recolor) return p.origStroke;     // keep original
+    return state.globalColor || autoInk();      // global or auto
+  }
+  function applyStrokes(){
+    state.paths.forEach(p=>{
+      if(!p.drawable) return;
+      p.el.setAttribute("stroke",effColor(p));
+      p.el.setAttribute("stroke-width", state.recolor||p.color ? state.width : p.origWidth);
+      p.el.setAttribute("stroke-linecap","round");
+      p.el.setAttribute("stroke-linejoin","round");
+      // line art should never paint a fill over the stroke being drawn
+      if(state.recolor && !p.color) p.el.setAttribute("fill","none");
+    });
+  }
+
+  /* ============================================================
+     TIMELINE
+     ============================================================ */
+  function computeTimeline(){
+    const d=state.paths.filter(p=>p.drawable);
+    if(!d.length){ state.total=0; return; }
+    const maxLen=Math.max(...d.map(p=>p.len));
+    d.forEach(p=> p.dur = Math.max(60, state.duration*(p.len/maxLen)) );
+    let cursor=0, total=0;
+    state.paths.forEach(p=>{
+      if(!p.drawable) return;
+      if(state.mode==="sync"){ p.start=0; }
+      else if(state.mode==="oneByOne"){ p.start=cursor; cursor+=p.dur; }
+      else { /* delayed */ p.start=cursor; cursor+=p.dur*0.35; }
+      total=Math.max(total,p.start+p.dur);
+    });
+    state.total=total;
+  }
+
+  /* ============================================================
+     RENDER FRAME
+     ============================================================ */
+  function renderAt(time){
+    const ease=easeFn();
+    let penPath=null, penLocal=0;
+    state.paths.forEach(p=>{
+      if(!p.drawable) return;
+      let local=(time-p.start)/p.dur;
+      local=Math.max(0,Math.min(1,local));
+      const e=ease(local);
+      p.el.style.strokeDasharray=p.len;
+      p.el.style.strokeDashoffset=(p.len*(1-e)).toFixed(2);
+      // hide before the stroke begins so round line-caps don't leave a start-point dot
+      p.el.style.visibility = e>0 ? "visible" : "hidden";
+      if(local>0&&local<1){ if(!penPath||p.start>=penPath.start){penPath=p;penLocal=e;} }
+    });
+    // pen tip
+    if(state.penEl){
+      if(state.pen&&penPath){
+        try{
+          const pt=penPath.el.getPointAtLength(penLocal*penPath.len);
+          state.penEl.setAttribute("cx",pt.x); state.penEl.setAttribute("cy",pt.y);
+          const vb=(state.viewBox||"0 0 100 100").split(/\s+/).map(Number);
+          state.penEl.setAttribute("r", Math.max(2,(vb[2]||100)/60));
+          state.penEl.style.opacity="1";
+        }catch(e){ state.penEl.style.opacity="0"; }
+      } else state.penEl.style.opacity="0";
+    }
+  }
+
+  /* ============================================================
+     PLAYBACK
+     ============================================================ */
+  function tick(ts){
+    if(!state.playing) return;
+    if(!state.last) state.last=ts;
+    const dt=ts-state.last; state.last=ts;
+    state.time+=dt;
+    if(state.time>=state.total){ state.time=state.total; renderAt(state.time); updateScrub(); pause(); return; }
+    renderAt(state.time); updateScrub();
+    state.raf=requestAnimationFrame(tick);
+  }
+  function play(){
+    if(!state.total) return;
+    if(state.time>=state.total) state.time=0;
+    state.playing=true; state.last=0;
+    btnPlay.setAttribute("aria-label","Pause"); icoPlay.style.display="none"; icoPause.style.display="";
+    cancelAnimationFrame(state.raf); state.raf=requestAnimationFrame(tick);
+  }
+  function pause(){
+    state.playing=false; cancelAnimationFrame(state.raf);
+    btnPlay.setAttribute("aria-label","Play"); icoPlay.style.display=""; icoPause.style.display="none";
+  }
+  function restart(){ state.time=0; renderAt(0); updateScrub(); play(); }
+  function seek(p){ // p in 0..1
+    state.time=p*state.total; renderAt(state.time); updateScrub();
+  }
+  function updateScrub(){
+    const p=state.total?state.time/state.total:0;
+    scrub.value=Math.round(p*1000);
+    timeLabel.textContent=Math.round(p*100)+"%";
+  }
+  function setEnabled(on){
+    [btnPlay,btnReplay,scrub].forEach(b=>b.disabled=!on);
+  }
+
+  /* ============================================================
+     PATH INSPECTOR
+     ============================================================ */
+  function buildInspector(){
+    const box=$("#pathInspector");
+    const d=state.paths;
+    if(!d.length){ box.innerHTML='<p class="paths-empty">No artwork loaded yet.</p>'; return; }
+    const list=document.createElement("div"); list.className="path-list";
+    d.forEach((p,i)=>{
+      const row=document.createElement("div"); row.className="path-row"; row.tabIndex=0; row.setAttribute("role","button");
+      row.setAttribute("aria-label",`Path ${i+1}, length ${Math.round(p.len)} units`);
+      const idx=document.createElement("span"); idx.className="idx"; idx.textContent=String(i+1).padStart(2,"0");
+      let swatch;
+      if(p.drawable){
+        swatch=document.createElement("input"); swatch.type="color"; swatch.className="pc";
+        swatch.value=toHex(effColor(p)); swatch.setAttribute("aria-label",`Colour of path ${i+1}`);
+        swatch.addEventListener("input",e=>{ p.color=e.target.value; applyStrokes(); renderAt(state.time); });
+      }else{
+        swatch=document.createElement("span"); swatch.className="nostroke"; swatch.textContent="fill";
+      }
+      const len=document.createElement("span"); len.className="len"; len.textContent=Math.round(p.len).toLocaleString();
+      row.append(idx,swatch,len);
+      const flash=()=>{ if(!p.drawable)return; row.classList.add("hot"); p.el.setAttribute("stroke","#E1402A"); setTimeout(()=>{row.classList.remove("hot"); applyStrokes(); renderAt(state.time);},650); };
+      row.addEventListener("mouseenter",()=>row.classList.add("hot"));
+      row.addEventListener("mouseleave",()=>row.classList.remove("hot"));
+      row.addEventListener("click",e=>{ if(e.target!==swatch) flash(); });
+      row.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();flash();} });
+      list.appendChild(row);
+    });
+    box.replaceChildren(list);
+  }
+  function toHex(c){
+    if(!c) return "#17171a";
+    if(c[0]==="#"){ if(c.length===4) return "#"+c[1]+c[1]+c[2]+c[2]+c[3]+c[3]; return c.slice(0,7); }
+    const m=c.match(/\d+/g); if(m&&m.length>=3) return "#"+m.slice(0,3).map(n=>(+n).toString(16).padStart(2,"0")).join("");
+    return "#17171a";
+  }
+
+  /* ============================================================
+     EXPORT — self-playing, CSS-only animated SVG
+     ============================================================ */
+  function buildExport(){
+    const src=host.querySelector("svg"); if(!src) return null;
+    const clone=src.cloneNode(true);
+    clone.querySelector(".pen")?.remove();
+    clone.setAttribute("xmlns",SVGNS);
+    const vb=(state.viewBox||"0 0 100 100").split(/\s+/).map(Number);
+    clone.setAttribute("width",vb[2]); clone.setAttribute("height",vb[3]);
+
+    const tf=cssTiming();
+    const draw=state.paths.filter(p=>p.drawable);
+    let css=`\n/* Atelier Stroke — self-playing line draw. Open with JS disabled; it still plays. */\n`+
+            `svg{overflow:visible}\n`+
+            `@media (prefers-reduced-motion:reduce){[class^="as-"]{animation:none!important;stroke-dashoffset:0!important}}\n`;
+    const clonePaths=$$("path",clone);
+    let n=0;
+    state.paths.forEach((p,i)=>{
+      if(!p.drawable) return;
+      const cp=clonePaths[i]; if(!cp) return;
+      const cls="as-"+n;
+      cp.classList.add(cls);
+      cp.style.strokeDasharray=""; cp.style.strokeDashoffset="";
+      cp.setAttribute("stroke",effColor(p));
+      cp.setAttribute("stroke-width", state.recolor||p.color?state.width:p.origWidth);
+      cp.setAttribute("stroke-linecap","round"); cp.setAttribute("stroke-linejoin","round");
+      if(state.recolor&&!p.color&&cp.getAttribute("fill")!=="none"&&cp.getAttribute("fill")) cp.setAttribute("fill","none");
+      const L=+p.len.toFixed(2), D=Math.round(p.dur), DL=Math.round(p.start);
+      // visibility:hidden + forwards keeps a path invisible during its delay so round
+      // line-caps never leave a start-point dot; the 0% frame reveals it as it begins.
+      css+=`@keyframes ${cls}{from{stroke-dashoffset:${L};visibility:visible}to{stroke-dashoffset:0;visibility:visible}}\n`+
+           `.${cls}{stroke-dasharray:${L};stroke-dashoffset:${L};visibility:hidden;animation:${cls} ${D}ms ${tf} ${DL}ms forwards}\n`;
+      n++;
+    });
+    const style=document.createElementNS(SVGNS,"style");
+    style.textContent=css;
+    clone.insertBefore(style,clone.firstChild);
+    const xml=new XMLSerializer().serializeToString(clone);
+    return `<?xml version="1.0" encoding="UTF-8"?>\n`+xml;
+  }
+  function exportCSS(){
+    const draw=state.paths.filter(p=>p.drawable);
+    const tf=cssTiming(); let css="",n=0;
+    state.paths.forEach(p=>{ if(!p.drawable)return; const cls="as-"+n; const L=+p.len.toFixed(2),D=Math.round(p.dur),DL=Math.round(p.start);
+      css+=`@keyframes ${cls}{from{stroke-dashoffset:${L};visibility:visible}to{stroke-dashoffset:0;visibility:visible}}\n.${cls}{stroke-dasharray:${L};stroke-dashoffset:${L};visibility:hidden;animation:${cls} ${D}ms ${tf} ${DL}ms forwards}\n`; n++; });
+    return css.trim();
+  }
+
+  /* ---------- clipboard / download ---------- */
+  async function copy(text,label){
+    try{ await navigator.clipboard.writeText(text); toast(label+" copied"); }
+    catch(e){
+      const ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand("copy"); toast(label+" copied"); }catch(_){ toast("Copy failed — select manually"); }
+      ta.remove();
+    }
+  }
+  function download(){
+    const svg=buildExport(); if(!svg){ toast("Nothing to export"); return; }
+    const blob=new Blob([svg],{type:"image/svg+xml"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a"); a.href=url;
+    a.download=(state.activeSample||"atelier-stroke")+"-animated.svg";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    toast("Animated SVG downloaded");
+  }
+  let toastT;
+  function toast(msg){
+    const t=$("#toast");
+    t.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>${msg}`;
+    t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2200);
+  }
+
+  /* ============================================================
+     SAMPLES UI
+     ============================================================ */
+  function buildSamples(){
+    const wrap=$("#samples");
+    Object.entries(SAMPLES).forEach(([key,s])=>{
+      const b=document.createElement("button");
+      b.className="chip"; b.type="button"; b.dataset.sample=key; b.setAttribute("aria-pressed","false");
+      b.innerHTML=SAMPLE_ICONS[key]+`<span>${s.label}</span>`;
+      b.addEventListener("click",()=>loadSVG(s.svg,key));
+      wrap.appendChild(b);
+    });
+  }
+  function syncSampleChips(){
+    $$("#samples .chip").forEach(c=> c.setAttribute("aria-pressed", c.dataset.sample===state.activeSample?"true":"false"));
+  }
+
+  /* ============================================================
+     BEZIER EDITOR
+     ============================================================ */
+  function drawBezier(){
+    const [x1,y1,x2,y2]=state.bezier;
+    const X=v=>v*160, Y=v=>100-v*100;
+    $("#bzCurve").setAttribute("d",`M0 100 C ${X(x1)} ${Y(y1)} ${X(x2)} ${Y(y2)} 160 0`);
+    const set=(id,a,b,c,d)=>{const e=$(id);e.setAttribute("x1",a);e.setAttribute("y1",b);e.setAttribute("x2",c);e.setAttribute("y2",d);};
+    set("#bzH1",0,100,X(x1),Y(y1)); set("#bzH2",160,0,X(x2),Y(y2));
+    $("#bzP1").setAttribute("cx",X(x1)); $("#bzP1").setAttribute("cy",Y(y1));
+    $("#bzP2").setAttribute("cx",X(x2)); $("#bzP2").setAttribute("cy",Y(y2));
+  }
+  function refreshFromTimingChange(){
+    computeTimeline();
+    if(state.time>state.total) state.time=state.total;
+    renderAt(state.time); updateScrub();
+  }
+
+  /* ============================================================
+     EVENTS
+     ============================================================ */
+  // playback
+  btnPlay.addEventListener("click",()=> state.playing?pause():play());
+  btnReplay.addEventListener("click",restart);
+  scrub.addEventListener("input",e=>{ pause(); seek(+e.target.value/1000); });
+
+  // background
+  $$(".transport .seg button").forEach(b=>b.addEventListener("click",()=>{
+    $$(".transport .seg button").forEach(x=>x.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true");
+    state.bg=b.dataset.bg; stage.className="stage bg-"+state.bg;
+    applyStrokes(); renderAt(state.time);
+  }));
+
+  // mode
+  $$("#modeSeg button").forEach(b=>b.addEventListener("click",()=>{
+    $$("#modeSeg button").forEach(x=>x.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true"); state.mode=b.dataset.mode;
+    refreshFromTimingChange();
+    if(!reduceMotion) restart();
+  }));
+
+  // duration
+  $("#dur").addEventListener("input",e=>{
+    state.duration=+e.target.value;
+    $("#durVal").textContent=(state.duration/1000).toFixed(state.duration<1000?2:1)+" s";
+    refreshFromTimingChange();
+  });
+
+  // easing
+  $("#ease").addEventListener("change",e=>{
+    state.easing=e.target.value;
+    $("#bezierBox").classList.toggle("show",state.easing==="custom");
+    if(state.easing==="custom"){ state.bezier=[+$("#bz0").value,+$("#bz1").value,+$("#bz2").value,+$("#bz3").value]; drawBezier(); }
+    renderAt(state.time);
+  });
+  ["bz0","bz1","bz2","bz3"].forEach((id,i)=>$("#"+id).addEventListener("input",e=>{
+    state.bezier[i]=+e.target.value||0; drawBezier(); renderAt(state.time);
+  }));
+
+  // stroke
+  $("#recolor").addEventListener("change",e=>{
+    state.recolor=e.target.checked;
+    $("#colorField").style.opacity=state.recolor?"1":".5";
+    $("#globalColor").disabled=!state.recolor; $("#colorAuto").disabled=!state.recolor;
+    applyStrokes(); renderAt(state.time);
+  });
+  $("#globalColor").addEventListener("input",e=>{ state.globalColor=e.target.value; $("#colorVal").textContent=e.target.value; applyStrokes(); renderAt(state.time); buildInspector(); });
+  $("#colorAuto").addEventListener("click",()=>{ state.globalColor=null; $("#colorVal").textContent="auto"; $("#globalColor").value=toHex(autoInk()); applyStrokes(); renderAt(state.time); buildInspector(); });
+  $("#width").addEventListener("input",e=>{ state.width=+e.target.value; $("#widthVal").textContent=state.width.toFixed(1); applyStrokes(); renderAt(state.time); });
+  $("#penToggle").addEventListener("change",e=>{ state.pen=e.target.checked; renderAt(state.time); });
+
+  // export
+  $("#btnExport").addEventListener("click",download);
+  $("#btnCopySvg").addEventListener("click",()=>{ const s=host.querySelector("svg"); if(!s){toast("Load artwork first");return;} const c=s.cloneNode(true); c.querySelector(".pen")?.remove(); copy(new XMLSerializer().serializeToString(c),"Inline SVG"); });
+  $("#btnCopyCss").addEventListener("click",()=>{ const c=exportCSS(); if(!c){toast("Load artwork first");return;} copy(c,"CSS"); });
+
+  // file / drop
+  const fileInput=$("#file");
+  $("#drop").addEventListener("click",()=>fileInput.click());
+  fileInput.addEventListener("change",e=>{ const f=e.target.files[0]; if(f) readFile(f); fileInput.value=""; });
+  function readFile(f){
+    if(!/svg/i.test(f.type)&&!/\.svg$/i.test(f.name)){ fail("Please choose an .svg file."); return; }
+    const r=new FileReader();
+    r.onload=()=>loadSVG(r.result,null);
+    r.onerror=()=>fail("Could not read that file.");
+    r.readAsText(f);
+  }
+  ["dragenter","dragover"].forEach(ev=>stageWrap.addEventListener(ev,e=>{e.preventDefault();stageWrap.classList.add("dragging");}));
+  ["dragleave","drop"].forEach(ev=>stageWrap.addEventListener(ev,e=>{e.preventDefault(); if(ev==="dragleave"&&stageWrap.contains(e.relatedTarget))return; stageWrap.classList.remove("dragging");}));
+  stageWrap.addEventListener("drop",e=>{ const f=e.dataTransfer.files[0]; if(f) readFile(f); });
+
+  // keyboard: space = play/pause when not in a control
+  document.addEventListener("keydown",e=>{
+    if(e.code==="Space" && !/INPUT|SELECT|TEXTAREA|BUTTON/.test(document.activeElement.tagName)){
+      if(state.total){ e.preventDefault(); state.playing?pause():play(); }
+    }
+  });
+
+  /* ---------- init ---------- */
+  buildSamples();
+  drawBezier();
+  showOverlay(ovEmpty);
+  // greet with the signature so the hero shows the hand-drawn delight immediately
+  loadSVG(SAMPLES.signature.svg,"signature");
+})();
+</script>
+</body>
+</html>

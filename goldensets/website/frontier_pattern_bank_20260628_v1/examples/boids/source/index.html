@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>MURMUR — GPU Compute Boids</title>
+<meta name="description" content="MURMUR — thousands of agents flocking entirely on the GPU. Separation, alignment and cohesion run in a compute pass; the cursor is a predator. WebGPU compute when available, WebGL GPGPU (FBO ping-pong) fallback otherwise." />
+<style>
+  /* ───────────────────────── DESIGN TOKENS ───────────────────────── */
+  :root{
+    /* neutral ramp (8 steps) */
+    --n-0:#05070d; --n-1:#0a0e17; --n-2:#10151f; --n-3:#1a2130;
+    --n-4:#2a3445; --n-5:#3e4a5e; --n-6:#7e8ba3; --n-7:#aeb9cd; --n-8:#eef2f9;
+    /* semantic */
+    --bg:var(--n-0);
+    --surface:rgba(13,18,28,0.72);
+    --surface-solid:#0c1119;
+    --border:rgba(126,139,163,0.18);
+    --border-strong:rgba(126,139,163,0.34);
+    --text:var(--n-8);
+    --text-muted:var(--n-7);
+    --text-dim:var(--n-6);
+    --accent:#5fd0ff;        /* cyan */
+    --accent-2:#7c6bff;      /* violet */
+    --accent-3:#ff7a9c;      /* warm — predator */
+    --good:#56e0a0;
+    --warn:#ffcf6b;
+    --on-accent:#04121b;
+    /* fluid type scale (ratio ~1.2, body >=16px) */
+    --fs-xs:clamp(0.72rem,0.69rem + 0.14vw,0.79rem);
+    --fs-sm:clamp(0.8rem,0.77rem + 0.16vw,0.88rem);
+    --fs-md:clamp(1rem,0.96rem + 0.2vw,1.08rem);
+    --fs-lg:clamp(1.18rem,1.1rem + 0.4vw,1.4rem);
+    --fs-xl:clamp(1.5rem,1.3rem + 1vw,2.1rem);
+    /* spacing (4px) */
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-8:32px;
+    /* radii */
+    --r-sm:7px; --r-md:11px; --r-lg:16px; --r-pill:999px;
+    /* elevation */
+    --e-1:0 1px 2px rgba(0,0,0,.4);
+    --e-2:0 8px 24px -8px rgba(0,0,0,.55), 0 2px 6px rgba(0,0,0,.4);
+    --e-3:0 24px 60px -16px rgba(0,0,0,.7), 0 4px 12px rgba(0,0,0,.5);
+    /* motion */
+    --dur-1:140ms; --dur-2:220ms; --ease:cubic-bezier(.22,.61,.36,1);
+    --mono:'SF Mono',ui-monospace,'JetBrains Mono','Roboto Mono',Menlo,Consolas,monospace;
+    --sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important; transition-duration:.001ms !important;}
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow:hidden;}
+  body{font-size:var(--fs-md);line-height:1.45;}
+  canvas{display:block;}
+  #scene{position:fixed;inset:0;z-index:0;}
+  a{color:var(--accent);}
+  .skip{position:absolute;left:-9999px;top:0;z-index:100;background:var(--accent);color:var(--on-accent);
+    padding:var(--sp-2) var(--sp-4);border-radius:0 0 var(--r-sm) 0;font-weight:600;text-decoration:none;}
+  .skip:focus{left:0;}
+
+  /* ───────────────────────── BRAND / HUD ───────────────────────── */
+  .brand{position:fixed;top:var(--sp-4);left:var(--sp-4);z-index:6;display:flex;align-items:center;
+    gap:var(--sp-3);pointer-events:none;}
+  .brand .mark{width:34px;height:34px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5));}
+  .brand h1{font-size:var(--fs-lg);margin:0;font-weight:700;letter-spacing:-.02em;
+    text-shadow:0 1px 12px rgba(0,0,0,.8);}
+  .brand .tag{font-size:var(--fs-xs);color:var(--text-dim);letter-spacing:.18em;text-transform:uppercase;
+    margin-top:2px;}
+
+  .hud{position:fixed;top:var(--sp-4);right:var(--sp-4);z-index:6;display:grid;
+    grid-template-columns:repeat(2,minmax(96px,1fr));gap:var(--sp-2);
+    background:var(--surface);backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px);
+    border:1px solid var(--border);border-radius:var(--r-md);padding:var(--sp-3);box-shadow:var(--e-2);
+    min-width:226px;}
+  .hud .stat{display:flex;flex-direction:column;gap:1px;}
+  .hud .stat .k{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);}
+  .hud .stat .v{font-family:var(--mono);font-size:var(--fs-sm);color:var(--text);font-variant-numeric:tabular-nums;}
+  .hud .stat .v.accent{color:var(--accent);}
+  .hud .stat .v.good{color:var(--good);}
+  .hud .stat .v.warn{color:var(--warn);}
+  .hud .fps-wrap{grid-column:1/-1;display:flex;align-items:center;gap:var(--sp-2);}
+  .hud .fps-bar{flex:1;height:5px;border-radius:var(--r-pill);background:var(--n-3);overflow:hidden;}
+  .hud .fps-bar i{display:block;height:100%;width:30%;background:linear-gradient(90deg,var(--good),var(--accent));
+    border-radius:inherit;transition:width var(--dur-1) linear;}
+  .hud .note{grid-column:1/-1;font-size:9px;color:var(--text-dim);line-height:1.3;
+    border-top:1px solid var(--border);padding-top:var(--sp-2);}
+
+  /* ───────────────────────── CONTROL PANEL ───────────────────────── */
+  .panel{position:fixed;z-index:7;left:var(--sp-4);bottom:var(--sp-4);width:330px;max-height:calc(100vh - 96px);
+    display:flex;flex-direction:column;background:var(--surface);backdrop-filter:blur(20px) saturate(1.2);
+    -webkit-backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:var(--r-lg);
+    box-shadow:var(--e-3);overflow:hidden;transition:transform var(--dur-2) var(--ease),opacity var(--dur-2) var(--ease);}
+  .panel__head{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);
+    padding:var(--sp-3) var(--sp-4);border-bottom:1px solid var(--border);}
+  .panel__head h2{font-size:var(--fs-sm);margin:0;font-weight:650;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--text-muted);}
+  .panel__body{overflow-y:auto;padding:var(--sp-3) var(--sp-4) var(--sp-5);scrollbar-width:thin;
+    scrollbar-color:var(--n-4) transparent;}
+  .panel__body::-webkit-scrollbar{width:8px;}
+  .panel__body::-webkit-scrollbar-thumb{background:var(--n-4);border-radius:var(--r-pill);}
+
+  fieldset{border:none;margin:0 0 var(--sp-4);padding:0;}
+  fieldset:last-child{margin-bottom:0;}
+  legend{font-size:var(--fs-xs);letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);
+    padding:0;margin-bottom:var(--sp-3);display:flex;align-items:center;gap:var(--sp-2);width:100%;}
+  legend svg{width:13px;height:13px;color:var(--accent);}
+
+  .ctrl{margin-bottom:var(--sp-3);}
+  .ctrl__row{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-2);margin-bottom:5px;}
+  .ctrl label{font-size:var(--fs-sm);color:var(--text-muted);font-weight:500;}
+  .ctrl .readout{font-family:var(--mono);font-size:var(--fs-sm);color:var(--accent);font-variant-numeric:tabular-nums;
+    background:var(--n-2);border:1px solid var(--border);padding:1px var(--sp-2);border-radius:var(--r-sm);
+    min-width:48px;text-align:right;}
+  .ctrl.is-zero .readout{color:var(--accent-3);border-color:rgba(255,122,156,.4);}
+
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;cursor:pointer;margin:0;}
+  input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:var(--r-pill);
+    background:linear-gradient(90deg,var(--accent) var(--fill,40%),var(--n-3) var(--fill,40%));}
+  input[type=range]::-moz-range-track{height:5px;border-radius:var(--r-pill);background:var(--n-3);}
+  input[type=range]::-moz-range-progress{height:5px;border-radius:var(--r-pill);background:var(--accent);}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;margin-top:-6px;
+    border-radius:50%;background:var(--n-8);border:2px solid var(--accent);box-shadow:var(--e-1);
+    transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease);}
+  input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--n-8);
+    border:2px solid var(--accent);box-shadow:var(--e-1);}
+  input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.12);}
+  input[type=range]:active::-webkit-slider-thumb{transform:scale(.94);box-shadow:0 0 0 6px rgba(95,208,255,.18);}
+  input[type=range]:focus-visible{outline:none;}
+  input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(95,208,255,.4);}
+  input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 4px rgba(95,208,255,.4);}
+
+  /* segmented toggle group */
+  .seg{display:flex;background:var(--n-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;gap:3px;}
+  .seg button{flex:1;min-height:30px;border:none;background:transparent;color:var(--text-dim);font-family:var(--sans);
+    font-size:var(--fs-xs);font-weight:600;border-radius:5px;cursor:pointer;padding:var(--sp-1) var(--sp-2);
+    transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease);letter-spacing:.02em;
+    display:flex;align-items:center;justify-content:center;gap:5px;}
+  .seg button svg{width:13px;height:13px;}
+  .seg button:hover{color:var(--text);}
+  .seg button[aria-pressed=true]{background:var(--accent);color:var(--on-accent);box-shadow:var(--e-1);}
+  .seg button:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+
+  .btn-row{display:flex;gap:var(--sp-2);flex-wrap:wrap;}
+  .btn{flex:1;min-width:0;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    background:var(--n-3);color:var(--text);border:1px solid var(--border-strong);border-radius:var(--r-sm);
+    font-family:var(--sans);font-size:var(--fs-sm);font-weight:600;cursor:pointer;padding:var(--sp-2) var(--sp-3);
+    transition:background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),transform var(--dur-1) var(--ease);}
+  .btn svg{width:15px;height:15px;flex:none;}
+  .btn:hover{background:var(--n-4);border-color:var(--border-strong);}
+  .btn:active{transform:translateY(1px);}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn--primary{background:var(--accent);color:var(--on-accent);border-color:transparent;}
+  .btn--primary:hover{background:#7adcff;}
+  .btn--accent2{background:var(--accent-2);color:#fff;border-color:transparent;}
+  .btn--accent2:hover{filter:brightness(1.1);}
+
+  .preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2);}
+  .preset{min-height:44px;text-align:left;padding:var(--sp-2) var(--sp-3);background:var(--n-2);
+    border:1px solid var(--border);border-radius:var(--r-sm);cursor:pointer;color:var(--text-muted);
+    font-family:var(--sans);transition:all var(--dur-1) var(--ease);display:flex;flex-direction:column;gap:1px;}
+  .preset:hover{border-color:var(--accent);background:var(--n-3);color:var(--text);}
+  .preset:active{transform:translateY(1px);}
+  .preset:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+  .preset[aria-pressed=true]{border-color:var(--accent);background:rgba(95,208,255,.1);color:var(--text);}
+  .preset .pt{font-size:var(--fs-sm);font-weight:650;}
+  .preset .pd{font-size:9px;color:var(--text-dim);letter-spacing:.02em;}
+
+  .iconbtn{width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;
+    background:transparent;border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text-muted);
+    cursor:pointer;transition:all var(--dur-1) var(--ease);}
+  .iconbtn:hover{color:var(--text);border-color:var(--border-strong);background:var(--n-3);}
+  .iconbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .iconbtn svg{width:17px;height:17px;}
+
+  .hint{font-size:var(--fs-xs);color:var(--text-dim);margin-top:var(--sp-2);line-height:1.4;}
+
+  /* mobile panel toggle (FAB) */
+  .panel-fab{position:fixed;z-index:8;left:var(--sp-4);bottom:var(--sp-4);width:52px;height:52px;border-radius:50%;
+    background:var(--accent);color:var(--on-accent);border:none;box-shadow:var(--e-3);cursor:pointer;
+    display:none;align-items:center;justify-content:center;}
+  .panel-fab svg{width:24px;height:24px;}
+  .panel-fab:focus-visible{outline:3px solid #fff;outline-offset:2px;}
+
+  /* play overlay (reduced-motion / paused start) */
+  .play-overlay{position:fixed;inset:0;z-index:9;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 45%,rgba(8,12,20,.55),rgba(5,7,13,.9));backdrop-filter:blur(2px);}
+  .play-overlay[hidden]{display:none;}
+  .play-card{text-align:center;max-width:340px;padding:var(--sp-6);}
+  .play-card p{color:var(--text-muted);font-size:var(--fs-sm);margin:var(--sp-3) 0 var(--sp-5);}
+  .play-btn{width:84px;height:84px;border-radius:50%;border:none;cursor:pointer;background:var(--accent);
+    color:var(--on-accent);display:inline-flex;align-items:center;justify-content:center;box-shadow:var(--e-3);
+    transition:transform var(--dur-2) var(--ease);}
+  .play-btn svg{width:36px;height:36px;margin-left:4px;}
+  .play-btn:hover{transform:scale(1.06);}
+  .play-btn:focus-visible{outline:3px solid #fff;outline-offset:3px;}
+
+  /* unsupported screen */
+  .fatal{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;
+    background:var(--n-0);padding:var(--sp-6);}
+  .fatal[data-show=true]{display:flex;}
+  .fatal__card{max-width:440px;text-align:center;background:var(--surface-solid);border:1px solid var(--border-strong);
+    border-radius:var(--r-lg);padding:var(--sp-8) var(--sp-6);box-shadow:var(--e-3);}
+  .fatal__card h2{margin:var(--sp-4) 0 var(--sp-2);font-size:var(--fs-lg);}
+  .fatal__card p{color:var(--text-muted);font-size:var(--fs-sm);}
+  .fatal__card svg{width:46px;height:46px;color:var(--warn);}
+
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:var(--r-pill);
+    font-size:var(--fs-xs);font-weight:600;border:1px solid var(--border);}
+  .badge .dot{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 8px var(--good);}
+  .badge.is-webgpu .dot{background:var(--accent-2);box-shadow:0 0 8px var(--accent-2);}
+
+  /* tablet / mobile */
+  @media (max-width:760px){
+    .panel{left:0;right:0;bottom:0;width:auto;border-radius:var(--r-lg) var(--r-lg) 0 0;max-height:72vh;
+      transform:translateY(0);}
+    .panel.is-collapsed{transform:translateY(105%);opacity:0;pointer-events:none;}
+    .panel-fab{display:inline-flex;}
+    .hud{min-width:0;grid-template-columns:repeat(2,1fr);left:var(--sp-3);right:var(--sp-3);
+      width:auto;padding:var(--sp-2);gap:var(--sp-1) var(--sp-3);}
+    .brand{top:var(--sp-3);left:var(--sp-3);}
+    .brand .tag{display:none;}
+  }
+  @media (max-width:420px){
+    .brand h1{font-size:var(--fs-md);}
+    .preset-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#controls">Skip to controls</a>
+<canvas id="scene" aria-label="3D flocking simulation of thousands of agents"></canvas>
+
+<header class="brand">
+  <svg class="mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+    <path d="M16 4 L26 14 L16 11 L6 14 Z" fill="#5fd0ff"/>
+    <path d="M16 13 L23 21 L16 18 L9 21 Z" fill="#7c6bff"/>
+    <path d="M16 21 L20 27 L16 25 L12 27 Z" fill="#ff7a9c"/>
+  </svg>
+  <div>
+    <h1>MURMUR</h1>
+    <div class="tag">GPU Compute Boids</div>
+  </div>
+</header>
+
+<!-- live stats -->
+<section class="hud" aria-label="Live statistics" id="hud">
+  <div class="stat"><span class="k">Agents</span><span class="v accent" id="stat-count">—</span></div>
+  <div class="stat"><span class="k">Backend</span><span class="v" id="stat-backend">detecting…</span></div>
+  <div class="stat"><span class="k">Draw calls</span><span class="v good" id="stat-draws">—</span></div>
+  <div class="stat"><span class="k">FPS (rAF)</span><span class="v" id="stat-fps">—</span></div>
+  <div class="fps-wrap"><div class="fps-bar"><i id="fps-bar"></i></div></div>
+  <p class="note" id="stat-note">Single instanced draw call. FPS is rAF-delta only — software-rendered fps is not real-GPU fps.</p>
+</section>
+
+<!-- control panel -->
+<aside class="panel" id="controls" aria-label="Simulation controls">
+  <div class="panel__head">
+    <h2>Control Surface</h2>
+    <button class="iconbtn" id="close-panel" type="button" aria-label="Hide panel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <form class="panel__body" id="panel-form" autocomplete="off">
+
+    <!-- PRESETS -->
+    <fieldset>
+      <legend>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg>
+        Presets
+      </legend>
+      <div class="preset-grid" id="presets" role="group" aria-label="Behaviour presets"></div>
+    </fieldset>
+
+    <!-- FLOCKING -->
+    <fieldset>
+      <legend>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="17" r="2.5"/><path d="M8 7l8 .5M16.5 9 13 15M9 15.5 8 8.5"/></svg>
+        Flocking rules
+      </legend>
+      <div class="ctrl" data-zero-aware><div class="ctrl__row"><label for="sep">Separation</label><output class="readout" id="sep-r">1.50</output></div><input type="range" id="sep" min="0" max="3" step="0.05" value="1.5" aria-describedby="sep-r"></div>
+      <div class="ctrl" data-zero-aware><div class="ctrl__row"><label for="ali">Alignment</label><output class="readout" id="ali-r">1.00</output></div><input type="range" id="ali" min="0" max="3" step="0.05" value="1.0" aria-describedby="ali-r"></div>
+      <div class="ctrl" data-zero-aware><div class="ctrl__row"><label for="coh">Cohesion</label><output class="readout" id="coh-r">1.00</output></div><input type="range" id="coh" min="0" max="3" step="0.05" value="1.0" aria-describedby="coh-r"></div>
+      <div class="ctrl"><div class="ctrl__row"><label for="rad">Neighbor radius</label><output class="readout" id="rad-r">6.0</output></div><input type="range" id="rad" min="1" max="20" step="0.5" value="6" aria-describedby="rad-r"></div>
+      <div class="ctrl"><div class="ctrl__row"><label for="sepd">Separation dist.</label><output class="readout" id="sepd-r">2.5</output></div><input type="range" id="sepd" min="0.5" max="10" step="0.1" value="2.5" aria-describedby="sepd-r"></div>
+      <div class="ctrl"><div class="ctrl__row"><label for="spd">Max speed</label><output class="readout" id="spd-r">4.0</output></div><input type="range" id="spd" min="0.5" max="12" step="0.1" value="4" aria-describedby="spd-r"></div>
+      <p class="hint">Drag any weight to <strong>0</strong> to watch that rule drop out of the flock.</p>
+    </fieldset>
+
+    <!-- WORLD -->
+    <fieldset>
+      <legend>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9h16M9 4v16"/></svg>
+        World
+      </legend>
+      <div class="ctrl"><div class="ctrl__row"><label for="cnt">Agent count</label><output class="readout" id="cnt-r">1024</output></div><input type="range" id="cnt" min="256" max="16384" step="256" value="1024" aria-describedby="cnt-r"></div>
+      <div class="ctrl"><div class="ctrl__row"><label for="bnd">Bounds size</label><output class="readout" id="bnd-r">30</output></div><input type="range" id="bnd" min="12" max="64" step="1" value="30" aria-describedby="bnd-r"></div>
+      <div class="ctrl"><div class="ctrl__row"><label id="bm-l">Edge behaviour</label></div>
+        <div class="seg" role="group" aria-labelledby="bm-l" id="boundmode">
+          <button type="button" data-v="0" aria-pressed="true">Wrap</button>
+          <button type="button" data-v="1" aria-pressed="false">Bounce</button>
+        </div></div>
+    </fieldset>
+
+    <!-- PREDATOR -->
+    <fieldset>
+      <legend>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.6"/></svg>
+        Predator (cursor)
+      </legend>
+      <div class="ctrl"><div class="ctrl__row"><label id="pm-l">Mode</label></div>
+        <div class="seg" role="group" aria-labelledby="pm-l" id="predmode">
+          <button type="button" data-v="0" aria-pressed="true">Repel</button>
+          <button type="button" data-v="1" aria-pressed="false">Attract</button>
+        </div></div>
+      <div class="ctrl"><div class="ctrl__row"><label for="prad">Repel radius</label><output class="readout" id="prad-r">12</output></div><input type="range" id="prad" min="2" max="44" step="1" value="12" aria-describedby="prad-r"></div>
+      <div class="ctrl"><div class="ctrl__row"><label for="pstr">Strength</label><output class="readout" id="pstr-r">6.0</output></div><input type="range" id="pstr" min="0" max="24" step="0.5" value="6" aria-describedby="pstr-r"></div>
+      <p class="hint">Move the cursor (or touch) over the flock — agents scatter, then reform when you leave.</p>
+    </fieldset>
+
+    <!-- LOOK -->
+    <fieldset>
+      <legend>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8"/></svg>
+        Look
+      </legend>
+      <div class="ctrl"><div class="ctrl__row"><label id="sh-l">Agent shape</label></div>
+        <div class="seg" role="group" aria-labelledby="sh-l" id="shape">
+          <button type="button" data-v="bird" aria-pressed="true">Bird</button>
+          <button type="button" data-v="arrow" aria-pressed="false">Arrow</button>
+          <button type="button" data-v="tri" aria-pressed="false">Tri</button>
+        </div></div>
+      <div class="ctrl"><div class="ctrl__row"><label id="cm-l">Color by</label></div>
+        <div class="seg" role="group" aria-labelledby="cm-l" id="colormode">
+          <button type="button" data-v="0" aria-pressed="true">Speed</button>
+          <button type="button" data-v="1" aria-pressed="false">Heading</button>
+          <button type="button" data-v="2" aria-pressed="false">Density</button>
+        </div></div>
+      <div class="ctrl"><div class="ctrl__row"><label id="tr-l">Motion trails</label></div>
+        <div class="seg" role="group" aria-labelledby="tr-l" id="trails">
+          <button type="button" data-v="0" aria-pressed="true">Off</button>
+          <button type="button" data-v="1" aria-pressed="false">On</button>
+        </div></div>
+      <div class="ctrl"><div class="ctrl__row"><label id="vw-l">View</label></div>
+        <div class="seg" role="group" aria-labelledby="vw-l" id="viewmode">
+          <button type="button" data-v="3d" aria-pressed="true">3D orbit</button>
+          <button type="button" data-v="2d" aria-pressed="false">Top-down</button>
+        </div></div>
+      <div class="btn-row" style="margin-top:var(--sp-2)">
+        <button class="btn" type="button" id="cam-front">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M12 3v18"/><circle cx="12" cy="12" r="3"/></svg>Front</button>
+        <button class="btn" type="button" id="cam-far">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/></svg>Wide</button>
+      </div>
+    </fieldset>
+
+    <!-- TRANSPORT -->
+    <fieldset>
+      <legend>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        Transport
+      </legend>
+      <div class="btn-row">
+        <button class="btn btn--primary" type="button" id="playpause" aria-pressed="true">
+          <svg id="pp-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+          <span id="pp-label">Pause</span></button>
+        <button class="btn" type="button" id="step">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5l9 7-9 7zM17 5h2v14h-2z"/></svg>Step</button>
+      </div>
+      <div class="btn-row" style="margin-top:var(--sp-2)">
+        <button class="btn" type="button" id="reseed">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v4h-4"/></svg>Reseed</button>
+        <button class="btn btn--accent2" type="button" id="randomize">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.4" fill="currentColor"/><circle cx="16" cy="16" r="1.4" fill="currentColor"/><circle cx="16" cy="8" r="1.4" fill="currentColor"/><circle cx="8" cy="16" r="1.4" fill="currentColor"/></svg>Random</button>
+      </div>
+    </fieldset>
+  </form>
+</aside>
+
+<button class="panel-fab" id="open-panel" type="button" aria-label="Show controls" aria-expanded="false">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="8" cy="18" r="2" fill="currentColor" stroke="none"/></svg>
+</button>
+
+<!-- play overlay -->
+<div class="play-overlay" id="play-overlay" hidden>
+  <div class="play-card">
+    <span class="badge"><span class="dot"></span>Ready</span>
+    <p>Reduced-motion is on, so the flock starts paused. Press play to run the GPU compute simulation.</p>
+    <button class="play-btn" id="play-start" type="button" aria-label="Play simulation">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5l13 7-13 7z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- fatal / unsupported -->
+<div class="fatal" id="fatal" role="alertdialog" aria-labelledby="fatal-h" aria-describedby="fatal-p">
+  <div class="fatal__card">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.8 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.8a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>
+    <h2 id="fatal-h">Graphics acceleration unavailable</h2>
+    <p id="fatal-p">This build needs either <strong>WebGPU compute</strong> or <strong>WebGL2</strong> (for the GPGPU fallback). Your browser exposed neither, so the GPU flocking simulation cannot run. Try a recent Chrome, Edge, or Safari with hardware acceleration enabled.</p>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.171.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.171.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js';
+
+/* ════════════════════════════════════════════════════════════════════
+   MURMUR — GPU compute boids
+   Two simulation backends behind one capability gate:
+     1. WebGPU  : TSL compute over StorageInstancedBufferAttribute buffers
+                  (dynamic-imported; runtime smoke-gated → falls back on error)
+     2. WebGL2  : GPUComputationRenderer FBO ping-pong (position + velocity
+                  float textures). This is the path verified headlessly.
+   Rendering for BOTH: ONE InstancedMesh, oriented per-agent by velocity,
+   wing-flap + color modes — a single instanced draw call.
+   ════════════════════════════════════════════════════════════════════ */
+
+const $ = (id) => document.getElementById(id);
+const canvas = $('scene');
+const MAX_COUNT = 16384;
+
+/* ---- shared parameter state (single source of truth) ---- */
+const P = {
+  separation: 1.5, alignment: 1.0, cohesion: 1.0,
+  neighborRadius: 6.0, separationDistance: 2.5, maxSpeed: 4.0,
+  count: 1024, bounds: 30, boundMode: 0,
+  predMode: 0, predRadius: 12, predStrength: 6,
+  shape: 'bird', colorMode: 0, trails: 0, view: '3d',
+};
+let seed = 1337;
+
+/* deterministic RNG so reseed/tests are reproducible */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+/* ════════════ THREE scene scaffold (renderer-agnostic) ════════════ */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x05070d);
+const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 2000);
+camera.position.set(46, 30, 64);
+
+/* gradient sky dome — depth cue so the flock reads in 3D */
+function buildSky(){
+  const g = new THREE.SphereGeometry(900, 32, 16);
+  const m = new THREE.ShaderMaterial({
+    side: THREE.BackSide, depthWrite: false, fog: false,
+    uniforms: { topCol:{value:new THREE.Color(0x0a1424)}, botCol:{value:new THREE.Color(0x05070d)}, hor:{value:new THREE.Color(0x12203a)} },
+    vertexShader:`varying vec3 vP; void main(){ vP=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+    fragmentShader:`varying vec3 vP; uniform vec3 topCol,botCol,hor; void main(){ float h=normalize(vP).y; float t=smoothstep(-0.25,0.55,h); vec3 c=mix(botCol,hor,smoothstep(-0.4,0.05,h)); c=mix(c,topCol,t); gl_FragColor=vec4(c,1.0);}`
+  });
+  return new THREE.Mesh(g,m);
+}
+scene.add(buildSky());
+scene.fog = new THREE.FogExp2(0x070b14, 0.0);  // density set from bounds
+
+/* ════════════ agent geometries (local space, +Z = forward) ════════════
+   attribute aFlap marks wing-tip verts so the vertex shader can flap them. */
+function birdGeometry(kind){
+  const g = new THREE.BufferGeometry();
+  let pos, flap;
+  if (kind === 'tri'){
+    pos = [ 0,0,1.1,  -0.7,0,-0.7,  0.7,0,-0.7 ];
+    flap = [ 0, 0, 0 ];
+  } else if (kind === 'arrow'){
+    pos = [ 0,0,1.5,  -0.55,0,-0.4,  0,0,-0.1,
+            0,0,1.5,   0,0,-0.1,    0.55,0,-0.4 ];
+    flap = [ 0,0,0, 0,0,0 ];
+  } else { // bird — two flapping wings + body
+    pos = [ 0,0,1.2,  -0.95,0,-0.55,  0,0,-0.35,
+            0,0,1.2,   0,0,-0.35,     0.95,0,-0.55 ];
+    flap = [ 0, 1, 0,   0, 0, 1 ];   // outer wing verts flap
+  }
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('aFlap', new THREE.Float32BufferAttribute(flap, 1));
+  g.computeVertexNormals();
+  return g;
+}
+
+/* shared render material — reads per-agent pos/vel from a backend-supplied
+   sampler (WebGL) ; for WebGPU we build a node material variant instead. */
+const renderUniforms = {
+  texturePosition:{value:null}, textureVelocity:{value:null},
+  uWidth:{value:32}, uSize:{value:0.7}, uMaxSpeed:{value:P.maxSpeed},
+  uColorMode:{value:0}, uTime:{value:0},
+  uFogColor:{value:new THREE.Color(0x070b14)}, uFogDensity:{value:0.0},
+};
+const renderVert = /* glsl */`
+  in float aFlap;
+  uniform sampler2D texturePosition, textureVelocity;
+  uniform float uWidth, uSize, uMaxSpeed, uColorMode, uTime, uFogDensity;
+  uniform vec3 uFogColor;
+  out vec3 vColor; out float vFog;
+  vec3 hsv2rgb(vec3 c){ vec4 K=vec4(1.,2./3.,1./3.,3.); vec3 p=abs(fract(c.xxx+K.xyz)*6.-K.www); return c.z*mix(K.xxx,clamp(p-K.xxx,0.,1.),c.y); }
+  void main(){
+    int id = gl_InstanceID;
+    int w = int(uWidth);
+    vec2 ref = (vec2(float(id % w), float(id / w)) + 0.5) / uWidth;
+    vec4 P4 = texture(texturePosition, ref);
+    vec3 vel = texture(textureVelocity, ref).xyz;
+    float density = texture(textureVelocity, ref).w;
+    float phase = P4.w;
+    float speed = length(vel);
+    vec3 fwd = speed > 1e-4 ? vel/speed : vec3(0.,0.,1.);
+    vec3 up0 = abs(fwd.y) > 0.95 ? vec3(0.,0.,1.) : vec3(0.,1.,0.);
+    vec3 right = normalize(cross(up0, fwd));
+    vec3 up = cross(fwd, right);
+    vec3 lp = position;
+    lp.y += aFlap * sin(phase) * 0.7;          // wing flap
+    vec3 world = P4.xyz + (right*lp.x + up*lp.y + fwd*lp.z) * uSize;
+    vec4 viewPos = viewMatrix * vec4(world, 1.0);
+    gl_Position = projectionMatrix * viewPos;
+    // colour
+    vec3 col;
+    if (uColorMode < 0.5){
+      float t = clamp(speed / max(uMaxSpeed,0.001), 0.0, 1.0);
+      col = mix(vec3(0.22,0.45,0.95), vec3(0.4,0.95,1.0), t);
+      col = mix(col, vec3(1.0,0.55,0.7), smoothstep(0.6,1.0,t));
+    } else if (uColorMode < 1.5){
+      float hue = atan(fwd.z, fwd.x) / 6.2831853 + 0.5;
+      col = hsv2rgb(vec3(hue, 0.62, 1.0));
+    } else {
+      float t = clamp(density / 26.0, 0.0, 1.0);
+      col = mix(vec3(0.18,0.3,0.55), vec3(1.0,0.78,0.35), t);
+      col = mix(col, vec3(1.0,0.35,0.45), smoothstep(0.7,1.0,t));
+    }
+    vColor = col;
+    float d = length(viewPos.xyz);
+    vFog = 1.0 - exp(-uFogDensity*uFogDensity*d*d);
+  }`;
+const renderFrag = /* glsl */`
+  precision highp float;
+  in vec3 vColor; in float vFog; uniform vec3 uFogColor;
+  out vec4 frag;
+  void main(){ frag = vec4(mix(vColor, uFogColor, clamp(vFog,0.0,1.0)), 1.0); }`;
+
+let renderMaterial = new THREE.ShaderMaterial({
+  glslVersion: THREE.GLSL3, uniforms: renderUniforms,
+  vertexShader: renderVert, fragmentShader: renderFrag, side: THREE.DoubleSide,
+});
+let birdMesh = new THREE.InstancedMesh(birdGeometry(P.shape), renderMaterial, MAX_COUNT);
+birdMesh.frustumCulled = false;     // positions come from texture, bounds unknown to CPU
+birdMesh.count = P.count;
+scene.add(birdMesh);
+
+/* ════════════ WebGL GPGPU backend (verified path) ════════════ */
+function buildWidth(count){ return Math.ceil(Math.sqrt(count)); }
+
+const SIM_COMMON = `
+  uniform float uCount, uDelta, uTime;
+  uniform float uSep, uAli, uCoh, uRad, uSepD, uMaxSpeed;
+  uniform float uBounds, uBoundMode;
+  uniform vec3  uPredator; uniform float uPredActive, uPredRadius, uPredStrength, uPredMode;
+`;
+
+function velocityShader(WIDTH){ return `
+  #define WIDTH ${WIDTH}.0
+  ${SIM_COMMON}
+  void main(){
+    vec2 uv = gl_FragCoord.xy / resolution.xy;
+    float selfIdx = floor(gl_FragCoord.y)*WIDTH + floor(gl_FragCoord.x);
+    vec3 pos = texture2D(texturePosition, uv).xyz;
+    vec3 vel = texture2D(textureVelocity, uv).xyz;
+    vec3 sep = vec3(0.0), ali = vec3(0.0), coh = vec3(0.0);
+    float n = 0.0, ns = 0.0, density = 0.0;
+    float r2 = uRad*uRad, sd2 = uSepD*uSepD;
+    for (float y = 0.0; y < WIDTH; y++){
+      for (float x = 0.0; x < WIDTH; x++){
+        float idx = y*WIDTH + x;
+        if (idx >= uCount) continue;
+        if (idx == selfIdx) continue;
+        vec2 ref = (vec2(x,y) + 0.5) / resolution.xy;
+        vec3 p = texture2D(texturePosition, ref).xyz;
+        vec3 v = texture2D(textureVelocity, ref).xyz;
+        vec3 d = pos - p;
+        float d2 = dot(d,d);
+        if (d2 > 0.0 && d2 < r2){
+          density += 1.0;
+          coh += p; ali += v; n += 1.0;
+          if (d2 < sd2){ sep += d / (sqrt(d2)+1e-4); ns += 1.0; }
+        }
+      }
+    }
+    vec3 acc = vec3(0.0);
+    if (n > 0.0){
+      coh = coh/n - pos;
+      ali = ali/n;
+      acc += normalize(coh + 1e-6) * uCoh;
+      acc += normalize(ali + 1e-6) * uAli;
+    }
+    if (ns > 0.0) acc += normalize(sep + 1e-6) * uSep;
+    // predator
+    if (uPredActive > 0.5){
+      vec3 away = pos - uPredator;
+      float pd = length(away);
+      if (pd < uPredRadius){
+        float f = 1.0 - pd/uPredRadius;
+        vec3 dir = normalize(away + 1e-6) * mix(1.0, -1.0, uPredMode);
+        acc += dir * f * f * uPredStrength;
+      }
+    }
+    // soft wall steer (both modes) + reflect on bounce
+    float m = uBounds * 0.82;
+    vec3 steer = vec3(0.0);
+    if (pos.x >  m) steer.x -= 1.0; if (pos.x < -m) steer.x += 1.0;
+    if (pos.y >  m) steer.y -= 1.0; if (pos.y < -m) steer.y += 1.0;
+    if (pos.z >  m) steer.z -= 1.0; if (pos.z < -m) steer.z += 1.0;
+    acc += steer * 2.2;
+    vel += acc * uDelta * 60.0;
+    if (uBoundMode > 0.5){
+      float b = uBounds;
+      if ((pos.x> b && vel.x>0.0)||(pos.x<-b && vel.x<0.0)) vel.x = -vel.x;
+      if ((pos.y> b && vel.y>0.0)||(pos.y<-b && vel.y<0.0)) vel.y = -vel.y;
+      if ((pos.z> b && vel.z>0.0)||(pos.z<-b && vel.z<0.0)) vel.z = -vel.z;
+    }
+    float sp = length(vel);
+    float maxS = uMaxSpeed, minS = uMaxSpeed*0.35;
+    if (sp > maxS) vel = vel/sp*maxS;
+    else if (sp < minS && sp > 1e-4) vel = vel/sp*minS;
+    gl_FragColor = vec4(vel, density);
+  }`;
+}
+function positionShader(WIDTH){ return `
+  #define WIDTH ${WIDTH}.0
+  ${SIM_COMMON}
+  void main(){
+    vec2 uv = gl_FragCoord.xy / resolution.xy;
+    vec4 pw = texture2D(texturePosition, uv);
+    vec3 pos = pw.xyz; float phase = pw.w;
+    vec3 vel = texture2D(textureVelocity, uv).xyz;
+    pos += vel * uDelta * 30.0;
+    float b = uBounds;
+    if (uBoundMode < 0.5){
+      if (pos.x >  b) pos.x -= 2.0*b; if (pos.x < -b) pos.x += 2.0*b;
+      if (pos.y >  b) pos.y -= 2.0*b; if (pos.y < -b) pos.y += 2.0*b;
+      if (pos.z >  b) pos.z -= 2.0*b; if (pos.z < -b) pos.z += 2.0*b;
+    } else {
+      pos = clamp(pos, vec3(-b), vec3(b));
+    }
+    phase += length(vel) * uDelta * 5.0;
+    gl_FragColor = vec4(pos, phase);
+  }`;
+}
+
+class WebGLBackend {
+  constructor(renderer){ this.renderer = renderer; this.kind = 'WebGL-GPGPU'; this.build(P.count); }
+  seedTextures(gpu){
+    const rng = mulberry32(seed);
+    const tp = gpu.createTexture(), tv = gpu.createTexture();
+    const pd = tp.image.data, vd = tv.image.data;
+    const b = P.bounds * 0.85;
+    for (let i = 0; i < pd.length; i += 4){
+      pd[i]   = (rng()*2-1)*b;
+      pd[i+1] = (rng()*2-1)*b;
+      pd[i+2] = (rng()*2-1)*b;
+      pd[i+3] = rng()*6.2831;             // wing phase
+      const a = rng()*6.2831, e = (rng()*2-1);
+      const sp = P.maxSpeed*0.6;
+      vd[i]   = Math.cos(a)*sp;
+      vd[i+1] = e*sp*0.4;
+      vd[i+2] = Math.sin(a)*sp;
+      vd[i+3] = 0;
+    }
+    return { tp, tv };
+  }
+  build(count){
+    if (this.gpu){ this.posVar = this.velVar = null; this.gpu.dispose && this.gpu.dispose(); }
+    const WIDTH = buildWidth(count);
+    this.WIDTH = WIDTH;
+    const gpu = new GPUComputationRenderer(WIDTH, WIDTH, this.renderer);
+    const { tp, tv } = this.seedTextures(gpu);
+    const velVar = gpu.addVariable('textureVelocity', velocityShader(WIDTH), tv);
+    const posVar = gpu.addVariable('texturePosition', positionShader(WIDTH), tp);
+    gpu.setVariableDependencies(velVar, [posVar, velVar]);
+    gpu.setVariableDependencies(posVar, [posVar, velVar]);
+    const u = (extra) => Object.assign({
+      uCount:{value:count}, uDelta:{value:0.016}, uTime:{value:0},
+      uSep:{value:P.separation}, uAli:{value:P.alignment}, uCoh:{value:P.cohesion},
+      uRad:{value:P.neighborRadius}, uSepD:{value:P.separationDistance}, uMaxSpeed:{value:P.maxSpeed},
+      uBounds:{value:P.bounds}, uBoundMode:{value:P.boundMode},
+      uPredator:{value:new THREE.Vector3()}, uPredActive:{value:0},
+      uPredRadius:{value:P.predRadius}, uPredStrength:{value:P.predStrength}, uPredMode:{value:P.predMode},
+    }, extra);
+    Object.assign(velVar.material.uniforms, u());
+    Object.assign(posVar.material.uniforms, u());
+    const err = gpu.init();
+    if (err) throw new Error('GPGPU init: ' + err);
+    this.gpu = gpu; this.velVar = velVar; this.posVar = posVar; this.count = count;
+    renderUniforms.uWidth.value = WIDTH;
+  }
+  setParams(){
+    if (!this.gpu) return;
+    for (const v of [this.velVar, this.posVar]){
+      const u = v.material.uniforms;
+      u.uSep.value = P.separation; u.uAli.value = P.alignment; u.uCoh.value = P.cohesion;
+      u.uRad.value = P.neighborRadius; u.uSepD.value = P.separationDistance; u.uMaxSpeed.value = P.maxSpeed;
+      u.uBounds.value = P.bounds; u.uBoundMode.value = P.boundMode;
+      u.uPredRadius.value = P.predRadius; u.uPredStrength.value = P.predStrength; u.uPredMode.value = P.predMode;
+    }
+  }
+  setPredator(active, vec){
+    for (const v of [this.velVar, this.posVar]){
+      const u = v.material.uniforms;
+      u.uPredActive.value = active ? 1 : 0;
+      if (vec) u.uPredator.value.copy(vec);
+    }
+  }
+  step(dt){
+    const d = Math.min(dt, 0.033);
+    for (const v of [this.velVar, this.posVar]){
+      v.material.uniforms.uDelta.value = d;
+      v.material.uniforms.uTime.value = performance.now()*0.001;
+    }
+    this.gpu.compute();
+    renderUniforms.texturePosition.value = this.gpu.getCurrentRenderTarget(this.posVar).texture;
+    renderUniforms.textureVelocity.value = this.gpu.getCurrentRenderTarget(this.velVar).texture;
+  }
+  reseed(){ this.build(this.count); this.step(0.016); }
+  rebuild(count){ this.build(count); this.step(0.016); }
+  /* readback for tests: returns Float32Array(WIDTH*WIDTH*4) */
+  readPositions(){
+    const rt = this.gpu.getCurrentRenderTarget(this.posVar);
+    const buf = new Float32Array(this.WIDTH*this.WIDTH*4);
+    this.renderer.readRenderTargetPixels(rt, 0, 0, this.WIDTH, this.WIDTH, buf);
+    return buf;
+  }
+  readVelocities(){
+    const rt = this.gpu.getCurrentRenderTarget(this.velVar);
+    const buf = new Float32Array(this.WIDTH*this.WIDTH*4);
+    this.renderer.readRenderTargetPixels(rt, 0, 0, this.WIDTH, this.WIDTH, buf);
+    return buf;
+  }
+}
+
+/* ════════════ WebGPU backend (TSL compute over storage buffers) ════════════
+   Implemented faithfully to the three webgpu_compute_birds approach. It is
+   dynamic-imported only when navigator.gpu exists, wrapped in try/catch, and
+   smoke-gated after init (positions must advance & stay finite) — any failure
+   cleanly returns null so the WebGL GPGPU path takes over. NOTE: this env has
+   no WebGPU, so this path is shipped but NOT verified here. */
+async function tryWebGPU(){
+  if (!navigator.gpu) return null;
+  let TW, TSL;
+  try {
+    TW  = await import('https://cdn.jsdelivr.net/npm/three@0.171.0/build/three.webgpu.js');
+    TSL = await import('https://cdn.jsdelivr.net/npm/three@0.171.0/build/three.tsl.js');
+  } catch(e){ return null; }
+  try {
+    const { Fn, instanceIndex, storage, uniform, float, vec3, vec4, If, Loop, length, normalize, max } = TSL;
+    const renderer = new TW.WebGPURenderer({ canvas, antialias:true, alpha:false });
+    renderer.setClearColor(0x05070d, 1);
+    await renderer.init();
+
+    const count = P.count;
+    const posAttr = new TW.StorageInstancedBufferAttribute(count, 4);
+    const velAttr = new TW.StorageInstancedBufferAttribute(count, 4);
+    const posS = storage(posAttr, 'vec4', count);
+    const velS = storage(velAttr, 'vec4', count);
+
+    const uni = {
+      sep:uniform(P.separation), ali:uniform(P.alignment), coh:uniform(P.cohesion),
+      rad:uniform(P.neighborRadius), sepD:uniform(P.separationDistance), maxS:uniform(P.maxSpeed),
+      bounds:uniform(P.bounds), boundMode:uniform(P.boundMode), dt:uniform(0.016), count:uniform(count),
+      predator:uniform(vec3(0,0,0)), predActive:uniform(0), predRadius:uniform(P.predRadius),
+      predStrength:uniform(P.predStrength), predMode:uniform(P.predMode), seedU:uniform(seed),
+    };
+
+    // hash-based seed compute
+    const hash = Fn(([n])=>{ const x = n.mul(0.013).sin().mul(43758.5453); return x.fract(); });
+    const initC = Fn(()=>{
+      const i = instanceIndex.toFloat();
+      const b = uni.bounds.mul(0.85);
+      const px = hash(i.add(1.1)).mul(2).sub(1).mul(b);
+      const py = hash(i.add(2.3)).mul(2).sub(1).mul(b);
+      const pz = hash(i.add(3.7)).mul(2).sub(1).mul(b);
+      posS.element(instanceIndex).assign(vec4(px,py,pz, hash(i).mul(6.283)));
+      const a = hash(i.add(5.5)).mul(6.283);
+      const sp = uni.maxS.mul(0.6);
+      velS.element(instanceIndex).assign(vec4(a.cos().mul(sp), hash(i.add(6.1)).sub(0.5).mul(sp), a.sin().mul(sp), 0));
+    })().compute(count);
+    await renderer.computeAsync(initC);
+
+    const velC = Fn(()=>{
+      const i = instanceIndex;
+      const self = posS.element(i).toVar();
+      const vel  = velS.element(i).xyz.toVar();
+      const sep = vec3(0).toVar(), ali = vec3(0).toVar(), coh = vec3(0).toVar();
+      const n = float(0).toVar(), ns = float(0).toVar(), density = float(0).toVar();
+      const r2 = uni.rad.mul(uni.rad), sd2 = uni.sepD.mul(uni.sepD);
+      Loop({ start: 0, end: uni.count, type:'uint' }, ({ i: j })=>{
+        If(j.equal(i), ()=>{}).Else(()=>{
+          const p = posS.element(j).xyz;
+          const v = velS.element(j).xyz;
+          const d = self.xyz.sub(p);
+          const d2 = d.dot(d);
+          If(d2.greaterThan(0).and(d2.lessThan(r2)), ()=>{
+            density.addAssign(1);
+            coh.addAssign(p); ali.addAssign(v); n.addAssign(1);
+            If(d2.lessThan(sd2), ()=>{ sep.addAssign(d.div(d2.sqrt().add(0.0001))); ns.addAssign(1); });
+          });
+        });
+      });
+      const acc = vec3(0).toVar();
+      If(n.greaterThan(0), ()=>{
+        const c = coh.div(n).sub(self.xyz);
+        acc.addAssign(normalize(c.add(1e-6)).mul(uni.coh));
+        acc.addAssign(normalize(ali.div(n).add(1e-6)).mul(uni.ali));
+      });
+      If(ns.greaterThan(0), ()=>{ acc.addAssign(normalize(sep.add(1e-6)).mul(uni.sep)); });
+      If(uni.predActive.greaterThan(0.5), ()=>{
+        const away = self.xyz.sub(uni.predator);
+        const pd = length(away);
+        If(pd.lessThan(uni.predRadius), ()=>{
+          const f = float(1).sub(pd.div(uni.predRadius));
+          const dir = normalize(away.add(1e-6)).mul(float(1).sub(uni.predMode.mul(2)));
+          acc.addAssign(dir.mul(f).mul(f).mul(uni.predStrength));
+        });
+      });
+      vel.addAssign(acc.mul(uni.dt).mul(60));
+      const sp = length(vel);
+      const maxS = uni.maxS;
+      If(sp.greaterThan(maxS), ()=>{ vel.assign(vel.div(sp).mul(maxS)); });
+      velS.element(i).assign(vec4(vel, density));
+    })().compute(count);
+
+    const posC = Fn(()=>{
+      const i = instanceIndex;
+      const pw = posS.element(i).toVar();
+      const vel = velS.element(i).xyz;
+      const pos = pw.xyz.add(vel.mul(uni.dt).mul(30)).toVar();
+      const b = uni.bounds;
+      // wrap
+      If(pos.x.greaterThan(b), ()=>pos.x.subAssign(b.mul(2)));
+      If(pos.x.lessThan(b.negate()), ()=>pos.x.addAssign(b.mul(2)));
+      If(pos.y.greaterThan(b), ()=>pos.y.subAssign(b.mul(2)));
+      If(pos.y.lessThan(b.negate()), ()=>pos.y.addAssign(b.mul(2)));
+      If(pos.z.greaterThan(b), ()=>pos.z.subAssign(b.mul(2)));
+      If(pos.z.lessThan(b.negate()), ()=>pos.z.addAssign(b.mul(2)));
+      const phase = pw.w.add(length(vel).mul(uni.dt).mul(5));
+      posS.element(i).assign(vec4(pos, phase));
+    })().compute(count);
+
+    // node render material reading the storage buffers
+    const { attribute, positionLocal, cameraViewMatrix, cameraProjectionMatrix } = TSL;
+    const mat = new TW.MeshBasicNodeMaterial({ side: TW.DoubleSide });
+    const aFlap = attribute('aFlap', 'float');
+    const posV = posS.toAttribute();   // per-instance
+    const velV = velS.toAttribute();
+    const fwd = normalize(velV.xyz.add(vec3(0,0,1e-4)));
+    const up0 = vec3(0,1,0);
+    const right = normalize(up0.cross(fwd));
+    const up = fwd.cross(right);
+    const lp = positionLocal.toVar();
+    lp.y.addAssign(aFlap.mul(posV.w.sin()).mul(0.7));
+    const world = posV.xyz.add(right.mul(lp.x).add(up.mul(lp.y)).add(fwd.mul(lp.z)).mul(0.7));
+    mat.positionNode = world;
+    const speed = length(velV.xyz);
+    mat.colorNode = vec3(0.3,0.6,1.0).mix(vec3(0.4,0.95,1.0), speed.div(uni.maxS).clamp(0,1));
+
+    const mesh = new TW.InstancedMesh(birdGeometry(P.shape), mat, count);
+    mesh.frustumCulled = false;
+    const wScene = new TW.Scene();
+    wScene.background = new TW.Color(0x05070d);
+    const wCam = camera;
+    wScene.add(mesh);
+
+    // smoke gate: run a few steps, ensure positions advance & stay finite
+    for (let k=0;k<4;k++){ await renderer.computeAsync(velC); await renderer.computeAsync(posC); }
+    let finite = true;
+    try {
+      const back = await renderer.getArrayBufferAsync(posAttr);
+      const f = new Float32Array(back);
+      for (let k=0;k<Math.min(f.length,64);k++){ if (!Number.isFinite(f[k])) { finite=false; break; } }
+    } catch(e){ /* readback unsupported → trust no-throw compute */ }
+    if (!finite) { renderer.dispose && renderer.dispose(); return null; }
+
+    return {
+      kind:'WebGPU', renderer, scene:wScene, camera:wCam, mesh, uni, velC, posC, posAttr, velAttr,
+      setParams(){ uni.sep.value=P.separation; uni.ali.value=P.alignment; uni.coh.value=P.cohesion;
+        uni.rad.value=P.neighborRadius; uni.sepD.value=P.separationDistance; uni.maxS.value=P.maxSpeed;
+        uni.bounds.value=P.bounds; uni.boundMode.value=P.boundMode; uni.predRadius.value=P.predRadius;
+        uni.predStrength.value=P.predStrength; uni.predMode.value=P.predMode; },
+      setPredator(active, vec){ uni.predActive.value = active?1:0; if (vec) uni.predator.value.set(vec.x,vec.y,vec.z); },
+      async step(dt){ uni.dt.value = Math.min(dt,0.033); await renderer.computeAsync(velC); await renderer.computeAsync(posC); },
+      render(){ renderer.render(wScene, wCam); },
+      setSize(w,h,dpr){ renderer.setPixelRatio(dpr); renderer.setSize(w,h,false); },
+      info(){ return renderer.info; },
+    };
+  } catch(e){ return null; }
+}
+
+/* ════════════════════════ APP BOOT ════════════════════════ */
+let glRenderer = null, backend = null, controls = null, webgpu = null;
+let running = false, time = 0, lastT = performance.now();
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* trails feedback targets (WebGL path only) */
+let rtScene=null, rtA=null, rtB=null, trailQuad=null, copyQuad=null, fsScene=null, fsCam=null;
+function buildTrails(w,h){
+  const opt = { type: THREE.HalfFloatType, depthBuffer:false };
+  [rtScene,rtA,rtB].forEach(r=>r&&r.dispose());
+  rtScene = new THREE.WebGLRenderTarget(w,h,{ depthBuffer:true });
+  rtA = new THREE.WebGLRenderTarget(w,h,opt);
+  rtB = new THREE.WebGLRenderTarget(w,h,opt);
+  if (!fsScene){
+    fsScene = new THREE.Scene(); fsCam = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+    trailQuad = new THREE.Mesh(new THREE.PlaneGeometry(2,2), new THREE.ShaderMaterial({
+      uniforms:{ tPrev:{value:null}, tCur:{value:null}, fade:{value:0.9} },
+      vertexShader:`varying vec2 vU; void main(){ vU=uv; gl_Position=vec4(position.xy,0.,1.);}`,
+      fragmentShader:`varying vec2 vU; uniform sampler2D tPrev,tCur; uniform float fade;
+        void main(){ vec3 prev=texture2D(tPrev,vU).rgb*fade; vec3 cur=texture2D(tCur,vU).rgb; gl_FragColor=vec4(max(prev,cur),1.0);}`
+    }));
+    fsScene.add(trailQuad);
+    copyQuad = new THREE.Mesh(new THREE.PlaneGeometry(2,2), new THREE.MeshBasicMaterial());
+  }
+}
+
+async function boot(){
+  // 1) try WebGPU compute
+  webgpu = await tryWebGPU().catch(()=>null);
+  if (webgpu){
+    backend = { kind:'WebGPU' };  // marker; webgpu drives its own render
+    setBackendBadge('WebGPU', true);
+  } else {
+    // 2) WebGL2 GPGPU
+    try {
+      glRenderer = new THREE.WebGLRenderer({ canvas, antialias:true, powerPreference:'high-performance' });
+      if (!glRenderer.capabilities.isWebGL2) throw new Error('no webgl2');
+      glRenderer.setClearColor(0x05070d, 1);
+      backend = new WebGLBackend(glRenderer);
+      controls = new OrbitControls(camera, canvas);
+      controls.enableDamping = true; controls.dampingFactor = 0.06;
+      controls.minDistance = 12; controls.maxDistance = 220; controls.target.set(0,0,0);
+      backend.step(0.016);
+      setBackendBadge('WebGL-GPGPU', false);
+    } catch(e){
+      $('fatal').dataset.show = 'true';
+      $('stat-backend').textContent = 'unsupported';
+      return;
+    }
+  }
+  // common UI + loop
+  bindUI();
+  applyPreset(PRESETS[0]);   // tight murmuration default
+  resize();
+  updateFog();
+  window.addEventListener('resize', resize, { passive:true });
+
+  if (window.innerWidth <= 760) collapsePanel();   // flock is the hero on mobile; FAB opens controls
+
+  if (reduceMotion){ running = false; $('play-overlay').hidden = false; setPP(false); }
+  else { running = true; setPP(true); }
+
+  $('stat-count').textContent = P.count.toLocaleString();
+  requestAnimationFrame(loop);
+  exposeDebug();
+}
+
+function setBackendBadge(label, isGPU){
+  const el = $('stat-backend');
+  el.textContent = label;
+  el.className = 'v ' + (isGPU ? 'accent' : 'good');
+}
+
+/* ════════════ main loop ════════════ */
+let fpsSmooth = 0, fpsAcc = 0, fpsN = 0, fpsLast = performance.now();
+function loop(now){
+  requestAnimationFrame(loop);
+  const dt = Math.min((now - lastT)/1000, 0.05); lastT = now;
+  time += dt; renderUniforms.uTime.value = time;
+
+  if (webgpu){
+    if (running) webgpu.step(dt);
+    webgpu.render();
+    drawCalls = (webgpu.info().render?.drawCalls) ?? 1;
+  } else {
+    if (controls) controls.update();
+    if (running) backend.step(dt);
+    renderFrame();
+  }
+  // honest fps (rAF delta), smoothed
+  fpsAcc += dt; fpsN++;
+  if (now - fpsLast > 400){
+    const fps = fpsN / fpsAcc;
+    fpsSmooth = fps;
+    $('stat-fps').textContent = fps.toFixed(0);
+    $('fps-bar').style.width = Math.max(4, Math.min(100, fps/60*100)) + '%';
+    $('stat-draws').textContent = drawCalls;
+    fpsAcc = 0; fpsN = 0; fpsLast = now;
+  }
+}
+
+let drawCalls = 1;
+function renderFrame(){
+  if (P.trails && rtA){
+    glRenderer.setRenderTarget(rtScene); glRenderer.clear(); glRenderer.render(scene, camera);
+    trailQuad.material.uniforms.tPrev.value = rtB.texture;
+    trailQuad.material.uniforms.tCur.value = rtScene.texture;
+    glRenderer.setRenderTarget(rtA); glRenderer.render(fsScene, fsCam);
+    copyQuad.material.map = rtA.texture; fsScene.remove(trailQuad); fsScene.add(copyQuad);
+    glRenderer.setRenderTarget(null); glRenderer.render(fsScene, fsCam);
+    fsScene.remove(copyQuad); fsScene.add(trailQuad);
+    const t = rtA; rtA = rtB; rtB = t;     // swap
+  } else {
+    glRenderer.setRenderTarget(null); glRenderer.render(scene, camera);
+  }
+  drawCalls = glRenderer.info.render.calls;
+}
+
+/* ════════════ sizing ════════════ */
+function resize(){
+  const w = window.innerWidth, h = window.innerHeight;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+  if (webgpu){ webgpu.setSize(w,h,dpr); }
+  else {
+    glRenderer.setPixelRatio(dpr); glRenderer.setSize(w,h,false);
+    buildTrails(Math.floor(w*dpr), Math.floor(h*dpr));
+  }
+}
+function updateFog(){
+  scene.fog.density = 0.0016 + (1/Math.max(P.bounds,1))*0.02;
+  renderUniforms.uFogDensity.value = scene.fog.density;
+}
+
+/* ════════════ predator pointer mapping ════════════ */
+const predVec = new THREE.Vector3();
+let predActive = false, predTimeout = 0;
+function pointerToWorld(cx, cy){
+  const ndc = new THREE.Vector3((cx/window.innerWidth)*2-1, -(cy/window.innerHeight)*2+1, 0.5);
+  ndc.unproject(camera);
+  const dir = ndc.sub(camera.position).normalize();
+  // project the ray onto the plane through origin facing the camera
+  const camDir = new THREE.Vector3(); camera.getWorldDirection(camDir);
+  const denom = dir.dot(camDir);
+  const t = Math.abs(denom) < 1e-4 ? camera.position.length() : (-camera.position.dot(camDir))/denom;
+  return camera.position.clone().add(dir.multiplyScalar(t));
+}
+function onPointer(e){
+  const cx = e.clientX ?? (e.touches && e.touches[0].clientX);
+  const cy = e.clientY ?? (e.touches && e.touches[0].clientY);
+  if (cx == null) return;
+  if (e.target.closest && e.target.closest('.panel, .hud, .brand, .panel-fab, .play-overlay')) return;
+  predVec.copy(pointerToWorld(cx, cy));
+  predActive = true;
+  (webgpu||backend).setPredator(true, predVec);
+  clearTimeout(predTimeout);
+  predTimeout = setTimeout(()=>{ predActive = false; (webgpu||backend).setPredator(false); }, 260);
+}
+canvas.addEventListener('pointermove', onPointer, { passive:true });
+canvas.addEventListener('pointerdown', onPointer, { passive:true });
+
+/* ════════════ presets ════════════ */
+const PRESETS = [
+  { id:'murmuration', name:'Tight murmuration', desc:'dense, cohesive', p:{ separation:1.2, alignment:1.6, cohesion:1.5, neighborRadius:8, separationDistance:2.2, maxSpeed:5, boundMode:0 } },
+  { id:'scatter', name:'Loose scatter', desc:'sparse, wandering', p:{ separation:2.2, alignment:0.6, cohesion:0.5, neighborRadius:5, separationDistance:4, maxSpeed:4, boundMode:0 } },
+  { id:'school', name:'Schooling fish', desc:'aligned ribbons', p:{ separation:1.0, alignment:2.4, cohesion:1.1, neighborRadius:7, separationDistance:2, maxSpeed:6, boundMode:1 } },
+  { id:'panic', name:'Predator panic', desc:'jumpy & fast', p:{ separation:2.6, alignment:1.2, cohesion:0.8, neighborRadius:9, separationDistance:3.2, maxSpeed:8, boundMode:0, predRadius:20, predStrength:16 } },
+];
+let activePreset = null;
+function applyPreset(pr){
+  Object.assign(P, pr.p);
+  syncSlidersFromState();
+  (webgpu||backend).setParams();
+  updateFog();
+  activePreset = pr.id;
+  document.querySelectorAll('#presets .preset').forEach(b=>b.setAttribute('aria-pressed', b.dataset.id===pr.id));
+}
+
+/* ════════════ UI binding ════════════ */
+const sliderMap = [
+  ['sep','separation',2],['ali','alignment',2],['coh','cohesion',2],
+  ['rad','neighborRadius',1],['sepd','separationDistance',1],['spd','maxSpeed',1],
+  ['bnd','bounds',0],['prad','predRadius',0],['pstr','predStrength',1],
+];
+function fmt(v, dp){ return Number(v).toFixed(dp); }
+function setFill(input){
+  const min=+input.min, max=+input.max, v=+input.value;
+  input.style.setProperty('--fill', ((v-min)/(max-min)*100)+'%');
+}
+function syncSlidersFromState(){
+  for (const [id,key,dp] of sliderMap){
+    const el = $(id); el.value = P[key];
+    $(id+'-r').textContent = fmt(P[key], dp); setFill(el);
+    el.closest('[data-zero-aware]')?.classList.toggle('is-zero', +P[key]===0);
+  }
+  $('cnt').value = P.count; $('cnt-r').textContent = P.count.toLocaleString(); setFill($('cnt'));
+  document.querySelectorAll('#boundmode button').forEach(b=>b.setAttribute('aria-pressed', +b.dataset.v===P.boundMode));
+  document.querySelectorAll('#predmode button').forEach(b=>b.setAttribute('aria-pressed', +b.dataset.v===P.predMode));
+}
+function bindUI(){
+  // presets
+  const pg = $('presets');
+  PRESETS.forEach(pr=>{
+    const b = document.createElement('button');
+    b.type='button'; b.className='preset'; b.dataset.id=pr.id; b.setAttribute('aria-pressed','false');
+    b.innerHTML = `<span class="pt">${pr.name}</span><span class="pd">${pr.desc}</span>`;
+    b.addEventListener('click', ()=>applyPreset(pr));
+    pg.appendChild(b);
+  });
+  // sliders
+  for (const [id,key,dp] of sliderMap){
+    const el = $(id);
+    el.addEventListener('input', ()=>{
+      P[key] = +el.value; $(id+'-r').textContent = fmt(el.value, dp); setFill(el);
+      el.closest('[data-zero-aware]')?.classList.toggle('is-zero', +el.value===0);
+      if (key==='maxSpeed') renderUniforms.uMaxSpeed.value = P.maxSpeed;
+      if (key==='bounds') updateFog();
+      activePreset=null; document.querySelectorAll('#presets .preset').forEach(b=>b.setAttribute('aria-pressed','false'));
+      (webgpu||backend).setParams();
+    });
+  }
+  // count (rebuild on release)
+  const cnt = $('cnt');
+  cnt.addEventListener('input', ()=>{ $('cnt-r').textContent = (+cnt.value).toLocaleString(); setFill(cnt); });
+  cnt.addEventListener('change', ()=>{
+    P.count = +cnt.value;
+    if (webgpu){ /* webgpu count rebuild requires re-init; keep simple: reload-free not supported, note */ }
+    backend?.rebuild ? backend.rebuild(P.count) : null;
+    birdMesh.count = P.count;
+    $('stat-count').textContent = P.count.toLocaleString();
+  });
+  // segmented groups
+  bindSeg('boundmode', v=>{ P.boundMode=+v; (webgpu||backend).setParams(); });
+  bindSeg('predmode', v=>{ P.predMode=+v; (webgpu||backend).setParams(); });
+  bindSeg('colormode', v=>{ P.colorMode=+v; renderUniforms.uColorMode.value=+v; });
+  bindSeg('trails', v=>{ P.trails=+v; });
+  bindSeg('shape', v=>{ P.shape=v; const g=birdGeometry(v); birdMesh.geometry.dispose(); birdMesh.geometry=g; });
+  bindSeg('viewmode', v=>{ P.view=v; setView(v); });
+  // camera presets
+  $('cam-front').addEventListener('click', ()=>flyCam(new THREE.Vector3(0,2,90)));
+  $('cam-far').addEventListener('click', ()=>flyCam(new THREE.Vector3(70,46,96)));
+  // transport
+  $('playpause').addEventListener('click', ()=>{ running=!running; setPP(running); if(running)$('play-overlay').hidden=true; });
+  $('step').addEventListener('click', ()=>{ running=false; setPP(false); (webgpu? webgpu.step(0.016): backend.step(0.016)); });
+  $('reseed').addEventListener('click', ()=>{ seed=(Math.random()*1e9)|0; backend?.reseed && backend.reseed(); });
+  $('randomize').addEventListener('click', randomize);
+  // panel collapse (mobile)
+  $('close-panel').addEventListener('click', collapsePanel);
+  $('open-panel').addEventListener('click', expandPanel);
+  // play overlay
+  $('play-start').addEventListener('click', ()=>{ running=true; setPP(true); $('play-overlay').hidden=true; });
+  // keyboard: space toggles
+  window.addEventListener('keydown', e=>{ if(e.code==='Space' && !/input|textarea|button/i.test(e.target.tagName)){ e.preventDefault(); running=!running; setPP(running); $('play-overlay').hidden=true; } });
+}
+function bindSeg(groupId, cb){
+  const g = $(groupId);
+  g.querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      g.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed','false'));
+      b.setAttribute('aria-pressed','true'); cb(b.dataset.v);
+    });
+  });
+}
+function setPP(run){
+  $('pp-label').textContent = run ? 'Pause' : 'Play';
+  $('playpause').setAttribute('aria-pressed', String(run));
+  $('pp-icon').innerHTML = run
+    ? '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>'
+    : '<path d="M7 5l13 7-13 7z"/>';
+}
+function randomize(){
+  P.separation = +(Math.random()*3).toFixed(2);
+  P.alignment  = +(Math.random()*3).toFixed(2);
+  P.cohesion   = +(Math.random()*3).toFixed(2);
+  P.neighborRadius = +(2+Math.random()*16).toFixed(1);
+  P.maxSpeed = +(2+Math.random()*8).toFixed(1);
+  syncSlidersFromState(); (webgpu||backend).setParams();
+  activePreset=null; document.querySelectorAll('#presets .preset').forEach(b=>b.setAttribute('aria-pressed','false'));
+}
+let camTarget=null, camAnim=0;
+function flyCam(to){ camTarget=to.clone(); camAnim=1; }
+function setView(v){
+  if (v==='2d'){ flyCam(new THREE.Vector3(0.01, 110, 0.01)); if(controls){controls.enableRotate=false;} }
+  else { flyCam(new THREE.Vector3(46,30,64)); if(controls){controls.enableRotate=true;} }
+}
+function collapsePanel(){ $('controls').classList.add('is-collapsed'); $('open-panel').setAttribute('aria-expanded','false'); }
+function expandPanel(){ $('controls').classList.remove('is-collapsed'); $('open-panel').setAttribute('aria-expanded','true'); }
+
+/* simple camera tween in the loop */
+(function camTween(){
+  requestAnimationFrame(camTween);
+  if (camTarget && camAnim>0){
+    camera.position.lerp(camTarget, 0.08);
+    if (controls){ controls.target.lerp(new THREE.Vector3(0,0,0),0.08); }
+    if (camera.position.distanceTo(camTarget)<0.4) camAnim=0;
+  }
+})();
+
+/* ════════════ debug hooks for headless assertions ════════════ */
+function exposeDebug(){
+  window.__boids = {
+    backend: webgpu ? 'WebGPU' : (backend ? backend.kind : 'unsupported'),
+    getCount: ()=>P.count,
+    getInstanceCount: ()=>birdMesh.count,
+    getWidth: ()=> webgpu ? null : backend.WIDTH,
+    getDrawCalls: ()=> drawCalls,
+    getUniform: (k)=> webgpu ? (webgpu.uni[k]?.value) : backend.velVar.material.uniforms[k]?.value,
+    setParam: (k,v)=>{ P[k]=v; syncSlidersFromState(); (webgpu||backend).setParams(); if(k==='maxSpeed')renderUniforms.uMaxSpeed.value=v; },
+    setPredatorAt: (x,y,z)=>{ predVec.set(x,y,z); (webgpu||backend).setPredator(true, predVec); },
+    clearPredator: ()=>{ (webgpu||backend).setPredator(false); },
+    step: (dt)=> webgpu ? webgpu.step(dt||0.016) : backend.step(dt||0.016),
+    readPositions: ()=> webgpu ? null : backend.readPositions(),
+    readVelocities: ()=> webgpu ? null : backend.readVelocities(),
+    pause: ()=>{ running=false; },
+    play: ()=>{ running=true; },
+    reseed: ()=>{ backend?.reseed && backend.reseed(); },
+  };
+  document.documentElement.dataset.boidsReady = '1';
+}
+
+boot().catch(err=>{
+  console.error('[MURMUR] fatal boot error', err);
+  $('fatal').dataset.show = 'true';
+  $('stat-backend').textContent = 'unsupported';
+});
+</script>
+</body>
+</html>

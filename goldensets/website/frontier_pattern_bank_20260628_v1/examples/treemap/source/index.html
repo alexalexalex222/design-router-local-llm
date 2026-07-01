@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>STRATA · Composition Explorer — a zoomable treemap (synthetic sample data)</title>
+<meta name="description" content="STRATA — a clean, premium analytics surface built on the real d3-hierarchy treemap. Drill into nested categories to see how a total is composed; click a cell to zoom its children to fill the frame, click the breadcrumb to climb back. Three SAMPLE hierarchies. All values synthetic and labeled.">
+
+<!-- Type: Fraunces (display serif, masthead) + Inter (data sans, tabular figures). font-display:swap; system fallbacks if offline. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600;700&display=swap">
+
+<style>
+/* ============================ TOKENS ============================ */
+:root{
+  /* neutral ramp (cool paper → ink) */
+  --n0:#ffffff; --n1:#f8f9fb; --n2:#eef1f5; --n3:#e2e7ee; --n4:#cfd6e0;
+  --n5:#aab4c2; --n6:#7d8798; --n7:#566173; --n8:#39424f; --n9:#1c2230; --n10:#11141d;
+  /* semantic */
+  --paper:var(--n1); --surface:var(--n0); --ink:var(--n10); --ink-2:var(--n8);
+  --muted:var(--n6); --line:var(--n3); --line-2:var(--n4);
+  --accent:#15616d;        /* deep teal */
+  --accent-ink:#0c3a42;
+  --accent-soft:#dfeceb;
+  --focus:#1f6feb;
+  --danger:#b4332a;
+  /* top-level "stratum" palette — curated, muted-premium, AA-checked vs chosen label ink */
+  --c0:#2f6f72; --c1:#9c5b3f; --c2:#42597f; --c3:#86713a; --c4:#5d4d72; --c5:#3f7350;
+  --c6:#a05663; --c7:#56707d;
+  /* type scale (fluid, ratio-locked) */
+  --fs-2xs:clamp(10.5px,.66rem + .1vw,12px);
+  --fs-xs:clamp(12px,.74rem + .12vw,13px);
+  --fs-sm:clamp(13px,.8rem + .14vw,14px);
+  --fs-base:clamp(15px,.92rem + .14vw,16px);
+  --fs-md:clamp(17px,1rem + .35vw,19px);
+  --fs-lg:clamp(20px,1.1rem + .9vw,27px);
+  --fs-xl:clamp(28px,1.4rem + 2.1vw,46px);
+  /* spacing (4px) */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px;
+  /* radii */
+  --r1:6px; --r2:10px; --r3:14px; --rp:999px;
+  /* elevation */
+  --e1:0 1px 2px rgba(17,20,29,.06), 0 1px 1px rgba(17,20,29,.04);
+  --e2:0 6px 18px -8px rgba(17,20,29,.18), 0 2px 6px -2px rgba(17,20,29,.08);
+  --e3:0 24px 48px -16px rgba(17,20,29,.28);
+  /* motion */
+  --dur:200ms; --dur-fast:150ms; --ease:cubic-bezier(.2,.7,.2,1);
+  --serif:"Fraunces",Georgia,"Times New Roman",serif;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-reduced-motion: reduce){ :root{ --dur:1ms; --dur-fast:1ms } }
+
+*{box-sizing:border-box}
+html,body{margin:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:
+    radial-gradient(120% 80% at 100% 0%, #ffffff 0%, var(--paper) 46%, #f3f5f9 100%);
+  color:var(--ink); font-family:var(--sans); font-size:var(--fs-base); line-height:1.5;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  min-height:100vh; overflow-x:hidden;
+}
+.tnum{font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1}
+svg{display:block}
+button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
+:focus{outline:none}
+:focus-visible{outline:2.5px solid var(--focus); outline-offset:2px; border-radius:4px}
+.vh{position:absolute!important; width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.skip{position:fixed; left:var(--s3); top:-60px; z-index:60; background:var(--ink); color:var(--n0);
+  padding:10px 16px; border-radius:var(--r1); font-weight:600; transition:top var(--dur) var(--ease)}
+.skip:focus{top:var(--s3)}
+
+/* ============================ SHELL ============================ */
+.wrap{max-width:1240px; margin:0 auto; padding:clamp(18px,3.5vw,40px) clamp(16px,3.5vw,40px) 56px}
+
+header.mast{display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:var(--s5)}
+.brandblock{max-width:64ch}
+.kicker{display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:var(--fs-2xs);
+  letter-spacing:.2em; text-transform:uppercase; color:var(--accent); margin-bottom:var(--s3)}
+.kicker .spark{width:18px;height:18px;color:var(--accent)}
+h1{font-family:var(--serif); font-weight:500; font-size:var(--fs-xl); line-height:1; letter-spacing:-.012em; margin:0}
+h1 em{font-style:italic; color:var(--accent)}
+.dek{font-size:var(--fs-sm); color:var(--ink-2); margin:var(--s3) 0 0; max-width:58ch; line-height:1.5}
+.sample-tag{display:inline-flex; align-items:center; gap:6px; margin-top:var(--s4);
+  font-size:var(--fs-2xs); font-weight:600; letter-spacing:.04em; color:var(--n7);
+  background:var(--n2); border:1px solid var(--line); padding:5px 10px; border-radius:var(--rp)}
+.sample-tag svg{width:13px;height:13px;color:var(--accent)}
+
+/* controls cluster */
+.controls{display:flex; flex-direction:column; gap:var(--s3); align-items:flex-end}
+.seg{display:inline-flex; background:var(--surface); border:1px solid var(--line); border-radius:var(--rp);
+  padding:3px; box-shadow:var(--e1)}
+.seg button{padding:7px 14px; border-radius:var(--rp); font-size:var(--fs-xs); font-weight:600; color:var(--ink-2);
+  min-height:34px; transition:color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease)}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink); color:var(--n0)}
+.seg.small button{padding:6px 11px}
+.ctl-row{display:flex; gap:var(--s3); align-items:center; flex-wrap:wrap; justify-content:flex-end}
+.ctl-label{font-size:var(--fs-2xs); font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+
+/* ============================ APP GRID ============================ */
+.app{display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:var(--s5); margin-top:var(--s6); align-items:start}
+
+/* breadcrumb + readout bar */
+.topbar{display:flex; align-items:center; justify-content:space-between; gap:var(--s4); flex-wrap:wrap;
+  padding:0 0 var(--s3)}
+.crumbs{display:flex; align-items:center; flex-wrap:wrap; gap:2px; font-size:var(--fs-sm); min-width:0}
+.crumb{display:inline-flex; align-items:center; gap:6px; padding:6px 9px; border-radius:var(--r1);
+  color:var(--ink-2); font-weight:500; max-width:32vw; transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease)}
+.crumb .dot{width:9px;height:9px;border-radius:3px;flex:0 0 auto; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.crumb .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crumb:not(.current):hover{background:var(--n2); color:var(--ink)}
+.crumb.current{color:var(--ink); font-weight:600; cursor:default}
+.crumb-sep{color:var(--n5); flex:0 0 auto}
+.readout{display:flex; align-items:baseline; gap:var(--s3); flex:0 0 auto}
+.readout .val{font-family:var(--serif); font-weight:500; font-size:var(--fs-lg); line-height:1; letter-spacing:-.01em}
+.readout .unit{font-size:var(--fs-xs); color:var(--muted); font-weight:600}
+.readout .sub{font-size:var(--fs-xs); color:var(--ink-2)}
+.readout .sub b{color:var(--ink); font-weight:600}
+
+/* chart frame */
+.frame{position:relative; background:var(--surface); border:1px solid var(--line); border-radius:var(--r3);
+  box-shadow:var(--e2); overflow:hidden}
+.frame::before{content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7)}
+#chart{position:relative; width:100%; aspect-ratio:16/10; min-height:300px}
+#tm{position:absolute; inset:0; width:100%; height:100%}
+/* treemap cell visuals */
+.cell-rect{stroke:rgba(255,255,255,.85); stroke-width:1; cursor:default; transition:filter var(--dur-fast) var(--ease)}
+.cell.drill .cell-rect{cursor:pointer}
+.cell.drill:hover .cell-rect{filter:brightness(1.06) saturate(1.04)}
+.cell-head{cursor:pointer}
+.cell-label{pointer-events:none; font-family:var(--sans)}
+.cell-name{font-weight:600; font-size:12.5px}
+.cell-val{font-weight:500; font-size:11px; opacity:.82; font-variant-numeric:tabular-nums}
+.gc-rect{fill:rgba(255,255,255,.10); stroke:rgba(255,255,255,.42); stroke-width:.75; pointer-events:none}
+.cell.sel .cell-rect{stroke:var(--ink); stroke-width:2.5}
+.header-strip{cursor:pointer}
+.header-strip .hs-rect{fill:var(--ink); transition:fill var(--dur-fast) var(--ease)}
+.header-strip:hover .hs-rect{fill:var(--accent-ink)}
+.header-strip.noparent{cursor:default}
+.header-strip.noparent:hover .hs-rect{fill:var(--ink)}
+.header-strip text{fill:var(--n0); font-weight:600; pointer-events:none}
+.header-strip .hs-hint{fill:rgba(255,255,255,.6); font-weight:500}
+
+/* tooltip */
+.tip{position:absolute; z-index:30; pointer-events:none; opacity:0; transform:translateY(4px);
+  transition:opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  background:var(--n10); color:var(--n0); border-radius:var(--r2); padding:10px 12px; box-shadow:var(--e3);
+  max-width:240px; font-size:var(--fs-xs)}
+.tip.show{opacity:1; transform:translateY(0)}
+.tip .t-name{font-weight:600; display:flex; align-items:center; gap:7px; margin-bottom:6px; font-size:var(--fs-sm)}
+.tip .t-name .dot{width:10px;height:10px;border-radius:3px;flex:0 0 auto}
+.tip .t-val{font-family:var(--serif); font-size:var(--fs-md); font-weight:500; line-height:1; margin-bottom:7px}
+.tip .t-row{display:flex; justify-content:space-between; gap:18px; color:var(--n4); line-height:1.7}
+.tip .t-row b{color:var(--n0); font-weight:600; font-variant-numeric:tabular-nums}
+.tip .t-leaf{margin-top:6px; color:var(--n5); font-size:var(--fs-2xs)}
+
+/* ============================ RAIL ============================ */
+.rail{display:flex; flex-direction:column; gap:var(--s4); position:sticky; top:var(--s4)}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r3); box-shadow:var(--e1)}
+.card-h{display:flex; align-items:center; justify-content:space-between; gap:var(--s3);
+  padding:var(--s4) var(--s4) var(--s3); border-bottom:1px solid var(--line)}
+.card-h h2{font-family:var(--serif); font-weight:500; font-size:var(--fs-md); margin:0; letter-spacing:-.01em}
+.card-h .meta{font-size:var(--fs-2xs); color:var(--muted); font-weight:600; letter-spacing:.04em}
+.up-btn{display:inline-flex; align-items:center; gap:6px; font-size:var(--fs-xs); font-weight:600; color:var(--ink-2);
+  border:1px solid var(--line); border-radius:var(--rp); padding:6px 11px; min-height:34px;
+  transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), border-color var(--dur-fast)}
+.up-btn:hover:not(:disabled){background:var(--n2); color:var(--ink); border-color:var(--line-2)}
+.up-btn:disabled{opacity:.4; cursor:not-allowed}
+.up-btn svg{width:14px;height:14px}
+
+/* ranked tree list */
+.tree{list-style:none; margin:0; padding:var(--s2); display:flex; flex-direction:column; gap:2px;
+  max-height:min(46vh,460px); overflow:auto}
+.tree:focus-visible{outline:2.5px solid var(--focus); outline-offset:-2px; border-radius:var(--r2)}
+.row{display:grid; grid-template-columns:12px 1fr auto; align-items:center; gap:var(--s3);
+  padding:9px 10px; border-radius:var(--r2); cursor:pointer; min-height:44px;
+  transition:background var(--dur-fast) var(--ease)}
+.row:hover{background:var(--n1)}
+.row[aria-selected="true"]{background:var(--accent-soft); box-shadow:inset 0 0 0 1px rgba(21,97,109,.28)}
+.row .swatch{width:12px;height:12px;border-radius:3px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.row .rn{min-width:0}
+.row .rn .nm{font-size:var(--fs-sm); font-weight:500; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block}
+.row .rn .bar{height:4px; border-radius:2px; background:var(--n2); margin-top:5px; overflow:hidden}
+.row .rn .bar i{display:block; height:100%; border-radius:2px}
+.row .rv{text-align:right; font-size:var(--fs-xs); font-weight:600; color:var(--ink); font-variant-numeric:tabular-nums; line-height:1.2}
+.row .rv .pct{display:block; font-size:var(--fs-2xs); color:var(--muted); font-weight:500}
+.row .chev{grid-column:3; display:none}
+.row.has-kids .rv{padding-right:0}
+.row .leaf-tag{font-size:var(--fs-2xs); color:var(--n5); font-weight:500}
+.tree-empty{padding:var(--s6) var(--s4); text-align:center; color:var(--muted)}
+.tree-empty svg{width:34px;height:34px;color:var(--n4); margin-bottom:var(--s2)}
+.tree-empty p{margin:0; font-size:var(--fs-sm)}
+
+/* legend */
+.legend{padding:var(--s3) var(--s4) var(--s4); display:flex; flex-wrap:wrap; gap:var(--s2) var(--s4)}
+.lg{display:inline-flex; align-items:center; gap:7px; font-size:var(--fs-xs); color:var(--ink-2)}
+.lg .sw{width:11px;height:11px;border-radius:3px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+.legend.depth .lg{color:var(--muted)}
+
+/* ============================ STATES ============================ */
+.state{position:absolute; inset:0; display:none; place-items:center; text-align:center; padding:var(--s5);
+  background:var(--surface); z-index:20}
+.state.show{display:grid}
+.state .box{max-width:340px}
+.state svg.ic{width:42px;height:42px; margin:0 auto var(--s3); color:var(--n5)}
+.state h3{font-family:var(--serif); font-weight:500; font-size:var(--fs-md); margin:0 0 var(--s2)}
+.state p{margin:0; color:var(--ink-2); font-size:var(--fs-sm); line-height:1.5}
+.state .retry{margin-top:var(--s4); display:inline-flex; align-items:center; gap:7px;
+  background:var(--ink); color:var(--n0); border-radius:var(--rp); padding:10px 18px; font-weight:600; font-size:var(--fs-sm); min-height:44px}
+.state .retry:hover{background:var(--accent-ink)}
+.state.error .ic{color:var(--danger)}
+/* loading skeleton */
+.skel{position:absolute; inset:0; padding:14px; display:grid; grid-template-columns:1.6fr 1fr; grid-template-rows:1.4fr 1fr; gap:10px}
+.skel i{display:block; border-radius:8px; background:linear-gradient(100deg,var(--n2) 30%,var(--n1) 50%,var(--n2) 70%);
+  background-size:200% 100%; animation:sh 1.3s var(--ease) infinite}
+.skel i:nth-child(1){grid-row:1/3}
+@keyframes sh{to{background-position:-200% 0}}
+@media (prefers-reduced-motion: reduce){ .skel i{animation:none} }
+
+/* ============================ RESPONSIVE ============================ */
+.rail-toggle{display:none}
+@media (max-width:880px){
+  .app{grid-template-columns:1fr}
+  .controls{align-items:stretch}
+  .ctl-row{justify-content:flex-start}
+  .rail{position:static}
+  #chart{aspect-ratio:4/3}
+  .crumb{max-width:60vw}
+}
+@media (max-width:560px){
+  header.mast{flex-direction:column; align-items:stretch}
+  .controls{align-items:stretch}
+  .seg{justify-content:center; flex-wrap:wrap}
+  .topbar{flex-direction:column; align-items:flex-start; gap:var(--s2)}
+  #chart{aspect-ratio:1/1; min-height:340px}
+  .readout{width:100%; justify-content:space-between}
+  .crumb{max-width:56vw}
+  .tree{max-height:54vh}
+}
+
+footer{margin-top:var(--s7); padding-top:var(--s5); border-top:1px solid var(--line);
+  display:flex; flex-wrap:wrap; gap:var(--s3) var(--s5); justify-content:space-between; align-items:center;
+  font-size:var(--fs-2xs); color:var(--muted)}
+footer .meta-strong{color:var(--ink-2); font-weight:600}
+footer a{color:var(--accent); text-decoration:none; font-weight:600}
+footer a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<a class="skip" href="#chart-region">Skip to the explorer</a>
+<div class="wrap">
+
+  <header class="mast">
+    <div class="brandblock">
+      <span class="kicker">
+        <svg class="spark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="2.5" y="2.5" width="11.5" height="11.5" rx="1.4" fill="currentColor" opacity=".9"/>
+          <rect x="15" y="2.5" width="6.5" height="6" rx="1.2" fill="currentColor" opacity=".5"/>
+          <rect x="15" y="9.5" width="6.5" height="4.5" rx="1.2" fill="currentColor" opacity=".35"/>
+          <rect x="2.5" y="15" width="7" height="6.5" rx="1.2" fill="currentColor" opacity=".55"/>
+          <rect x="10.5" y="15" width="11" height="6.5" rx="1.2" fill="currentColor" opacity=".3"/>
+        </svg>
+        Strata · Composition Explorer
+      </span>
+      <h1>Where the <em>whole</em> goes.</h1>
+      <p class="dek">A zoomable treemap built on the real d3-hierarchy engine. Click a block to drill into a category until its children fill the frame; follow the breadcrumb back up. Area is exactly proportional to value at every level.</p>
+      <span class="sample-tag">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5v19M2.5 12h19" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".25"/><circle cx="12" cy="12" r="9.2" stroke="currentColor" stroke-width="2"/></svg>
+        Synthetic sample data — illustrative figures, not real accounts
+      </span>
+    </div>
+
+    <div class="controls">
+      <div class="ctl-row" role="group" aria-label="Dataset">
+        <span class="ctl-label">Dataset</span>
+        <div class="seg" id="datasetSeg" role="tablist" aria-label="Choose a sample hierarchy"></div>
+      </div>
+      <div class="ctl-row" role="group" aria-label="Color encoding">
+        <span class="ctl-label">Color by</span>
+        <div class="seg small" id="colorSeg">
+          <button type="button" data-mode="top" aria-pressed="true">Top-level</button>
+          <button type="button" data-mode="depth" aria-pressed="false">Depth</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="app">
+    <section id="chart-region" aria-label="Treemap explorer">
+      <div class="topbar">
+        <nav class="crumbs" id="crumbs" aria-label="Breadcrumb — current path"></nav>
+        <div class="readout" id="readout" aria-live="off">
+          <div>
+            <span class="val tnum" id="roVal">—</span>
+            <span class="unit" id="roUnit"></span>
+          </div>
+          <div class="sub" id="roSub"></div>
+        </div>
+      </div>
+
+      <div class="frame">
+        <div id="chart">
+          <svg id="tm" role="img" aria-label="Zoomable treemap of the current category. Use the ranked list on the right for a keyboard-navigable view."></svg>
+          <div class="tip" id="tip" role="status" aria-live="off"></div>
+
+          <!-- loading -->
+          <div class="state show" id="st-loading" aria-hidden="false">
+            <div class="skel" aria-label="Loading treemap"><i></i><i></i><i></i><i></i></div>
+          </div>
+          <!-- empty -->
+          <div class="state" id="st-empty">
+            <div class="box">
+              <svg class="ic" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M8 8.5h8M8 12h8M8 15.5h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" opacity=".5"/></svg>
+              <h3>Nothing to break down</h3>
+              <p>This is a leaf — it has no children to drill into. Climb back up to keep exploring.</p>
+              <button class="retry" type="button" id="emptyUp">Go up one level</button>
+            </div>
+          </div>
+          <!-- error -->
+          <div class="state error" id="st-error">
+            <div class="box">
+              <svg class="ic" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8.5v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1.3" fill="currentColor"/><path d="M10.3 3.6 2.4 18a2 2 0 0 0 1.75 3h15.7a2 2 0 0 0 1.75-3L13.7 3.6a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="1.7"/></svg>
+              <h3>Couldn't load the chart engine</h3>
+              <p>The d3 library failed to fetch from the CDN. Check your connection, then retry.</p>
+              <button class="retry" type="button" id="retry">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 1 2.4 5.9M3.5 21v-5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="legend" id="legend" aria-label="Color legend"></div>
+    </section>
+
+    <aside class="rail" aria-label="Explorer controls">
+      <div class="card">
+        <div class="card-h">
+          <h2>Inside this block</h2>
+          <button class="up-btn" id="upBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 19V6M6 12l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Up
+          </button>
+        </div>
+        <ul class="tree" id="tree" role="tree" tabindex="0"
+            aria-label="Children of the current category, ranked by value. Up and Down arrows move, Right or Enter drills in, Left or Backspace climbs out.">
+        </ul>
+        <p class="vh" id="treeAnnounce" role="status" aria-live="polite"></p>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    <span>STRATA — built on the real <span class="meta-strong">d3-hierarchy</span> treemap engine · <span class="meta-strong">d3 v7.9.0</span> (pinned CDN).</span>
+    <span><span class="meta-strong">Synthetic sample data.</span> Reference: <a href="https://observablehq.com/@d3/zoomable-treemap" rel="noopener">@d3/zoomable-treemap</a></span>
+  </footer>
+</div>
+
+<!-- ============================ ENGINE (pinned CDN) ============================ -->
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script>
+"use strict";
+(function(){
+/* ---------------------------------------------------------------------------
+   STRATA — zoomable treemap. Engine = d3-hierarchy treemap (treemapBinary).
+   All datasets below are SYNTHETIC / SAMPLE — illustrative, not real.
+--------------------------------------------------------------------------- */
+
+/* ============ SYNTHETIC DATASETS (labeled sample) ============ */
+const DATASETS = {
+  cloud: {
+    label: "Cloud spend",
+    unit: "per month",
+    fmt: v => "$" + d3.format(",.0f")(v),
+    fmtShort: v => "$" + d3.format(".2~s")(v).replace("G","B"),
+    root: { name: "Cloud Spend", children: [
+      { name: "Compute", children: [
+        { name: "Kubernetes", children: [
+          { name: "Prod cluster", value: 41200 },
+          { name: "Staging cluster", value: 12600 },
+          { name: "Batch / spot", value: 7400 } ] },
+        { name: "Serverless", children: [
+          { name: "Functions", value: 9800 },
+          { name: "Edge runtime", value: 5200 } ] },
+        { name: "Bare VMs", value: 14300 } ] },
+      { name: "Storage", children: [
+        { name: "Object store", children: [
+          { name: "Hot tier", value: 18900 },
+          { name: "Cold / archive", value: 4100 } ] },
+        { name: "Block volumes", value: 11200 },
+        { name: "Backups", value: 6300 } ] },
+      { name: "Data & ML", children: [
+        { name: "Warehouse", value: 22800 },
+        { name: "Streaming", value: 8700 },
+        { name: "GPU training", children: [
+          { name: "Fine-tuning", value: 16400 },
+          { name: "Inference fleet", value: 12900 } ] } ] },
+      { name: "Networking", children: [
+        { name: "Egress", value: 13700 },
+        { name: "Load balancers", value: 4600 },
+        { name: "CDN", value: 8200 } ] },
+      { name: "Security", children: [
+        // single-child branch (edge case: child must tile to fill parent)
+        { name: "Compliance", children: [
+          { name: "SOC 2 audit", value: 5400 } ] },
+        { name: "Secrets & KMS", value: 2600 },
+        { name: "WAF", value: 3300 } ] },
+      { name: "Observability", children: [
+        { name: "Logs", value: 9100 },
+        { name: "Metrics", value: 5800 },
+        { name: "Tracing", value: 3400 },
+        { name: "Deprecated agent", value: 0 } ] } // zero-value (renders no rect)
+    ]}
+  },
+
+  budget: {
+    label: "City budget",
+    unit: "annual",
+    fmt: v => "$" + d3.format(",.1f")(v) + "M",
+    fmtShort: v => "$" + d3.format(".2~r")(v) + "M",
+    root: { name: "City Budget", children: [
+      { name: "Education", children: [
+        { name: "K–12 schools", children: [
+          { name: "Salaries", value: 412 },
+          { name: "Facilities", value: 88 },
+          { name: "Programs", value: 54 } ] },
+        { name: "Libraries", value: 47 },
+        { name: "Adult education", value: 23 } ] },
+      { name: "Health & Human", children: [
+        { name: "Public hospitals", value: 268 },
+        { name: "Mental health", value: 96 },
+        { name: "Housing aid", value: 134 },
+        { name: "Senior services", value: 41 } ] },
+      { name: "Safety", children: [
+        { name: "Police", value: 318 },
+        { name: "Fire & rescue", value: 176 },
+        { name: "Emergency mgmt", value: 38 } ] },
+      { name: "Transit & Roads", children: [
+        { name: "Bus & rail", value: 224 },
+        { name: "Road repair", value: 119 },
+        { name: "Cycling & walk", value: 28 } ] },
+      { name: "Parks & Culture", children: [
+        { name: "Parks", value: 73 },
+        { name: "Museums & arts", value: 36 },
+        { name: "Events", value: 19 } ] },
+      { name: "Administration", children: [
+        { name: "Debt service", value: 142 },
+        { name: "Operations", value: 67 } ] }
+    ]}
+  },
+
+  repo: {
+    label: "Repo size",
+    unit: "on disk",
+    fmt: v => d3.format(",.1f")(v) + " MB",
+    fmtShort: v => d3.format(".2~r")(v) + " MB",
+    root: { name: "monorepo /", children: [
+      { name: "packages", children: [
+        { name: "web-app", children: [
+          { name: "src", children: [
+            { name: "components", value: 42.6 },
+            { name: "routes", value: 18.3 },
+            { name: "lib", value: 11.9 } ] },
+          { name: "public/assets", value: 64.2 },
+          { name: "tests", value: 14.7 } ] },
+        { name: "design-system", children: [
+          { name: "tokens", value: 2.1 },
+          { name: "components", value: 27.4 },
+          { name: "icons", value: 9.8 } ] },
+        { name: "api-server", children: [
+          { name: "src", value: 33.1 },
+          { name: "migrations", value: 6.4 },
+          { name: "tests", value: 21.2 } ] } ] },
+      { name: "node_modules", children: [
+        { name: "react + dom", value: 8.9 },
+        { name: "typescript", value: 62.7 },
+        { name: "build tooling", children: [
+          { name: "bundler", value: 38.4 },
+          { name: "transpiler", value: 16.1 } ] },
+        { name: "misc deps", value: 121.3 } ] },
+      { name: "docs", children: [
+        { name: "guides", value: 7.2 },
+        { name: "api-reference", value: 12.8 },
+        { name: "images", value: 88.5 } ] },
+      { name: ".git", value: 156.4 },
+      { name: "infra", children: [
+        { name: "terraform", value: 4.3 },
+        { name: "ci", value: 2.7 } ] }
+    ]}
+  }
+};
+
+/* ============ STATE ============ */
+let DKEY = "cloud";
+let COLOR_MODE = "top";          // "top" | "depth"
+let HROOT = null;                // full d3.hierarchy of current dataset
+let TOPCATS = [];                // top-level category names (for legend + color)
+let colorTop, colorDepth;        // ordinal / sequential scales
+let focusPath = [];              // names root..focus
+let group = null;                // current rendered <g>
+let FOCUS_GLOBAL = null;         // current focus node in the GLOBAL hierarchy (ancestry/totals)
+let CUR_LROOT = null;            // current focus laid out as a fresh local hierarchy (depth 0 at focus)
+let TOPCAT_NAME = null;          // the top-level category the whole focus subtree belongs to (null at root)
+let W = 800, H = 500, LH = 466;  // chart pixel size; LH = treemap layout height (H - header)
+const HEADER_H = 34;             // focus header-strip height (px)
+
+const svg = d3.select("#tm");
+const chartEl = document.getElementById("chart");
+const tip = document.getElementById("tip");
+
+/* color palettes */
+const PAL = ["#2f6f72","#9c5b3f","#42597f","#86713a","#5d4d72","#3f7350","#a05663","#56707d"];
+
+/* ============ HELPERS ============ */
+const DS = () => DATASETS[DKEY];
+function relLum(hex){
+  const c = d3.color(hex).rgb();
+  const f = v => { v/=255; return v<=.03928 ? v/12.92 : Math.pow((v+.055)/1.055,2.4); };
+  return .2126*f(c.r)+.7152*f(c.g)+.0722*f(c.b);
+}
+function labelInk(fill){ return relLum(fill) > 0.42 ? "#13161f" : "#ffffff"; }
+
+/* Color is keyed to the top-level CATEGORY (top mode) or GLOBAL DEPTH (depth mode),
+   so a leaf's color is identical before and after zoom. */
+function topCatOfGlobal(g){ if(!g || g.depth < 1) return null; let n=g; while(n.depth>1) n=n.parent; return n.data.name; }
+// fill for a GLOBAL node (breadcrumb dots, rail swatches, tooltip on rail)
+function fillForGlobal(g){
+  if(COLOR_MODE === "depth") return colorDepth(Math.min(Math.max(g.depth,1),5));
+  const t = topCatOfGlobal(g);
+  return t ? colorTop(t) : "#3a4453";
+}
+// fill for a LOCAL render node (lroot.depth===0 at focus)
+function fillForLocal(ln){
+  if(COLOR_MODE === "depth") return colorDepth(Math.min(FOCUS_GLOBAL.depth + ln.depth, 5));
+  if(TOPCAT_NAME) return colorTop(TOPCAT_NAME);          // zoomed into a category → one keyed color
+  let n = ln; while(n.depth > 1) n = n.parent;           // at root → each top-level child its own color
+  return colorTop(n.data.name);
+}
+function resolveFocus(){
+  // walk focusPath names from HROOT; fall back gracefully
+  let n = HROOT;
+  for(let i=1;i<focusPath.length;i++){
+    const next = (n.children||[]).find(c => c.data.name === focusPath[i]);
+    if(!next) break;
+    n = next;
+  }
+  focusPath = n.ancestors().reverse().map(d=>d.data.name);
+  return n;
+}
+
+/* ============ LAYOUT ============ */
+function measure(){
+  const r = chartEl.getBoundingClientRect();
+  W = Math.max(220, Math.round(r.width));
+  H = Math.max(220, Math.round(r.height));
+  LH = Math.max(120, H - HEADER_H);
+}
+function buildHierarchy(){
+  // global hierarchy: values + ancestry + sort. No layout here — layout is per-focus.
+  return d3.hierarchy(DS().root)
+    .sum(d => d.children ? 0 : Math.max(0, d.value||0))
+    .sort((a,b) => (b.value-a.value) || (a.data.name<b.data.name?-1:1));
+}
+/* Build a FRESH local hierarchy rooted at the focus (depth 0) and lay it out into
+   [0,W]x[0,LH] with fixed pixel paddings. A fresh root is required because d3.treemap
+   indexes its padding stack by absolute node.depth — so it must be laid out from depth 0.
+   Crisp fixed padding at every depth: a single child fills its parent; deep zooms don't
+   blow padding up. % and color are keyed back to the global tree elsewhere. */
+function buildLocal(gfocus){
+  const lr = d3.hierarchy(gfocus.data)
+    .sum(d => d.children ? 0 : Math.max(0, d.value||0))
+    .sort((a,b) => (b.value-a.value) || (a.data.name<b.data.name?-1:1));
+  d3.treemap()
+    .tile(d3.treemapBinary)
+    .size([W, LH])
+    .paddingOuter(3)
+    .paddingTop(d => d.depth === 0 ? 0 : 16)   // 0 for focus (own header); label strip for nested parents
+    .paddingInner(2)
+    .round(false)(lr);
+  return lr;
+}
+// locate the local node (inside lroot, whose root == gFrom) that corresponds to gTo
+function localNodeFor(lroot, gFrom, gTo){
+  const path = gTo.ancestors().reverse();          // [HROOT … gTo]
+  const i0 = path.indexOf(gFrom);
+  let ln = lroot;
+  for(let i=i0+1; i<path.length; i++){
+    ln = (ln.children||[]).find(c => c.data.name === path[i].data.name);
+    if(!ln) return null;
+  }
+  return ln;
+}
+/* transform helpers for geometric zoom (layer content fills [0,W]x[0,LH], offset by header) */
+const ID_T = "translate(0," + HEADER_H + ")";
+function rectOf(node){ return { sx:node.x0, sy:node.y0, w:Math.max(1,node.x1-node.x0), h:Math.max(1,node.y1-node.y0) }; }
+function placeAt(r){ return "translate("+r.sx+","+(r.sy+HEADER_H)+") scale("+(r.w/W)+","+(r.h/LH)+")"; }
+function zoomInto(r){ const kx=W/r.w, ky=LH/r.h; return "translate("+(-r.sx*kx)+","+(HEADER_H-r.sy*ky)+") scale("+kx+","+ky+")"; }
+
+/* ============ RENDER ============ */
+/* render a laid-out LOCAL hierarchy `lroot` (depth 0 at focus). gfocus = the matching
+   GLOBAL focus node (for ancestry + drill targets). */
+function render(g, lroot, gfocus){
+  // draw local descendants 1–2 levels below focus, value>0
+  const nodes = lroot.descendants().filter(d => d.depth >= 1 && d.depth <= 2 && d.value > 0);
+  nodes.sort((a,b)=>a.depth-b.depth);   // parents first so grandchildren paint on top
+
+  // ---- HEADER STRIP (zoom-out affordance) ----
+  const head = g.append("g").attr("class","header-strip"+(gfocus.parent?"":" noparent"))
+    .attr("transform","translate(0,"+(-HEADER_H)+")")
+    .attr("aria-hidden","true");
+  head.append("rect").attr("class","hs-rect").attr("width", W).attr("height", HEADER_H).attr("rx",0);
+  head.append("text").attr("x",12).attr("y",HEADER_H/2+4.5).attr("font-size",13).text(gfocus.data.name);
+  if(gfocus.parent){
+    head.append("text").attr("class","hs-hint").attr("x", W-12).attr("y",HEADER_H/2+4)
+      .attr("text-anchor","end").attr("font-size",11).text("↑ click to zoom out");
+  }
+  head.on("click", () => { if(gfocus.parent) zoomTo(gfocus.parent); });
+
+  // ---- CELLS ----
+  const cell = g.selectAll("g.cell")
+    .data(nodes, d => d.depth + "/" + d.data.name + "/" + (d.parent?d.parent.data.name:""))
+    .join("g")
+    .attr("class", d => "cell" + (d.depth===1 && d.children ? " drill" : "") + (d.depth===2 ? " gc" : ""))
+    .attr("data-name", d=>d.data.name);
+
+  cell.each(function(d){
+    const sel = d3.select(this);
+    if(d.depth === 2){
+      sel.append("rect").attr("class","gc-rect").attr("rx",2);   // nested preview — subtle, non-interactive
+      return;
+    }
+    const fill = fillForLocal(d);
+    sel.append("rect").attr("class","cell-rect").attr("rx",3).attr("fill", fill);
+
+    const cid = "clip-"+Math.random().toString(36).slice(2,9);
+    sel.append("clipPath").attr("id",cid).append("rect").attr("class","cp");
+    const lab = sel.append("g").attr("class","cell-label").attr("clip-path","url(#"+cid+")").attr("fill", labelInk(fill));
+    lab.append("text").attr("class","cell-name").attr("x",9).attr("y",18);
+    lab.append("text").attr("class","cell-val tnum").attr("x",9).attr("y",33);
+
+    if(d.children){
+      sel.on("click", (e)=>{ e.stopPropagation(); const gt = gfocus.children.find(c=>c.data.name===d.data.name); if(gt) zoomTo(gt); });
+    }
+    sel.on("pointerenter", ()=>showTip(d)).on("pointermove", moveTip).on("pointerleave", hideTip);
+  });
+
+  position(g);
+  return g;
+}
+
+/* coords are already in pixel space [0,W]x[0,LH] from buildLocal() */
+function position(g){
+  g.selectAll("g.cell").attr("transform", d => "translate("+d.x0+","+d.y0+")");
+  g.selectAll("g.cell").each(function(d){
+    const sel = d3.select(this);
+    const w = Math.max(0, d.x1-d.x0);
+    const h = Math.max(0, d.y1-d.y0);
+    sel.selectAll("rect.cell-rect, rect.gc-rect").attr("width", w).attr("height", h);
+    sel.selectAll("clipPath rect.cp").attr("width", w).attr("height", h);
+    // label fit: hide when too small
+    const lab = sel.select(".cell-label");
+    if(lab.empty()) return;
+    const name = d.data.name;
+    const showName = w > 46 && h > 22;
+    const showVal  = w > 64 && h > 38;
+    lab.style("display", showName ? null : "none");
+    lab.select(".cell-name").text(showName ? clip(name, w-16, 12.5) : "");
+    lab.select(".cell-val").style("display", showVal ? null : "none")
+       .text(showVal ? DS().fmtShort(d.value) + "  ·  " + d3.format(".0%")(d.parent? d.value/d.parent.value : 1) : "");
+  });
+}
+
+// crude width-aware truncation (avgCharW≈0.58*fontSize for Inter)
+function clip(str, maxPx, fs){
+  const cw = fs*0.58;
+  const max = Math.floor(maxPx/cw);
+  if(str.length <= max) return str;
+  if(max <= 1) return "";
+  return str.slice(0, Math.max(1,max-1)).trimEnd() + "…";
+}
+
+/* ============ ZOOM ============ */
+function reduced(){ return matchMedia("(prefers-reduced-motion: reduce)").matches; }
+
+function zoomTo(gnode){
+  if(!gnode) return;
+  const gOld = FOCUS_GLOBAL;
+  if(gnode === gOld) return;
+  const dur = reduced() ? 1 : 680;
+  const old = group;
+  const zoomingIn = gnode.depth > gOld.depth;
+  let r;
+
+  if(zoomingIn){
+    // node's rect in the CURRENT view (before we replace the layout)
+    const lNode = localNodeFor(CUR_LROOT, gOld, gnode);
+    r = rectOf(lNode);
+  }
+  const newL = buildLocal(gnode);
+  if(!zoomingIn){
+    // where the old focus sits inside the new (ancestor) view
+    const lOld = localNodeFor(newL, gnode, gOld);
+    r = lOld ? rectOf(lOld) : { sx:0, sy:0, w:W, h:LH };
+  }
+
+  // set focus state BEFORE render so fillForLocal() keys colors to the new focus
+  FOCUS_GLOBAL = gnode;
+  TOPCAT_NAME = topCatOfGlobal(gnode);
+  focusPath = gnode.ancestors().reverse().map(d => d.data.name);
+  const g1 = svg.append("g").attr("class","layer");
+  render(g1, newL, gnode);
+  group = g1; CUR_LROOT = newL;
+
+  if(zoomingIn){
+    g1.attr("transform", placeAt(r)).style("opacity", 0)
+      .transition().duration(dur).ease(d3.easeCubicInOut).attr("transform", ID_T).style("opacity", 1);
+    if(old) old.attr("transform", ID_T).transition().duration(dur).ease(d3.easeCubicInOut)
+      .attr("transform", zoomInto(r)).style("opacity", 0).on("end", function(){ d3.select(this).remove(); });
+  } else {
+    g1.attr("transform", zoomInto(r)).style("opacity", 0)
+      .transition().duration(dur).ease(d3.easeCubicInOut).attr("transform", ID_T).style("opacity", 1);
+    if(old) old.attr("transform", ID_T).transition().duration(dur).ease(d3.easeCubicInOut)
+      .attr("transform", placeAt(r)).style("opacity", 0).on("end", function(){ d3.select(this).remove(); });
+  }
+
+  showEmptyOverlay(!gnode.children);   // drilling into a leaf → honest empty state
+  syncChrome(gnode);
+}
+
+/* full re-layout draw (dataset / color / resize / first paint) — no animation */
+function draw(){
+  measure();
+  HROOT = buildHierarchy();
+  TOPCATS = (HROOT.children||[]).map(d=>d.data.name);
+  colorTop = d3.scaleOrdinal().domain(TOPCATS).range(PAL);
+  colorDepth = d3.scaleSequential(d3.interpolateLab("#cdd6e0","#243c52")).domain([1,5]);
+
+  const focus = resolveFocus();
+  FOCUS_GLOBAL = focus;
+  TOPCAT_NAME = topCatOfGlobal(focus);
+  CUR_LROOT = buildLocal(focus);
+
+  showEmptyOverlay(!focus.children);
+  svg.selectAll("*").remove();
+  svg.attr("viewBox", "0 0 "+W+" "+H).attr("preserveAspectRatio","none");
+  group = svg.append("g").attr("class","layer").attr("transform", ID_T);
+  render(group, CUR_LROOT, focus);
+  syncChrome(focus);
+}
+
+/* ============ CHROME (breadcrumb, readout, rail, legend) ============ */
+function syncChrome(focus){
+  buildCrumbs(focus);
+  buildReadout(focus);
+  buildTree(focus);
+  buildLegend();
+  updateSvgLabel(focus);
+}
+
+function buildCrumbs(focus){
+  const nav = d3.select("#crumbs");
+  nav.selectAll("*").remove();
+  const chain = focus.ancestors().reverse();
+  chain.forEach((n,i)=>{
+    if(i>0) nav.append("span").attr("class","crumb-sep").attr("aria-hidden","true").html(svgChevron());
+    const isCur = (i===chain.length-1);
+    const b = nav.append(isCur ? "span" : "button")
+      .attr("class","crumb"+(isCur?" current":""))
+      .attr("type", isCur?null:"button")
+      .attr("aria-current", isCur ? "page" : null);
+    if(!isCur) b.on("click",()=>zoomTo(n));
+    b.append("span").attr("class","dot").style("background", n.depth===0 ? "#3a4453" : fillForGlobal(n));
+    b.append("span").attr("class","nm").text(n.data.name);
+  });
+}
+function svgChevron(){ return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+
+function buildReadout(focus){
+  document.getElementById("roVal").textContent = DS().fmt(focus.value);
+  document.getElementById("roUnit").textContent = DS().unit;
+  const kids = (focus.children||[]).length;
+  const share = focus.parent ? focus.value/HROOT.value : 1;
+  document.getElementById("roSub").innerHTML =
+    "<b>"+kids+"</b> "+(kids===1?"child":"children")+
+    " · <b>"+d3.format(".1%")(share)+"</b> of total";
+}
+
+/* ranked children list = keyboard-navigable tree (a11y parallel) */
+let treeRows = [];   // {node, el}
+let treeIdx = -1;
+function buildTree(focus){
+  const ul = document.getElementById("tree");
+  ul.innerHTML = "";
+  treeRows = []; treeIdx = -1;
+  const kids = (focus.children||[]).slice().sort((a,b)=>b.value-a.value);
+  if(kids.length === 0){
+    ul.innerHTML =
+      '<li class="tree-empty" role="none"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 5h14v14H5z" stroke="currentColor" stroke-width="1.6"/><path d="M9 12h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><p>This block is a leaf — no further breakdown.</p></li>';
+    document.getElementById("upBtn").disabled = !focus.parent;
+    return;
+  }
+  const maxv = kids[0].value || 1;
+  kids.forEach((n,i)=>{
+    const li = document.createElement("li");
+    li.className = "row" + (n.children ? " has-kids" : "");
+    li.setAttribute("role","treeitem");
+    li.id = "row-"+i;
+    li.setAttribute("aria-level", String(n.depth));
+    li.setAttribute("aria-selected","false");
+    if(n.children) li.setAttribute("aria-expanded","false");
+    const fill = fillForGlobal(n);
+    const pctParent = n.value/focus.value;
+    li.innerHTML =
+      '<span class="swatch" style="background:'+fill+'"></span>'+
+      '<span class="rn"><span class="nm">'+escapeHtml(n.data.name)+(n.children?'':' <span class="leaf-tag">leaf</span>')+'</span>'+
+        '<span class="bar"><i style="width:'+(Math.max(3,(n.value/maxv)*100))+'%;background:'+fill+'"></i></span></span>'+
+      '<span class="rv">'+DS().fmtShort(n.value)+'<span class="pct">'+d3.format(".1%")(pctParent)+'</span></span>';
+    li.addEventListener("click", ()=>{ selectRow(i); zoomTo(n); });
+    li.addEventListener("pointerenter", ()=>highlightCell(n, true));
+    li.addEventListener("pointerleave", ()=>highlightCell(n, false));
+    ul.appendChild(li);
+    treeRows.push({node:n, el:li});
+  });
+  document.getElementById("upBtn").disabled = !focus.parent;
+}
+
+function selectRow(i){
+  if(i<0 || i>=treeRows.length) return;
+  treeRows.forEach((r,j)=>{
+    r.el.setAttribute("aria-selected", j===i ? "true":"false");
+    highlightCell(r.node, j===i);
+  });
+  treeIdx = i;
+  const n = treeRows[i].node;
+  treeRows[i].el.scrollIntoView({block:"nearest"});
+  document.getElementById("tree").setAttribute("aria-activedescendant", treeRows[i].el.id);
+  announce(n.data.name + ", " + DS().fmt(n.value) + ", " +
+    d3.format(".1%")(n.value/n.parent.value) + " of parent" +
+    (n.children ? ", " + n.children.length + " children — press Right to drill in" : ", leaf"));
+}
+function announce(msg){ document.getElementById("treeAnnounce").textContent = msg; }
+
+function highlightCell(node, on){
+  // node is a GLOBAL child of the current focus → its rendered cell is a local depth-1 node by name
+  group && group.selectAll("g.cell").classed("sel", function(d){
+    return on && d.depth===1 && d.data.name===node.data.name;
+  });
+}
+/* keyboard model on the tree */
+document.getElementById("tree").addEventListener("keydown", (e)=>{
+  const focus = resolveFocus();
+  const n = treeRows.length;
+  if(["ArrowDown","ArrowUp","Home","End"].includes(e.key)){
+    e.preventDefault();
+    if(n===0) return;
+    let i = treeIdx;
+    if(e.key==="ArrowDown") i = (treeIdx+1)%n;
+    else if(e.key==="ArrowUp") i = (treeIdx-1+n)%n;
+    else if(e.key==="Home") i = 0;
+    else if(e.key==="End") i = n-1;
+    selectRow(i);
+  } else if(e.key==="ArrowRight" || e.key==="Enter"){
+    e.preventDefault();
+    if(treeIdx>=0){ zoomTo(treeRows[treeIdx].node); afterDrill(); }
+  } else if(e.key==="ArrowLeft" || e.key==="Backspace"){
+    e.preventDefault();
+    if(focus.parent){ zoomTo(focus.parent); afterDrill(); }
+  }
+});
+function afterDrill(){
+  // after a keyboard drill/climb, move selection to first row + keep focus on tree
+  requestAnimationFrame(()=>{ if(treeRows.length){ selectRow(0); } document.getElementById("tree").focus(); });
+}
+
+function buildLegend(){
+  const el = document.getElementById("legend");
+  el.innerHTML = "";
+  el.className = "legend" + (COLOR_MODE==="depth" ? " depth":"");
+  if(COLOR_MODE==="top"){
+    TOPCATS.forEach(name=>{
+      const lg = document.createElement("span"); lg.className="lg";
+      lg.innerHTML = '<span class="sw" style="background:'+colorTop(name)+'"></span>'+escapeHtml(name);
+      el.appendChild(lg);
+    });
+  } else {
+    [1,2,3,4].forEach(dp=>{
+      const lg = document.createElement("span"); lg.className="lg";
+      lg.innerHTML = '<span class="sw" style="background:'+colorDepth(dp)+'"></span>Level '+dp;
+      el.appendChild(lg);
+    });
+  }
+}
+function updateSvgLabel(focus){
+  const kids = (focus.children||[]).length;
+  svg.attr("aria-label","Treemap of "+focus.data.name+", "+DS().fmt(focus.value)+
+    ", "+kids+" "+(kids===1?"block":"blocks")+". A keyboard-navigable ranked list of the same blocks is in the panel to the right.");
+}
+
+/* ============ TOOLTIP ============ */
+let tipNode = null;
+function showTip(d){
+  tipNode = d;
+  const fill = fillForLocal(d);
+  const pp = d.parent ? d.value/d.parent.value : 1;
+  const pt = d.value/HROOT.value;
+  tip.innerHTML =
+    '<div class="t-name"><span class="dot" style="background:'+fill+'"></span>'+escapeHtml(d.data.name)+'</div>'+
+    '<div class="t-val">'+DS().fmt(d.value)+' <span style="font-size:11px;color:#aab4c2;font-family:var(--sans)">'+DS().unit+'</span></div>'+
+    '<div class="t-row"><span>Share of parent</span><b>'+d3.format(".1%")(pp)+'</b></div>'+
+    '<div class="t-row"><span>Share of total</span><b>'+d3.format(".2%")(pt)+'</b></div>'+
+    (d.children ? '<div class="t-leaf">'+d.children.length+' children — click to zoom in</div>'
+                : '<div class="t-leaf">Leaf — no further breakdown</div>');
+  tip.classList.add("show");
+}
+function moveTip(e){
+  const r = chartEl.getBoundingClientRect();
+  let xp = e.clientX - r.left + 14, yp = e.clientY - r.top + 14;
+  const tw = tip.offsetWidth, th = tip.offsetHeight;
+  if(xp + tw > r.width) xp = e.clientX - r.left - tw - 14;
+  if(yp + th > r.height) yp = e.clientY - r.top - th - 14;
+  tip.style.left = Math.max(6,xp)+"px"; tip.style.top = Math.max(6,yp)+"px";
+}
+function hideTip(){ tip.classList.remove("show"); tipNode=null; }
+
+/* ============ STATES ============ */
+function setState(name){ // loading|empty|error|ready
+  ["loading","empty","error"].forEach(s=>{
+    const el = document.getElementById("st-"+s);
+    if(el) el.classList.toggle("show", s===name);
+  });
+}
+function showEmptyOverlay(show){ document.getElementById("st-empty").classList.toggle("show", !!show); }
+
+/* ============ UTIL ============ */
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* ============ CONTROLS ============ */
+function buildDatasetSeg(){
+  const seg = document.getElementById("datasetSeg");
+  seg.innerHTML = "";
+  Object.entries(DATASETS).forEach(([k,v])=>{
+    const b = document.createElement("button");
+    b.type="button"; b.dataset.key=k; b.setAttribute("role","tab");
+    b.setAttribute("aria-pressed", k===DKEY?"true":"false");
+    b.textContent = v.label;
+    b.addEventListener("click", ()=>{
+      if(k===DKEY) return;
+      DKEY=k; focusPath=[]; // reset to root
+      seg.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.key===DKEY?"true":"false"));
+      draw();
+    });
+    seg.appendChild(b);
+  });
+}
+document.getElementById("colorSeg").addEventListener("click",(e)=>{
+  const b = e.target.closest("button[data-mode]"); if(!b) return;
+  COLOR_MODE = b.dataset.mode;
+  document.querySelectorAll("#colorSeg button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.mode===COLOR_MODE?"true":"false"));
+  // re-color in place (re-resolve focus, redraw without animation)
+  draw();
+});
+document.getElementById("upBtn").addEventListener("click", ()=>{
+  const f = resolveFocus(); if(f.parent){ zoomTo(f.parent); afterDrill(); }
+});
+document.getElementById("emptyUp").addEventListener("click", ()=>{
+  showEmptyOverlay(false);
+  const f = resolveFocus(); if(f.parent) zoomTo(f.parent);
+});
+document.getElementById("retry").addEventListener("click", boot);
+
+/* ============ RESIZE ============ */
+let rsTimer=null;
+const ro = new ResizeObserver(()=>{
+  clearTimeout(rsTimer);
+  rsTimer = setTimeout(()=>{ if(HROOT) draw(); }, 120);
+});
+
+/* ============ BOOT ============ */
+function boot(){
+  setState("loading");
+  if(typeof d3 === "undefined" || !d3.treemap){
+    setState("error"); return;
+  }
+  buildDatasetSeg();
+  // small defer so the loading skeleton is honest (and fonts settle)
+  setTimeout(()=>{
+    try{
+      draw();
+      ro.observe(chartEl);
+      setState("ready");
+      document.getElementById("st-loading").classList.remove("show");
+      // expose for self-test
+      window.__strata = {
+        focus:()=>resolveFocus(),
+        zoomTo:(name)=>{ const f=resolveFocus(); const t=(f.children||[]).find(c=>c.data.name===name); if(t) zoomTo(t); },
+        up:()=>{ const f=resolveFocus(); if(f.parent) zoomTo(f.parent); },
+        cells:()=> Array.from(document.querySelectorAll("#tm g.cell")),
+        focusName:()=>resolveFocus().data.name,
+        setDataset:(k)=>{ DKEY=k; focusPath=[]; buildDatasetSeg(); draw(); },
+        ready:true
+      };
+    }catch(err){
+      console.error(err);
+      setState("error");
+    }
+  }, 260);
+}
+
+if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+else boot();
+})();
+</script>
+</body>
+</html>

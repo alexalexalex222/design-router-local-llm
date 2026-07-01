@@ -1,0 +1,161 @@
+<!--
+  feature_split_alternating_v1
+  Pair with snippet.css. Fonts loaded below (Bricolage Grotesque + Inter).
+  Alternating feature rows: the visual swaps sides each row via a modifier
+  class. Each visual is a DISTINCT bespoke inline SVG (no recycled shape).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<section class="feat" aria-labelledby="feat-title">
+  <div class="feat__inner">
+    <header class="feat__head">
+      <span class="feat__kicker">How the work fits together</span>
+      <h2 class="feat__title" id="feat-title">Each capability earns its place on the page.</h2>
+      <p class="feat__lead">
+        Three feature rows, each pairing one specific claim with a bespoke
+        diagram. Swap the copy and SVG per business — keep the alternating rhythm.
+      </p>
+    </header>
+
+    <!-- ROW 1 — visual on the right (default) -->
+    <article class="feat-row">
+      <div class="feat-row__copy">
+        <span class="feat-row__index">01</span>
+        <h3 class="feat-row__heading">[FEATURE_ONE_TITLE]</h3>
+        <p class="feat-row__body">
+          One concrete sentence about what this feature does and the outcome it
+          produces for the customer. Replace with specifics, not adjectives.
+        </p>
+        <ul class="feat-row__points">
+          <li>[FEATURE_ONE_POINT_A]</li>
+          <li>[FEATURE_ONE_POINT_B]</li>
+        </ul>
+        <a class="feat-row__link" href="#row-1-detail">
+          See how it works
+          <svg class="feat-row__arrow" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+            <path d="M4 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+      <div class="feat-row__visual">
+        <!-- Bespoke SVG #1: layered routing / signal-flow node map -->
+        <svg class="feat-art" viewBox="0 0 320 260" role="img" aria-labelledby="art1-title">
+          <title id="art1-title">A diagram of three input nodes routing through a central hub to one output</title>
+          <defs>
+            <linearGradient id="f1-grad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="var(--c-art-1)"/>
+              <stop offset="1" stop-color="var(--c-art-2)"/>
+            </linearGradient>
+          </defs>
+          <rect x="8" y="8" width="304" height="244" rx="20" fill="var(--c-art-wash)"/>
+          <g fill="none" stroke="var(--c-art-line)" stroke-width="2.5" stroke-linecap="round">
+            <path d="M58 64 C120 64 120 130 168 130"/>
+            <path d="M58 130 H168"/>
+            <path d="M58 196 C120 196 120 130 168 130"/>
+            <path d="M196 130 H262" stroke="url(#f1-grad)" stroke-width="4"/>
+          </g>
+          <g>
+            <circle cx="58" cy="64" r="13" fill="var(--c-art-3)"/>
+            <circle cx="58" cy="130" r="13" fill="var(--c-art-3)"/>
+            <circle cx="58" cy="196" r="13" fill="var(--c-art-3)"/>
+          </g>
+          <rect x="160" y="110" width="40" height="40" rx="12" fill="url(#f1-grad)"/>
+          <circle cx="262" cy="130" r="18" fill="none" stroke="var(--c-art-2)" stroke-width="4"/>
+          <circle cx="262" cy="130" r="7" fill="var(--c-art-2)"/>
+        </svg>
+      </div>
+    </article>
+
+    <!-- ROW 2 — visual on the left (flipped) -->
+    <article class="feat-row feat-row--flip">
+      <div class="feat-row__copy">
+        <span class="feat-row__index">02</span>
+        <h3 class="feat-row__heading">[FEATURE_TWO_TITLE]</h3>
+        <p class="feat-row__body">
+          A second specific capability described in plain language. Keep the
+          sentence about the customer's result, not the mechanism alone.
+        </p>
+        <ul class="feat-row__points">
+          <li>[FEATURE_TWO_POINT_A]</li>
+          <li>[FEATURE_TWO_POINT_B]</li>
+        </ul>
+        <a class="feat-row__link" href="#row-2-detail">
+          See how it works
+          <svg class="feat-row__arrow" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+            <path d="M4 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+      <div class="feat-row__visual">
+        <!-- Bespoke SVG #2: stacked timeline bars with a progress sweep (distinct from #1) -->
+        <svg class="feat-art" viewBox="0 0 320 260" role="img" aria-labelledby="art2-title">
+          <title id="art2-title">A diagram of four stacked progress bars filling to different lengths</title>
+          <defs>
+            <linearGradient id="f2-grad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="var(--c-art-1)"/>
+              <stop offset="1" stop-color="var(--c-art-2)"/>
+            </linearGradient>
+          </defs>
+          <rect x="8" y="8" width="304" height="244" rx="20" fill="var(--c-art-wash)"/>
+          <g>
+            <rect x="48" y="52" width="224" height="22" rx="11" fill="var(--c-art-track)"/>
+            <rect x="48" y="52" width="180" height="22" rx="11" fill="url(#f2-grad)"/>
+            <rect x="48" y="98" width="224" height="22" rx="11" fill="var(--c-art-track)"/>
+            <rect x="48" y="98" width="128" height="22" rx="11" fill="var(--c-art-3)"/>
+            <rect x="48" y="144" width="224" height="22" rx="11" fill="var(--c-art-track)"/>
+            <rect x="48" y="144" width="206" height="22" rx="11" fill="url(#f2-grad)"/>
+            <rect x="48" y="190" width="224" height="22" rx="11" fill="var(--c-art-track)"/>
+            <rect x="48" y="190" width="92" height="22" rx="11" fill="var(--c-art-3)"/>
+          </g>
+          <circle cx="228" cy="63" r="9" fill="var(--c-art-2)" stroke="var(--c-art-wash)" stroke-width="3"/>
+          <circle cx="254" cy="155" r="9" fill="var(--c-art-2)" stroke="var(--c-art-wash)" stroke-width="3"/>
+        </svg>
+      </div>
+    </article>
+
+    <!-- ROW 3 — visual on the right (default) -->
+    <article class="feat-row">
+      <div class="feat-row__copy">
+        <span class="feat-row__index">03</span>
+        <h3 class="feat-row__heading">[FEATURE_THREE_TITLE]</h3>
+        <p class="feat-row__body">
+          The third capability. By now the reader has the rhythm — each row is a
+          claim plus proof diagram, never a wall of generic benefits.
+        </p>
+        <ul class="feat-row__points">
+          <li>[FEATURE_THREE_POINT_A]</li>
+          <li>[FEATURE_THREE_POINT_B]</li>
+        </ul>
+        <a class="feat-row__link" href="#row-3-detail">
+          See how it works
+          <svg class="feat-row__arrow" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+            <path d="M4 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+      <div class="feat-row__visual">
+        <!-- Bespoke SVG #3: concentric shield / coverage rings with a tick (distinct again) -->
+        <svg class="feat-art" viewBox="0 0 320 260" role="img" aria-labelledby="art3-title">
+          <title id="art3-title">A shield made of concentric arcs with a checkmark at its center</title>
+          <defs>
+            <linearGradient id="f3-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="var(--c-art-1)"/>
+              <stop offset="1" stop-color="var(--c-art-2)"/>
+            </linearGradient>
+          </defs>
+          <rect x="8" y="8" width="304" height="244" rx="20" fill="var(--c-art-wash)"/>
+          <path d="M160 44 L236 74 V138 C236 188 200 214 160 226 C120 214 84 188 84 138 V74 Z"
+                fill="url(#f3-grad)" opacity="0.16"/>
+          <path d="M160 44 L236 74 V138 C236 188 200 214 160 226 C120 214 84 188 84 138 V74 Z"
+                fill="none" stroke="url(#f3-grad)" stroke-width="3"/>
+          <path d="M160 70 L212 90 V136 C212 172 188 192 160 202 C132 192 108 172 108 136 V90 Z"
+                fill="none" stroke="var(--c-art-line)" stroke-width="2.5" opacity="0.7"/>
+          <path d="M138 134 l16 16 30 -34" fill="none" stroke="var(--c-art-2)" stroke-width="5"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </article>
+  </div>
+</section>

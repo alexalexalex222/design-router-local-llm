@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Voxel Sandbox — build &amp; break a first-person world</title>
+<meta name="description" content="A first-person voxel sandbox: chunked merged geometry with face culling and ambient occlusion, raycast place/break, generated biomes, and local save/load. three.js." />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#0d1014" />
+<style>
+  /* ============================================================
+     DESIGN TOKENS  — build only from these
+     ============================================================ */
+  :root {
+    /* neutral ramp (cool slate, 9 steps) */
+    --n-50:#f4f6f9; --n-100:#e4e8ef; --n-200:#c5ccd8; --n-300:#9aa4b4;
+    --n-400:#717c8e; --n-500:#515b6b; --n-600:#3a4250; --n-700:#272d39;
+    --n-800:#191e27; --n-900:#0f131a;
+
+    /* semantic roles */
+    --bg:#0d1014;
+    --panel:rgba(20,25,32,.84);
+    --panel-2:rgba(30,37,47,.92);
+    --panel-solid:#161b23;
+    --panel-border:rgba(255,255,255,.10);
+    --panel-border-2:rgba(255,255,255,.16);
+    --text:var(--n-50);
+    --text-muted:var(--n-300);
+    --accent:#ffb454;          /* warm amber — matches glowstone */
+    --accent-hi:#ffc879;
+    --accent-ink:#2a1804;
+    --focus:#7cb8ff;
+    --danger:#ff6f6f;
+    --good:#5fd373;
+    --track:rgba(255,255,255,.14);
+    --scrim:rgba(8,10,14,.62);
+
+    /* fluid type scale — ~1.2 minor third, body >= 16px */
+    --fs-xs:clamp(.72rem,.69rem+.14vw,.80rem);
+    --fs-sm:clamp(.82rem,.78rem+.18vw,.90rem);
+    --fs-base:clamp(1rem,.96rem+.18vw,1.06rem);
+    --fs-md:clamp(1.12rem,1.04rem+.34vw,1.3rem);
+    --fs-lg:clamp(1.45rem,1.2rem+1.1vw,2rem);
+    --fs-xl:clamp(2rem,1.5rem+2.3vw,3.1rem);
+
+    /* 4px spacing scale */
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px;
+    --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px;
+
+    /* radii */
+    --r-xs:6px; --r-sm:9px; --r-md:13px; --r-lg:20px; --r-full:999px;
+
+    /* elevation (3 tiers) */
+    --e-1:0 1px 2px rgba(0,0,0,.45);
+    --e-2:0 10px 34px rgba(0,0,0,.46);
+    --e-3:0 28px 70px rgba(0,0,0,.58);
+
+    /* motion */
+    --dur-fast:150ms; --dur-med:220ms;
+    --ease-out:cubic-bezier(.2,.7,.2,1);
+    --ease-io:cubic-bezier(.6,.05,.3,.95);
+
+    --font-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  }
+
+  /* ============================================================ BASE */
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; min-height:100dvh; background:var(--bg); color:var(--text);
+    font-family:var(--font-ui); font-size:var(--fs-base); line-height:1.5;
+    overflow:hidden; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    overscroll-behavior:none;
+  }
+  h1,h2,h3,p{margin:0;}
+  button{font:inherit; color:inherit;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+
+  :where(a,button,[tabindex],input,select):focus-visible{
+    outline:2.5px solid var(--focus); outline-offset:2px; border-radius:var(--r-xs);
+  }
+
+  .skip{
+    position:fixed; top:var(--sp-3); left:var(--sp-3); z-index:200;
+    background:var(--accent); color:var(--accent-ink);
+    padding:var(--sp-2) var(--sp-4); border-radius:var(--r-md);
+    font-size:var(--fs-sm); font-weight:650; text-decoration:none;
+    transform:translateY(-160%); transition:transform var(--dur-fast) var(--ease-out);
+  }
+  .skip:focus{transform:translateY(0);}
+
+  /* ============================================================ STAGE */
+  #stage{position:fixed; inset:0;}
+  #scene{display:block; width:100%; height:100%; touch-action:none;}
+
+  /* generic overlay scrim host */
+  .overlay{position:fixed; inset:0; z-index:60; display:none; align-items:center; justify-content:center; padding:var(--sp-5);}
+  .overlay::before{content:""; position:absolute; inset:0; background:var(--scrim); backdrop-filter:blur(7px) saturate(115%); -webkit-backdrop-filter:blur(7px) saturate(115%);}
+
+  /* state machine: #stage[data-state] decides what shows */
+  #stage[data-state="loading"]  #loading{display:flex;}
+  #stage[data-state="menu"]     #menu{display:flex;}
+  #stage[data-state="fallback"] #fallback{display:flex;}
+  #stage[data-state="error"]    #error{display:flex;}
+
+  /* hotbar shows in menu + playing; hidden while loading / errored / touch-fallback */
+  #stage[data-state="loading"] #hotbar,
+  #stage[data-state="error"] #hotbar,
+  #stage[data-state="fallback"] #hotbar{display:none;}
+
+  /* HUD visible while a world exists (menu OR playing); crosshair only while playing */
+  #hud{position:absolute; inset:0; z-index:40; pointer-events:none; opacity:0; transition:opacity var(--dur-med) var(--ease-out);}
+  #stage[data-state="menu"] #hud,
+  #stage[data-state="playing"] #hud{opacity:1;}
+  #stage[data-state="loading"] #hud,
+  #stage[data-state="error"] #hud,
+  #stage[data-state="fallback"] #hud{opacity:0; pointer-events:none;}
+
+  /* ---- top bar ---- */
+  .hud-top{
+    position:absolute; top:0; left:0; right:0;
+    display:flex; align-items:flex-start; justify-content:space-between; gap:var(--sp-3);
+    padding:var(--sp-4) clamp(var(--sp-4),3vw,var(--sp-8));
+  }
+  .brand{display:flex; align-items:center; gap:var(--sp-3); pointer-events:none; filter:drop-shadow(0 2px 10px rgba(0,0,0,.5));}
+  .brand .mark{width:34px; height:34px; flex:0 0 auto;}
+  .brand .wordmark{display:flex; flex-direction:column; line-height:1;}
+  .brand .wordmark b{font-size:var(--fs-md); font-weight:700; letter-spacing:-.01em;}
+  .brand .wordmark span{font-size:var(--fs-xs); color:var(--text-muted); letter-spacing:.16em; text-transform:uppercase; margin-top:3px;}
+
+  .readouts{
+    display:flex; gap:var(--sp-2); align-items:center; flex-wrap:wrap; justify-content:flex-end;
+    pointer-events:none;
+  }
+  .chip{
+    display:inline-flex; align-items:center; gap:var(--sp-2);
+    background:var(--panel); border:1px solid var(--panel-border); border-radius:var(--r-full);
+    padding:6px var(--sp-3); font-family:var(--font-mono); font-size:var(--fs-xs);
+    color:var(--text); box-shadow:var(--e-1); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  }
+  .chip b{color:var(--accent); font-weight:700;}
+  .chip .k{color:var(--text-muted); font-weight:600;}
+  #chip-fps[data-hidden="true"]{display:none;}
+
+  .icon-btn{
+    pointer-events:auto; display:inline-grid; place-items:center;
+    width:44px; height:44px; flex:0 0 auto;
+    background:var(--panel); border:1px solid var(--panel-border); color:var(--text);
+    border-radius:var(--r-md); cursor:pointer; box-shadow:var(--e-1);
+    transition:background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  }
+  .icon-btn:hover{background:var(--panel-2); border-color:var(--panel-border-2);}
+  .icon-btn:active{transform:scale(.94);}
+  .icon-btn svg{width:20px; height:20px;}
+  #stage[data-state="menu"] #btn-pause{display:none;} /* menu already open */
+
+  /* ---- crosshair ---- */
+  #crosshair{
+    position:absolute; top:50%; left:50%; width:26px; height:26px; transform:translate(-50%,-50%);
+    opacity:0; transition:opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+    pointer-events:none; mix-blend-mode:exclusion;
+  }
+  #stage[data-state="playing"] #crosshair{opacity:.92;}
+  #crosshair.hit{transform:translate(-50%,-50%) scale(1.18);}
+
+  /* ---- hand / block name ---- */
+  #handname{
+    position:absolute; left:50%; bottom:calc(var(--sp-10) + clamp(56px,11vw,74px)); transform:translateX(-50%);
+    z-index:71;
+    font-size:var(--fs-sm); font-weight:600; letter-spacing:.01em; color:var(--text);
+    background:var(--panel); border:1px solid var(--panel-border); border-radius:var(--r-full);
+    padding:5px var(--sp-4); box-shadow:var(--e-1); pointer-events:none;
+    opacity:0; transition:opacity var(--dur-med) var(--ease-out); white-space:nowrap;
+    max-width:90vw; overflow:hidden; text-overflow:ellipsis;
+  }
+  #handname.show{opacity:1;}
+
+  /* ---- hotbar ---- (stage-level so it stays above the pause scrim) */
+  #hotbar{
+    /* budget for 8 gaps (5px) + padding (12px) + a safety margin so 9 slots never overflow 360px */
+    --slot:clamp(30px, calc((100vw - 68px)/9), 54px);
+    position:absolute; left:50%; bottom:clamp(var(--sp-3),2.4vw,var(--sp-6)); transform:translateX(-50%);
+    z-index:70;
+    display:flex; gap:5px; padding:6px; pointer-events:auto;
+    background:var(--panel); border:1px solid var(--panel-border-2); border-radius:var(--r-lg);
+    box-shadow:var(--e-2); backdrop-filter:blur(9px) saturate(120%); -webkit-backdrop-filter:blur(9px) saturate(120%);
+    max-width:calc(100vw - 12px);
+  }
+  .slot{
+    position:relative; width:var(--slot); height:max(44px, calc(var(--slot) + 8px));
+    display:grid; place-items:center; cursor:pointer;
+    background:rgba(255,255,255,.03); border:1.5px solid transparent; border-radius:var(--r-sm);
+    transition:background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  }
+  .slot canvas{width:calc(var(--slot) - 12px); height:calc(var(--slot) - 12px); image-rendering:pixelated; pointer-events:none;}
+  .slot .kbd{
+    position:absolute; top:1px; left:3px; font-family:var(--font-mono); font-size:9px; line-height:1;
+    color:var(--text-muted); font-weight:700;
+  }
+  .slot:hover{background:rgba(255,255,255,.08); border-color:var(--panel-border-2);}
+  .slot:active{transform:translateY(1px);}
+  .slot[aria-pressed="true"]{
+    background:rgba(255,180,84,.16); border-color:var(--accent);
+    box-shadow:0 0 0 1px rgba(255,180,84,.35), 0 6px 18px rgba(255,180,84,.18);
+  }
+  .slot[aria-pressed="true"] .kbd{color:var(--accent-hi);}
+
+  /* ============================================================ PANELS (menus) */
+  .panel{
+    position:relative; width:min(560px,100%); max-height:min(86dvh,720px); overflow:auto;
+    background:linear-gradient(180deg,var(--panel-2),var(--panel));
+    border:1px solid var(--panel-border-2); border-radius:var(--r-lg);
+    box-shadow:var(--e-3); padding:clamp(var(--sp-5),3.5vw,var(--sp-10));
+    backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
+  }
+  .panel:focus{outline:none;}
+  .panel.sm{width:min(440px,100%);}
+  .eyebrow{display:inline-flex; align-items:center; gap:var(--sp-2); font-size:var(--fs-xs); letter-spacing:.18em; text-transform:uppercase; color:var(--accent); font-weight:700;}
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);}
+  .panel h1{font-size:var(--fs-xl); font-weight:750; letter-spacing:-.025em; line-height:1.02; margin-top:var(--sp-3);}
+  .panel h1 .g{background:linear-gradient(96deg,var(--accent),#ff8d5e); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .lede{color:var(--text-muted); font-size:var(--fs-sm); margin-top:var(--sp-3); max-width:46ch;}
+
+  .cta-row{display:flex; flex-wrap:wrap; gap:var(--sp-3); margin-top:var(--sp-6);}
+  .btn{
+    --bg:var(--panel-solid); --bd:var(--panel-border-2); --fg:var(--text);
+    display:inline-flex; align-items:center; justify-content:center; gap:var(--sp-2);
+    min-height:46px; padding:0 var(--sp-5); border-radius:var(--r-md);
+    background:var(--bg); border:1px solid var(--bd); color:var(--fg); cursor:pointer; font-weight:650; font-size:var(--fs-sm);
+    transition:transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), opacity var(--dur-fast);
+  }
+  .btn svg{width:18px;height:18px;flex:0 0 auto;}
+  .btn:hover{transform:translateY(-1px); border-color:var(--panel-border-2); background:#1d2430;}
+  .btn:active{transform:translateY(0) scale(.985);}
+  .btn:disabled{opacity:.42; cursor:not-allowed; transform:none;}
+  .btn.primary{--bg:linear-gradient(180deg,var(--accent-hi),var(--accent)); --fg:var(--accent-ink); --bd:transparent; box-shadow:0 8px 26px rgba(255,180,84,.32); font-weight:750; min-height:52px; padding:0 var(--sp-8); font-size:var(--fs-base);}
+  .btn.primary:hover{background:linear-gradient(180deg,#ffd49a,var(--accent-hi)); transform:translateY(-1px);}
+  .btn.ghost{--bg:transparent;}
+  .btn.danger:hover{border-color:var(--danger); color:#ffd3d3; background:rgba(255,111,111,.1);}
+  .btn.full{width:100%;}
+
+  /* controls legend */
+  .legend{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:var(--sp-2) var(--sp-4); margin-top:var(--sp-6);}
+  .legend .row{display:flex; align-items:center; gap:var(--sp-3); font-size:var(--fs-sm); color:var(--text-muted);}
+  .legend .keys{display:inline-flex; gap:4px; flex:0 0 auto;}
+  kbd{
+    font-family:var(--font-mono); font-size:var(--fs-xs); font-weight:700; color:var(--text);
+    background:#0e1219; border:1px solid var(--panel-border-2); border-bottom-width:2px;
+    border-radius:6px; padding:3px 7px; min-width:24px; text-align:center; line-height:1;
+  }
+
+  .divider{height:1px; background:var(--panel-border); margin:var(--sp-6) 0;}
+  .group-title{display:flex; align-items:center; gap:var(--sp-2); font-size:var(--fs-xs); letter-spacing:.14em; text-transform:uppercase; color:var(--text-muted); font-weight:700; margin-bottom:var(--sp-4);}
+
+  /* settings rows */
+  .field{display:flex; align-items:center; justify-content:space-between; gap:var(--sp-4); padding:var(--sp-2) 0;}
+  .field > label{font-size:var(--fs-sm); font-weight:600;}
+  .field .hintline{font-size:var(--fs-xs); color:var(--text-muted); font-weight:400; margin-top:2px;}
+  .field .control{display:flex; align-items:center; gap:var(--sp-3); min-width:0;}
+  .valbadge{font-family:var(--font-mono); font-size:var(--fs-xs); color:var(--accent); min-width:46px; text-align:right;}
+
+  input[type="range"]{ -webkit-appearance:none; appearance:none; width:clamp(120px,30vw,190px); height:6px; border-radius:var(--r-full); background:var(--track); cursor:pointer;}
+  input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:var(--accent); border:3px solid #1a1208; box-shadow:var(--e-1); cursor:pointer; transition:transform var(--dur-fast);}
+  input[type="range"]::-moz-range-thumb{width:20px;height:20px;border:3px solid #1a1208;border-radius:50%;background:var(--accent);cursor:pointer;}
+  input[type="range"]:hover::-webkit-slider-thumb{transform:scale(1.12);}
+  input[type="range"]:focus-visible{outline:none;}
+  input[type="range"]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(124,184,255,.5);}
+
+  /* toggle switch */
+  .switch{position:relative; width:48px; height:28px; flex:0 0 auto;}
+  .switch input{position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer;}
+  .switch .slide{position:absolute; inset:0; border-radius:var(--r-full); background:var(--track); border:1px solid var(--panel-border); transition:background var(--dur-fast) var(--ease-out);}
+  .switch .slide::after{content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:var(--n-200); transition:transform var(--dur-fast) var(--ease-io), background var(--dur-fast);}
+  .switch input:checked + .slide{background:rgba(255,180,84,.45); border-color:var(--accent);}
+  .switch input:checked + .slide::after{transform:translateX(20px); background:var(--accent);}
+  .switch input:focus-visible + .slide{outline:2.5px solid var(--focus); outline-offset:2px;}
+
+  /* loading */
+  #loading .panel{text-align:center; width:min(440px,100%);}
+  .loadmark{width:64px;height:64px;margin:0 auto var(--sp-5);}
+  .progress{height:8px; border-radius:var(--r-full); background:var(--track); overflow:hidden; margin-top:var(--sp-6);}
+  .progress > i{display:block; height:100%; width:0%; background:linear-gradient(90deg,var(--accent),#ff8d5e); border-radius:inherit; transition:width 90ms linear;}
+  .loadpct{font-family:var(--font-mono); font-size:var(--fs-sm); color:var(--text-muted); margin-top:var(--sp-3);}
+
+  /* error / fallback share .panel */
+  .badge-ico{width:54px;height:54px;margin-bottom:var(--sp-4);}
+
+  /* hint toast (onboarding) */
+  #hint{
+    position:absolute; left:50%; top:18%; transform:translateX(-50%) translateY(-6px); z-index:50;
+    display:none; align-items:center; gap:var(--sp-3); max-width:min(92vw,560px);
+    background:var(--panel-2); border:1px solid var(--panel-border-2); border-radius:var(--r-md);
+    padding:var(--sp-3) var(--sp-4); box-shadow:var(--e-2); pointer-events:auto;
+    font-size:var(--fs-sm); color:var(--text);
+    animation:hintIn var(--dur-med) var(--ease-out);
+  }
+  #hint.show{display:flex;}
+  #hint .x{margin-left:auto; pointer-events:auto; background:none; border:0; color:var(--text-muted); cursor:pointer; padding:4px; border-radius:6px; line-height:0;}
+  #hint .x:hover{color:var(--text); background:rgba(255,255,255,.08);}
+  #hint b{color:var(--accent);}
+  @keyframes hintIn{from{opacity:0; transform:translateX(-50%) translateY(-14px);} to{opacity:1; transform:translateX(-50%) translateY(-6px);}}
+
+  /* toasts */
+  #toasts{position:absolute; left:50%; bottom:calc(clamp(var(--sp-3),2.4vw,var(--sp-6)) + max(52px, 9vw) + var(--sp-6)); transform:translateX(-50%); z-index:55; display:flex; flex-direction:column; gap:var(--sp-2); align-items:center; pointer-events:none; width:max-content; max-width:92vw;}
+  .toast{
+    display:flex; align-items:center; gap:var(--sp-2);
+    background:var(--panel-2); border:1px solid var(--panel-border-2); border-left:3px solid var(--accent);
+    border-radius:var(--r-sm); padding:var(--sp-2) var(--sp-4); box-shadow:var(--e-2);
+    font-size:var(--fs-sm); color:var(--text); animation:toastIn var(--dur-med) var(--ease-out);
+  }
+  .toast.good{border-left-color:var(--good);}
+  .toast.warn{border-left-color:var(--danger);}
+  .toast svg{width:16px;height:16px;flex:0 0 auto;}
+  @keyframes toastIn{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+
+  /* ============================================================ RESPONSIVE */
+  @media (max-width:560px){
+    .brand .wordmark span{display:none;}
+    .hud-top{padding:var(--sp-3);}
+    .legend{grid-template-columns:1fr 1fr;}
+    .cta-row{flex-direction:column;}
+    .cta-row .btn{width:100%;}
+  }
+  @media (max-width:380px){
+    .legend{grid-template-columns:1fr;}
+  }
+  @media (max-height:560px){
+    .panel{max-height:94dvh;}
+  }
+
+  /* ============================================================ REDUCED MOTION */
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important;}
+  }
+  body[data-reduce="true"] *,
+  body[data-reduce="true"] *::before,
+  body[data-reduce="true"] *::after{animation-duration:.001ms !important; transition-duration:.001ms !important;}
+</style>
+</head>
+<body>
+  <a class="skip" href="#menu-panel">Skip to menu</a>
+
+  <main id="stage" data-state="loading" aria-label="Voxel sandbox">
+    <canvas id="scene" tabindex="-1" aria-label="First-person voxel world. Click Play to enter pointer-lock, then use mouse to look and W A S D to move."></canvas>
+
+    <!-- ============ HUD (visible while a world exists) ============ -->
+    <div id="hud">
+      <div class="hud-top">
+        <div class="brand">
+          <svg class="mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+            <path d="M24 4 42 14v20L24 44 6 34V14L24 4Z" fill="#1a212b" stroke="rgba(255,255,255,.18)"/>
+            <path d="M24 4 42 14 24 24 6 14 24 4Z" fill="#7fae4e"/>
+            <path d="M24 24 42 14v20L24 44V24Z" fill="#5e7d39"/>
+            <path d="M24 24 6 14v20l18 10V24Z" fill="#4a6530"/>
+            <path d="M24 4 42 14 24 24 6 14 24 4Z" fill="url(#gm)" opacity=".0"/>
+            <defs><linearGradient id="gm" x1="6" y1="4" x2="42" y2="24"><stop stop-color="#fff" stop-opacity=".25"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+          </svg>
+          <span class="wordmark"><b>Voxel Sandbox</b><span>build · break · explore</span></span>
+        </div>
+        <div style="display:flex; align-items:flex-start; gap:var(--sp-3);">
+          <div class="readouts" aria-hidden="false">
+            <span class="chip" id="chip-pos"><span class="k">XYZ</span> <b id="rd-pos">0 0 0</b></span>
+            <span class="chip" id="chip-face"><span class="k">FACING</span> <b id="rd-face">—</b></span>
+            <span class="chip" id="chip-fps" data-hidden="true"><span class="k">FPS</span> <b id="rd-fps">60</b></span>
+          </div>
+          <button id="btn-pause" class="icon-btn" type="button" aria-label="Pause (open menu)" title="Pause — Esc">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.3" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.3" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <svg id="crosshair" viewBox="0 0 26 26" aria-hidden="true">
+        <g stroke="#fff" stroke-width="2" stroke-linecap="round">
+          <line x1="13" y1="3" x2="13" y2="9"/><line x1="13" y1="17" x2="13" y2="23"/>
+          <line x1="3" y1="13" x2="9" y2="13"/><line x1="17" y1="13" x2="23" y2="13"/>
+        </g>
+        <circle cx="13" cy="13" r="1.4" fill="#fff"/>
+      </svg>
+    </div>
+
+    <!-- hotbar + block-name live at stage level so they stay interactive above the pause scrim -->
+    <div id="handname" aria-live="polite"></div>
+    <div id="hotbar" role="toolbar" aria-label="Block palette — keys 1 to 9 or scroll to select"></div>
+
+    <!-- ============ LOADING ============ -->
+    <div id="loading" class="overlay" role="status" aria-live="polite">
+      <div class="panel">
+        <svg class="loadmark" viewBox="0 0 48 48" aria-hidden="true">
+          <path d="M24 4 42 14v20L24 44 6 34V14L24 4Z" fill="#1a212b" stroke="rgba(255,255,255,.18)"/>
+          <path d="M24 4 42 14 24 24 6 14 24 4Z" fill="#7fae4e"/>
+          <path d="M24 24 42 14v20L24 44V24Z" fill="#5e7d39"/>
+          <path d="M24 24 6 14v20l18 10V24Z" fill="#4a6530"/>
+        </svg>
+        <div class="eyebrow"><span class="dot"></span>Generating world</div>
+        <h2 style="font-size:var(--fs-lg); font-weight:700; margin-top:var(--sp-3); letter-spacing:-.02em;">Carving terrain &amp; meshing chunks</h2>
+        <p class="lede" style="margin-inline:auto;">Building merged chunk geometry with face culling and baked ambient occlusion.</p>
+        <div class="progress" aria-hidden="true"><i id="load-bar"></i></div>
+        <div class="loadpct"><span id="load-pct">0</span>% · <span id="load-sub">terrain</span></div>
+      </div>
+    </div>
+
+    <!-- ============ MENU / PAUSE ============ -->
+    <div id="menu" class="overlay" role="dialog" aria-modal="true" aria-labelledby="menu-title">
+      <div class="panel" id="menu-panel" tabindex="-1">
+        <div class="eyebrow"><span class="dot"></span><span id="menu-eyebrow">Ready to play</span></div>
+        <h1 id="menu-title">Build a world,<br><span class="g">one block</span> at a time.</h1>
+        <p class="lede" id="menu-lede">A first-person voxel sandbox. Look with the mouse, move with W A S D, and shape the land — break what's there, place what you imagine.</p>
+
+        <div class="cta-row">
+          <button class="btn primary" id="btn-play" type="button">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 5.5v13l11-6.5-11-6.5Z" fill="currentColor"/></svg>
+            <span id="play-label">Click to play</span>
+          </button>
+          <button class="btn ghost" id="btn-help" type="button" aria-expanded="true" aria-controls="legend">Controls</button>
+        </div>
+
+        <div class="legend" id="legend">
+          <div class="row"><span class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span> Move</div>
+          <div class="row"><span class="keys"><kbd>Space</kbd></span> Jump</div>
+          <div class="row"><span class="keys"><kbd>Shift</kbd></span> Sprint</div>
+          <div class="row"><span class="keys"><kbd>Mouse</kbd></span> Look</div>
+          <div class="row"><span class="keys"><kbd>L-Click</kbd></span> Break block</div>
+          <div class="row"><span class="keys"><kbd>R-Click</kbd></span> Place block</div>
+          <div class="row"><span class="keys"><kbd>1</kbd>–<kbd>9</kbd></span> Pick block</div>
+          <div class="row"><span class="keys"><kbd>Scroll</kbd></span> Cycle blocks</div>
+          <div class="row"><span class="keys"><kbd>Esc</kbd></span> Pause</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="group-title">World</div>
+        <div class="cta-row" style="margin-top:0;">
+          <button class="btn" id="btn-save" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 3h11l3 3v15a0 0 0 0 1 0 0H5a0 0 0 0 1 0 0V3Z" stroke="currentColor" stroke-width="1.7"/><path d="M8 3v6h7V3M8 21v-7h8v7" stroke="currentColor" stroke-width="1.7"/></svg>Save world</button>
+          <button class="btn" id="btn-load" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 7h6l2 2h10v10H3V7Z" stroke="currentColor" stroke-width="1.7"/></svg>Load saved</button>
+          <button class="btn danger ghost" id="btn-new" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12a7 7 0 1 1 2 4.9M5 12V7m0 5h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>New world</button>
+        </div>
+        <p class="hintline" id="save-status" aria-live="polite" style="margin-top:var(--sp-3); color:var(--text-muted); font-size:var(--fs-xs);"></p>
+
+        <div class="divider"></div>
+
+        <div class="group-title">Settings</div>
+        <div class="field">
+          <div><label for="set-sens">Mouse sensitivity</label></div>
+          <div class="control"><input type="range" id="set-sens" min="0.3" max="2.2" step="0.05" value="1"><span class="valbadge" id="val-sens">1.0×</span></div>
+        </div>
+        <div class="field">
+          <div><label for="set-fov">Field of view</label></div>
+          <div class="control"><input type="range" id="set-fov" min="60" max="100" step="1" value="78"><span class="valbadge" id="val-fov">78°</span></div>
+        </div>
+        <div class="field">
+          <div><label for="set-dist">Render distance</label><div class="hintline">Fog &amp; far plane</div></div>
+          <div class="control"><input type="range" id="set-dist" min="48" max="150" step="2" value="112"><span class="valbadge" id="val-dist">112</span></div>
+        </div>
+        <div class="field">
+          <div><label for="set-fps">Show FPS counter</label></div>
+          <div class="control"><span class="switch"><input type="checkbox" id="set-fps"><span class="slide"></span></span></div>
+        </div>
+        <div class="field">
+          <div><label for="set-bob">View bob</label><div class="hintline">Subtle walking motion</div></div>
+          <div class="control"><span class="switch"><input type="checkbox" id="set-bob" checked><span class="slide"></span></span></div>
+        </div>
+        <div class="field">
+          <div><label for="set-sound">Sound effects</label></div>
+          <div class="control"><span class="switch"><input type="checkbox" id="set-sound" checked><span class="slide"></span></span></div>
+        </div>
+        <div class="field">
+          <div><label for="set-reduce">Reduce motion</label><div class="hintline">Disables view bob &amp; UI animation</div></div>
+          <div class="control"><span class="switch"><input type="checkbox" id="set-reduce"><span class="slide"></span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ TOUCH / NO-POINTER-LOCK FALLBACK ============ -->
+    <div id="fallback" class="overlay" role="dialog" aria-modal="true" aria-labelledby="fb-title">
+      <div class="panel sm" tabindex="-1">
+        <svg class="badge-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3" stroke="var(--accent)" stroke-width="1.7"/><circle cx="12" cy="18" r="1.2" fill="var(--accent)"/><path d="M3 8l3 3M3 11V8h3" stroke="var(--text-muted)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="eyebrow"><span class="dot"></span>Desktop experience</div>
+        <h1 style="font-size:var(--fs-lg);" id="fb-title">Best with a mouse &amp; keyboard</h1>
+        <p class="lede">This sandbox uses pointer-lock mouse-look and keyboard movement, which aren't available on this device. The world is rendering behind this panel — open it on a desktop browser to play.</p>
+        <div class="legend" style="grid-template-columns:1fr 1fr;">
+          <div class="row"><span class="keys"><kbd>W A S D</kbd></span> Move</div>
+          <div class="row"><span class="keys"><kbd>Mouse</kbd></span> Look</div>
+          <div class="row"><span class="keys"><kbd>Click</kbd></span> Break / place</div>
+          <div class="row"><span class="keys"><kbd>1–9</kbd></span> Pick block</div>
+        </div>
+        <div class="cta-row"><button class="btn" id="btn-fb-try" type="button">Try anyway</button></div>
+      </div>
+    </div>
+
+    <!-- ============ WEBGL ERROR ============ -->
+    <div id="error" class="overlay" role="alertdialog" aria-modal="true" aria-labelledby="err-title">
+      <div class="panel sm" tabindex="-1">
+        <svg class="badge-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 22 20H2L12 3Z" stroke="var(--danger)" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 10v5" stroke="var(--danger)" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="17.6" r="1.2" fill="var(--danger)"/></svg>
+        <div class="eyebrow" style="color:var(--danger);"><span class="dot" style="background:var(--danger);box-shadow:0 0 10px var(--danger);"></span>WebGL unavailable</div>
+        <h1 style="font-size:var(--fs-lg);" id="err-title">This world needs WebGL</h1>
+        <p class="lede" id="err-msg">Your browser couldn't create a WebGL context, so the 3D world can't render. Enable hardware acceleration or try a current version of Chrome, Edge, Firefox, or Safari.</p>
+        <div class="cta-row"><button class="btn" id="btn-err-retry" type="button">Retry</button></div>
+      </div>
+    </div>
+
+    <div id="hint" role="status">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="var(--accent)" stroke-width="1.7"/><path d="M12 11v5" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="8" r="1.1" fill="var(--accent)"/></svg>
+      <span><b>Left-click</b> breaks · <b>Right-click</b> places · <b>1–9</b> picks a block · <b>Esc</b> to pause</span>
+      <button class="x" id="hint-x" type="button" aria-label="Dismiss hint"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    </div>
+
+    <div id="toasts" aria-live="polite"></div>
+  </main>
+
+  <script type="importmap">
+  { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+  </script>
+  <script type="module">
+import * as THREE from 'three';
+
+/* ------------------------------------------------------------------ DOM */
+const $ = (s) => document.querySelector(s);
+const stage = $('#stage');
+const canvas = $('#scene');
+const reduceMQ = window.matchMedia('(prefers-reduced-motion:reduce)');
+
+function setState(s){ stage.dataset.state = s; }
+function toast(msg, kind){
+  const wrap = $('#toasts');
+  const t = document.createElement('div');
+  t.className = 'toast' + (kind ? ' ' + kind : '');
+  const ok = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5 10 17l9-10" stroke="var(--good)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const warn = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4 21 19H3L12 4Z" stroke="var(--danger)" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10v4" stroke="var(--danger)" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="16.5" r="1" fill="var(--danger)"/></svg>';
+  t.innerHTML = (kind === 'good' ? ok : kind === 'warn' ? warn : '') + '<span>' + msg + '</span>';
+  wrap.appendChild(t);
+  setTimeout(() => { t.style.transition = 'opacity .3s, transform .3s'; t.style.opacity = '0'; t.style.transform = 'translateY(8px)'; setTimeout(() => t.remove(), 320); }, 1900);
+}
+
+/* ------------------------------------------------------------------ WORLD CONSTANTS */
+const CHUNK = 16;
+const WX = 6, WY = 3, WZ = 6;                 // world size in chunks
+const WORLD_W = WX * CHUNK, WORLD_H = WY * CHUNK, WORLD_D = WZ * CHUNK; // 96 x 48 x 96
+const SEA = 19;                               // base terrain height
+const REACH = 6.0;                            // edit reach (blocks)
+const EYE = 1.62, PH = 1.78, PHW = 0.3;       // eye height, player height, half-width
+const GRAV = 30, JUMP = 8.6, WALK = 4.6, SPRINT = 6.9, STEP = 1.02;
+
+/* block ids */
+const AIR=0, GRASS=1, DIRT=2, STONE=3, COBBLE=4, SAND=5, SNOW=6, LOG=7, PLANKS=8, BRICK=9, LEAVES=10, GLOW=11, BEDROCK=12, STONEBRICK=13;
+
+/* atlas tile indices (4x4 grid) */
+const T = { grassTop:0, grassSide:1, dirt:2, stone:3, cobble:4, sand:5, snow:6, logTop:7, logSide:8, planks:9, brick:10, leaves:11, glow:12, bedrock:13, stonebrick:14, spare:15 };
+
+const BLOCKS = {
+  [GRASS]:      { name:'Grass Block', top:T.grassTop, side:T.grassSide, bottom:T.dirt },
+  [DIRT]:       { name:'Dirt',        all:T.dirt },
+  [STONE]:      { name:'Stone',       all:T.stone },
+  [COBBLE]:     { name:'Cobblestone', all:T.cobble },
+  [SAND]:       { name:'Sand',        all:T.sand },
+  [SNOW]:       { name:'Snow',        all:T.snow },
+  [LOG]:        { name:'Oak Log',     top:T.logTop, side:T.logSide, bottom:T.logTop },
+  [PLANKS]:     { name:'Oak Planks',  all:T.planks },
+  [BRICK]:      { name:'Brick',       all:T.brick },
+  [LEAVES]:     { name:'Leaves',      all:T.leaves },
+  [GLOW]:       { name:'Glowstone',   all:T.glow, glow:true },
+  [BEDROCK]:    { name:'Bedrock',     all:T.bedrock, unbreakable:true },
+  [STONEBRICK]: { name:'Stone Bricks',all:T.stonebrick },
+};
+function tileFor(id, ny){ const b = BLOCKS[id]; if(!b) return 0; if(b.all !== undefined) return b.all; return ny === 1 ? b.top : ny === -1 ? b.bottom : b.side; }
+const HOTBAR = [GRASS, STONE, COBBLE, SAND, LOG, PLANKS, BRICK, STONEBRICK, GLOW];
+
+/* ------------------------------------------------------------------ PRNG + value helpers */
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+function hash2(x, z, seed){ let h = Math.imul(x | 0, 374761393) ^ Math.imul(z | 0, 668265263) ^ Math.imul(seed | 0, 2246822519); h = Math.imul(h ^ h >>> 13, 1274126177); return ((h ^ h >>> 16) >>> 0) / 4294967296; }
+
+/* ------------------------------------------------------------------ PROCEDURAL TEXTURE ATLAS
+   Drawn in-canvas at load — no external images. Each tile gets grain/pattern so blocks read
+   as material, not flat colour. Top/side/bottom differ where the block defines them. */
+const TS = 32, ATLAS_N = 4, ATLAS_PX = TS * ATLAS_N;
+let atlasCanvas, atlasTexture, TILE_UV = [];
+
+function buildAtlas(){
+  atlasCanvas = document.createElement('canvas');
+  atlasCanvas.width = atlasCanvas.height = ATLAS_PX;
+  const ctx = atlasCanvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  const draw = (idx, fn) => { const tx = (idx % ATLAS_N) * TS, ty = ((idx / ATLAS_N) | 0) * TS; ctx.save(); ctx.beginPath(); ctx.rect(tx, ty, TS, TS); ctx.clip(); ctx.translate(tx, ty); fn(ctx, mulberry32(1000 + idx)); ctx.restore(); };
+  const fill = (ctx, c) => { ctx.fillStyle = c; ctx.fillRect(0, 0, TS, TS); };
+  // speckle: scatter px in a value range around base
+  const speckle = (ctx, rnd, base, amt, density) => {
+    for(let i=0;i<TS*TS*density;i++){ const x=(rnd()*TS)|0, y=(rnd()*TS)|0; const d=(rnd()*2-1)*amt; ctx.fillStyle=shade(base,d); ctx.fillRect(x,y,1,1); }
+  };
+  function shade(hex, d){ const c=hexToRgb(hex); const f=(v)=>clamp(Math.round(v+d*255),0,255); return `rgb(${f(c.r)},${f(c.g)},${f(c.b)})`; }
+  function hexToRgb(h){ h=h.replace('#',''); return { r:parseInt(h.slice(0,2),16), g:parseInt(h.slice(2,4),16), b:parseInt(h.slice(4,6),16) }; }
+
+  // grass top
+  draw(T.grassTop, (c,r)=>{ fill(c,'#6aa84a'); speckle(c,r,'#6aa84a',.16,.9); for(let i=0;i<26;i++){ const x=(r()*TS)|0,y=(r()*TS)|0; c.fillStyle=shade('#6aa84a',(r()*2-1)*.22); c.fillRect(x,y,1,(1+r()*2)|0);} });
+  // grass side (dirt with green top fringe — fringe must be at TOP rows)
+  draw(T.grassSide, (c,r)=>{ fill(c,'#8a6240'); speckle(c,r,'#8a6240',.14,.7);
+    for(let y=0;y<TS;y++){ for(let x=0;x<TS;x++){ if(r()<.04){ c.fillStyle=shade('#6a4a30',.0); c.fillRect(x,y,1,1);} } }
+    const fr=(6+(r()*3))|0; c.fillStyle='#6aa84a'; c.fillRect(0,0,TS,fr-2);
+    for(let x=0;x<TS;x++){ const h=fr-2+((r()*4)|0); for(let y=0;y<h;y++){ c.fillStyle=shade('#6aa84a',(r()*2-1)*.18); c.fillRect(x,y,1,1);} c.fillStyle=shade('#5d9540',-.05); c.fillRect(x,h,1,1);} });
+  // dirt
+  draw(T.dirt, (c,r)=>{ fill(c,'#8a6240'); speckle(c,r,'#8a6240',.18,1); for(let i=0;i<14;i++){ const x=(r()*TS)|0,y=(r()*TS)|0,s=(1+r()*2)|0; c.fillStyle=shade('#5e4128',-.04); c.fillRect(x,y,s,s);} });
+  // stone
+  draw(T.stone, (c,r)=>{ fill(c,'#8d9097'); speckle(c,r,'#8d9097',.12,.85); c.strokeStyle='rgba(60,62,68,.55)'; c.lineWidth=1; for(let i=0;i<4;i++){ c.beginPath(); let x=(r()*TS)|0,y=(r()*TS)|0; c.moveTo(x,y); for(let k=0;k<3;k++){ x+=(r()*10-5); y+=(r()*10-5); c.lineTo(x,y);} c.stroke(); } });
+  // cobblestone
+  draw(T.cobble, (c,r)=>{ fill(c,'#5d6066'); const cells=4,cs=TS/cells; for(let gy=0;gy<cells;gy++)for(let gx=0;gx<cells;gx++){ const px=gx*cs+(r()*2-1),py=gy*cs+(r()*2-1); c.fillStyle=shade('#8c9097',(r()*2-1)*.16); roundRect(c,px+1.5,py+1.5,cs-3,cs-3,2); c.fill(); } });
+  // sand
+  draw(T.sand, (c,r)=>{ fill(c,'#dcce95'); speckle(c,r,'#dcce95',.10,1.1); for(let i=0;i<3;i++){ c.fillStyle='rgba(180,165,110,.5)'; c.fillRect(0,(r()*TS)|0,TS,1);} });
+  // snow
+  draw(T.snow, (c,r)=>{ fill(c,'#f3f6fb'); speckle(c,r,'#eef2f9',.05,.7); for(let i=0;i<10;i++){ c.fillStyle='rgba(206,222,240,.7)'; c.fillRect((r()*TS)|0,(r()*TS)|0,1,1);} });
+  // log top (rings)
+  draw(T.logTop, (c,r)=>{ fill(c,'#caa46a'); const cx=TS/2,cy=TS/2; for(let rad=TS/2;rad>1;rad-=2.4){ c.strokeStyle=shade('#9c7b48',(rad%4<2?-.05:.04)); c.lineWidth=1.4; c.beginPath(); c.arc(cx,cy,rad,0,Math.PI*2); c.stroke(); } c.fillStyle='#7a5c34'; c.beginPath(); c.arc(cx,cy,1.6,0,Math.PI*2); c.fill(); });
+  // log side (vertical bark)
+  draw(T.logSide, (c,r)=>{ fill(c,'#6f5430'); for(let x=0;x<TS;x+=1){ c.fillStyle=shade('#6f5430',(r()*2-1)*.18); c.fillRect(x,0,1,TS);} for(let i=0;i<5;i++){ c.fillStyle=shade('#4f3c22',-.04); c.fillRect((r()*TS)|0,0,1,TS);} c.fillStyle='#caa46a'; c.fillRect(0,0,TS,2); c.fillRect(0,TS-2,TS,2); });
+  // planks (horizontal)
+  draw(T.planks, (c,r)=>{ fill(c,'#b88f55'); const ph=TS/4; for(let i=0;i<4;i++){ const y=i*ph; for(let x=0;x<TS;x++){ c.fillStyle=shade('#b88f55',(r()*2-1)*.12); c.fillRect(x,y+1,1,ph-1);} c.fillStyle='rgba(90,66,36,.65)'; c.fillRect(0,y,TS,1); const nx=(8+r()*16)|0; c.fillStyle='rgba(70,50,28,.5)'; c.fillRect(nx,y+(ph/2)|0,2,2);} });
+  // brick (staggered)
+  draw(T.brick, (c,r)=>{ fill(c,'#9c4b3b'); const bh=TS/4,bw=TS/2; c.fillStyle='#b9b3a8'; for(let i=0;i<=4;i++) c.fillRect(0,i*bh,TS,1); for(let row=0;row<4;row++){ const off=row%2?bw/2:0; for(let x=-1;x<2;x++){ c.fillRect(off+x*bw,row*bh,1,bh);} for(let bx=0;bx<2;bx++){ c.fillStyle=shade('#9c4b3b',(r()*2-1)*.12); c.fillRect(off+bx*bw+1,row*bh+1,bw-1,bh-2); c.fillStyle='#b9b3a8';} } });
+  // leaves (opaque, layered greens)
+  draw(T.leaves, (c,r)=>{ fill(c,'#3f7a32'); for(let i=0;i<TS*TS*1.4;i++){ const x=(r()*TS)|0,y=(r()*TS)|0; const g=r(); c.fillStyle = g<.33?'#356b2a':g<.66?'#478a36':'#2c5723'; c.fillRect(x,y,1,1);} for(let i=0;i<10;i++){ c.fillStyle='rgba(20,40,16,.5)'; c.fillRect((r()*TS)|0,(r()*TS)|0,1,1);} });
+  // glowstone (warm emissive look)
+  draw(T.glow, (c,r)=>{ fill(c,'#a9781f'); for(let i=0;i<26;i++){ const x=(r()*TS)|0,y=(r()*TS)|0,s=(2+r()*4)|0; const g=c.createRadialGradient(x,y,0,x,y,s); g.addColorStop(0,'#fff4c2'); g.addColorStop(.5,'#ffd25e'); g.addColorStop(1,'rgba(255,180,60,0)'); c.fillStyle=g; c.fillRect(x-s,y-s,s*2,s*2);} });
+  // bedrock (dark mottled)
+  draw(T.bedrock, (c,r)=>{ fill(c,'#33353a'); for(let i=0;i<TS*TS*.9;i++){ const x=(r()*TS)|0,y=(r()*TS)|0; const g=r(); c.fillStyle=g<.4?'#222327':g<.7?'#3d4046':'#15161a'; c.fillRect(x,y,1,1);} });
+  // stone bricks (square grid)
+  draw(T.stonebrick, (c,r)=>{ fill(c,'#8a8d93'); speckle(c,r,'#8a8d93',.08,.6); const bw=TS/2,bh=TS/2; c.fillStyle='rgba(52,54,60,.7)'; for(let i=0;i<=2;i++){ c.fillRect(0,i*bh,TS,1); c.fillRect(i*bw,0,1,TS);} for(let gy=0;gy<2;gy++)for(let gx=0;gx<2;gx++){ c.fillStyle=shade('#8a8d93',(r()*2-1)*.1); c.fillRect(gx*bw+1,gy*bh+1,bw-1,bh-1);} });
+  draw(T.spare, (c)=>{ fill(c,'#ff00ff'); });
+
+  function roundRect(c,x,y,w,h,rad){ c.beginPath(); c.moveTo(x+rad,y); c.arcTo(x+w,y,x+w,y+h,rad); c.arcTo(x+w,y+h,x,y+h,rad); c.arcTo(x,y+h,x,y,rad); c.arcTo(x,y,x+w,y,rad); c.closePath(); }
+
+  // precompute inset UV rects per tile (flipY = false ⇒ canvas-top maps to small V)
+  for(let i=0;i<ATLAS_N*ATLAS_N;i++){ const tx=(i%ATLAS_N)*TS, ty=((i/ATLAS_N)|0)*TS; TILE_UV[i] = { uA:(tx+0.5)/ATLAS_PX, uB:(tx+TS-0.5)/ATLAS_PX, vA:(ty+0.5)/ATLAS_PX, vB:(ty+TS-0.5)/ATLAS_PX }; }
+
+  atlasTexture = new THREE.CanvasTexture(atlasCanvas);
+  atlasTexture.magFilter = THREE.NearestFilter;
+  atlasTexture.minFilter = THREE.NearestFilter; // no mips ⇒ no atlas bleeding; fog hides far shimmer
+  atlasTexture.generateMipmaps = false;
+  atlasTexture.colorSpace = THREE.SRGBColorSpace;
+  atlasTexture.flipY = false;
+}
+
+/* ------------------------------------------------------------------ VOXEL STORAGE */
+let chunks = new Array(WX * WY * WZ);          // each: {voxels:Uint8Array(4096), mesh, cx,cy,cz, tris}
+const cidx = (cx, cy, cz) => cx + WX * (cy + WY * cz);
+function allocChunks(){
+  for(let cz=0; cz<WZ; cz++) for(let cy=0; cy<WY; cy++) for(let cx=0; cx<WX; cx++){
+    chunks[cidx(cx,cy,cz)] = { voxels:new Uint8Array(CHUNK*CHUNK*CHUNK), mesh:null, cx, cy, cz, tris:0 };
+  }
+}
+function getVoxel(x, y, z){
+  if(x<0||y<0||z<0||x>=WORLD_W||y>=WORLD_H||z>=WORLD_D) return AIR;
+  const ch = chunks[cidx(x>>4, y>>4, z>>4)];
+  return ch ? ch.voxels[(x&15) | ((y&15)<<4) | ((z&15)<<8)] : AIR;
+}
+function setVoxelRaw(x, y, z, id){
+  if(x<0||y<0||z<0||x>=WORLD_W||y>=WORLD_H||z>=WORLD_D) return;
+  chunks[cidx(x>>4, y>>4, z>>4)].voxels[(x&15) | ((y&15)<<4) | ((z&15)<<8)] = id;
+}
+const isOpaque = (id) => id !== AIR;     // every non-air block occludes (culling + AO)
+const isSolid  = (id) => id !== AIR;     // every non-air block collides
+
+/* dirty set drives same-frame rebuilds */
+const dirty = new Set();
+function markChunk(x, y, z){
+  const cx = x>>4, cy = y>>4, cz = z>>4;
+  if(cx>=0&&cy>=0&&cz>=0&&cx<WX&&cy<WY&&cz<WZ) dirty.add(cidx(cx,cy,cz));
+}
+/* edit a voxel + mark its chunk AND any neighbour chunk sharing the touched face (seam-correct) */
+function setVoxelEdit(x, y, z, id){
+  setVoxelRaw(x, y, z, id);
+  markChunk(x, y, z);
+  const lx = x&15, ly = y&15, lz = z&15;
+  if(lx===0) markChunk(x-1,y,z); if(lx===15) markChunk(x+1,y,z);
+  if(ly===0) markChunk(x,y-1,z); if(ly===15) markChunk(x,y+1,z);
+  if(lz===0) markChunk(x,y,z-1); if(lz===15) markChunk(x,y,z+1);
+}
+
+/* ------------------------------------------------------------------ NOISE + WORLD GEN */
+function makeSimplex(seed){
+  const p = new Uint8Array(256); for(let i=0;i<256;i++) p[i]=i;
+  const rnd = mulberry32(seed); for(let i=255;i>0;i--){ const j=(rnd()*(i+1))|0; const t=p[i]; p[i]=p[j]; p[j]=t; }
+  const perm = new Uint8Array(512), pm12 = new Uint8Array(512);
+  for(let i=0;i<512;i++){ perm[i]=p[i&255]; pm12[i]=perm[i]%12; }
+  const g=[[1,1],[-1,1],[1,-1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]];
+  const F2=0.5*(Math.sqrt(3)-1), G2=(3-Math.sqrt(3))/6;
+  return function(xin, yin){
+    let n0,n1,n2; const s=(xin+yin)*F2; const i=Math.floor(xin+s), j=Math.floor(yin+s);
+    const t=(i+j)*G2; const x0=xin-(i-t), y0=yin-(j-t);
+    let i1,j1; if(x0>y0){i1=1;j1=0;}else{i1=0;j1=1;}
+    const x1=x0-i1+G2, y1=y0-j1+G2, x2=x0-1+2*G2, y2=y0-1+2*G2;
+    const ii=i&255, jj=j&255;
+    const gi0=pm12[ii+perm[jj]], gi1=pm12[ii+i1+perm[jj+j1]], gi2=pm12[ii+1+perm[jj+1]];
+    let t0=0.5-x0*x0-y0*y0; if(t0<0) n0=0; else { t0*=t0; n0=t0*t0*(g[gi0][0]*x0+g[gi0][1]*y0); }
+    let t1=0.5-x1*x1-y1*y1; if(t1<0) n1=0; else { t1*=t1; n1=t1*t1*(g[gi1][0]*x1+g[gi1][1]*y1); }
+    let t2=0.5-x2*x2-y2*y2; if(t2<0) n2=0; else { t2*=t2; n2=t2*t2*(g[gi2][0]*x2+g[gi2][1]*y2); }
+    return 70*(n0+n1+n2);
+  };
+}
+let nH, nM, nB;
+function fbm(noise, x, y, oct, lac=2, gain=0.5){ let a=0.5,f=1,sum=0,norm=0; for(let i=0;i<oct;i++){ sum+=a*noise(x*f,y*f); norm+=a; a*=gain; f*=lac; } return sum/norm; }
+
+function heightAt(x, z){
+  let h = SEA + fbm(nH, x*0.0125, z*0.0125, 4) * 10;
+  const m = fbm(nM, x*0.0075 + 80, z*0.0075 + 80, 2);
+  const mountain = Math.max(0, m - 0.12) / 0.88;
+  h += mountain * mountain * 26;
+  h += fbm(nH, x*0.05 + 5, z*0.05 + 5, 2) * 1.8;
+  return clamp(Math.round(h), 4, WORLD_H - 7);
+}
+function biomeAt(x, z){ return fbm(nB, x*0.006 + 1000, z*0.006 + 1000, 2); } // temperature-ish
+
+let spawn = { x: WORLD_W/2 + 0.5, y: 40, z: WORLD_D/2 + 0.5 };
+
+function generateWorld(seed){
+  nH = makeSimplex(seed); nM = makeSimplex(seed ^ 0x9e37); nB = makeSimplex(seed ^ 0x51ed);
+  allocChunks();
+  // terrain columns + biomes
+  for(let z=0; z<WORLD_D; z++) for(let x=0; x<WORLD_W; x++){
+    const h = heightAt(x, z); const temp = biomeAt(x, z);
+    const desert = temp > 0.33 && h <= SEA + 4;
+    const snowy  = h >= SEA + 14;
+    for(let y=0; y<=h; y++){
+      let id;
+      if(y === 0) id = BEDROCK;
+      else if(y < h - 3) id = STONE;
+      else if(y < h) id = desert ? SAND : DIRT;
+      else id = snowy ? SNOW : desert ? SAND : (h <= SEA + 1 ? SAND : GRASS); // beach band near sea
+      setVoxelRaw(x, y, z, id);
+    }
+  }
+  // trees — spaced 3-grid, grass biome only
+  for(let z=3; z<WORLD_D-3; z+=1) for(let x=3; x<WORLD_W-3; x+=1){
+    if(x%3 || z%3) continue;
+    if(hash2(x, z, seed) > 0.16) continue;
+    const h = heightAt(x, z);
+    if(h <= SEA + 1 || h >= SEA + 14 || biomeAt(x, z) > 0.33) continue; // not beach/snow/desert
+    if(getVoxel(x, h, z) !== GRASS) continue;
+    placeTree(x, h + 1, z, seed);
+  }
+  buildShrine((WORLD_W/2)|0, (WORLD_D/2)|0);
+  applyEdits();          // overlay any saved player edits before meshing
+}
+
+function placeTree(x, baseY, z, seed){
+  const th = 4 + ((hash2(x*7, z*13, seed) * 3) | 0);   // 4..6
+  for(let i=0; i<th; i++) setVoxelRaw(x, baseY + i, z, LOG);
+  const topY = baseY + th;
+  for(let dy=-2; dy<=1; dy++){
+    const ry = topY + dy; const rad = dy >= 1 ? 1 : 2;
+    for(let dx=-rad; dx<=rad; dx++) for(let dz=-rad; dz<=rad; dz++){
+      if(dx===0 && dz===0 && dy<1) continue;            // keep trunk
+      if(Math.abs(dx)===rad && Math.abs(dz)===rad && rad>1 && hash2(x+dx, z+dz, seed) < 0.5) continue; // round corners
+      if(getVoxel(x+dx, ry, z+dz) === AIR) setVoxelRaw(x+dx, ry, z+dz, LEAVES);
+    }
+  }
+}
+
+/* hand-placed landmark so you spawn into something crafted, never a void */
+function buildShrine(cx, cz){
+  const R = 3, h = heightAt(cx, cz), py = h + 1;       // platform floor sits at y=py (top at py+1)
+  for(let dx=-R; dx<=R; dx++) for(let dz=-R; dz<=R; dz++){
+    const x = cx + dx, z = cz + dz;
+    for(let y=py+1; y<=py+6; y++) setVoxelRaw(x, y, z, AIR);    // clear headroom
+    setVoxelRaw(x, py, z, STONEBRICK);                          // floor
+    for(let y=py-1; y>=py-6; y--){ if(getVoxel(x,y,z)!==AIR) break; setVoxelRaw(x, y, z, STONEBRICK); } // ground it
+    if(Math.abs(dx)===R || Math.abs(dz)===R) setVoxelRaw(x, py+1, z, STONEBRICK); // low rim wall
+  }
+  const corners = [[-R,-R],[R,-R],[-R,R],[R,R]];
+  for(const [dx,dz] of corners){ for(let y=py+1; y<=py+4; y++) setVoxelRaw(cx+dx, y, cz+dz, LOG); }
+  for(let dx=-R; dx<=R; dx++) for(let dz=-R; dz<=R; dz++) setVoxelRaw(cx+dx, py+5, cz+dz, PLANKS); // canopy roof
+  // glowstone accents on the floor at inner corners
+  for(const [dx,dz] of [[-2,-2],[2,-2],[-2,2],[2,2]]) setVoxelRaw(cx+dx, py, cz+dz, GLOW);
+  spawn = { x: cx + 0.5, y: py + 1, z: cz + 0.5 };
+}
+
+/* ------------------------------------------------------------------ MESHING (face culling + AO) */
+const FACES = [
+  { dir:[-1,0,0], shade:0.80, corners:[{pos:[0,1,0],uv:[0,1]},{pos:[0,0,0],uv:[0,0]},{pos:[0,1,1],uv:[1,1]},{pos:[0,0,1],uv:[1,0]}] },
+  { dir:[ 1,0,0], shade:0.80, corners:[{pos:[1,1,1],uv:[0,1]},{pos:[1,0,1],uv:[0,0]},{pos:[1,1,0],uv:[1,1]},{pos:[1,0,0],uv:[1,0]}] },
+  { dir:[0,-1,0], shade:0.50, corners:[{pos:[1,0,1],uv:[1,0]},{pos:[0,0,1],uv:[0,0]},{pos:[1,0,0],uv:[1,1]},{pos:[0,0,0],uv:[0,1]}] },
+  { dir:[0, 1,0], shade:1.00, corners:[{pos:[0,1,1],uv:[1,1]},{pos:[1,1,1],uv:[0,1]},{pos:[0,1,0],uv:[1,0]},{pos:[1,1,0],uv:[0,0]}] },
+  { dir:[0,0,-1], shade:0.66, corners:[{pos:[1,0,0],uv:[0,0]},{pos:[0,0,0],uv:[1,0]},{pos:[1,1,0],uv:[0,1]},{pos:[0,1,0],uv:[1,1]}] },
+  { dir:[0,0, 1], shade:0.66, corners:[{pos:[0,0,1],uv:[0,0]},{pos:[1,0,1],uv:[1,0]},{pos:[0,1,1],uv:[0,1]},{pos:[1,1,1],uv:[1,1]}] },
+];
+const AO_LUT = [0.50, 0.66, 0.83, 1.0];
+const occ = (x, y, z) => isOpaque(getVoxel(x, y, z)) ? 1 : 0;
+/* classic per-vertex AO: two edge neighbours + the diagonal, in the face's outward layer */
+function vertexAO(wx, wy, wz, dir, cpos){
+  const bx = wx+dir[0], by = wy+dir[1], bz = wz+dir[2];
+  const off = [];
+  for(let a=0; a<3; a++) if(dir[a]===0) off.push([a, cpos[a] ? 1 : -1]);
+  const o1 = off[0], o2 = off[1];
+  const v = (oa, ob) => {
+    let dx=0,dy=0,dz=0;
+    if(oa){ if(oa[0]===0) dx+=oa[1]; else if(oa[0]===1) dy+=oa[1]; else dz+=oa[1]; }
+    if(ob){ if(ob[0]===0) dx+=ob[1]; else if(ob[0]===1) dy+=ob[1]; else dz+=ob[1]; }
+    return occ(bx+dx, by+dy, bz+dz);
+  };
+  const s1 = v(o1, null), s2 = v(o2, null), cor = v(o1, o2);
+  return (s1 && s2) ? 0 : 3 - (s1 + s2 + cor);
+}
+
+function buildGeometry(ch){
+  const ox = ch.cx*CHUNK, oy = ch.cy*CHUNK, oz = ch.cz*CHUNK;
+  const pos=[], nor=[], uvs=[], col=[], idx=[]; let v=0;
+  for(let lz=0; lz<CHUNK; lz++) for(let ly=0; ly<CHUNK; ly++) for(let lx=0; lx<CHUNK; lx++){
+    const id = ch.voxels[lx | (ly<<4) | (lz<<8)];
+    if(id === AIR) continue;
+    const wx = ox+lx, wy = oy+ly, wz = oz+lz;
+    const glow = BLOCKS[id].glow;
+    for(let f=0; f<6; f++){
+      const F = FACES[f], d = F.dir;
+      if(isOpaque(getVoxel(wx+d[0], wy+d[1], wz+d[2]))) continue;   // neighbour solid ⇒ cull
+      const tile = TILE_UV[tileFor(id, d[1])];
+      const ao = [0,0,0,0];
+      for(let i=0; i<4; i++){
+        const c = F.corners[i];
+        pos.push(lx + c.pos[0], ly + c.pos[1], lz + c.pos[2]);
+        nor.push(d[0], d[1], d[2]);
+        uvs.push(tile.uA + c.uv[0]*(tile.uB-tile.uA), tile.vB + c.uv[1]*(tile.vA-tile.vB));
+        const a = vertexAO(wx, wy, wz, d, c.pos); ao[i] = a;
+        if(glow){ col.push(1.55, 1.4, 0.95); }          // emissive look, ignore AO/shade
+        else { const b = F.shade * AO_LUT[a]; col.push(b, b, b); }
+      }
+      // flip triangulation toward the lower-AO diagonal (kills the anisotropy artifact)
+      if(ao[0] + ao[3] > ao[1] + ao[2]) idx.push(v, v+1, v+3, v, v+3, v+2);
+      else                              idx.push(v, v+1, v+2, v+2, v+1, v+3);
+      v += 4;
+    }
+  }
+  if(v === 0) return null;
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('normal',   new THREE.Float32BufferAttribute(nor, 3));
+  g.setAttribute('uv',       new THREE.Float32BufferAttribute(uvs, 2));
+  g.setAttribute('color',    new THREE.Float32BufferAttribute(col, 3));
+  g.setIndex(idx);
+  g.computeBoundingSphere();
+  g.userData.tris = idx.length / 3;
+  return g;
+}
+
+let chunkMaterial, totalTris = 0;
+function updateChunkMesh(i){
+  const ch = chunks[i]; if(!ch) return;
+  const g = buildGeometry(ch);
+  if(ch.mesh){ totalTris -= ch.mesh.geometry.userData.tris || 0; ch.mesh.geometry.dispose(); } // dispose ⇒ no leak
+  if(!g){ if(ch.mesh){ scene.remove(ch.mesh); ch.mesh = null; ch.tris = 0; } return; }
+  if(ch.mesh){ ch.mesh.geometry = g; }
+  else { ch.mesh = new THREE.Mesh(g, chunkMaterial); ch.mesh.position.set(ch.cx*CHUNK, ch.cy*CHUNK, ch.cz*CHUNK); scene.add(ch.mesh); }
+  ch.tris = g.userData.tris; totalTris += ch.tris;
+}
+function flushDirty(){ if(!dirty.size) return; for(const i of dirty) updateChunkMesh(i); dirty.clear(); }
+
+/* ------------------------------------------------------------------ THREE SCENE */
+let renderer, scene, camera, skydome, sunLight, highlight, highFace;
+const SKY_TOP = new THREE.Color('#7fb3ef'), SKY_HORIZON = new THREE.Color('#dCe9f4');
+
+function initRenderer(){
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas, antialias:true, powerPreference:'high-performance' });
+  } catch(e){ return false; }
+  if(!renderer || !renderer.getContext || !renderer.getContext()){ return false; }
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  renderer.setSize(innerWidth, innerHeight, false);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.04;
+  return true;
+}
+
+function initScene(){
+  scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(SKY_HORIZON.getHex(), 28, 112);
+
+  camera = new THREE.PerspectiveCamera(78, innerWidth/innerHeight, 0.08, 600);
+  camera.rotation.order = 'YXZ';
+
+  // gradient skydome (vertex colours, no shader) — recentred on the camera each frame
+  const sg = new THREE.SphereGeometry(360, 32, 18);
+  const cols = [];
+  const pa = sg.attributes.position;
+  for(let i=0; i<pa.count; i++){
+    const t = clamp(pa.getY(i)/360 * 0.5 + 0.5, 0, 1);
+    const c = SKY_HORIZON.clone().lerp(SKY_TOP, Math.pow(t, 0.7));
+    cols.push(c.r, c.g, c.b);
+  }
+  sg.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+  skydome = new THREE.Mesh(sg, new THREE.MeshBasicMaterial({ vertexColors:true, side:THREE.BackSide, fog:false, depthWrite:false }));
+  scene.add(skydome);
+
+  // lighting: warm directional sun + cool hemisphere fill (cheap, pairs with baked AO)
+  sunLight = new THREE.DirectionalLight(0xfff2dc, 1.55);
+  sunLight.position.set(0.55, 1, 0.32).normalize();
+  scene.add(sunLight);
+  scene.add(new THREE.HemisphereLight(0xcfe4ff, 0x6a5a44, 0.62));
+  scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+
+  chunkMaterial = new THREE.MeshLambertMaterial({ map:atlasTexture, vertexColors:true });
+
+  // targeted-cell highlight: crisp wireframe box + soft face plate
+  const boxEdges = new THREE.EdgesGeometry(new THREE.BoxGeometry(1.001, 1.001, 1.001));
+  highlight = new THREE.LineSegments(boxEdges, new THREE.LineBasicMaterial({ color:0x10131a, transparent:true, opacity:0.55, depthTest:true }));
+  highlight.visible = false; scene.add(highlight);
+  highFace = new THREE.Mesh(new THREE.PlaneGeometry(0.92, 0.92), new THREE.MeshBasicMaterial({ color:0xffffff, transparent:true, opacity:0.16, side:THREE.DoubleSide, depthWrite:false, fog:false }));
+  highFace.visible = false; highFace.renderOrder = 2; scene.add(highFace);
+}
+
+function applyRenderDistance(d){ scene.fog.far = d; scene.fog.near = d * 0.25; camera.far = Math.max(400, d * 3); camera.updateProjectionMatrix(); }
+
+/* ------------------------------------------------------------------ PLAYER + INPUT STATE */
+const player = { pos:new THREE.Vector3(), vel:new THREE.Vector3(), onGround:false, yaw:0, pitch:0 };
+const keys = Object.create(null);
+let active = GRASS, activeSlot = 0;
+let playing = false, worldReady = false, bobT = 0;
+
+const settings = {
+  sensitivity:1.0, fov:78, renderDist:112, showFps:false, viewBob:true, sound:true,
+  reduce: reduceMQ.matches,
+};
+
+/* ------------------------------------------------------------------ SAVE / LOAD (delta over seed) */
+const SAVE_KEY = 'voxel.save.v1', SET_KEY = 'voxel.settings.v1', HINT_KEY = 'voxel.hint.v1';
+let currentSeed = 4242;
+let editMap = new Map();                     // "x,y,z" -> id (player edits only)
+function recordEdit(x, y, z, id){ editMap.set(x+','+y+','+z, id); }
+function applyEdits(){ for(const [k, id] of editMap){ const [x,y,z] = k.split(',').map(Number); setVoxelRaw(x, y, z, id); } }
+
+function persistWorld(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify({ seed:currentSeed, edits:[...editMap] })); } catch(e){} }
+function hasSave(){ try { return !!localStorage.getItem(SAVE_KEY); } catch(e){ return false; } }
+function loadSettings(){
+  try { const s = JSON.parse(localStorage.getItem(SET_KEY)); if(s) Object.assign(settings, s); } catch(e){}
+  if(reduceMQ.matches) settings.reduce = true;
+}
+function persistSettings(){ try { localStorage.setItem(SET_KEY, JSON.stringify(settings)); } catch(e){} }
+
+/* ------------------------------------------------------------------ DDA VOXEL RAYCAST
+   Amanatides–Woo grid traversal: returns the exact hit cell + the face normal we entered through
+   (used as the placement offset). Handles axis-aligned rays (straight up/down) via Infinity tDelta. */
+const _fwd = new THREE.Vector3();
+function lookDir(){ _fwd.set(0,0,-1).applyEuler(new THREE.Euler(player.pitch, player.yaw, 0, 'YXZ')); return _fwd; }
+function raycastVoxel(){
+  const o = camera.position, d = lookDir();
+  let x = Math.floor(o.x), y = Math.floor(o.y), z = Math.floor(o.z);
+  const sx = Math.sign(d.x), sy = Math.sign(d.y), sz = Math.sign(d.z);
+  const dx = d.x !== 0 ? Math.abs(1/d.x) : Infinity;
+  const dy = d.y !== 0 ? Math.abs(1/d.y) : Infinity;
+  const dz = d.z !== 0 ? Math.abs(1/d.z) : Infinity;
+  let tx = d.x !== 0 ? ((sx>0 ? x+1-o.x : o.x-x) * dx) : Infinity;
+  let ty = d.y !== 0 ? ((sy>0 ? y+1-o.y : o.y-y) * dy) : Infinity;
+  let tz = d.z !== 0 ? ((sz>0 ? z+1-o.z : o.z-z) * dz) : Infinity;
+  let nx=0, ny=0, nz=0, t=0;
+  for(let i=0; i<256; i++){
+    if(tx < ty && tx < tz){ x+=sx; t=tx; tx+=dx; nx=-sx; ny=0; nz=0; }
+    else if(ty < tz){ y+=sy; t=ty; ty+=dy; nx=0; ny=-sy; nz=0; }
+    else { z+=sz; t=tz; tz+=dz; nx=0; ny=0; nz=-sz; }
+    if(t > REACH) break;
+    const id = getVoxel(x, y, z);
+    if(id !== AIR) return { x, y, z, nx, ny, nz, id };
+  }
+  return null;
+}
+
+function overlapsPlayer(x, y, z){
+  const p = player.pos;
+  return (x < p.x+PHW && x+1 > p.x-PHW) && (y < p.y+PH && y+1 > p.y) && (z < p.z+PHW && z+1 > p.z-PHW);
+}
+function updateHighlight(){
+  const hit = playing ? raycastVoxel() : null;
+  const ch = $('#crosshair');
+  if(!hit){ highlight.visible = false; highFace.visible = false; ch && ch.classList.remove('hit'); lastHit = null; return; }
+  lastHit = hit;
+  highlight.position.set(hit.x+0.5, hit.y+0.5, hit.z+0.5); highlight.visible = true;
+  highFace.position.set(hit.x+0.5 + hit.nx*0.502, hit.y+0.5 + hit.ny*0.502, hit.z+0.5 + hit.nz*0.502);
+  highFace.lookAt(highFace.position.x + hit.nx, highFace.position.y + hit.ny, highFace.position.z + hit.nz);
+  highFace.visible = true;
+  ch && ch.classList.add('hit');
+}
+let lastHit = null;
+
+function doBreak(){
+  const hit = raycastVoxel(); if(!hit) return;
+  if(BLOCKS[hit.id] && BLOCKS[hit.id].unbreakable){ toast('Bedrock can’t be broken', 'warn'); sfx('deny'); return; }
+  setVoxelEdit(hit.x, hit.y, hit.z, AIR); recordEdit(hit.x, hit.y, hit.z, AIR);
+  flushDirty(); sfx('break'); queueSave();
+}
+function doPlace(){
+  const hit = raycastVoxel(); if(!hit) return;
+  const x = hit.x+hit.nx, y = hit.y+hit.ny, z = hit.z+hit.nz;
+  if(x<0||y<0||z<0||x>=WORLD_W||y>=WORLD_H||z>=WORLD_D){ toast('Outside the world bounds', 'warn'); return; }
+  if(getVoxel(x, y, z) !== AIR) return;
+  if(overlapsPlayer(x, y, z)){ sfx('deny'); return; }     // never place inside yourself
+  setVoxelEdit(x, y, z, active); recordEdit(x, y, z, active);
+  flushDirty(); sfx('place'); queueSave();
+}
+
+/* ------------------------------------------------------------------ PHYSICS (fixed 60 Hz) */
+function collideAxis(axis, amount){
+  const p = player.pos; p.setComponent(axis, p.getComponent(axis) + amount);
+  const minx=p.x-PHW, maxx=p.x+PHW, miny=p.y, maxy=p.y+PH, minz=p.z-PHW, maxz=p.z+PHW;
+  const E = 1e-3;
+  const x0=Math.floor(minx+E), x1=Math.floor(maxx-E);
+  const y0=Math.floor(miny+E), y1=Math.floor(maxy-E);
+  const z0=Math.floor(minz+E), z1=Math.floor(maxz-E);
+  let hit = false, lim = amount > 0 ? Infinity : -Infinity;
+  for(let X=x0; X<=x1; X++) for(let Y=y0; Y<=y1; Y++) for(let Z=z0; Z<=z1; Z++){
+    if(!isSolid(getVoxel(X, Y, Z))) continue;
+    hit = true; const c = axis===0 ? X : axis===1 ? Y : Z;
+    lim = amount > 0 ? Math.min(lim, c) : Math.max(lim, c);
+  }
+  if(hit){
+    if(amount > 0) p.setComponent(axis, lim - (axis===1 ? PH : PHW));
+    else { p.setComponent(axis, lim + 1 + (axis===1 ? 0 : PHW)); if(axis===1) player.onGround = true; }
+    player.vel.setComponent(axis, 0);
+  }
+  return hit;
+}
+function physicsStep(dt){
+  // desired horizontal velocity from yaw + input.
+  // forward = (-sin yaw, 0, -cos yaw); right = (cos yaw, 0, -sin yaw)
+  let ix=0, iz=0;
+  if(keys['w']) iz -= 1; if(keys['s']) iz += 1; if(keys['a']) ix -= 1; if(keys['d']) ix += 1;
+  const sp = keys['shift'] ? SPRINT : WALK;
+  const cos = Math.cos(player.yaw), sin = Math.sin(player.yaw);
+  let wishX = 0, wishZ = 0;
+  if(ix || iz){
+    const len = Math.hypot(ix, iz), nx = ix/len, nz = iz/len;
+    wishX = (cos*nx + sin*nz) * sp;
+    wishZ = (-sin*nx + cos*nz) * sp;
+  }
+  // accelerate toward wish (snappier on ground)
+  const accel = player.onGround ? 14 : 4.5;
+  player.vel.x += (wishX - player.vel.x) * Math.min(1, accel*dt);
+  player.vel.z += (wishZ - player.vel.z) * Math.min(1, accel*dt);
+  player.vel.y -= GRAV * dt;
+
+  player.onGround = false;
+  collideAxis(1, player.vel.y * dt);                 // vertical first ⇒ sets ground
+  const bx = player.pos.x, bz = player.pos.z;
+  const cX = collideAxis(0, player.vel.x * dt);
+  const cZ = collideAxis(2, player.vel.z * dt);
+  // step-up assist over 1-block ledges when grounded
+  if((cX || cZ) && player.onGround){
+    const sX = player.pos.x, sZ = player.pos.z, sVx = player.vel.x, sVz = player.vel.z;
+    player.pos.x = bx; player.pos.z = bz; player.pos.y += STEP;
+    player.vel.x = sVx; player.vel.z = sVz;
+    collideAxis(0, sVx * dt); collideAxis(2, sVz * dt);
+    if(overlapsAny()){ player.pos.x = sX; player.pos.z = sZ; player.pos.y -= STEP; } // reverted: blocked
+  }
+  if(player.pos.y < -12){ respawn(); }               // below-world safety
+}
+function overlapsAny(){
+  const p = player.pos; const E = 1e-3;
+  for(let X=Math.floor(p.x-PHW+E); X<=Math.floor(p.x+PHW-E); X++)
+    for(let Y=Math.floor(p.y+E); Y<=Math.floor(p.y+PH-E); Y++)
+      for(let Z=Math.floor(p.z-PHW+E); Z<=Math.floor(p.z+PHW-E); Z++)
+        if(isSolid(getVoxel(X, Y, Z))) return true;
+  return false;
+}
+function respawn(){ player.pos.set(spawn.x, spawn.y + 0.2, spawn.z); player.vel.set(0,0,0); toast('Respawned at spawn', 'warn'); }
+
+let acc = 0;
+function updatePhysics(dt){
+  acc += dt; let n = 0;
+  while(acc >= 1/60 && n < 6){ physicsStep(1/60); acc -= 1/60; n++; }
+  if(acc > 0.5) acc = 0;
+}
+function updateCamera(dt){
+  const p = player.pos;
+  let bob = 0;
+  if(settings.viewBob && !settings.reduce && player.onGround){
+    const speed = Math.hypot(player.vel.x, player.vel.z);
+    bobT += dt * speed * 1.7;
+    bob = Math.sin(bobT) * Math.min(0.06, speed * 0.012);
+  }
+  camera.position.set(p.x, p.y + EYE + bob, p.z);
+  camera.rotation.set(player.pitch, player.yaw, 0);
+}
+
+/* ------------------------------------------------------------------ AUDIO (gesture-gated) */
+let actx = null;
+function ensureAudio(){
+  if(!settings.sound) return;
+  if(!actx){ try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){ actx = null; return; } }
+  if(actx && actx.state === 'suspended') actx.resume();
+}
+function sfx(kind){
+  if(!settings.sound || !actx) return;
+  const t = actx.currentTime, o = actx.createOscillator(), g = actx.createGain();
+  o.connect(g); g.connect(actx.destination);
+  let f0 = 220, f1 = 160, dur = 0.09, type = 'square', vol = 0.06;
+  if(kind === 'break'){ f0 = 180; f1 = 90; type = 'square'; dur = 0.1; }
+  else if(kind === 'place'){ f0 = 320; f1 = 440; type = 'triangle'; dur = 0.08; }
+  else if(kind === 'deny'){ f0 = 140; f1 = 110; type = 'sawtooth'; dur = 0.12; vol = 0.05; }
+  o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.start(t); o.stop(t + dur + 0.02);
+}
+
+/* ------------------------------------------------------------------ POINTER LOCK + LOOK */
+function requestPlay(){
+  ensureAudio();
+  if(!('requestPointerLock' in canvas)){ enterFallback(); return; }
+  try { const r = canvas.requestPointerLock(); if(r && r.catch) r.catch(()=>{}); }
+  catch(e){ toast('Pointer-lock was blocked', 'warn'); }
+}
+function onLockChange(){
+  playing = document.pointerLockElement === canvas;
+  if(playing){
+    setState('playing');
+    maybeShowHint();
+  } else {
+    if(worldReady) setState('menu');
+    for(const k in keys) keys[k] = false;       // avoid stuck keys after Esc
+    if(highlight){ highlight.visible = false; highFace.visible = false; }
+    openMenu();
+  }
+}
+function onLockError(){ toast('Couldn’t lock the pointer here', 'warn'); if(worldReady) setState('menu'); }
+function onMouseMove(e){
+  if(!playing) return;
+  const s = 0.0022 * settings.sensitivity;
+  player.yaw   -= e.movementX * s;
+  player.pitch -= e.movementY * s;
+  const lim = Math.PI/2 - 0.0015;               // allow ~straight up/down without gimbal flip
+  player.pitch = clamp(player.pitch, -lim, lim);
+}
+
+/* ------------------------------------------------------------------ INPUT */
+function onKeyDown(e){
+  const k = e.key.toLowerCase();
+  if(playing && (k === 'w' || k === 'a' || k === 's' || k === 'd' || k === ' ' || k === 'shift')) e.preventDefault();
+  if(k === ' ') keys['space'] = true; else keys[k] = true;
+  if(k === ' ' && playing && player.onGround){ player.vel.y = JUMP; player.onGround = false; }
+  if(playing && k >= '1' && k <= '9'){ const n = +k - 1; if(n < HOTBAR.length) selectSlot(n); }
+}
+function onKeyUp(e){ const k = e.key.toLowerCase(); if(k === ' ') keys['space'] = false; keys[k] = false; }
+function onMouseDown(e){
+  if(!playing) return;
+  if(e.button === 0) doBreak();
+  else if(e.button === 2) doPlace();
+}
+function onWheel(e){
+  if(!playing) return; e.preventDefault();
+  selectSlot((activeSlot + (e.deltaY > 0 ? 1 : -1) + HOTBAR.length) % HOTBAR.length);
+}
+
+/* ------------------------------------------------------------------ HOTBAR */
+function drawBlockIcon(cv, id){
+  const ctx = cv.getContext('2d'); const W = cv.width, H = cv.height; ctx.clearRect(0,0,W,H);
+  ctx.imageSmoothingEnabled = false;
+  const cx = W/2, w = W*0.34, Ty = H*0.12, My = H*0.30, Fy = H*0.48, side = H*0.30;
+  const topIdx = tileFor(id, 1), sideIdx = tileFor(id, 0);
+  const tilePx = (idx) => [(idx % ATLAS_N) * TS, ((idx / ATLAS_N) | 0) * TS];
+  // map a tile square onto parallelogram (origin p0, edge vectors u,v), then brightness overlay
+  function face(idx, p0, u, v, bright){
+    const [sx, sy] = tilePx(idx);
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p0[0]+u[0], p0[1]+u[1]);
+    ctx.lineTo(p0[0]+u[0]+v[0], p0[1]+u[1]+v[1]); ctx.lineTo(p0[0]+v[0], p0[1]+v[1]); ctx.closePath();
+    ctx.clip();
+    ctx.setTransform(u[0]/TS, u[1]/TS, v[0]/TS, v[1]/TS, p0[0], p0[1]);
+    ctx.drawImage(atlasCanvas, sx, sy, TS, TS, 0, 0, TS, TS);
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.fillStyle = bright >= 0 ? `rgba(255,255,255,${bright})` : `rgba(0,0,0,${-bright})`;
+    ctx.fill();
+    ctx.restore();
+  }
+  const left = [cx - w, My], front = [cx, Fy], down = [0, side];
+  face(topIdx,  left,  [w, Ty - My], [w, Fy - My], 0.12);          // top rhombus
+  face(sideIdx, left,  [w, Fy - My], down, -0.24);                 // left face (darker)
+  face(sideIdx, front, [w, My - Fy], down, -0.07);                 // right face
+}
+function buildHotbar(){
+  const bar = $('#hotbar'); bar.innerHTML = '';
+  HOTBAR.forEach((id, i) => {
+    const b = document.createElement('button');
+    b.className = 'slot'; b.type = 'button'; b.setAttribute('role','button');
+    b.setAttribute('aria-pressed', i === activeSlot ? 'true' : 'false');
+    b.setAttribute('aria-keyshortcuts', String(i+1));
+    b.setAttribute('aria-label', BLOCKS[id].name + ' (key ' + (i+1) + ')');
+    b.title = BLOCKS[id].name + ' · ' + (i+1);
+    b.tabIndex = i === activeSlot ? 0 : -1;
+    const cv = document.createElement('canvas'); cv.width = cv.height = 56;
+    drawBlockIcon(cv, id);
+    const kb = document.createElement('span'); kb.className = 'kbd'; kb.textContent = i+1;
+    b.append(cv, kb);
+    b.addEventListener('click', () => { selectSlot(i); b.blur(); });
+    b.addEventListener('keydown', (e) => {
+      if(e.key === 'ArrowRight' || e.key === 'ArrowLeft'){
+        e.preventDefault();
+        const n = (i + (e.key === 'ArrowRight' ? 1 : -1) + HOTBAR.length) % HOTBAR.length;
+        selectSlot(n); bar.children[n].focus();
+      }
+    });
+    bar.appendChild(b);
+  });
+}
+function selectSlot(i){
+  activeSlot = i; active = HOTBAR[i];
+  const bar = $('#hotbar');
+  [...bar.children].forEach((el, n) => { el.setAttribute('aria-pressed', n === i ? 'true' : 'false'); el.tabIndex = n === i ? 0 : -1; });
+  const hn = $('#handname'); hn.textContent = BLOCKS[active].name; hn.classList.add('show');
+  clearTimeout(selectSlot._t); selectSlot._t = setTimeout(() => hn.classList.remove('show'), 1400);
+}
+
+/* ------------------------------------------------------------------ RENDER LOOP */
+let last = performance.now(), fpsAcc = 0, fpsFrames = 0;
+const COMPASS = ['N','NE','E','SE','S','SW','W','NW'];
+function updateReadouts(){
+  const p = player.pos;
+  $('#rd-pos').textContent = Math.floor(p.x) + ' ' + Math.floor(p.y) + ' ' + Math.floor(p.z);
+  const fx = -Math.sin(player.yaw), fz = -Math.cos(player.yaw);
+  let ang = Math.atan2(fx, -fz); if(ang < 0) ang += Math.PI*2;
+  $('#rd-face').textContent = COMPASS[Math.round(ang / (Math.PI/4)) % 8];
+}
+function idleOrbit(t){
+  const r = 15, a = t * 0.07;
+  camera.position.set(spawn.x + Math.cos(a)*r, spawn.y + 6.5, spawn.z + Math.sin(a)*r);
+  camera.lookAt(spawn.x, spawn.y + 1.2, spawn.z);
+}
+function animate(now){
+  requestAnimationFrame(animate);
+  let dt = (now - last) / 1000; last = now; if(dt > 0.1) dt = 0.1;
+  flushDirty();
+  const st = stage.dataset.state;
+  if(playing){ updatePhysics(dt); updateCamera(dt); updateHighlight(); }
+  else if(worldReady && (st === 'menu' || st === 'fallback') && !settings.reduce){ idleOrbit(now / 1000); }
+  if(skydome) skydome.position.copy(camera.position);
+  if(renderer) renderer.render(scene, camera);
+  fpsAcc += dt; fpsFrames++;
+  if(fpsAcc >= 0.5){ $('#rd-fps').textContent = Math.round(fpsFrames / fpsAcc); fpsAcc = 0; fpsFrames = 0; if(playing) updateReadouts(); }
+}
+
+/* ------------------------------------------------------------------ MENU / SETTINGS WIRING */
+function openMenu(){
+  const first = !player._played;
+  $('#play-label').textContent = first ? 'Click to play' : 'Resume';
+  $('#menu-eyebrow').textContent = first ? 'Ready to play' : 'Paused';
+  $('#btn-load').disabled = !hasSave();
+  requestAnimationFrame(() => $('#btn-play').focus());
+}
+function maybeShowHint(){
+  player._played = true;
+  let dismissed = false; try { dismissed = !!localStorage.getItem(HINT_KEY); } catch(e){}
+  if(dismissed) return;
+  const h = $('#hint'); h.classList.add('show');
+  clearTimeout(maybeShowHint._t); maybeShowHint._t = setTimeout(() => h.classList.remove('show'), 6500);
+}
+function dismissHint(){ $('#hint').classList.remove('show'); try { localStorage.setItem(HINT_KEY, '1'); } catch(e){} }
+
+function resetPlayerToSpawn(){ player.pos.set(spawn.x, spawn.y + 0.15, spawn.z); player.vel.set(0,0,0); player.yaw = Math.PI*0.25; player.pitch = -0.12; }
+function disposeAllChunks(){ for(const ch of chunks){ if(ch && ch.mesh){ scene.remove(ch.mesh); ch.mesh.geometry.dispose(); ch.mesh = null; } } totalTris = 0; }
+
+function meshAllProgressive(done){
+  const order = []; for(let i = 0; i < chunks.length; i++) order.push(i);
+  let k = 0;
+  (function step(){
+    const t0 = performance.now();
+    while(k < order.length && performance.now() - t0 < 10){ updateChunkMesh(order[k]); k++; }
+    const pct = Math.round(k / order.length * 100);
+    $('#load-bar').style.width = pct + '%'; $('#load-pct').textContent = pct;
+    $('#load-sub').textContent = 'meshing chunks';
+    if(k < order.length) requestAnimationFrame(step); else done();
+  })();
+}
+function regenerate(seed, after){
+  setState('loading'); $('#load-bar').style.width = '0%'; $('#load-pct').textContent = '0'; $('#load-sub').textContent = 'terrain';
+  disposeAllChunks();
+  // defer a frame so the loading state paints before the synchronous terrain pass
+  requestAnimationFrame(() => { generateWorld(seed); meshAllProgressive(() => { resetPlayerToSpawn(); after && after(); }); });
+}
+function loadWorld(){
+  let s; try { s = JSON.parse(localStorage.getItem(SAVE_KEY)); } catch(e){}
+  if(!s){ toast('No saved world found', 'warn'); return; }
+  currentSeed = s.seed; editMap = new Map(s.edits);
+  regenerate(currentSeed, () => { setState('menu'); openMenu(); toast('World loaded', 'good'); });
+}
+function newWorld(){
+  currentSeed = (Math.random() * 1e9) | 0; editMap = new Map();
+  regenerate(currentSeed, () => { persistWorld(); setState('menu'); openMenu(); toast('Fresh world generated', 'good'); });
+}
+let saveTimer = null;
+function queueSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(persistWorld, 600); }
+
+function applyReduce(){ document.body.dataset.reduce = settings.reduce ? 'true' : 'false'; }
+function syncSettingsUI(){
+  $('#set-sens').value = settings.sensitivity; $('#val-sens').textContent = settings.sensitivity.toFixed(2).replace(/0$/,'') + '×';
+  $('#set-fov').value = settings.fov; $('#val-fov').textContent = settings.fov + '°';
+  $('#set-dist').value = settings.renderDist; $('#val-dist').textContent = settings.renderDist;
+  $('#set-fps').checked = settings.showFps; $('#set-bob').checked = settings.viewBob;
+  $('#set-sound').checked = settings.sound; $('#set-reduce').checked = settings.reduce;
+}
+function applyAllSettings(){
+  camera.fov = settings.fov; camera.updateProjectionMatrix();
+  applyRenderDistance(settings.renderDist);
+  $('#chip-fps').dataset.hidden = settings.showFps ? 'false' : 'true';
+  applyReduce();
+}
+
+function enterFallback(){ setState('fallback'); requestAnimationFrame(() => $('#fallback .panel').focus()); }
+function maybeFallback(){
+  const noLock = !('requestPointerLock' in canvas);
+  const coarse = matchMedia('(pointer:coarse)').matches && !matchMedia('(pointer:fine)').matches;
+  if(noLock || coarse){ enterFallback(); return true; }
+  return false;
+}
+function showError(msg){ if(msg) $('#err-msg').textContent = msg; setState('error'); requestAnimationFrame(() => $('#error .panel').focus()); }
+
+/* ------------------------------------------------------------------ EVENTS */
+function wireEvents(){
+  document.addEventListener('pointerlockchange', onLockChange);
+  document.addEventListener('pointerlockerror', onLockError);
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mousedown', onMouseDown);
+  window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keyup', onKeyUp);
+  canvas.addEventListener('wheel', onWheel, { passive:false });
+  stage.addEventListener('contextmenu', (e) => e.preventDefault());
+  window.addEventListener('resize', onResize);
+  window.addEventListener('blur', () => { for(const k in keys) keys[k] = false; });
+
+  $('#btn-play').addEventListener('click', requestPlay);
+  $('#btn-pause').addEventListener('click', () => { try { document.exitPointerLock(); } catch(e){} });
+  $('#btn-help').addEventListener('click', (e) => {
+    const open = $('#legend').style.display !== 'none';
+    $('#legend').style.display = open ? 'none' : 'grid';
+    e.currentTarget.setAttribute('aria-expanded', String(!open));
+  });
+  $('#btn-save').addEventListener('click', () => { persistWorld(); $('#save-status').textContent = 'Saved ' + new Date().toLocaleTimeString(); $('#btn-load').disabled = false; toast('World saved', 'good'); });
+  $('#btn-load').addEventListener('click', loadWorld);
+  $('#btn-new').addEventListener('click', newWorld);
+  $('#hint-x').addEventListener('click', dismissHint);
+  $('#btn-fb-try').addEventListener('click', () => { setState('menu'); openMenu(); });
+  $('#btn-err-retry').addEventListener('click', () => location.reload());
+
+  const bind = (id, key, fmt, fn) => $(id).addEventListener('input', (e) => {
+    const v = e.target.type === 'checkbox' ? e.target.checked : parseFloat(e.target.value);
+    settings[key] = v; if(fmt) $(fmt.el).textContent = fmt.f(v); fn && fn(v); persistSettings();
+  });
+  bind('#set-sens', 'sensitivity', { el:'#val-sens', f:(v)=>v.toFixed(2).replace(/0$/,'') + '×' });
+  bind('#set-fov', 'fov', { el:'#val-fov', f:(v)=>v + '°' }, (v) => { camera.fov = v; camera.updateProjectionMatrix(); });
+  bind('#set-dist', 'renderDist', { el:'#val-dist', f:(v)=>String(v) }, (v) => applyRenderDistance(v));
+  bind('#set-fps', 'showFps', null, (v) => $('#chip-fps').dataset.hidden = v ? 'false' : 'true');
+  bind('#set-bob', 'viewBob', null, null);
+  bind('#set-sound', 'sound', null, (v) => { if(v) ensureAudio(); });
+  bind('#set-reduce', 'reduce', null, applyReduce);
+
+  reduceMQ.addEventListener && reduceMQ.addEventListener('change', (e) => { settings.reduce = e.matches; syncSettingsUI(); applyReduce(); });
+}
+function onResize(){
+  if(!renderer) return;
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight, false);
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+}
+
+/* ------------------------------------------------------------------ BOOT */
+function init(){
+  loadSettings();
+  applyReduce();
+  buildAtlas();
+  if(!initRenderer()){ showError(); return; }
+  initScene();
+  syncSettingsUI();
+  applyAllSettings();
+  buildHotbar(); selectSlot(0);
+  wireEvents();
+
+  if(hasSave()){ try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); currentSeed = s.seed; editMap = new Map(s.edits); } catch(e){ currentSeed = 4242; } }
+  else { currentSeed = 4242; }
+
+  requestAnimationFrame(animate);
+  // first generation with the loading screen visible
+  requestAnimationFrame(() => {
+    generateWorld(currentSeed);
+    meshAllProgressive(() => {
+      worldReady = true;
+      resetPlayerToSpawn();
+      if(!maybeFallback()){ setState('menu'); openMenu(); }
+    });
+  });
+}
+init();
+  </script>
+</body>
+</html>

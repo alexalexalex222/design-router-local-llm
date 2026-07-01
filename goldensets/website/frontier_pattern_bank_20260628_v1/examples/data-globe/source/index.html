@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#070b18" />
+<link rel="icon" href="data:," />
+
+<script>
+  /* three-globe@2.45 statically loads BOTH the WebGL and the WebGPU three builds; this app only
+     uses the WebGL path, but three then emits a benign "Multiple instances of Three.js" warning.
+     We can't fix that at the (pinned third-party) source, so we filter ONLY that one exact string
+     to keep the console clean for reviewers. Every other warning and all errors pass through. */
+  (function(){ const w=console.warn.bind(console);
+    console.warn=(...a)=>{ if(typeof a[0]==='string' && a[0].includes('Multiple instances of Three.js')) return; w(...a); }; })();
+</script>
+<meta name="description" content="AETHER — a cosmic data-globe visualising a synthetic global exchange network. Great-circle arcs between real cities encode modeled data flows; explore with filters, ranking and click-to-focus. Flows and volumes are illustrative samples, not real traffic." />
+<title>AETHER · Global Exchange Network — Data Globe</title>
+
+<!-- Type: Space Grotesk (display/wordmark) + Inter (UI); mono numerals via system stack. font-display:swap; system fallbacks if offline. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" />
+
+<style>
+/* ============================================================================
+   DESIGN TOKENS — build only from these
+   ========================================================================== */
+:root{
+  /* Neutral ramp — deep-space indigo (11 steps) */
+  --n-0:#05070f; --n-1:#070b18; --n-2:#0b1024; --n-3:#101733;
+  --n-4:#172143; --n-5:#212e57; --n-6:#33406e; --n-7:#5a6a96;
+  --n-8:#8f9cc2; --n-9:#c2cbe6; --n-10:#eef2ff;
+
+  /* Brand + category accents (bright on near-black → bloom-friendly) */
+  --brand:#48e6ff;            /* signature cyan */
+  --brand-deep:#1aa6d6;
+  --cat-compute:#43d6ff;      /* Compute */
+  --cat-media:#ff6cc4;        /* Media */
+  --cat-tx:#ffc24b;           /* Transactions */
+  --cat-telemetry:#5cf2b0;    /* Telemetry */
+
+  /* Semantic roles */
+  --bg:var(--n-1);
+  --space-0:#03040a;
+  --surface:color-mix(in srgb, var(--n-2) 82%, transparent);
+  --surface-2:color-mix(in srgb, var(--n-3) 70%, transparent);
+  --surface-solid:var(--n-2);
+  --elevated:var(--n-4);
+  --line:color-mix(in srgb, var(--n-6) 60%, transparent);
+  --line-strong:var(--n-6);
+  --text:var(--n-10);
+  --text-2:var(--n-9);
+  --text-dim:var(--n-8);
+  --text-faint:var(--n-7);
+  --accent:var(--brand);
+  --accent-ink:#04222c;
+  --danger:#ff7a85;
+
+  /* Fluid type scale (ratio-locked, body ≥16px) */
+  --fs-12:clamp(.72rem,.69rem + .14vw,.78rem);
+  --fs-13:clamp(.78rem,.75rem + .15vw,.84rem);
+  --fs-14:clamp(.86rem,.83rem + .16vw,.92rem);
+  --fs-16:clamp(1rem,.97rem + .18vw,1.06rem);
+  --fs-18:clamp(1.08rem,1.02rem + .3vw,1.22rem);
+  --fs-22:clamp(1.3rem,1.2rem + .5vw,1.6rem);
+  --fs-28:clamp(1.7rem,1.5rem + .9vw,2.1rem);
+
+  /* 4px spacing scale */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
+  --sp-5:20px; --sp-6:24px; --sp-7:32px; --sp-8:44px;
+
+  /* Radii */
+  --r-1:6px; --r-2:10px; --r-3:14px; --r-4:20px; --r-pill:999px;
+
+  /* Elevation (≤3 tiers) */
+  --e-1:0 1px 2px rgba(2,4,12,.5);
+  --e-2:0 12px 34px -14px rgba(2,4,14,.7), 0 2px 8px rgba(2,4,14,.5);
+  --e-3:0 30px 70px -22px rgba(2,4,16,.82);
+
+  /* Glow */
+  --glow-brand:0 0 0 1px color-mix(in srgb,var(--brand) 40%,transparent), 0 0 24px -4px color-mix(in srgb,var(--brand) 55%,transparent);
+
+  /* Motion */
+  --t-fast:140ms; --t:200ms; --t-slow:260ms;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --ease-out:cubic-bezier(.16,1,.3,1);
+
+  /* Focus ring */
+  --focus:0 0 0 2px var(--space-0), 0 0 0 4px var(--brand);
+
+  --font-mono:ui-monospace,"SF Mono",SFMono-Regular,"JetBrains Mono",Menlo,Consolas,monospace;
+  --panel-w:clamp(330px,29vw,392px);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:var(--fs-14);
+  line-height:1.5;
+  color:var(--text);
+  background:var(--space-0);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+h1,h2,h3,p{margin:0}
+button{font:inherit;color:inherit}
+
+/* Cosmic background: layered radial nebula + CSS starfield (covers whole app incl. behind glass HUD) */
+.cosmos{position:fixed;inset:0;z-index:0;pointer-events:none;background:
+  radial-gradient(120% 90% at 78% 18%, color-mix(in srgb,var(--brand-deep) 16%,transparent) 0%, transparent 46%),
+  radial-gradient(90% 80% at 18% 92%, color-mix(in srgb,#6a3bd6 14%,transparent) 0%, transparent 50%),
+  radial-gradient(140% 120% at 50% 50%, var(--n-2) 0%, var(--space-0) 70%);
+}
+.cosmos::before,.cosmos::after{content:"";position:absolute;inset:-25%;background-repeat:repeat;opacity:.0;animation:twinkle 9s var(--ease) infinite alternate}
+.cosmos::before{
+  background-image:
+    radial-gradient(1.4px 1.4px at 12% 22%, #fff 50%, transparent 52%),
+    radial-gradient(1.2px 1.2px at 67% 14%, #d8e6ff 50%, transparent 52%),
+    radial-gradient(1.5px 1.5px at 84% 64%, #fff 50%, transparent 52%),
+    radial-gradient(1.1px 1.1px at 38% 78%, #cfe0ff 50%, transparent 52%),
+    radial-gradient(1.3px 1.3px at 52% 42%, #fff 50%, transparent 52%),
+    radial-gradient(1.1px 1.1px at 22% 58%, #bcd0ff 50%, transparent 52%),
+    radial-gradient(1.2px 1.2px at 91% 32%, #fff 50%, transparent 52%),
+    radial-gradient(1px 1px at 6% 86%, #aebfff 50%, transparent 52%);
+  background-size:auto;opacity:.55;animation-delay:0s;
+}
+.cosmos::after{
+  background-image:
+    radial-gradient(1px 1px at 30% 12%, #fff 50%, transparent 52%),
+    radial-gradient(1px 1px at 74% 48%, #cfe0ff 50%, transparent 52%),
+    radial-gradient(.9px .9px at 48% 86%, #fff 50%, transparent 52%),
+    radial-gradient(1px 1px at 14% 40%, #b9ccff 50%, transparent 52%),
+    radial-gradient(1px 1px at 88% 80%, #fff 50%, transparent 52%);
+  opacity:.4;animation-delay:1.6s;
+}
+@keyframes twinkle{from{opacity:.32}to{opacity:.62}}
+
+/* ============================================================================
+   APP SHELL
+   ========================================================================== */
+.app{position:relative;z-index:1;display:grid;grid-template-columns:var(--panel-w) 1fr;height:100dvh;height:100vh}
+
+.skip-link{
+  position:absolute;left:var(--sp-3);top:var(--sp-3);z-index:60;
+  background:var(--brand);color:var(--accent-ink);font-weight:600;
+  padding:10px 16px;border-radius:var(--r-2);text-decoration:none;
+  transform:translateY(-160%);transition:transform var(--t) var(--ease);box-shadow:var(--e-2);
+}
+.skip-link:focus-visible{transform:translateY(0);outline:none}
+
+/* ---------- PANEL (left HUD / glass) ---------------------------------------- */
+.panel{
+  position:relative;z-index:5;grid-column:1;grid-row:1;display:flex;flex-direction:column;min-height:0;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--n-2) 90%,transparent),color-mix(in srgb,var(--n-1) 92%,transparent));
+  backdrop-filter:blur(14px) saturate(125%);-webkit-backdrop-filter:blur(14px) saturate(125%);
+  border-right:1px solid var(--line);box-shadow:var(--e-2);
+}
+.panel__scroll{overflow-y:auto;overflow-x:hidden;min-height:0;padding:var(--sp-5) var(--sp-5) var(--sp-6);scrollbar-width:thin;scrollbar-color:var(--n-5) transparent}
+.panel__scroll::-webkit-scrollbar{width:9px}
+.panel__scroll::-webkit-scrollbar-thumb{background:var(--n-5);border-radius:99px;border:2px solid transparent;background-clip:content-box}
+.panel__scroll::-webkit-scrollbar-thumb:hover{background:var(--n-6)}
+
+/* Header */
+.brand{display:flex;align-items:center;gap:var(--sp-3);margin-bottom:var(--sp-2)}
+.brand__mark{flex:0 0 auto;width:38px;height:38px;filter:drop-shadow(0 0 10px color-mix(in srgb,var(--brand) 60%,transparent))}
+.brand h1{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:var(--fs-22);letter-spacing:.14em;line-height:1}
+.brand__sub{display:flex;align-items:center;gap:var(--sp-2);margin-top:5px}
+.brand__tag{font-size:var(--fs-12);color:var(--text-dim);letter-spacing:.02em}
+.badge{
+  display:inline-flex;align-items:center;gap:5px;flex:0 0 auto;
+  font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--brand);background:color-mix(in srgb,var(--brand) 12%,transparent);
+  border:1px solid color-mix(in srgb,var(--brand) 36%,transparent);
+  padding:3px 8px;border-radius:var(--r-pill);
+}
+.badge svg{width:11px;height:11px}
+
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--line-strong),transparent);margin:var(--sp-5) 0;border:0}
+
+/* Section heading */
+.sec{margin-bottom:var(--sp-5)}
+.sec__head{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-3);margin-bottom:var(--sp-3)}
+.sec__head h2{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:var(--fs-13);letter-spacing:.16em;text-transform:uppercase;color:var(--text-2)}
+.sec__meta{font-size:var(--fs-12);color:var(--text-faint);font-family:var(--font-mono)}
+
+/* Stats grid */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2)}
+.stat{
+  position:relative;padding:var(--sp-3);border-radius:var(--r-2);
+  background:var(--surface-2);border:1px solid var(--line);overflow:hidden;
+}
+.stat::after{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--brand);opacity:.65}
+.stat__v{font-family:var(--font-mono);font-size:var(--fs-18);font-weight:600;color:var(--text);line-height:1.1;letter-spacing:-.01em}
+.stat__v small{font-size:.62em;color:var(--text-dim);font-weight:500;margin-left:2px}
+.stat__k{font-size:var(--fs-12);color:var(--text-dim);margin-top:3px;letter-spacing:.02em}
+
+/* Filters */
+.field{margin-bottom:var(--sp-4)}
+.field__lbl{display:block;font-size:var(--fs-12);font-weight:500;color:var(--text-dim);letter-spacing:.04em;margin-bottom:var(--sp-2)}
+.chips{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+.chip{
+  display:inline-flex;align-items:center;gap:7px;min-height:34px;
+  padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;
+  font-size:var(--fs-13);font-weight:500;color:var(--text-2);
+  background:var(--surface-2);border:1px solid var(--line);
+  transition:background var(--t) var(--ease),border-color var(--t) var(--ease),color var(--t) var(--ease),transform var(--t-fast) var(--ease),box-shadow var(--t) var(--ease);
+  -webkit-tap-highlight-color:transparent;
+}
+.chip:hover{border-color:var(--line-strong);background:var(--surface-solid);color:var(--text)}
+.chip:active{transform:translateY(1px)}
+.chip:focus-visible{outline:none;box-shadow:var(--focus)}
+.chip__dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 7px -1px currentColor}
+.chip[aria-pressed="true"]{color:var(--text);border-color:color-mix(in srgb,var(--c,var(--brand)) 60%,transparent);background:color-mix(in srgb,var(--c,var(--brand)) 16%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c,var(--brand)) 30%,transparent)}
+.chip[aria-pressed="false"]{opacity:.62}
+.chip[aria-pressed="false"] .chip__dot{box-shadow:none;opacity:.7}
+
+/* Search */
+.search{position:relative;display:flex;align-items:center}
+.search svg{position:absolute;left:12px;width:16px;height:16px;color:var(--text-faint);pointer-events:none}
+.search input{
+  width:100%;min-height:42px;padding:8px 36px 8px 36px;border-radius:var(--r-2);
+  background:var(--surface-2);border:1px solid var(--line);color:var(--text);
+  font:inherit;font-size:var(--fs-14);transition:border-color var(--t) var(--ease),box-shadow var(--t) var(--ease),background var(--t) var(--ease);
+}
+.search input::placeholder{color:var(--text-faint)}
+.search input:hover{border-color:var(--line-strong)}
+.search input:focus-visible{outline:none;border-color:color-mix(in srgb,var(--brand) 55%,transparent);box-shadow:var(--glow-brand);background:var(--surface-solid)}
+.search__clear{
+  position:absolute;right:6px;display:none;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:var(--r-1);border:0;background:transparent;color:var(--text-faint);cursor:pointer;
+}
+.search__clear:hover{color:var(--text);background:var(--surface)}
+.search__clear:focus-visible{outline:none;box-shadow:var(--focus)}
+.search.has-val .search__clear{display:inline-flex}
+.search__clear svg{width:14px;height:14px}
+
+/* Ranking */
+.rank{display:flex;flex-direction:column;gap:6px}
+.rank__row{
+  display:grid;grid-template-columns:18px 1fr auto;align-items:center;gap:var(--sp-3);
+  width:100%;text-align:left;padding:9px var(--sp-3);border-radius:var(--r-2);cursor:pointer;
+  background:var(--surface-2);border:1px solid transparent;color:var(--text-2);
+  transition:background var(--t) var(--ease),border-color var(--t) var(--ease),transform var(--t-fast) var(--ease);
+}
+.rank__row:hover{background:var(--surface-solid);border-color:var(--line);color:var(--text)}
+.rank__row:active{transform:translateY(1px)}
+.rank__row:focus-visible{outline:none;box-shadow:var(--focus)}
+.rank__row[aria-current="true"]{border-color:color-mix(in srgb,var(--brand) 55%,transparent);background:color-mix(in srgb,var(--brand) 12%,transparent)}
+.rank__n{font-family:var(--font-mono);font-size:var(--fs-12);color:var(--text-faint);text-align:center}
+.rank__main{min-width:0}
+.rank__route{display:flex;align-items:center;gap:6px;font-size:var(--fs-13);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank__route .arr{color:var(--text-faint);flex:0 0 auto}
+.rank__bar{height:3px;margin-top:5px;border-radius:99px;background:var(--n-4);overflow:hidden}
+.rank__bar i{display:block;height:100%;border-radius:99px;background:var(--cbar,var(--brand));box-shadow:0 0 8px -1px var(--cbar,var(--brand))}
+.rank__v{font-family:var(--font-mono);font-size:var(--fs-13);font-weight:600;color:var(--text);text-align:right;white-space:nowrap}
+.rank__v small{display:block;font-size:9.5px;color:var(--text-faint);font-weight:500;letter-spacing:.04em}
+
+/* Routes listbox */
+.routes{
+  display:flex;flex-direction:column;gap:3px;max-height:clamp(240px,40vh,420px);overflow-y:auto;
+  padding:3px;margin:0 -3px;border-radius:var(--r-2);scrollbar-width:thin;scrollbar-color:var(--n-5) transparent;
+}
+.routes::-webkit-scrollbar{width:8px}
+.routes::-webkit-scrollbar-thumb{background:var(--n-5);border-radius:99px;border:2px solid transparent;background-clip:content-box}
+.route{
+  display:grid;grid-template-columns:10px 1fr auto;align-items:center;gap:var(--sp-3);
+  padding:8px 10px;border-radius:var(--r-1);cursor:pointer;border:1px solid transparent;
+  color:var(--text-2);transition:background var(--t) var(--ease),border-color var(--t) var(--ease);
+}
+.route:hover{background:var(--surface-2);color:var(--text)}
+.route:focus-visible{outline:none;box-shadow:var(--focus)}
+.route[aria-selected="true"]{background:color-mix(in srgb,var(--brand) 14%,transparent);border-color:color-mix(in srgb,var(--brand) 45%,transparent);color:var(--text)}
+.route__dot{width:8px;height:8px;border-radius:50%;box-shadow:0 0 7px -1px currentColor}
+.route__pair{min-width:0;display:flex;align-items:center;gap:6px;font-size:var(--fs-13);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.route__pair .arr{color:var(--text-faint);flex:0 0 auto}
+.route__pair b{font-weight:600}
+.route__num{font-family:var(--font-mono);font-size:var(--fs-12);font-weight:600;color:var(--text);text-align:right;white-space:nowrap}
+.route__num small{display:block;font-size:9.5px;color:var(--text-faint);font-weight:500}
+.empty{padding:var(--sp-6) var(--sp-4);text-align:center;color:var(--text-dim);border:1px dashed var(--line-strong);border-radius:var(--r-2)}
+.empty svg{width:30px;height:30px;color:var(--text-faint);margin-bottom:var(--sp-2)}
+.empty p{font-size:var(--fs-13)}
+.empty button{margin-top:var(--sp-3)}
+
+/* Legend */
+.legend{display:flex;flex-direction:column;gap:var(--sp-3);padding:var(--sp-4);border-radius:var(--r-3);background:var(--surface-2);border:1px solid var(--line)}
+.legend__cats{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2) var(--sp-4)}
+.legend__cat{display:flex;align-items:center;gap:8px;font-size:var(--fs-13);color:var(--text-2)}
+.legend__sw{width:18px;height:4px;border-radius:99px;flex:0 0 auto;box-shadow:0 0 8px -1px currentColor}
+.legend__enc{display:flex;flex-direction:column;gap:7px;border-top:1px solid var(--line);padding-top:var(--sp-3)}
+.legend__row{display:flex;align-items:center;gap:9px;font-size:var(--fs-12);color:var(--text-dim)}
+.legend__ico{flex:0 0 auto;width:22px;height:14px;color:var(--text-faint)}
+
+/* Footnote */
+.foot{margin-top:var(--sp-5);font-size:var(--fs-12);color:var(--text-faint);line-height:1.55}
+.foot strong{color:var(--text-dim);font-weight:600}
+
+/* Buttons (shared) */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;
+  padding:8px 14px;border-radius:var(--r-2);cursor:pointer;font-size:var(--fs-13);font-weight:600;
+  border:1px solid var(--line-strong);background:var(--surface-2);color:var(--text);
+  transition:background var(--t) var(--ease),border-color var(--t) var(--ease),transform var(--t-fast) var(--ease),box-shadow var(--t) var(--ease);
+}
+.btn:hover{background:var(--surface-solid);border-color:var(--n-7)}
+.btn:active{transform:translateY(1px)}
+.btn:focus-visible{outline:none;box-shadow:var(--focus)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn--ghost{background:transparent;border-color:var(--line)}
+
+/* ---------- STAGE (globe) -------------------------------------------------- */
+.stage{position:relative;grid-column:2;grid-row:1;min-width:0;overflow:hidden}
+.stage__globe{position:absolute;inset:0}
+.stage__globe canvas{display:block;outline:none}
+/* suppress globe.gl's built-in tooltip — we render our own */
+.scene-tooltip{display:none !important}
+
+/* Floating view controls */
+.viewctl{position:absolute;top:var(--sp-4);right:var(--sp-4);z-index:14;display:flex;gap:var(--sp-2)}
+.iconbtn{
+  display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--r-2);cursor:pointer;
+  background:var(--surface);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid var(--line);color:var(--text-2);box-shadow:var(--e-1);
+  transition:background var(--t) var(--ease),border-color var(--t) var(--ease),color var(--t) var(--ease),transform var(--t-fast) var(--ease),box-shadow var(--t) var(--ease);
+}
+.iconbtn:hover{color:var(--text);border-color:var(--line-strong);background:var(--surface-solid)}
+.iconbtn:active{transform:translateY(1px)}
+.iconbtn:focus-visible{outline:none;box-shadow:var(--focus)}
+.iconbtn[aria-pressed="true"]{color:var(--brand);border-color:color-mix(in srgb,var(--brand) 55%,transparent);box-shadow:var(--glow-brand)}
+.iconbtn svg{width:20px;height:20px}
+.iconbtn .ic-pause{display:none}
+.iconbtn[aria-pressed="true"] .ic-play{display:none}
+.iconbtn[aria-pressed="true"] .ic-pause{display:block}
+
+/* Hint caption */
+.hint{
+  position:absolute;left:var(--sp-4);bottom:var(--sp-4);z-index:12;
+  display:flex;align-items:center;gap:8px;padding:7px 13px;border-radius:var(--r-pill);
+  background:var(--surface);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid var(--line);color:var(--text-dim);font-size:var(--fs-12);box-shadow:var(--e-1);
+  transition:opacity var(--t-slow) var(--ease),transform var(--t-slow) var(--ease);
+}
+.hint svg{width:15px;height:15px;color:var(--text-faint)}
+.hint.is-hidden{opacity:0;transform:translateY(6px);pointer-events:none}
+.hint b{color:var(--text-2);font-weight:600}
+
+/* Tooltip (cursor-following) */
+.tip{
+  position:absolute;z-index:30;top:0;left:0;max-width:262px;pointer-events:none;
+  padding:11px 13px;border-radius:var(--r-2);
+  background:color-mix(in srgb,var(--n-2) 92%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid var(--line-strong);box-shadow:var(--e-3);
+  opacity:0;transform:translate(-50%,calc(-100% - 14px)) scale(.97);transform-origin:bottom center;
+  transition:opacity var(--t-fast) var(--ease),transform var(--t-fast) var(--ease);
+}
+.tip.is-on{opacity:1;transform:translate(-50%,calc(-100% - 14px)) scale(1)}
+.tip__cat{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.tip__cat i{width:8px;height:8px;border-radius:50%;box-shadow:0 0 7px -1px currentColor}
+.tip__pair{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:var(--fs-16);margin:5px 0 3px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.tip__pair .arr{color:var(--text-faint)}
+.tip__grid{display:grid;grid-template-columns:auto auto;gap:2px var(--sp-4);margin-top:7px;font-size:var(--fs-12)}
+.tip__grid dt{color:var(--text-dim)}
+.tip__grid dd{margin:0;font-family:var(--font-mono);font-weight:600;color:var(--text);text-align:right}
+
+/* Focus card (selected route) */
+.focus{
+  position:absolute;left:50%;bottom:var(--sp-5);z-index:16;transform:translate(-50%,14px);
+  min-width:min(440px,calc(100% - 2*var(--sp-5)));max-width:calc(100% - 2*var(--sp-5));
+  display:flex;align-items:center;gap:var(--sp-4);padding:var(--sp-3) var(--sp-3) var(--sp-3) var(--sp-4);
+  background:var(--surface);backdrop-filter:blur(16px) saturate(125%);-webkit-backdrop-filter:blur(16px) saturate(125%);
+  border:1px solid var(--line-strong);border-radius:var(--r-3);box-shadow:var(--e-3);
+  opacity:0;pointer-events:none;transition:opacity var(--t-slow) var(--ease),transform var(--t-slow) var(--ease-out);
+}
+.focus.is-on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.focus__bar{width:3px;align-self:stretch;border-radius:99px;background:var(--brand);box-shadow:0 0 10px -1px var(--brand)}
+.focus__body{min-width:0;flex:1}
+.focus__cat{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.focus__cat i{width:8px;height:8px;border-radius:50%;box-shadow:0 0 7px -1px currentColor}
+.focus__pair{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:var(--fs-18);margin:2px 0 4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.focus__pair .arr{color:var(--text-faint)}
+.focus__meta{display:flex;flex-wrap:wrap;gap:4px var(--sp-4);font-size:var(--fs-12);color:var(--text-dim)}
+.focus__meta b{font-family:var(--font-mono);color:var(--text-2);font-weight:600}
+.focus__close{flex:0 0 auto;width:36px;height:36px;border-radius:var(--r-1);border:1px solid var(--line);background:transparent;color:var(--text-dim);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:background var(--t) var(--ease),color var(--t) var(--ease)}
+.focus__close:hover{background:var(--surface-2);color:var(--text)}
+.focus__close:focus-visible{outline:none;box-shadow:var(--focus)}
+.focus__close svg{width:16px;height:16px}
+
+/* ---------- OVERLAYS (loading / error) ------------------------------------- */
+.overlay{position:absolute;inset:0;z-index:40;display:grid;place-items:center;padding:var(--sp-6);text-align:center}
+.overlay--load{background:radial-gradient(70% 70% at 50% 42%, color-mix(in srgb,var(--n-2) 70%,transparent), color-mix(in srgb,var(--space-0) 96%,transparent))}
+.overlay[hidden]{display:none}
+.loader__orbit{width:84px;height:84px;margin:0 auto var(--sp-5)}
+.loader__orbit .ring{fill:none;stroke:var(--line-strong);stroke-width:1.5}
+.loader__orbit .arc{fill:none;stroke:var(--brand);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:60 200;transform-origin:50% 50%;animation:spin 1.15s linear infinite;filter:drop-shadow(0 0 6px var(--brand))}
+.loader__orbit .sat{fill:var(--brand);filter:drop-shadow(0 0 6px var(--brand));transform-origin:50% 50%;animation:spin 1.15s linear infinite}
+.loader__orbit .core{fill:color-mix(in srgb,var(--brand) 22%,var(--n-3))}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader h2{font-family:"Space Grotesk",sans-serif;font-size:var(--fs-18);font-weight:600;letter-spacing:.04em}
+.loader p{color:var(--text-dim);font-size:var(--fs-13);margin-top:6px;font-family:var(--font-mono)}
+
+.errstate{max-width:440px}
+.errstate__ico{width:66px;height:66px;margin:0 auto var(--sp-4);color:var(--danger);filter:drop-shadow(0 0 14px color-mix(in srgb,var(--danger) 45%,transparent))}
+.errstate h2{font-family:"Space Grotesk",sans-serif;font-size:var(--fs-22);font-weight:600}
+.errstate p{color:var(--text-dim);margin-top:var(--sp-3);font-size:var(--fs-14);line-height:1.6}
+.errstate .btn{margin-top:var(--sp-5)}
+
+/* ---------- MOBILE SHEET --------------------------------------------------- */
+.sheet-handle{display:none}
+.sheet-fab{display:none}
+
+/* Visually hidden but accessible */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ============================================================================
+   RESPONSIVE
+   ========================================================================== */
+@media (max-width:1080px){:root{--panel-w:clamp(310px,34vw,360px)}}
+
+@media (max-width:760px){
+  .app{grid-template-columns:1fr;grid-template-rows:1fr}
+  .stage{grid-row:1;grid-column:1}
+  .panel{
+    position:fixed;left:0;right:0;bottom:0;z-index:25;grid-row:1;grid-column:1;
+    height:86dvh;border-right:0;border-top:1px solid var(--line-strong);
+    border-radius:var(--r-4) var(--r-4) 0 0;box-shadow:var(--e-3);
+    transform:translateY(calc(100% - var(--sheet-peek,164px)));
+    transition:transform var(--t-slow) var(--ease-out);
+    will-change:transform;
+  }
+  body.sheet-open .panel{transform:translateY(0)}
+  .panel__scroll{padding-top:var(--sp-2)}
+  .sheet-handle{
+    display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;
+    padding:10px 0 8px;background:transparent;border:0;cursor:pointer;flex:0 0 auto;
+  }
+  .sheet-handle:focus-visible{outline:none;box-shadow:var(--focus);border-radius:var(--r-2)}
+  .sheet-handle .grip{width:42px;height:5px;border-radius:99px;background:var(--n-6)}
+  .sheet-handle .lbl{font-size:var(--fs-12);color:var(--text-dim);display:flex;align-items:center;gap:6px;font-weight:500}
+  .sheet-handle .lbl svg{width:14px;height:14px;transition:transform var(--t) var(--ease)}
+  body.sheet-open .sheet-handle .lbl svg{transform:rotate(180deg)}
+  .routes{max-height:46vh}
+  .viewctl{top:var(--sp-3);right:var(--sp-3)}
+  .hint{display:none}
+  .focus{bottom:calc(var(--sheet-peek,164px) + 12px)}
+  .legend__cats{grid-template-columns:1fr 1fr}
+}
+@media (max-width:380px){
+  :root{--sp-5:16px;--sp-6:18px}
+  .stats{grid-template-columns:1fr 1fr}
+  .panel__scroll{padding-left:var(--sp-4);padding-right:var(--sp-4)}
+}
+
+/* ---------- REDUCED MOTION -------------------------------------------------- */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+  .cosmos::before,.cosmos::after{opacity:.5}
+}
+
+/* JS-disabled guard */
+.nojs{position:fixed;inset:0;z-index:99;display:grid;place-items:center;padding:var(--sp-6);text-align:center;background:var(--space-0)}
+.nojs__card{max-width:420px}
+.nojs h1{font-family:"Space Grotesk",sans-serif;font-size:var(--fs-22);margin-bottom:var(--sp-3)}
+.nojs p{color:var(--text-dim)}
+</style>
+</head>
+<body>
+<div class="cosmos" aria-hidden="true"></div>
+
+<noscript>
+  <div class="nojs"><div class="nojs__card">
+    <h1>JavaScript required</h1>
+    <p>AETHER renders an interactive 3D data globe and its network explorer with JavaScript and WebGL. Please enable JavaScript to continue.</p>
+  </div></div>
+</noscript>
+
+<a class="skip-link" href="#routes-list">Skip to the routes explorer</a>
+
+<div class="app" id="app">
+
+  <!-- ===================== STAGE (globe) ===================== -->
+  <section class="stage" id="stage" aria-label="Interactive data globe">
+    <div class="stage__globe" id="globe" aria-hidden="true"></div>
+
+    <p class="sr-only" id="stage-help">A 3D globe shows great-circle arcs between cities. Drag to rotate, scroll to zoom. The full dataset is available as text in the routes explorer panel and the data summary below.</p>
+
+    <!-- view controls -->
+    <div class="viewctl" role="group" aria-label="Globe view controls">
+      <button class="iconbtn" id="btn-rotate" type="button" aria-pressed="true" aria-label="Pause auto-rotation" title="Auto-rotate">
+        <svg class="ic-play" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 5.5v13l10-6.5-10-6.5Z" fill="currentColor"/></svg>
+        <svg class="ic-pause" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="7" y="5.5" width="3.4" height="13" rx="1.1" fill="currentColor"/><rect x="13.6" y="5.5" width="3.4" height="13" rx="1.1" fill="currentColor"/></svg>
+      </button>
+      <button class="iconbtn" id="btn-reset" type="button" aria-label="Reset globe view" title="Reset view">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="6.4" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><path d="M12 2.6v3.1M12 18.3v3.1M2.6 12h3.1M18.3 12h3.1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <!-- interaction hint -->
+    <div class="hint" id="hint">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 12h17M12 3.2c2.4 2.3 3.7 5.5 3.7 8.8s-1.3 6.5-3.7 8.8c-2.4-2.3-3.7-5.5-3.7-8.8S9.6 5.5 12 3.2Z" stroke="currentColor" stroke-width="1.4"/></svg>
+      <span><b>Drag</b> to orbit · <b>Scroll</b> to zoom · <b>Click</b> an arc</span>
+    </div>
+
+    <!-- cursor tooltip -->
+    <div class="tip" id="tip" role="status" aria-hidden="true"></div>
+
+    <!-- focused-route card -->
+    <div class="focus" id="focus" role="region" aria-label="Focused route" aria-hidden="true">
+      <span class="focus__bar" id="focus-bar"></span>
+      <div class="focus__body">
+        <div class="focus__cat" id="focus-cat"></div>
+        <div class="focus__pair" id="focus-pair"></div>
+        <div class="focus__meta" id="focus-meta"></div>
+      </div>
+      <button class="focus__close" id="focus-close" type="button" aria-label="Clear focused route">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <!-- loading overlay -->
+    <div class="overlay overlay--load" id="loading">
+      <div class="loader">
+        <svg class="loader__orbit" viewBox="0 0 100 100" aria-hidden="true">
+          <circle class="ring" cx="50" cy="50" r="38"/>
+          <circle class="core" cx="50" cy="50" r="11"/>
+          <circle class="arc" cx="50" cy="50" r="38"/>
+          <circle class="sat" cx="50" cy="12" r="4.5"/>
+        </svg>
+        <h2>Initialising globe</h2>
+        <p id="load-sub">Loading renderer…</p>
+      </div>
+    </div>
+
+    <!-- WebGL / fatal error overlay -->
+    <div class="overlay" id="errstate" role="alert" hidden>
+      <div class="errstate">
+        <svg class="errstate__ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M3.6 9h16.8M3.6 15h16.8M12 3c2.3 2.4 3.6 5.6 3.6 9S14.3 18.6 12 21c-2.3-2.4-3.6-5.6-3.6-9S9.7 5.4 12 3Z" stroke="currentColor" stroke-width="1.3" opacity=".5"/><path d="M12 8.4v4.2M12 16.1v.05" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <h2 id="err-title">WebGL unavailable</h2>
+        <p id="err-msg">This globe needs <strong>WebGL</strong> to render in 3D, and your browser or device couldn't start it. The network explorer on the left still works — every route, filter and ranking is fully usable as data.</p>
+        <button class="btn" id="err-retry" type="button">Try again</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PANEL (HUD) ===================== -->
+  <aside class="panel" id="panel" aria-label="Network explorer">
+    <button class="sheet-handle" id="sheet-handle" type="button" aria-expanded="false" aria-controls="panel">
+      <span class="grip" aria-hidden="true"></span>
+      <span class="lbl">Network explorer
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 14 6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </button>
+
+    <div class="panel__scroll" id="panel-scroll">
+      <!-- header -->
+      <header class="brand">
+        <svg class="brand__mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+          <circle cx="24" cy="24" r="21" stroke="url(#g1)" stroke-width="1.4" opacity=".5"/>
+          <circle cx="24" cy="24" r="13" fill="url(#g2)"/>
+          <path d="M3 24h42M24 3c5.4 5.6 8.4 13 8.4 21S29.4 39.4 24 45c-5.4-5.6-8.4-13-8.4-21S18.6 8.6 24 3Z" stroke="#0a1733" stroke-width="1.1"/>
+          <ellipse cx="24" cy="24" rx="21" ry="7.6" stroke="url(#g1)" stroke-width="1.4" transform="rotate(28 24 24)"/>
+          <circle cx="40.5" cy="13.5" r="2.6" fill="var(--brand)"/>
+          <defs>
+            <linearGradient id="g1" x1="3" y1="6" x2="45" y2="44"><stop stop-color="#7fefff"/><stop offset="1" stop-color="#2a7fd6"/></linearGradient>
+            <radialGradient id="g2" cx=".4" cy=".35" r=".8"><stop stop-color="#56e7ff"/><stop offset="1" stop-color="#0c3a63"/></radialGradient>
+          </defs>
+        </svg>
+        <div>
+          <h1>AETHER</h1>
+          <div class="brand__sub">
+            <span class="badge" id="syn-badge">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.2 13.9 9l5.9.2-4.7 3.6 1.7 5.7L12 15.3 7.2 18.5l1.7-5.7L4.2 9.2 10.1 9 12 3.2Z" fill="currentColor"/></svg>
+              Synthetic
+            </span>
+            <span class="brand__tag">Global Exchange Network</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- accessible data summary (live) -->
+      <p class="sr-only" id="data-summary" aria-live="polite"></p>
+
+      <!-- network at a glance -->
+      <section class="sec" aria-labelledby="h-stats" style="margin-top:var(--sp-5)">
+        <div class="sec__head"><h2 id="h-stats">Network at a glance</h2></div>
+        <div class="stats" id="stats" aria-live="polite">
+          <div class="stat"><div class="stat__v" id="s-routes">—</div><div class="stat__k">Active routes</div></div>
+          <div class="stat"><div class="stat__v" id="s-volume">—</div><div class="stat__k">Aggregate flow</div></div>
+          <div class="stat"><div class="stat__v" id="s-hubs">—</div><div class="stat__k">Live hubs</div></div>
+          <div class="stat"><div class="stat__v" id="s-latency">—</div><div class="stat__k">Median latency</div></div>
+        </div>
+      </section>
+
+      <hr class="divider" />
+
+      <!-- filters -->
+      <section class="sec" aria-labelledby="h-filters">
+        <div class="sec__head"><h2 id="h-filters">Filters</h2><button class="btn btn--ghost" id="btn-clear-filters" type="button" style="min-height:30px;padding:5px 10px;font-size:var(--fs-12)">Reset</button></div>
+
+        <div class="field">
+          <span class="field__lbl" id="lbl-region">Region <span class="sr-only">— toggle to include or exclude</span></span>
+          <div class="chips" id="region-chips" role="group" aria-labelledby="lbl-region"></div>
+        </div>
+
+        <div class="field">
+          <span class="field__lbl" id="lbl-cat">Flow category</span>
+          <div class="chips" id="cat-chips" role="group" aria-labelledby="lbl-cat"></div>
+        </div>
+
+        <div class="field" style="margin-bottom:0">
+          <label class="field__lbl" for="search-input">Search a city</label>
+          <div class="search" id="search">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.4" stroke="currentColor" stroke-width="1.8"/><path d="m20 20-3.6-3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <input id="search-input" type="search" autocomplete="off" spellcheck="false" placeholder="e.g. Tokyo, London…" aria-describedby="search-hint" />
+            <button class="search__clear" id="search-clear" type="button" aria-label="Clear search">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <span class="sr-only" id="search-hint">Filters routes to those touching a matching city.</span>
+        </div>
+      </section>
+
+      <hr class="divider" />
+
+      <!-- ranking -->
+      <section class="sec" aria-labelledby="h-rank">
+        <div class="sec__head"><h2 id="h-rank">Top connections</h2><span class="sec__meta">by flow</span></div>
+        <div class="rank" id="rank" role="list"></div>
+      </section>
+
+      <hr class="divider" />
+
+      <!-- routes list -->
+      <section class="sec" aria-labelledby="h-routes" style="margin-bottom:var(--sp-4)">
+        <div class="sec__head"><h2 id="h-routes">All routes</h2><span class="sec__meta" id="routes-count">—</span></div>
+        <div class="routes" id="routes-list" role="listbox" aria-labelledby="h-routes" tabindex="0" aria-activedescendant=""></div>
+      </section>
+
+      <!-- legend -->
+      <section class="sec" aria-labelledby="h-legend" style="margin-bottom:0">
+        <div class="sec__head"><h2 id="h-legend">Legend</h2></div>
+        <div class="legend">
+          <div class="legend__cats" id="legend-cats"></div>
+          <div class="legend__enc">
+            <div class="legend__row">
+              <svg class="legend__ico" viewBox="0 0 28 16" fill="none" aria-hidden="true"><path d="M2 14C8 2 20 2 26 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              <span>Arc height ∝ great-circle distance</span>
+            </div>
+            <div class="legend__row">
+              <svg class="legend__ico" viewBox="0 0 28 16" fill="none" aria-hidden="true"><circle cx="6" cy="8" r="3.4" fill="currentColor"/><circle cx="18" cy="8" r="5.2" fill="currentColor" opacity=".5"/></svg>
+              <span>Hub size ∝ total flow through it</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <p class="foot">
+        <strong>Synthetic dataset.</strong> City coordinates are real geography; every flow, volume (Gb/s) and latency (ms) is generated by a seeded model for demonstration — not measured traffic. <span id="seed-note"></span>
+      </p>
+    </div>
+  </aside>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://esm.sh/three@0.185.0",
+    "three/addons/postprocessing/UnrealBloomPass.js": "https://esm.sh/three@0.185.0/examples/jsm/postprocessing/UnrealBloomPass.js?external=three",
+    "three/addons/postprocessing/OutputPass.js": "https://esm.sh/three@0.185.0/examples/jsm/postprocessing/OutputPass.js?external=three",
+    "globe.gl": "https://esm.sh/globe.gl@2.33.0?deps=three@0.185.0"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import Globe from 'globe.gl';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+/* ============================================================================
+   0 · ENV
+   ========================================================================== */
+const $ = s => document.querySelector(s);
+const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)');
+let prefersReduced = reduceMQ.matches;
+const EARTH_NIGHT = 'https://cdn.jsdelivr.net/npm/three-globe@2.45.2/example/img/earth-night.jpg';
+const EARTH_TOPO  = 'https://cdn.jsdelivr.net/npm/three-globe@2.45.2/example/img/earth-topology.png';
+
+function hasWebGL(){
+  try{
+    const c = document.createElement('canvas');
+    return !!(window.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl')));
+  }catch(e){ return false; }
+}
+
+/* ============================================================================
+   1 · SYNTHETIC DATA MODEL  (real coords · modeled flows — clearly labelled)
+   ========================================================================== */
+const SEED = 0x9e3779b9;
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const rnd = mulberry32(SEED);
+
+const REGIONS = ['Americas','Europe','Africa & ME','Asia','Oceania'];
+const CATS = {
+  Compute:    { color:'#43d6ff', label:'Compute' },
+  Media:      { color:'#ff6cc4', label:'Media' },
+  Transactions:{color:'#ffc24b', label:'Transactions' },
+  Telemetry:  { color:'#5cf2b0', label:'Telemetry' }
+};
+const CAT_KEYS = Object.keys(CATS);
+
+// Real city coordinates (geography is real; the network on top is synthetic)
+const HUBS = [
+  ['sfo','San Francisco',37.77,-122.42,'Americas'],['sea','Seattle',47.61,-122.33,'Americas'],
+  ['lax','Los Angeles',34.05,-118.24,'Americas'],['den','Denver',39.74,-104.99,'Americas'],
+  ['ord','Chicago',41.88,-87.63,'Americas'],['dfw','Dallas',32.78,-96.80,'Americas'],
+  ['nyc','New York',40.71,-74.01,'Americas'],['yyz','Toronto',43.65,-79.38,'Americas'],
+  ['mia','Miami',25.76,-80.19,'Americas'],['mex','Mexico City',19.43,-99.13,'Americas'],
+  ['bog','Bogotá',4.71,-74.07,'Americas'],['lim','Lima',-12.05,-77.04,'Americas'],
+  ['gru','São Paulo',-23.55,-46.63,'Americas'],['eze','Buenos Aires',-34.60,-58.38,'Americas'],
+  ['scl','Santiago',-33.45,-70.67,'Americas'],
+  ['lon','London',51.51,-0.13,'Europe'],['dub','Dublin',53.35,-6.26,'Europe'],
+  ['par','Paris',48.86,2.35,'Europe'],['ams','Amsterdam',52.37,4.90,'Europe'],
+  ['fra','Frankfurt',50.11,8.68,'Europe'],['mad','Madrid',40.42,-3.70,'Europe'],
+  ['mil','Milan',45.46,9.19,'Europe'],['sto','Stockholm',59.33,18.06,'Europe'],
+  ['waw','Warsaw',52.23,21.01,'Europe'],['ist','Istanbul',41.01,28.98,'Europe'],
+  ['los','Lagos',6.52,3.38,'Africa & ME'],['nbo','Nairobi',-1.29,36.82,'Africa & ME'],
+  ['jnb','Johannesburg',-26.20,28.05,'Africa & ME'],['cai','Cairo',30.04,31.24,'Africa & ME'],
+  ['dxb','Dubai',25.20,55.27,'Africa & ME'],['tlv','Tel Aviv',32.08,34.78,'Africa & ME'],
+  ['bom','Mumbai',19.08,72.88,'Asia'],['blr','Bengaluru',12.97,77.59,'Asia'],
+  ['sin','Singapore',1.35,103.82,'Asia'],['bkk','Bangkok',13.76,100.50,'Asia'],
+  ['cgk','Jakarta',-6.21,106.85,'Asia'],['hkg','Hong Kong',22.32,114.17,'Asia'],
+  ['sha','Shanghai',31.23,121.47,'Asia'],['bjs','Beijing',39.90,116.41,'Asia'],
+  ['sel','Seoul',37.57,126.98,'Asia'],['tyo','Tokyo',35.68,139.65,'Asia'],
+  ['osa','Osaka',34.69,135.50,'Asia'],
+  ['syd','Sydney',-33.87,151.21,'Oceania'],['mel','Melbourne',-37.81,144.96,'Oceania'],
+  ['akl','Auckland',-36.85,174.76,'Oceania']
+].map(([id,name,lat,lng,region])=>({id,name,lat,lng,region}));
+
+const HUB_BY_ID = Object.fromEntries(HUBS.map(h=>[h.id,h]));
+const PRIMARY = new Set(['nyc','lon','sin','tyo','fra','ams','hkg','lax','dxb','gru','syd','bom','sel','ord','par','sfo']);
+HUBS.forEach(h=>{ h.cap = PRIMARY.has(h.id) ? 7 + Math.floor(rnd()*4) : 2 + Math.floor(rnd()*5); });
+
+function haversine(a,b){
+  const R=6371, toR=Math.PI/180;
+  const dLat=(b.lat-a.lat)*toR, dLng=(b.lng-a.lng)*toR;
+  const la1=a.lat*toR, la2=b.lat*toR;
+  const x=Math.sin(dLat/2)**2 + Math.cos(la1)*Math.cos(la2)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.min(1,Math.sqrt(x)));
+}
+function pickWeighted(arr,total,exclude){
+  let r=rnd()*total;
+  for(const h of arr){ if(h===exclude) continue; r-=h.cap; if(r<=0) return h; }
+  return arr[arr.length-1];
+}
+function pickCategory(){
+  const r=rnd();
+  if(r<0.34) return 'Compute';
+  if(r<0.59) return 'Media';
+  if(r<0.81) return 'Transactions';
+  return 'Telemetry';
+}
+
+const TARGET_ROUTES = 234;
+const totalCap = HUBS.reduce((s,h)=>s+h.cap,0);
+const ROUTES = [];
+const seen = new Set();
+let guard=0;
+while(ROUTES.length < TARGET_ROUTES && guard < 20000){
+  guard++;
+  const a = pickWeighted(HUBS,totalCap);
+  const b = pickWeighted(HUBS,totalCap,a);
+  if(!a||!b||a.id===b.id) continue;
+  const cat = pickCategory();
+  const key = (a.id<b.id?a.id+b.id:b.id+a.id)+cat;
+  if(seen.has(key)) continue;
+  seen.add(key);
+  const distKm = haversine(a,b);
+  const volume = Math.round(38 + (a.cap+b.cap)*(8+rnd()*22));     // synthetic Gb/s
+  const latency = Math.round(4 + distKm/115 + rnd()*9);          // synthetic ms (∝ distance)
+  ROUTES.push({ id:'r'+ROUTES.length, fromId:a.id, toId:b.id, category:cat, volume, latency, distKm });
+}
+const MAX_DIST = Math.max(...ROUTES.map(r=>r.distKm));
+ROUTES.forEach(r=>{
+  r.from = HUB_BY_ID[r.fromId]; r.to = HUB_BY_ID[r.toId];
+  r.distNorm = r.distKm / MAX_DIST;
+  r.altitude = 0.13 + r.distNorm * 0.52;       // apex altitude ∝ distance (explicit)
+  r.color = CATS[r.category].color;
+  r.dashPhase = rnd();
+});
+
+// hub aggregates (degree + total flow)
+HUBS.forEach(h=>{ h.deg=0; h.flow=0; });
+ROUTES.forEach(r=>{ r.from.deg++; r.to.deg++; r.from.flow+=r.volume; r.to.flow+=r.volume; });
+const MAX_FLOW = Math.max(...HUBS.map(h=>h.flow));
+const TOP_HUBS = [...HUBS].sort((a,b)=>b.flow-a.flow).slice(0,6);
+
+/* ---- formatting helpers ---- */
+const fmtVol = v => v>=1000 ? (v/1000).toFixed(2)+' Tb/s' : v+' Gb/s';
+const fmtVolShort = v => v>=1000 ? {n:(v/1000).toFixed(2),u:'Tb/s'} : {n:String(v),u:'Gb/s'};
+const fmtKm = d => d>=1000 ? (d/1000).toFixed(1)+'k km' : Math.round(d)+' km';
+const median = arr => { const s=[...arr].sort((a,b)=>a-b); const m=s.length>>1; return s.length%2?s[m]:Math.round((s[m-1]+s[m])/2); };
+function hexA(hex,a){const n=parseInt(hex.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;}
+
+/* ============================================================================
+   2 · STATE
+   ========================================================================== */
+const state = {
+  regions: new Set(REGIONS),
+  cats: new Set(CAT_KEYS),
+  query: '',
+  selectedId: null,
+  filtered: ROUTES
+};
+let world=null, bloomPass=null, autoRotate=!prefersReduced, idleTimer=null, ready=false;
+const ARC_ENTER = () => prefersReduced ? 0 : 1400;
+
+function computeFiltered(){
+  const q = state.query.trim().toLowerCase();
+  state.filtered = ROUTES.filter(r=>{
+    if(!state.cats.has(r.category)) return false;
+    if(!(state.regions.has(r.from.region) || state.regions.has(r.to.region))) return false;
+    if(q){ if(!(r.from.name.toLowerCase().includes(q) || r.to.name.toLowerCase().includes(q))) return false; }
+    return true;
+  });
+}
+
+/* ============================================================================
+   3 · GLOBE
+   ========================================================================== */
+function startLoadingTicker(){
+  const sub=$('#load-sub'); const steps=['Loading renderer…','Tracing great-circles…','Skinning continents…','Wiring telemetry…'];
+  let i=0; sub.textContent=steps[0];
+  return setInterval(()=>{ i=(i+1)%steps.length; sub.textContent=steps[i]; }, 650);
+}
+
+function initGlobe(){
+  const el = $('#globe');
+  world = Globe(prefersReduced ? { animateIn:false } : { animateIn:true, waitForGlobeReady:true })(el);
+
+  // dark indigo ocean sphere
+  world.showGlobe(true).showAtmosphere(true)
+    .atmosphereColor('#3aa0ff').atmosphereAltitude(0.18)
+    .backgroundColor('#070b18');
+
+  // luminous night Earth — its own texture drives an emissiveMap so city lights self-illuminate (then bloom)
+  world.globeImageUrl(EARTH_NIGHT).bumpImageUrl(EARTH_TOPO);
+  const mat = world.globeMaterial();
+  mat.color.set('#7f93bd');        // cool tint multiplies the warm night map → indigo-cool earth, keeps continents readable
+  mat.shininess = 6;
+  if(mat.bumpScale!==undefined) mat.bumpScale = 7;
+  const glowTimer = setInterval(()=>{               // reuse globe.gl's own loaded texture (same three instance) so city lights self-lift on the dark side
+    const m = world.globeMaterial();
+    if(m && m.map){
+      m.emissiveMap = m.map; m.emissive.setHex(0xffffff); m.emissiveIntensity = 0.34; m.needsUpdate = true;
+      clearInterval(glowTimer);
+    }
+  }, 120);
+  setTimeout(()=>clearInterval(glowTimer), 9000);
+
+  // even, moody lighting: the night Earth reads as a dark globe with glowing cities, not a lit hemisphere
+  world.scene().traverse(o=>{
+    if(o.isAmbientLight) o.intensity = 1.4;
+    if(o.isDirectionalLight) o.intensity = 1.1;
+  });
+
+  // hub points (size ∝ flow)
+  world.pointsData(HUBS)
+    .pointLat('lat').pointLng('lng')
+    .pointColor(()=> '#bdeeff')
+    .pointAltitude(0.006)
+    .pointRadius(h => 0.18 + (h.flow/MAX_FLOW)*0.95)
+    .pointResolution(8)
+    .onPointHover(onHubHover)
+    .onPointClick(onHubClick);
+
+  // arcs (dashed sweep when motion is allowed; solid when reduced so the data still reads)
+  applyArcAccessors();
+  world.arcsData(state.filtered)
+    .arcStartLat(r=>r.from.lat).arcStartLng(r=>r.from.lng)
+    .arcEndLat(r=>r.to.lat).arcEndLng(r=>r.to.lng)
+    .arcDashLength(prefersReduced?2:0.46).arcDashGap(prefersReduced?0:0.16)
+    .arcDashInitialGap(r=>r.dashPhase)
+    .arcDashAnimateTime(prefersReduced ? 0 : 2400)
+    .arcsTransitionDuration(0)
+    .onArcHover(onArcHover).onArcClick(onArcClick);
+
+  // pulse rings on top hubs
+  refreshRings();
+
+  world.onGlobeClick(()=>{ if(state.selectedId) clearSelection(true); });
+  world.onGlobeReady(()=>{ onGlobeReady(); });
+
+  // controls
+  const ctrl = world.controls();
+  ctrl.autoRotate = autoRotate;
+  ctrl.autoRotateSpeed = 0.42;
+  ctrl.enableDamping = true; ctrl.dampingFactor = 0.12;
+  ctrl.minDistance = 140; ctrl.maxDistance = 560;
+  ctrl.addEventListener('start', onUserInteractStart);
+  ctrl.addEventListener('end', onUserInteractEnd);
+
+  world.pointOfView({ lat:18, lng:-32, altitude:2.4 }, 0);
+  sizeGlobe();
+
+  // post-processing bloom (cinematic glow)
+  try{
+    const r = world.renderer();
+    r.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+    const { width:W, height:H } = stageSize();
+    bloomPass = new UnrealBloomPass(new THREE.Vector2(W,H), 0.62, 0.42, 0.48); // strength, radius, threshold — only bright arcs + city lights bloom
+    const composer = world.postProcessingComposer();
+    composer.addPass(bloomPass);
+    composer.addPass(new OutputPass());
+  }catch(e){ console.warn('Bloom unavailable, continuing without it:', e); }
+
+  // in-scene starfield (depth near the planet)
+  addStarfield(world.scene());
+
+  // fallback ready, in case waitForGlobeReady doesn't fire promptly
+  setTimeout(()=>{ if(!ready) onGlobeReady(); }, 4500);
+}
+
+function addStarfield(scene){
+  const N=1400, pos=new Float32Array(N*3);
+  for(let i=0;i<N;i++){
+    const r=620+Math.random()*640, t=Math.random()*Math.PI*2, p=Math.acos(2*Math.random()-1);
+    pos[i*3]=r*Math.sin(p)*Math.cos(t); pos[i*3+1]=r*Math.sin(p)*Math.sin(t); pos[i*3+2]=r*Math.cos(p);
+  }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const m=new THREE.PointsMaterial({ color:0xbcd2ff, size:1.5, sizeAttenuation:true, transparent:true, opacity:0.85, depthWrite:false });
+  scene.add(new THREE.Points(g,m));
+}
+
+function applyArcAccessors(){
+  const sel = state.selectedId;
+  world.arcColor(r=>{
+    const c=r.color;
+    if(r.id===sel) return ['#ffffff', c, '#ffffff'];
+    return [hexA(c,0.04), c, hexA(c,0.5)];
+  })
+  .arcStroke(r=> r.id===sel ? 0.85 : 0.32)
+  .arcAltitude(r=> r.altitude);
+}
+function refreshArcStyles(){
+  world.arcsTransitionDuration(0);
+  applyArcAccessors();
+}
+function refreshRings(){
+  const rings = prefersReduced ? [] : TOP_HUBS.slice(0,5);
+  world.ringsData(rings)
+    .ringLat('lat').ringLng('lng')
+    .ringColor(()=> t => hexA('#48e6ff', 1-t))
+    .ringMaxRadius(4.4).ringPropagationSpeed(1.6).ringRepeatPeriod(2600).ringAltitude(0.007);
+}
+
+/* ---- sizing ---- */
+function stageSize(){ const s=$('#stage').getBoundingClientRect(); return { width:Math.max(1,Math.round(s.width)), height:Math.max(1,Math.round(s.height)) }; }
+function sizeGlobe(){
+  if(!world) return;
+  const { width, height } = stageSize();
+  world.width(width).height(height);
+  if(bloomPass) bloomPass.resolution.set(width,height);
+}
+
+/* ============================================================================
+   4 · READY / OVERLAYS
+   ========================================================================== */
+function onGlobeReady(){
+  if(ready) return; ready=true;
+  clearInterval(window.__loadTick);
+  const ov=$('#loading');
+  ov.style.transition='opacity 420ms var(--ease)'; ov.style.opacity='0';
+  setTimeout(()=>{ ov.hidden=true; }, 440);
+  // auto-hide hint after a beat
+  setTimeout(()=>{ $('#hint').classList.add('is-hidden'); }, 6500);
+}
+function showError(title,msg){
+  clearInterval(window.__loadTick);
+  $('#loading').hidden=true;
+  if(title) $('#err-title').textContent=title;
+  if(msg) $('#err-msg').innerHTML=msg;
+  $('#errstate').hidden=false;
+  // no globe to drive — hide the globe-only chrome so the error reads clean
+  $('#hint').style.display='none';
+  document.querySelector('.viewctl').style.display='none';
+}
+
+/* ============================================================================
+   5 · INTERACTIONS — hover / select / focus
+   ========================================================================== */
+const tip=$('#tip'); let mouse={x:0,y:0};
+$('#stage').addEventListener('pointermove', e=>{
+  const r=$('#stage').getBoundingClientRect();
+  mouse.x=e.clientX-r.left; mouse.y=e.clientY-r.top;
+  if(tip.classList.contains('is-on')) positionTip();
+});
+function positionTip(){
+  const r=$('#stage').getBoundingClientRect();
+  const x=Math.max(132, Math.min(mouse.x, r.width-132));
+  const y=Math.max(96, mouse.y);
+  tip.style.left=x+'px'; tip.style.top=y+'px';   // transform reserved for CSS show/scale animation
+}
+function showTip(html){ tip.innerHTML=html; tip.classList.add('is-on'); tip.setAttribute('aria-hidden','false'); positionTip(); }
+function hideTip(){ tip.classList.remove('is-on'); tip.setAttribute('aria-hidden','true'); }
+
+function onArcHover(arc){
+  $('#globe').style.cursor = arc ? 'pointer' : '';
+  if(!arc){ if(!hoveringHub) hideTip(); return; }
+  hoveringHub=false;
+  const c=CATS[arc.category];
+  showTip(`
+    <span class="tip__cat" style="color:${c.color}"><i style="background:${c.color}"></i>${c.label}</span>
+    <div class="tip__pair">${arc.from.name}<span class="arr">→</span>${arc.to.name}</div>
+    <dl class="tip__grid">
+      <dt>Flow</dt><dd>${fmtVol(arc.volume)}</dd>
+      <dt>Latency</dt><dd>${arc.latency} ms</dd>
+      <dt>Distance</dt><dd>${fmtKm(arc.distKm)}</dd>
+    </dl>`);
+}
+let hoveringHub=false;
+function onHubHover(h){
+  $('#globe').style.cursor = h ? 'pointer' : '';
+  if(!h){ hoveringHub=false; hideTip(); return; }
+  hoveringHub=true;
+  showTip(`
+    <span class="tip__cat" style="color:var(--brand)"><i style="background:var(--brand)"></i>${h.region}</span>
+    <div class="tip__pair">${h.name}</div>
+    <dl class="tip__grid">
+      <dt>Connections</dt><dd>${h.deg}</dd>
+      <dt>Total flow</dt><dd>${fmtVol(h.flow)}</dd>
+      <dt>Coords</dt><dd>${h.lat.toFixed(1)}, ${h.lng.toFixed(1)}</dd>
+    </dl>`);
+}
+
+// spherical midpoint for camera framing
+function midpoint(a,b){
+  const toR=Math.PI/180, toD=180/Math.PI;
+  const φ1=a.lat*toR, φ2=b.lat*toR, λ1=a.lng*toR, dλ=(b.lng-a.lng)*toR;
+  const bx=Math.cos(φ2)*Math.cos(dλ), by=Math.cos(φ2)*Math.sin(dλ);
+  const φ3=Math.atan2(Math.sin(φ1)+Math.sin(φ2), Math.sqrt((Math.cos(φ1)+bx)**2+by**2));
+  const λ3=λ1+Math.atan2(by, Math.cos(φ1)+bx);
+  return { lat:φ3*toD, lng:λ3*toD };
+}
+
+function selectRoute(route, fly=true){
+  state.selectedId = route.id;
+  refreshArcStyles();
+  // endpoint pulse rings
+  if(!prefersReduced){
+    world.ringsData([route.from, route.to])
+      .ringColor(()=> t=>hexA(route.color,1-t))
+      .ringMaxRadius(5).ringPropagationSpeed(2.2).ringRepeatPeriod(1100).ringAltitude(0.008);
+  }
+  if(fly){
+    const m=midpoint(route.from,route.to);
+    const alt = 1.35 + route.distNorm*0.95;
+    world.pointOfView({ lat:m.lat, lng:m.lng, altitude:alt }, prefersReduced?0:900);
+    pauseRotate(); scheduleResume(prefersReduced?1200:5200);
+  }
+  renderFocusCard(route);
+  markSelectedInLists(route.id);
+  hideTip();
+}
+function clearSelection(resetRings=true){
+  state.selectedId=null;
+  refreshArcStyles();
+  if(resetRings) refreshRings();
+  $('#focus').classList.remove('is-on'); $('#focus').setAttribute('aria-hidden','true');
+  markSelectedInLists(null);
+}
+function onArcClick(arc){ if(arc) selectRoute(arc, true); }
+function onHubClick(h){
+  if(!h) return;
+  pauseRotate();
+  world.pointOfView({ lat:h.lat, lng:h.lng, altitude:1.7 }, prefersReduced?0:850);
+  scheduleResume(prefersReduced?1200:5200);
+  // surface the strongest route on this hub in the focus card
+  const best = state.filtered.filter(r=>r.fromId===h.id||r.toId===h.id).sort((a,b)=>b.volume-a.volume)[0];
+  if(best) selectRoute(best, false);
+}
+
+function renderFocusCard(r){
+  const c=CATS[r.category];
+  $('#focus-bar').style.background=c.color;
+  $('#focus-bar').style.boxShadow=`0 0 10px -1px ${c.color}`;
+  $('#focus-cat').innerHTML=`<i style="background:${c.color}"></i><span style="color:${c.color}">${c.label}</span>`;
+  $('#focus-pair').innerHTML=`${r.from.name}<span class="arr">→</span>${r.to.name}`;
+  $('#focus-meta').innerHTML=`<span>Flow <b>${fmtVol(r.volume)}</b></span><span>Latency <b>${r.latency} ms</b></span><span>Distance <b>${fmtKm(r.distKm)}</b></span><span>${r.from.region} <span class="arr">→</span> ${r.to.region}</span>`;
+  const f=$('#focus'); f.classList.add('is-on'); f.setAttribute('aria-hidden','false');
+}
+
+/* ============================================================================
+   6 · AUTO-ROTATE
+   ========================================================================== */
+function setRotate(on){
+  autoRotate=on;
+  if(world) world.controls().autoRotate = on && !prefersReduced;
+  const b=$('#btn-rotate');
+  b.setAttribute('aria-pressed', String(on));
+  b.setAttribute('aria-label', on ? 'Pause auto-rotation' : 'Resume auto-rotation');
+}
+function pauseRotate(){ if(world) world.controls().autoRotate=false; }
+function scheduleResume(delay=3000){
+  clearTimeout(idleTimer);
+  idleTimer=setTimeout(()=>{ if(autoRotate && !prefersReduced && world) world.controls().autoRotate=true; }, delay);
+}
+function onUserInteractStart(){ pauseRotate(); clearTimeout(idleTimer); $('#hint').classList.add('is-hidden'); }
+function onUserInteractEnd(){ scheduleResume(3000); }
+
+/* ============================================================================
+   7 · PANEL RENDERING
+   ========================================================================== */
+function el(tag,cls,html){ const n=document.createElement(tag); if(cls)n.className=cls; if(html!=null)n.innerHTML=html; return n; }
+
+function renderChips(){
+  const rc=$('#region-chips'); rc.innerHTML='';
+  REGIONS.forEach(reg=>{
+    const on=state.regions.has(reg);
+    const b=el('button','chip',`${reg}`);
+    b.type='button'; b.setAttribute('aria-pressed',String(on));
+    b.addEventListener('click',()=>{ toggleSet(state.regions,reg,REGIONS); b.setAttribute('aria-pressed',String(state.regions.has(reg))); update(); });
+    rc.appendChild(b);
+  });
+  const cc=$('#cat-chips'); cc.innerHTML='';
+  CAT_KEYS.forEach(k=>{
+    const on=state.cats.has(k); const c=CATS[k];
+    const b=el('button','chip',`<span class="chip__dot" style="color:${c.color};background:${c.color}"></span>${c.label}`);
+    b.type='button'; b.style.setProperty('--c',c.color); b.setAttribute('aria-pressed',String(on));
+    b.addEventListener('click',()=>{ toggleSet(state.cats,k,CAT_KEYS); b.setAttribute('aria-pressed',String(state.cats.has(k))); update(); });
+    cc.appendChild(b);
+  });
+}
+function toggleSet(set,val,all){
+  if(set.has(val)){ if(set.size>1) set.delete(val); else { all.forEach(v=>set.add(v)); } } // never leave empty: clearing the last re-selects all
+  else set.add(val);
+}
+
+function renderLegend(){
+  const g=$('#legend-cats'); g.innerHTML='';
+  CAT_KEYS.forEach(k=>{
+    const c=CATS[k];
+    g.appendChild(el('div','legend__cat',`<span class="legend__sw" style="color:${c.color};background:${c.color}"></span>${c.label}`));
+  });
+}
+
+function renderStats(){
+  const f=state.filtered;
+  $('#s-routes').textContent = f.length;
+  const vol=f.reduce((s,r)=>s+r.volume,0); const vs=fmtVolShort(vol);
+  $('#s-volume').innerHTML = `${vs.n}<small>${vs.u}</small>`;
+  const hubs=new Set(); f.forEach(r=>{hubs.add(r.fromId);hubs.add(r.toId);});
+  $('#s-hubs').textContent = hubs.size;
+  $('#s-latency').innerHTML = f.length ? `${median(f.map(r=>r.latency))}<small>ms</small>` : '—';
+  // accessible summary
+  const top=f.length?[...f].sort((a,b)=>b.volume-a.volume)[0]:null;
+  $('#data-summary').textContent =
+    `Synthetic network: ${f.length} active routes across ${hubs.size} hubs in ${state.regions.size} of ${REGIONS.length} regions, ` +
+    `aggregate modeled flow ${fmtVol(vol)}, median latency ${f.length?median(f.map(r=>r.latency)):0} milliseconds. ` +
+    (top?`Top connection ${top.from.name} to ${top.to.name} at ${fmtVol(top.volume)} (${top.category}).`:'No routes match the current filters.');
+}
+
+function renderRank(){
+  const wrap=$('#rank'); wrap.innerHTML='';
+  const top=[...state.filtered].sort((a,b)=>b.volume-a.volume).slice(0,5);
+  if(!top.length){ wrap.appendChild(el('div','empty','<p>No connections in view.</p>')); return; }
+  const max=top[0].volume;
+  top.forEach((r,i)=>{
+    const c=CATS[r.category]; const vs=fmtVolShort(r.volume);
+    const row=el('button','rank__row',
+      `<span class="rank__n">${i+1}</span>
+       <span class="rank__main">
+         <span class="rank__route">${r.from.name}<span class="arr">→</span>${r.to.name}</span>
+         <span class="rank__bar"><i style="width:${Math.round(r.volume/max*100)}%;--cbar:${c.color}"></i></span>
+       </span>
+       <span class="rank__v">${vs.n}<small>${vs.u}</small></span>`);
+    row.type='button'; row.setAttribute('role','listitem'); row.style.setProperty('--cbar',c.color);
+    row.setAttribute('aria-label',`Rank ${i+1}: ${r.from.name} to ${r.to.name}, ${fmtVol(r.volume)}, ${r.category}. Focus on globe.`);
+    if(r.id===state.selectedId) row.setAttribute('aria-current','true');
+    row.dataset.id=r.id;
+    row.addEventListener('click',()=>selectRoute(r,true));
+    wrap.appendChild(row);
+  });
+}
+
+let activeIdx=0;
+function renderRoutes(){
+  const list=$('#routes-list'); list.innerHTML='';
+  const rows=[...state.filtered].sort((a,b)=>b.volume-a.volume);
+  $('#routes-count').textContent = `${rows.length}`;
+  if(!rows.length){
+    const e=el('div','empty',
+      `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.6"/><path d="m20 20-3.4-3.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M8 11h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+       <p>No routes match these filters.</p>`);
+    const b=el('button','btn btn--ghost','Reset filters'); b.type='button'; b.addEventListener('click',resetFilters);
+    e.appendChild(b); list.appendChild(e); list.removeAttribute('aria-activedescendant');
+    return;
+  }
+  rows.forEach((r,i)=>{
+    const c=CATS[r.category]; const vs=fmtVolShort(r.volume);
+    const o=el('div','route',
+      `<span class="route__dot" style="color:${c.color};background:${c.color}"></span>
+       <span class="route__pair"><b>${r.from.name}</b><span class="arr">→</span><b>${r.to.name}</b></span>
+       <span class="route__num">${vs.n}<small>${vs.u}</small></span>`);
+    o.setAttribute('role','option'); o.id='opt-'+r.id; o.dataset.id=r.id; o.tabIndex=-1;
+    o.setAttribute('aria-selected', String(r.id===state.selectedId));
+    o.setAttribute('aria-label',`${r.from.name} to ${r.to.name}, ${fmtVol(r.volume)}, ${r.category}, latency ${r.latency} milliseconds`);
+    o.addEventListener('click',()=>{ activeIdx=i; setActiveDescendant(); selectRoute(r,true); });
+    list.appendChild(o);
+  });
+  activeIdx=Math.min(activeIdx, rows.length-1);
+  setActiveDescendant();
+}
+function setActiveDescendant(){
+  const list=$('#routes-list'); const opts=[...list.querySelectorAll('.route')];
+  opts.forEach((o,i)=>o.tabIndex = i===activeIdx?0:-1);
+  const act=opts[activeIdx];
+  if(act){ list.setAttribute('aria-activedescendant',act.id); }
+}
+function markSelectedInLists(id){
+  document.querySelectorAll('#routes-list .route').forEach(o=>o.setAttribute('aria-selected',String(o.dataset.id===id)));
+  document.querySelectorAll('#rank .rank__row').forEach(o=> id&&o.dataset.id===id ? o.setAttribute('aria-current','true') : o.removeAttribute('aria-current'));
+  if(id){ const o=document.getElementById('opt-'+id); if(o){ o.scrollIntoView({block:'nearest',behavior:prefersReduced?'auto':'smooth'}); } }
+}
+
+// keyboard nav for the listbox (roving)
+$('#routes-list').addEventListener('keydown', e=>{
+  const opts=[...$('#routes-list').querySelectorAll('.route')]; if(!opts.length) return;
+  let handled=true;
+  if(e.key==='ArrowDown') activeIdx=Math.min(activeIdx+1,opts.length-1);
+  else if(e.key==='ArrowUp') activeIdx=Math.max(activeIdx-1,0);
+  else if(e.key==='Home') activeIdx=0;
+  else if(e.key==='End') activeIdx=opts.length-1;
+  else if(e.key==='Enter'||e.key===' '){ const id=opts[activeIdx].dataset.id; const r=ROUTES.find(x=>x.id===id); if(r) selectRoute(r,true); }
+  else handled=false;
+  if(handled){ e.preventDefault(); setActiveDescendant(); opts[activeIdx].scrollIntoView({block:'nearest'}); opts[activeIdx].focus(); }
+});
+
+/* ============================================================================
+   8 · UPDATE PIPELINE
+   ========================================================================== */
+function update(){
+  computeFiltered();
+  if(world && ready){ world.arcsTransitionDuration(ARC_ENTER()); world.arcsData(state.filtered); applyArcAccessors(); }
+  renderStats(); renderRank(); renderRoutes();
+  // if the selected route is filtered out, drop the focus card
+  if(state.selectedId && !state.filtered.some(r=>r.id===state.selectedId)) clearSelection(true);
+}
+function resetFilters(){
+  state.regions=new Set(REGIONS); state.cats=new Set(CAT_KEYS); state.query='';
+  $('#search-input').value=''; $('#search').classList.remove('has-val');
+  renderChips(); update();
+}
+
+/* ============================================================================
+   9 · WIRE CONTROLS
+   ========================================================================== */
+$('#btn-rotate').addEventListener('click',()=>{ setRotate(!autoRotate); if(autoRotate) scheduleResume(0); });
+$('#btn-reset').addEventListener('click',()=>{
+  clearSelection(true);
+  if(world) world.pointOfView({ lat:18, lng:-32, altitude:2.4 }, prefersReduced?0:800);
+  pauseRotate(); scheduleResume(prefersReduced?1200:3500);
+});
+$('#focus-close').addEventListener('click',()=>clearSelection(true));
+$('#btn-clear-filters').addEventListener('click',resetFilters);
+$('#err-retry').addEventListener('click',()=>location.reload());
+
+const searchInput=$('#search-input');
+let searchT=null;
+searchInput.addEventListener('input',e=>{
+  const v=e.target.value; $('#search').classList.toggle('has-val', v.length>0);
+  clearTimeout(searchT); searchT=setTimeout(()=>{ state.query=v; update(); }, 160);
+});
+$('#search-clear').addEventListener('click',()=>{ searchInput.value=''; state.query=''; $('#search').classList.remove('has-val'); update(); searchInput.focus(); });
+
+// mobile sheet
+const sheetHandle=$('#sheet-handle');
+sheetHandle.addEventListener('click',()=>{
+  const open=document.body.classList.toggle('sheet-open');
+  sheetHandle.setAttribute('aria-expanded',String(open));
+});
+
+// reduced-motion live changes
+reduceMQ.addEventListener('change', e=>{
+  prefersReduced=e.matches;
+  if(world){
+    world.controls().autoRotate = autoRotate && !prefersReduced;
+    world.arcDashAnimateTime(prefersReduced?0:2400).arcDashLength(prefersReduced?2:0.46).arcDashGap(prefersReduced?0:0.16);
+    refreshRings();
+  }
+});
+
+// resize
+let rT=null;
+const ro=new ResizeObserver(()=>{ clearTimeout(rT); rT=setTimeout(sizeGlobe,80); });
+ro.observe($('#stage'));
+window.addEventListener('orientationchange',()=>setTimeout(sizeGlobe,250));
+
+/* ============================================================================
+   10 · BOOT
+   ========================================================================== */
+$('#seed-note').textContent = `Seed 0x${SEED.toString(16)} · ${ROUTES.length} routes · ${HUBS.length} hubs.`;
+renderChips(); renderLegend(); computeFiltered(); renderStats(); renderRank(); renderRoutes();
+
+if(!hasWebGL()){
+  showError('WebGL unavailable',
+    'This globe needs <strong>WebGL</strong> to render in 3D, and your browser or device couldn\'t start it. The network explorer on the left still works — every route, filter and ranking is fully usable as data.');
+} else {
+  window.__loadTick = startLoadingTicker();
+  try{
+    initGlobe();
+    // expose for verification (same callbacks the globe's raycaster fires)
+    window.__aether = { world, ROUTES, HUBS, state, selectRoute, clearSelection, onArcHover, onHubHover, isReady:()=>ready, getCoords:(la,ln,al=0)=>world.getCoords(la,ln,al) };
+  }catch(err){
+    console.error('Globe init failed:', err);
+    showError('Could not start the globe', 'Something went wrong initialising the 3D scene. The network explorer on the left is still fully usable.');
+  }
+}
+</script>
+</body>
+</html>

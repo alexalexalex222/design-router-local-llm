@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QueryCraft — Visual SQL Builder</title>
+<meta name="description" content="Assemble nested AND/OR filters with no SQL knowledge and get a correct, runnable WHERE clause." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700&display=swap" rel="stylesheet" />
+<style>
+/* ============================== TOKENS ============================== */
+:root{
+  /* neutral ramp (warm-cool) */
+  --n-0:#ffffff; --n-25:#fbfcfd; --n-50:#f7f8fa; --n-100:#f0f2f5;
+  --n-150:#e8ebf0; --n-200:#dfe3ea; --n-300:#c9d0da; --n-400:#9aa3b2;
+  --n-500:#6b7484; --n-600:#4e5663; --n-700:#383f49; --n-800:#242a33; --n-900:#11151b;
+
+  /* accent — calm indigo (AND / primary) */
+  --ac-50:#eeeefb; --ac-100:#e2e1f8; --ac-200:#c8c6f1; --ac-400:#8a86e4;
+  --ac:#5b57d8; --ac-600:#4d49c6; --ac-700:#403da6;
+
+  /* OR — warm amber */
+  --or-50:#fdf3e6; --or-100:#fbe7cb; --or-200:#f5d0a0; --or:#c2710c; --or-600:#a35e07;
+
+  /* semantic */
+  --ok-50:#e7f5ee; --ok:#157a52; --ok-700:#0f5d3e;
+  --err-50:#fcecea; --err:#c5362d; --err-700:#9b2820;
+  --warn-50:#fcf3e3; --warn:#a96c10;
+
+  /* syntax */
+  --sx-kw:#5b57d8; --sx-str:#157a52; --sx-num:#a3590a; --sx-id:#242a33; --sx-op:#6b7484; --sx-punct:#9aa3b2;
+
+  /* surface roles */
+  --canvas:var(--n-50);
+  --surface:var(--n-0);
+  --hair:var(--n-200);
+  --hair-soft:var(--n-150);
+  --text:var(--n-800);
+  --text-2:var(--n-500);
+  --text-3:var(--n-400);
+
+  /* radii */
+  --r-sm:6px; --r-md:8px; --r-lg:12px; --r-xl:16px; --r-pill:999px;
+
+  /* spacing (4px) */
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:20px; --s-6:24px; --s-8:32px; --s-10:40px;
+
+  /* elevation */
+  --e-1:0 1px 2px rgba(17,21,27,.04), 0 1px 1px rgba(17,21,27,.03);
+  --e-2:0 4px 12px -2px rgba(17,21,27,.08), 0 2px 6px -2px rgba(17,21,27,.05);
+  --e-3:0 16px 40px -8px rgba(17,21,27,.16), 0 6px 14px -6px rgba(17,21,27,.10);
+
+  /* motion */
+  --dur:180ms; --dur-fast:120ms; --ease:cubic-bezier(.2,.7,.2,1);
+
+  /* type */
+  --ui:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"SFMono-Regular",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+  --fs-body:clamp(.875rem,.84rem + .18vw,.95rem);
+  --fs-sm:clamp(.78rem,.76rem + .1vw,.82rem);
+  --fs-xs:.72rem;
+  --fs-h1:clamp(1.05rem,1rem + .35vw,1.22rem);
+  --fs-h2:clamp(.82rem,.8rem + .15vw,.9rem);
+
+  --ctl:38px;
+}
+
+/* ============================== BASE ============================== */
+*{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  margin:0; background:var(--canvas); color:var(--text);
+  font-family:var(--ui); font-size:var(--fs-body); line-height:1.5;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  font-feature-settings:"cv05","ss01","tnum" 0;
+}
+h1,h2,h3,p{margin:0;}
+button{font-family:inherit;}
+:focus{outline:none;}
+:focus-visible{outline:2px solid var(--ac); outline-offset:2px; border-radius:var(--r-sm);}
+.skip{
+  position:fixed; left:var(--s-3); top:var(--s-3); z-index:80;
+  background:var(--ac); color:#fff; padding:10px 16px; border-radius:var(--r-md);
+  font-weight:600; font-size:var(--fs-sm); transform:translateY(-160%); transition:transform var(--dur) var(--ease);
+}
+.skip:focus{transform:translateY(0);}
+
+/* ============================== APP BAR ============================== */
+.app-bar{
+  position:sticky; top:0; z-index:40;
+  display:flex; align-items:center; gap:var(--s-4);
+  padding:var(--s-3) clamp(var(--s-4),3vw,var(--s-8));
+  background:rgba(255,255,255,.82); backdrop-filter:saturate(1.4) blur(10px);
+  border-bottom:1px solid var(--hair);
+}
+.brand{display:flex; align-items:center; gap:var(--s-3); min-width:0;}
+.brand .logo{
+  width:34px; height:34px; flex:0 0 auto; border-radius:9px;
+  display:grid; place-items:center; color:#fff;
+  background:linear-gradient(150deg,var(--ac) 0%, #6f6ce0 55%, #8f7bf0 100%);
+  box-shadow:var(--e-1), inset 0 1px 0 rgba(255,255,255,.3);
+}
+.brand .wd{display:flex; flex-direction:column; min-width:0;}
+.brand .wd b{font-size:.95rem; font-weight:600; letter-spacing:-.01em; line-height:1.1;}
+.brand .wd small{font-size:var(--fs-xs); color:var(--text-2); letter-spacing:.02em;}
+.bar-sp{flex:1 1 auto;}
+
+.table-pick{display:flex; align-items:center; gap:var(--s-2);}
+.table-pick label{font-size:var(--fs-xs); color:var(--text-2); font-weight:600; text-transform:uppercase; letter-spacing:.06em;}
+
+.bar-actions{display:flex; align-items:center; gap:var(--s-2);}
+
+/* ============================== CONTROLS ============================== */
+.ctl{
+  height:var(--ctl); min-height:var(--ctl);
+  border:1px solid var(--n-300); background:var(--n-0); color:var(--text);
+  border-radius:var(--r-md); padding:0 var(--s-3); font-size:var(--fs-sm);
+  font-family:inherit; line-height:1; transition:border-color var(--dur-fast), box-shadow var(--dur-fast), background var(--dur-fast);
+}
+.ctl:hover{border-color:var(--n-400);}
+.ctl:focus-visible{border-color:var(--ac); box-shadow:0 0 0 3px var(--ac-100); outline:none;}
+.ctl:disabled{background:var(--n-100); color:var(--text-3); cursor:not-allowed; border-color:var(--hair);}
+select.ctl{
+  -webkit-appearance:none; appearance:none; cursor:pointer; padding-right:30px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7484' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat; background-position:right 9px center;
+}
+input.ctl{min-width:0;}
+input.ctl::placeholder{color:var(--text-3);}
+
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  height:var(--ctl); min-height:var(--ctl); padding:0 14px; border-radius:var(--r-md);
+  font-size:var(--fs-sm); font-weight:550; cursor:pointer; white-space:nowrap;
+  border:1px solid var(--n-300); background:var(--n-0); color:var(--text);
+  transition:background var(--dur-fast), border-color var(--dur-fast), box-shadow var(--dur-fast), transform var(--dur-fast);
+}
+.btn:hover{background:var(--n-50); border-color:var(--n-400);}
+.btn:active{transform:translateY(.5px); background:var(--n-100);}
+.btn:focus-visible{border-color:var(--ac); box-shadow:0 0 0 3px var(--ac-100);}
+.btn:disabled{opacity:.5; cursor:not-allowed; transform:none; background:var(--n-0); border-color:var(--hair);}
+.btn svg{flex:0 0 auto;}
+.btn-primary{background:var(--ac); border-color:var(--ac); color:#fff; box-shadow:var(--e-1);}
+.btn-primary:hover{background:var(--ac-600); border-color:var(--ac-600);}
+.btn-primary:active{background:var(--ac-700);}
+.btn-primary:disabled{background:var(--ac-200); border-color:var(--ac-200); color:#fff;}
+.btn-ghost{border-color:transparent; background:transparent; color:var(--text-2);}
+.btn-ghost:hover{background:var(--n-100); color:var(--text); border-color:transparent;}
+.btn-sm{height:32px; min-height:32px; padding:0 10px; font-size:var(--fs-xs); font-weight:600;}
+.icon-btn{
+  width:34px; height:34px; min-height:34px; padding:0; flex:0 0 auto;
+  display:inline-grid; place-items:center; border-radius:var(--r-md);
+  border:1px solid transparent; background:transparent; color:var(--text-3); cursor:pointer;
+  transition:background var(--dur-fast), color var(--dur-fast);
+}
+.icon-btn:hover{background:var(--n-100); color:var(--text);}
+.icon-btn:focus-visible{box-shadow:0 0 0 3px var(--ac-100); color:var(--text);}
+.icon-btn.danger:hover{background:var(--err-50); color:var(--err);}
+
+/* ============================== LAYOUT ============================== */
+main{
+  display:grid; gap:clamp(var(--s-4),2vw,var(--s-6));
+  grid-template-columns:minmax(0,1.55fr) minmax(330px,.95fr);
+  align-items:start;
+  padding:clamp(var(--s-4),2.4vw,var(--s-8)) clamp(var(--s-4),3vw,var(--s-8)) var(--s-10);
+  max-width:1440px; margin:0 auto;
+}
+.builder-pane{grid-column:1; min-width:0;}
+.sql-pane{grid-column:2; position:sticky; top:78px; min-width:0;}
+.results-pane{grid-column:1 / -1; min-width:0;}
+
+.pane{
+  background:var(--surface); border:1px solid var(--hair); border-radius:var(--r-xl);
+  box-shadow:var(--e-1);
+}
+.pane-head{
+  display:flex; align-items:center; gap:var(--s-3);
+  padding:var(--s-4) var(--s-5); border-bottom:1px solid var(--hair-soft);
+}
+.pane-head .ph-txt{display:flex; flex-direction:column; gap:1px; min-width:0;}
+.pane-head h2{font-size:var(--fs-h2); font-weight:600; letter-spacing:-.01em; display:flex; align-items:center; gap:8px;}
+.pane-head .sub{font-size:var(--fs-xs); color:var(--text-2);}
+.pane-head .ph-sp{flex:1 1 auto;}
+.chip-count{
+  font-size:var(--fs-xs); font-weight:600; color:var(--text-2); white-space:nowrap;
+  background:var(--n-100); border:1px solid var(--hair); padding:3px 9px; border-radius:var(--r-pill);
+}
+
+/* ============================== TREE ============================== */
+.tree-wrap{padding:var(--s-5);}
+
+.group{position:relative;}
+.group.nested{
+  --rail:var(--ac); --tint:var(--ac-50); --tint-line:var(--ac-100);
+  --indent:clamp(12px,1.7vw,24px);
+  position:relative; margin-left:var(--indent);
+  background:var(--n-25); border:1px solid var(--hair); border-left:3px solid var(--rail);
+  border-radius:var(--r-lg); padding:var(--s-3) var(--s-3) var(--s-3) var(--s-4);
+  margin-top:var(--s-3); box-shadow:var(--e-1);
+}
+/* connector elbow tying a nested group back to its parent's guide */
+.group.nested::before{
+  content:""; position:absolute; left:calc(-1 * var(--indent) - 2px); top:-9px;
+  width:var(--indent); height:32px;
+  border-left:1.5px solid var(--hair); border-bottom:1.5px solid var(--hair);
+  border-bottom-left-radius:10px; pointer-events:none;
+}
+.group.nested.conj-OR::before{border-color:var(--or-100);}
+.group.nested.conj-OR{--rail:var(--or); --tint:var(--or-50); --tint-line:var(--or-100);}
+.group-bar{display:flex; align-items:center; gap:var(--s-3); flex-wrap:wrap;}
+
+.conj-toggle{
+  display:inline-flex; padding:3px; gap:2px; background:var(--n-100);
+  border:1px solid var(--hair); border-radius:var(--r-md);
+}
+.conj-toggle button{
+  height:28px; min-width:46px; padding:0 12px; border:none; background:transparent;
+  border-radius:6px; font-size:var(--fs-xs); font-weight:700; letter-spacing:.04em; color:var(--text-2);
+  cursor:pointer; transition:background var(--dur-fast), color var(--dur-fast), box-shadow var(--dur-fast);
+}
+.conj-toggle button:hover{color:var(--text);}
+.conj-toggle button[aria-pressed="true"]{background:var(--n-0); color:var(--ac); box-shadow:var(--e-1);}
+.conj-toggle button[data-val="OR"][aria-pressed="true"]{color:var(--or);}
+.conj-toggle button:focus-visible{box-shadow:0 0 0 2px var(--ac-100);}
+
+.conj-desc{font-size:var(--fs-sm); color:var(--text-2);}
+.conj-desc b{font-weight:600; color:var(--text);}
+.conj-desc b.j-and{color:var(--ac);}
+.conj-desc b.j-or{color:var(--or);}
+
+.not-toggle{
+  height:28px; padding:0 10px; border-radius:6px; border:1px dashed var(--n-300);
+  background:transparent; color:var(--text-3); font-size:var(--fs-xs); font-weight:700; letter-spacing:.04em; cursor:pointer;
+  transition:all var(--dur-fast);
+}
+.not-toggle:hover{border-color:var(--err); color:var(--err);}
+.not-toggle[aria-pressed="true"]{background:var(--err-50); border-color:var(--err); border-style:solid; color:var(--err-700);}
+.not-toggle:focus-visible{box-shadow:0 0 0 3px var(--err-50);}
+
+.group-body{position:relative; margin-top:var(--s-3); display:flex; flex-direction:column; gap:var(--s-2);}
+
+/* connector guide */
+.node{position:relative;}
+.children{position:relative; display:flex; flex-direction:column; gap:var(--s-2);}
+
+.rule{
+  position:relative; display:flex; align-items:flex-start; gap:var(--s-2);
+  background:var(--n-0); border:1px solid var(--hair); border-radius:var(--r-lg);
+  padding:var(--s-2) var(--s-2) var(--s-2) 4px; box-shadow:var(--e-1);
+  animation:pop var(--dur) var(--ease);
+}
+.rule.incomplete{border-style:dashed; border-color:var(--n-300); background:repeating-linear-gradient(135deg,var(--n-25),var(--n-25) 9px,#fbfaf6 9px,#fbfaf6 18px);}
+.rule.invalid{border-color:var(--err-200,#f0c4bf); background:var(--err-50);}
+.rule.dragging{opacity:.4;}
+.rule.drop-before{box-shadow:0 -3px 0 -1px var(--ac), var(--e-1);}
+@keyframes pop{from{opacity:0; transform:translateY(-4px);} to{opacity:1; transform:none;}}
+
+.drag{
+  align-self:stretch; width:24px; flex:0 0 auto; border:none; background:transparent; cursor:grab;
+  color:var(--text-3); display:grid; place-items:center; border-radius:8px; touch-action:none;
+}
+.drag:hover{color:var(--text-2); background:var(--n-100);}
+.drag:active{cursor:grabbing;}
+.drag:focus-visible{box-shadow:0 0 0 2px var(--ac-100);}
+
+.rule-main{flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:5px; padding-top:2px;}
+.rule-controls{display:flex; flex-wrap:wrap; align-items:center; gap:var(--s-2);}
+.rule-controls .f-field{flex:0 1 auto; min-width:120px;}
+.rule-controls .f-op{flex:0 1 auto; min-width:128px;}
+.value-cell{flex:1 1 150px; min-width:130px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+.value-cell input.ctl,.value-cell select.ctl{flex:1 1 110px; min-width:90px;}
+.value-cell .between-and{color:var(--text-3); font-size:var(--fs-xs); font-weight:600; padding:0 2px;}
+.value-cell .no-val{
+  display:inline-flex; align-items:center; gap:6px; height:var(--ctl); padding:0 12px;
+  font-size:var(--fs-xs); font-weight:500; color:var(--text-2);
+  background:var(--n-50); border:1px dashed var(--n-300); border-radius:var(--r-md);
+}
+.value-cell .no-val svg{color:var(--text-3);}
+
+/* enum multiselect chips */
+.chipset{display:flex; flex-wrap:wrap; gap:5px; flex:1 1 140px;}
+.chip-tog{
+  height:32px; min-width:42px; padding:0 12px; border-radius:var(--r-md); border:1px solid var(--n-300);
+  background:var(--n-0); color:var(--text-2); font-size:var(--fs-xs); font-weight:600; cursor:pointer;
+  transition:all var(--dur-fast); letter-spacing:.01em;
+}
+.chip-tog:hover{border-color:var(--ac-400); color:var(--text);}
+.chip-tog[aria-pressed="true"]{background:var(--ac-50); border-color:var(--ac); color:var(--ac-700);}
+.chip-tog:focus-visible{box-shadow:0 0 0 3px var(--ac-100);}
+
+/* tag input (multi string/number) */
+.taginput{
+  flex:1 1 150px; min-width:140px; display:flex; flex-wrap:wrap; align-items:center; gap:5px;
+  border:1px solid var(--n-300); border-radius:var(--r-md); padding:4px 6px; min-height:var(--ctl); background:var(--n-0);
+  transition:border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+.taginput:focus-within{border-color:var(--ac); box-shadow:0 0 0 3px var(--ac-100);}
+.tag{
+  display:inline-flex; align-items:center; gap:5px; height:24px; padding:0 4px 0 9px;
+  background:var(--ac-50); color:var(--ac-700); border-radius:var(--r-pill); font-size:var(--fs-xs); font-weight:600;
+}
+.tag button{border:none; background:transparent; color:var(--ac-600); cursor:pointer; display:grid; place-items:center; padding:2px; border-radius:50%;}
+.tag button:hover{background:var(--ac-200);}
+.taginput input{border:none; outline:none; flex:1 1 60px; min-width:60px; font-size:var(--fs-sm); background:transparent; color:var(--text); padding:4px 2px;}
+
+.rule-msg{font-size:var(--fs-xs); display:none; align-items:center; gap:5px; padding-left:2px;}
+.rule.incomplete .rule-msg{display:inline-flex; color:var(--warn);}
+.rule.invalid .rule-msg{display:inline-flex; color:var(--err);}
+
+.group-add{display:flex; gap:var(--s-2); margin-top:var(--s-1); flex-wrap:wrap;}
+.add-btn{
+  display:inline-flex; align-items:center; gap:6px; height:32px; padding:0 12px; border-radius:var(--r-md);
+  border:1px dashed var(--n-300); background:transparent; color:var(--text-2);
+  font-size:var(--fs-xs); font-weight:600; cursor:pointer; transition:all var(--dur-fast);
+}
+.add-btn:hover{border-color:var(--ac); color:var(--ac); background:var(--ac-50); border-style:solid;}
+.add-btn:focus-visible{box-shadow:0 0 0 3px var(--ac-100);}
+.add-btn.group-add-g:hover{border-color:var(--or); color:var(--or); background:var(--or-50);}
+
+.tree-empty{
+  text-align:center; padding:var(--s-8) var(--s-4); color:var(--text-3);
+  border:1.5px dashed var(--hair); border-radius:var(--r-lg);
+}
+.tree-empty svg{color:var(--n-300); margin-bottom:var(--s-3);}
+.tree-empty p{font-size:var(--fs-sm); margin-bottom:var(--s-4);}
+
+/* ============================== SQL PANE ============================== */
+.sql-code{
+  margin:0; padding:var(--s-4) var(--s-5); font-family:var(--mono); font-size:var(--fs-sm);
+  line-height:1.65; white-space:pre; overflow-x:auto; tab-size:2; color:var(--sx-id);
+  background:linear-gradient(180deg,var(--n-25),var(--n-0)); border-bottom:1px solid var(--hair-soft);
+  min-height:120px;
+}
+.sql-code::-webkit-scrollbar{height:8px;}
+.sql-code::-webkit-scrollbar-thumb{background:var(--n-200); border-radius:99px;}
+.tok-kw{color:var(--sx-kw); font-weight:600;}
+.tok-str{color:var(--sx-str);}
+.tok-num{color:var(--sx-num);}
+.tok-id{color:var(--sx-id);}
+.tok-op{color:var(--sx-op);}
+.tok-punct{color:var(--sx-punct);}
+
+.sql-foot{padding:var(--s-4) var(--s-5); display:flex; flex-direction:column; gap:var(--s-3);}
+.btn-run{width:100%; height:44px; min-height:44px; font-size:var(--fs-body); font-weight:600;}
+.run-meta{display:flex; align-items:center; gap:8px; font-size:var(--fs-xs); color:var(--text-2); justify-content:center; flex-wrap:wrap;}
+.kbd{font-family:var(--mono); font-size:11px; background:var(--n-100); border:1px solid var(--hair); border-bottom-width:2px; border-radius:5px; padding:1px 5px; color:var(--text-2);}
+
+.schema-ref{border-top:1px solid var(--hair-soft);}
+.schema-ref summary{
+  list-style:none; cursor:pointer; padding:var(--s-3) var(--s-5); font-size:var(--fs-xs); font-weight:600;
+  color:var(--text-2); display:flex; align-items:center; gap:8px; user-select:none;
+}
+.schema-ref summary::-webkit-details-marker{display:none;}
+.schema-ref summary .caret{transition:transform var(--dur-fast); color:var(--text-3);}
+.schema-ref[open] summary .caret{transform:rotate(90deg);}
+.schema-ref summary:hover{color:var(--text);}
+.schema-grid{padding:0 var(--s-5) var(--s-4); display:flex; flex-direction:column; gap:2px;}
+.sch-col{display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid var(--hair-soft); font-size:var(--fs-sm);}
+.sch-col:last-child{border-bottom:none;}
+.sch-col code{font-family:var(--mono); color:var(--text); font-size:var(--fs-sm);}
+.sch-col .t-badge{
+  margin-left:auto; font-size:10px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+  padding:2px 7px; border-radius:var(--r-pill); background:var(--n-100); color:var(--text-2);
+}
+.t-badge.t-string{background:#eef4ff; color:#2c5fb0;}
+.t-badge.t-number{background:var(--or-50); color:var(--or-600);}
+.t-badge.t-date{background:#f0ecfb; color:var(--ac-700);}
+.t-badge.t-enum{background:var(--ok-50); color:var(--ok-700);}
+.t-badge.t-boolean{background:#fbeef6; color:#a23a7a;}
+
+/* ============================== RESULTS ============================== */
+.results-head{padding:var(--s-4) var(--s-5); display:flex; align-items:center; gap:var(--s-3); border-bottom:1px solid var(--hair-soft); flex-wrap:wrap;}
+.results-head h2{font-size:var(--fs-h2); font-weight:600;}
+.stale-flag{
+  display:none; align-items:center; gap:6px; font-size:var(--fs-xs); font-weight:600; color:var(--or-600);
+  background:var(--or-50); border:1px solid var(--or-100); padding:3px 10px; border-radius:var(--r-pill);
+}
+.results-pane.is-stale .stale-flag{display:inline-flex;}
+.res-body{padding:0;}
+
+.grid-scroll{overflow-x:auto; max-height:440px; overflow-y:auto;}
+table.grid{border-collapse:separate; border-spacing:0; width:100%; font-size:var(--fs-sm);}
+table.grid th{
+  position:sticky; top:0; z-index:2; text-align:left; font-weight:600; color:var(--text-2);
+  font-size:var(--fs-xs); text-transform:uppercase; letter-spacing:.04em; white-space:nowrap;
+  padding:11px var(--s-4); background:var(--n-50); border-bottom:1px solid var(--hair);
+}
+table.grid th .th-t{font-size:9px; color:var(--text-3); margin-left:5px; font-weight:600; letter-spacing:.03em;}
+table.grid td{
+  padding:11px var(--s-4); border-bottom:1px solid var(--hair-soft); white-space:nowrap;
+  color:var(--text); font-variant-numeric:tabular-nums;
+}
+table.grid tbody tr{transition:background var(--dur-fast);}
+table.grid tbody tr:hover{background:var(--ac-50);}
+table.grid tbody tr:last-child td{border-bottom:none;}
+.cell-num{text-align:right; font-family:var(--mono); font-size:var(--fs-xs);}
+.cell-null{color:var(--text-3); font-style:italic;}
+.cell-mono{font-family:var(--mono); font-size:var(--fs-xs); color:var(--text-2);}
+.pill{display:inline-flex; align-items:center; padding:2px 9px; border-radius:var(--r-pill); font-size:var(--fs-xs); font-weight:600; background:var(--n-100); color:var(--text-2); text-transform:capitalize;}
+.pill.p-free{background:var(--n-100); color:var(--text-2);}
+.pill.p-pro{background:#eef4ff; color:#2c5fb0;}
+.pill.p-business{background:var(--ac-50); color:var(--ac-700);}
+.pill.p-enterprise{background:#f3ecfb; color:#7a3da6;}
+.bool-y{display:inline-flex; align-items:center; gap:5px; color:var(--ok); font-weight:600; font-size:var(--fs-xs);}
+.bool-n{display:inline-flex; align-items:center; gap:5px; color:var(--text-3); font-size:var(--fs-xs);}
+
+/* result states */
+.res-state{padding:var(--s-10) var(--s-5); text-align:center; display:flex; flex-direction:column; align-items:center; gap:var(--s-3);}
+.res-state .ico{width:46px; height:46px; border-radius:12px; display:grid; place-items:center; background:var(--n-100); color:var(--text-3);}
+.res-state h3{font-size:var(--fs-body); font-weight:600; color:var(--text);}
+.res-state p{font-size:var(--fs-sm); color:var(--text-2); max-width:36ch;}
+.res-state.is-error .ico{background:var(--err-50); color:var(--err);}
+.res-state.is-success .ico{background:var(--ok-50); color:var(--ok);}
+
+.skel-row{display:flex; gap:var(--s-4); padding:11px var(--s-4); border-bottom:1px solid var(--hair-soft);}
+.skel{height:13px; border-radius:5px; background:linear-gradient(90deg,var(--n-100) 25%,var(--n-150) 37%,var(--n-100) 63%); background-size:400% 100%; animation:shimmer 1.3s ease infinite;}
+@keyframes shimmer{0%{background-position:100% 0;}100%{background-position:0 0;}}
+
+/* ============================== POPOVER MENU ============================== */
+.menu-wrap{position:relative;}
+.menu{
+  position:absolute; right:0; top:calc(100% + 6px); z-index:50; min-width:210px;
+  background:var(--n-0); border:1px solid var(--hair); border-radius:var(--r-lg); box-shadow:var(--e-3);
+  padding:6px; display:none; flex-direction:column; gap:1px;
+  animation:menupop var(--dur-fast) var(--ease);
+}
+.menu.open{display:flex;}
+@keyframes menupop{from{opacity:0; transform:translateY(-5px) scale(.98);} to{opacity:1; transform:none;}}
+.menu-item{
+  display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+  padding:9px 10px; border:none; background:transparent; border-radius:var(--r-md);
+  font-size:var(--fs-sm); color:var(--text); cursor:pointer; font-family:inherit;
+}
+.menu-item:hover{background:var(--n-100);}
+.menu-item:focus-visible{background:var(--n-100); box-shadow:0 0 0 2px var(--ac-100);}
+.menu-item svg{color:var(--text-3); flex:0 0 auto;}
+.menu-item .mi-sub{display:block; font-size:var(--fs-xs); color:var(--text-2); margin-top:1px;}
+.menu-item .mi-tx{display:flex; flex-direction:column; min-width:0;}
+.menu-sep{height:1px; background:var(--hair-soft); margin:5px 4px;}
+.menu-label{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-3); padding:7px 10px 4px;}
+
+/* ============================== TOASTS ============================== */
+.toast-region{position:fixed; bottom:var(--s-5); left:50%; transform:translateX(-50%); z-index:90; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none;}
+.toast{
+  display:flex; align-items:center; gap:10px; background:var(--n-900); color:#fff;
+  padding:10px 16px; border-radius:var(--r-pill); font-size:var(--fs-sm); font-weight:500; box-shadow:var(--e-3);
+  animation:toastin var(--dur) var(--ease);
+}
+.toast svg{color:#7ee2b0;}
+.toast.err svg{color:#ff9d96;}
+@keyframes toastin{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;}}
+
+/* ============================== RESPONSIVE ============================== */
+@media (max-width:920px){
+  main{grid-template-columns:1fr;}
+  .builder-pane,.sql-pane,.results-pane{grid-column:1;}
+  .sql-pane{position:static;}
+}
+@media (max-width:560px){
+  .app-bar{flex-wrap:wrap; gap:var(--s-2) var(--s-3); padding:var(--s-3) var(--s-4);}
+  .bar-sp{flex-basis:100%; height:0;}
+  .table-pick{order:3;}
+  .brand .wd small{display:none;}
+  .rule-controls .f-field,.rule-controls .f-op{flex:1 1 100%; min-width:0;}
+  .value-cell{flex:1 1 100%;}
+  .group.nested{padding:var(--s-3) var(--s-2) var(--s-3) var(--s-3); --indent:10px;}
+  .conj-desc{display:none;}
+  .tree-wrap{padding:var(--s-3);}
+  .pane-head{padding:var(--s-3) var(--s-4); flex-wrap:wrap;}
+  .pane-head .ph-txt{flex:1 1 100%;}
+  .pane-head .ph-sp{display:none;}
+  table.grid th,table.grid td{padding:10px var(--s-3);}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important;}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#builder">Skip to builder</a>
+
+<header class="app-bar">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg>
+    </span>
+    <span class="wd">
+      <b>QueryCraft</b>
+      <small>Visual SQL builder</small>
+    </span>
+  </div>
+
+  <div class="bar-sp"></div>
+
+  <div class="table-pick">
+    <label for="tableSel">Table</label>
+    <select id="tableSel" class="ctl" style="height:34px;min-height:34px;"></select>
+  </div>
+
+  <div class="bar-actions">
+    <div class="menu-wrap">
+      <button class="btn btn-sm" id="presetBtn" aria-haspopup="true" aria-expanded="false">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        Examples
+      </button>
+      <div class="menu" id="presetMenu" role="menu" aria-label="Example queries"></div>
+    </div>
+    <div class="menu-wrap">
+      <button class="btn btn-sm" id="exportBtn" aria-haspopup="true" aria-expanded="false">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 21h14"/></svg>
+        Export
+      </button>
+      <div class="menu" id="exportMenu" role="menu" aria-label="Export options">
+        <div class="menu-label">Copy</div>
+        <button class="menu-item" data-export="copysql" role="menuitem"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span class="mi-tx">Copy SQL<span class="mi-sub">Full SELECT statement</span></span></button>
+        <button class="menu-item" data-export="copyjson" role="menuitem"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H6a2 2 0 0 0-2 2v4l-2 3 2 3v4a2 2 0 0 0 2 2h2M16 3h2a2 2 0 0 1 2 2v4l2 3-2 3v4a2 2 0 0 1-2 2h-2"/></svg><span class="mi-tx">Copy JSON<span class="mi-sub">Query tree definition</span></span></button>
+        <div class="menu-sep"></div>
+        <div class="menu-label">Download</div>
+        <button class="menu-item" data-export="dlsql" role="menuitem"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 21h14"/></svg><span class="mi-tx">Download .sql</span></button>
+        <button class="menu-item" data-export="dljson" role="menuitem"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 21h14"/></svg><span class="mi-tx">Download .json</span></button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- BUILDER -->
+  <section class="builder-pane pane" id="builder" aria-labelledby="builderH">
+    <div class="pane-head">
+      <div class="ph-txt">
+        <h2 id="builderH">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
+          Filter conditions
+        </h2>
+        <span class="sub">Build a <code style="font-family:var(--mono);font-size:.78rem">WHERE</code> clause — no SQL required</span>
+      </div>
+      <div class="ph-sp"></div>
+      <span class="chip-count" id="ruleCount">0 conditions</span>
+      <button class="btn btn-sm btn-ghost" id="clearBtn" title="Clear all conditions">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-9 0v14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V6"/></svg>
+        Clear
+      </button>
+    </div>
+    <div class="tree-wrap"><div id="tree"></div></div>
+  </section>
+
+  <!-- SQL -->
+  <aside class="sql-pane pane" aria-labelledby="sqlH">
+    <div class="pane-head">
+      <div class="ph-txt">
+        <h2 id="sqlH">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 6 3 12 8 18"/><polyline points="16 6 21 12 16 18"/></svg>
+          Generated SQL
+        </h2>
+        <span class="sub">Live · syntactically valid</span>
+      </div>
+      <div class="ph-sp"></div>
+      <button class="icon-btn" id="copySqlBtn" aria-label="Copy SQL" title="Copy SQL">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+      </button>
+    </div>
+    <pre class="sql-code" id="sql" aria-live="polite" aria-label="Generated SQL query"></pre>
+    <div class="sql-foot">
+      <button class="btn btn-primary btn-run" id="runBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4" fill="currentColor" stroke="none"/></svg>
+        Run query
+      </button>
+      <div class="run-meta">Runs against in-browser sample data · <span class="kbd">⌘</span><span class="kbd">↵</span></div>
+    </div>
+    <details class="schema-ref" id="schemaRef">
+      <summary>
+        <svg class="caret" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        <span id="schemaTitle">Table schema</span>
+      </summary>
+      <div class="schema-grid" id="schemaGrid"></div>
+    </details>
+  </aside>
+
+  <!-- RESULTS -->
+  <section class="results-pane pane" id="resultsPane" aria-labelledby="resH" aria-live="polite">
+    <div class="results-head">
+      <h2 id="resH">Results</h2>
+      <span class="chip-count" id="resCount" style="display:none"></span>
+      <span class="stale-flag" id="staleFlag">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
+        Query changed — re-run
+      </span>
+      <div class="ph-sp" style="flex:1 1 auto"></div>
+    </div>
+    <div class="res-body" id="resBody"></div>
+  </section>
+</main>
+
+<div class="toast-region" id="toasts" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+"use strict";
+/* =========================================================================
+   QueryCraft — Visual SQL Builder
+   Single-file. Hand-rolled query tree → SQL serializer + dataset evaluator.
+   ========================================================================= */
+
+/* ---------- tiny SVG icon set (inline, bespoke) ---------- */
+const ICON = {
+  grip:'<svg width="14" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>',
+  x:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  xsm:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  plus:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  warn:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>',
+  check:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  dash:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 12h12"/></svg>',
+};
+
+/* ===================================================================
+   1. SAMPLE SCHEMA + SYNTHETIC DATA  (clearly synthetic — generated)
+   =================================================================== */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+function genCustomers(){
+  const rnd = mulberry32(1337);
+  const pick = arr => arr[Math.floor(rnd()*arr.length)];
+  const first=["Ada","Marco","Lena","Theo","Priya","Omar","Yuki","Sofia","Noah","Mira","Felix","Aisha","Diego","Hana","Liam","Zoe","Raj","Nina","Kofi","Elsa","Tomas","Iris","Sven","Lucia","Arun","Bea","Kai","Mei","Otto","Vera","Jonas","Amara","Pablo","Ines","Wren","Esme","Cy","Roni","Tess","Dov","Lia","Ravi"];
+  const last=["Lovelace","Reyes","Novak","Bauer","Shah","Haddad","Tanaka","Marin","Klein","Wells","Mori","Okafor","Costa","Berg","Frost","Lin","Patel","Vogel","Mensah","Holm","Ruiz","Cole","Aaltonen","Soto","Nair","Park","Ito","Ferreira","Krause","Singh"];
+  const domains=["northwind.example","acme.example","pinemail.example","contoso.example","globex.example"];
+  const plans=["free","pro","business","enterprise"];
+  const planMrr={free:0,pro:[40,120],business:[300,900],enterprise:[1400,6200]};
+  const countries=["US","GB","DE","FR","CA","AU","IN","BR","JP","NL"];
+  const rows=[];
+  const N=42;
+  for(let i=0;i<N;i++){
+    const fn=pick(first), ln=pick(last);
+    // weighted plan
+    const r=rnd(); const plan = r<0.30?"free":r<0.62?"pro":r<0.86?"business":"enterprise";
+    let mrr=0;
+    if(plan!=="free"){const[a,b]=planMrr[plan]; mrr=Math.round((a+rnd()*(b-a))/10)*10;}
+    const seats = plan==="free"?1:plan==="pro"?(1+Math.floor(rnd()*4)):plan==="business"?(5+Math.floor(rnd()*40)):(40+Math.floor(rnd()*260));
+    const yr=2022+Math.floor(rnd()*4); const mo=1+Math.floor(rnd()*12); const da=1+Math.floor(rnd()*28);
+    const signup=`${yr}-${String(mo).padStart(2,"0")}-${String(da).padStart(2,"0")}`;
+    // last login: active recent, churned older
+    const active = rnd()>(plan==="free"?0.45:0.18);
+    const trial = plan!=="enterprise" && rnd()<0.22;
+    const lyr = active?2025:(2024+Math.floor(rnd()*2));
+    const lmo=1+Math.floor(rnd()*(lyr===2025?6:12)); const lda=1+Math.floor(rnd()*28);
+    const last_login = active||rnd()>0.15 ? `${lyr}-${String(lmo).padStart(2,"0")}-${String(lda).padStart(2,"0")}` : null;
+    const nps = rnd()<0.16 ? null : Math.floor(rnd()*11);
+    rows.push({
+      id:1000+i, name:`${fn} ${ln}`,
+      email:`${fn.toLowerCase()}.${ln.toLowerCase()}@${pick(domains)}`,
+      plan, mrr, seats, country:pick(countries),
+      signup_date:signup, last_login, is_active:active, trial, nps
+    });
+  }
+  return rows;
+}
+
+function genEvents(){
+  const rnd=mulberry32(99);
+  const types=["signup","login","upgrade","downgrade","payment","support_ticket","churn"];
+  const rows=[]; const N=34;
+  for(let i=0;i<N;i++){
+    const t=types[Math.floor(rnd()*types.length)];
+    const amount=(t==="payment"||t==="upgrade")?Math.round((20+rnd()*1800)/5)*5:(t==="downgrade"?Math.round(rnd()*-400/5)*5:null);
+    const yr=2024+Math.floor(rnd()*2); const mo=1+Math.floor(rnd()*12); const da=1+Math.floor(rnd()*28);
+    rows.push({
+      id:5000+i, customer_id:1000+Math.floor(rnd()*42), event_type:t,
+      amount, created_at:`${yr}-${String(mo).padStart(2,"0")}-${String(da).padStart(2,"0")}`,
+      success: t==="support_ticket"? rnd()>0.4 : rnd()>0.1
+    });
+  }
+  return rows;
+}
+
+const TABLES = {
+  customers:{
+    label:"customers",
+    columns:[
+      {name:"id",type:"number",label:"ID"},
+      {name:"name",type:"string",label:"Name"},
+      {name:"email",type:"string",label:"Email"},
+      {name:"plan",type:"enum",label:"Plan",values:["free","pro","business","enterprise"]},
+      {name:"mrr",type:"number",label:"MRR ($)"},
+      {name:"seats",type:"number",label:"Seats"},
+      {name:"country",type:"enum",label:"Country",values:["US","GB","DE","FR","CA","AU","IN","BR","JP","NL"]},
+      {name:"signup_date",type:"date",label:"Signup date"},
+      {name:"last_login",type:"date",label:"Last login"},
+      {name:"is_active",type:"boolean",label:"Active"},
+      {name:"trial",type:"boolean",label:"On trial"},
+      {name:"nps",type:"number",label:"NPS"},
+    ],
+    rows:genCustomers()
+  },
+  events:{
+    label:"events",
+    columns:[
+      {name:"id",type:"number",label:"ID"},
+      {name:"customer_id",type:"number",label:"Customer ID"},
+      {name:"event_type",type:"enum",label:"Event type",values:["signup","login","upgrade","downgrade","payment","support_ticket","churn"]},
+      {name:"amount",type:"number",label:"Amount ($)"},
+      {name:"created_at",type:"date",label:"Created at"},
+      {name:"success",type:"boolean",label:"Success"},
+    ],
+    rows:genEvents()
+  }
+};
+
+/* ===================================================================
+   2. OPERATORS  (own their SQL tokens + row evaluation)
+   =================================================================== */
+const T=(t,v)=>({t,v});
+const SP={t:"ws",v:" "};
+const kw=v=>T("kw",v), idt=v=>T("id",v), opn=v=>T("op",v), pu=v=>T("punct",v);
+const num=v=>T("num",String(v));
+const escSql = v => String(v).replace(/'/g,"''");
+const qstr = v => T("str","'"+escSql(v)+"'");
+
+// scalar value token by column type
+function valTok(col,v){
+  if(col.type==="number") return num(v);
+  return qstr(v);                 // string, enum, date → quoted
+}
+function listTok(col,arr){
+  const out=[pu("(")];
+  arr.forEach((el,i)=>{ if(i) out.push(pu(","),SP); out.push(valTok(col,el)); });
+  out.push(pu(")"));
+  return out;
+}
+// comparison helpers
+function ordCmp(rv,v,col){
+  if(rv==null) return null;
+  if(col.type==="number"){const a=Number(rv),b=Number(v); return a<b?-1:a>b?1:0;}
+  const a=String(rv),b=String(v); return a<b?-1:a>b?1:0;   // ISO dates + strings sort lexically
+}
+function eqVal(rv,v,col){
+  if(rv==null) return false;
+  if(col.type==="number") return Number(rv)===Number(v);
+  return String(rv)===String(v);
+}
+
+const OPS = {
+  // shared
+  eq:{label:"equals",arity:1,sym:"=",
+      tok:(f,v,_2,c)=>[idt(f),SP,opn("="),SP,valTok(c,v)], ev:(rv,v,_2,c)=>eqVal(rv,v,c)},
+  neq:{label:"not equals",arity:1,sym:"<>",
+      tok:(f,v,_2,c)=>[idt(f),SP,opn("<>"),SP,valTok(c,v)], ev:(rv,v,_2,c)=>rv!=null&&!eqVal(rv,v,c)},
+  isnull:{label:"is empty",arity:0,
+      tok:f=>[idt(f),SP,kw("IS NULL")], ev:rv=>rv==null},
+  notnull:{label:"is not empty",arity:0,
+      tok:f=>[idt(f),SP,kw("IS NOT NULL")], ev:rv=>rv!=null},
+  in:{label:"is any of",arity:"multi",
+      tok:(f,arr,_2,c)=>[idt(f),SP,kw("IN"),SP,...listTok(c,arr)], ev:(rv,arr,_2,c)=>rv!=null&&arr.some(e=>eqVal(rv,e,c))},
+  nin:{label:"is none of",arity:"multi",
+      tok:(f,arr,_2,c)=>[idt(f),SP,kw("NOT IN"),SP,...listTok(c,arr)], ev:(rv,arr,_2,c)=>rv!=null&&!arr.some(e=>eqVal(rv,e,c))},
+
+  // string
+  contains:{label:"contains",arity:1,
+      tok:(f,v)=>[idt(f),SP,kw("LIKE"),SP,T("str","'%"+escSql(v)+"%'")], ev:(rv,v)=>rv!=null&&String(rv).toLowerCase().includes(String(v).toLowerCase())},
+  ncontains:{label:"does not contain",arity:1,
+      tok:(f,v)=>[idt(f),SP,kw("NOT LIKE"),SP,T("str","'%"+escSql(v)+"%'")], ev:(rv,v)=>rv!=null&&!String(rv).toLowerCase().includes(String(v).toLowerCase())},
+  starts:{label:"starts with",arity:1,
+      tok:(f,v)=>[idt(f),SP,kw("LIKE"),SP,T("str","'"+escSql(v)+"%'")], ev:(rv,v)=>rv!=null&&String(rv).toLowerCase().startsWith(String(v).toLowerCase())},
+  ends:{label:"ends with",arity:1,
+      tok:(f,v)=>[idt(f),SP,kw("LIKE"),SP,T("str","'%"+escSql(v)+"'")], ev:(rv,v)=>rv!=null&&String(rv).toLowerCase().endsWith(String(v).toLowerCase())},
+
+  // number / ordering
+  gt:{label:"greater than",arity:1,sym:">",tok:(f,v,_2,c)=>[idt(f),SP,opn(">"),SP,valTok(c,v)],ev:(rv,v,_2,c)=>ordCmp(rv,v,c)===1},
+  gte:{label:"≥ at least",arity:1,sym:">=",tok:(f,v,_2,c)=>[idt(f),SP,opn(">="),SP,valTok(c,v)],ev:(rv,v,_2,c)=>{const o=ordCmp(rv,v,c);return o!=null&&o>=0;}},
+  lt:{label:"less than",arity:1,sym:"<",tok:(f,v,_2,c)=>[idt(f),SP,opn("<"),SP,valTok(c,v)],ev:(rv,v,_2,c)=>ordCmp(rv,v,c)===-1},
+  lte:{label:"≤ at most",arity:1,sym:"<=",tok:(f,v,_2,c)=>[idt(f),SP,opn("<="),SP,valTok(c,v)],ev:(rv,v,_2,c)=>{const o=ordCmp(rv,v,c);return o!=null&&o<=0;}},
+  between:{label:"between",arity:2,
+      tok:(f,v,v2,c)=>[idt(f),SP,kw("BETWEEN"),SP,valTok(c,v),SP,kw("AND"),SP,valTok(c,v2)],
+      ev:(rv,v,v2,c)=>{const a=ordCmp(rv,v,c),b=ordCmp(rv,v2,c);return a!=null&&b!=null&&a>=0&&b<=0;}},
+
+  // date phrasing
+  after:{label:"is after",arity:1,tok:(f,v,_2,c)=>[idt(f),SP,opn(">"),SP,valTok(c,v)],ev:(rv,v,_2,c)=>ordCmp(rv,v,c)===1},
+  before:{label:"is before",arity:1,tok:(f,v,_2,c)=>[idt(f),SP,opn("<"),SP,valTok(c,v)],ev:(rv,v,_2,c)=>ordCmp(rv,v,c)===-1},
+  onafter:{label:"on or after",arity:1,tok:(f,v,_2,c)=>[idt(f),SP,opn(">="),SP,valTok(c,v)],ev:(rv,v,_2,c)=>{const o=ordCmp(rv,v,c);return o!=null&&o>=0;}},
+  onbefore:{label:"on or before",arity:1,tok:(f,v,_2,c)=>[idt(f),SP,opn("<="),SP,valTok(c,v)],ev:(rv,v,_2,c)=>{const o=ordCmp(rv,v,c);return o!=null&&o<=0;}},
+
+  // boolean
+  istrue:{label:"is true",arity:0,tok:f=>[idt(f),SP,opn("="),SP,kw("TRUE")],ev:rv=>rv===true},
+  isfalse:{label:"is false",arity:0,tok:f=>[idt(f),SP,opn("="),SP,kw("FALSE")],ev:rv=>rv===false},
+};
+
+function operatorsFor(type){
+  switch(type){
+    case "string":  return ["eq","neq","contains","ncontains","starts","ends","in","nin","isnull","notnull"];
+    case "number":  return ["eq","neq","gt","gte","lt","lte","between","in","isnull","notnull"];
+    case "date":    return ["eq","neq","after","before","onafter","onbefore","between","isnull","notnull"];
+    case "enum":    return ["eq","neq","in","nin","isnull","notnull"];
+    case "boolean": return ["istrue","isfalse","isnull","notnull"];
+    default: return ["eq","neq","isnull","notnull"];
+  }
+}
+
+/* ===================================================================
+   3. STATE + MODEL
+   =================================================================== */
+const LS_KEY="querycraft.v1";
+let uid=1; const nid=()=>"n"+(uid++);
+
+function newRule(table){
+  const col=TABLES[table].columns[0];
+  return {id:nid(),kind:"rule",field:col.name,op:operatorsFor(col.type)[0],value:"",value2:""};
+}
+function newGroup(children){ return {id:nid(),kind:"group",conj:"AND",not:false,children:children||[]}; }
+
+let state = { table:"customers", root:null };
+let lastRun = null;            // {sql, rows, total, matched}
+let resultsStale = false;
+
+function colOf(table,fieldName){ return TABLES[table].columns.find(c=>c.name===fieldName); }
+
+/* find node + parent by id */
+function findNode(id,node=state.root,parent=null){
+  if(node.id===id) return {node,parent};
+  if(node.kind==="group"){
+    for(const c of node.children){ const r=findNode(id,c,node); if(r) return r; }
+  }
+  return null;
+}
+function countRules(node=state.root){
+  if(node.kind==="rule") return 1;
+  return node.children.reduce((a,c)=>a+countRules(c),0);
+}
+
+/* ---------- validation ---------- */
+function ruleStatus(rule){
+  const op=OPS[rule.op]; const col=colOf(state.table,rule.field);
+  if(!col||!op) return {ok:false,level:"invalid",msg:"Unknown field"};
+  if(op.arity===0) return {ok:true};
+  if(op.arity==="multi"){
+    if(!Array.isArray(rule.value)||rule.value.length===0) return {ok:false,level:"empty",msg:"Add at least one value"};
+    if(col.type==="number"&&rule.value.some(x=>x===""||isNaN(Number(x)))) return {ok:false,level:"invalid",msg:"Values must be numbers"};
+    return {ok:true};
+  }
+  if(op.arity===2){
+    if(rule.value===""||rule.value==null||rule.value2===""||rule.value2==null) return {ok:false,level:"empty",msg:"Enter both bounds"};
+    if(col.type==="number"&&(isNaN(Number(rule.value))||isNaN(Number(rule.value2)))) return {ok:false,level:"invalid",msg:"Bounds must be numbers"};
+    if(ordCmp(rule.value,rule.value2,col)===1) return {ok:false,level:"invalid",msg:"Start must be ≤ end"};
+    return {ok:true};
+  }
+  // arity 1
+  if(rule.value===""||rule.value==null) return {ok:false,level:"empty",msg:"Enter a value"};
+  if(col.type==="number"&&isNaN(Number(rule.value))) return {ok:false,level:"invalid",msg:"Enter a number"};
+  return {ok:true};
+}
+
+/* ---------- prune to only valid predicates (SQL & eval share this) ---------- */
+function prune(node){
+  if(node.kind==="rule") return ruleStatus(node).ok ? node : null;
+  const kids=node.children.map(prune).filter(Boolean);
+  if(!kids.length) return null;
+  return {...node,children:kids};
+}
+
+/* ===================================================================
+   4. SQL SERIALIZATION  (tokens → lines → html + plain)
+   =================================================================== */
+function ruleTokens(rule){
+  const op=OPS[rule.op], col=colOf(state.table,rule.field);
+  return op.tok(rule.field, rule.value, rule.value2, col);
+}
+/* emit a node into indented lines; prefix = leading conjunction tokens */
+function emitNode(node,indent,prefix){
+  if(node.kind==="rule") return [{indent,tokens:[...prefix,...ruleTokens(node)]}];
+  // group → parenthesised block
+  const open=[...prefix]; if(node.not){ open.push(kw("NOT"),SP); } open.push(pu("("));
+  const lines=[{indent,tokens:open}];
+  node.children.forEach((c,i)=>{
+    const pre = i>0 ? [kw(node.conj),SP] : [];
+    emitNode(c,indent+1,pre).forEach(l=>lines.push(l));
+  });
+  lines.push({indent,tokens:[pu(")")]});
+  return lines;
+}
+function predicateLines(prunedRoot){
+  if(!prunedRoot) return null;
+  if(prunedRoot.not) return emitNode(prunedRoot,0,[]);        // NOT ( ... )
+  const lines=[];
+  prunedRoot.children.forEach((c,i)=>{
+    const pre = i>0 ? [kw(prunedRoot.conj),SP] : [];
+    emitNode(c,0,pre).forEach(l=>lines.push(l));
+  });
+  return lines;
+}
+function buildStatement(){
+  const pruned=prune(state.root);
+  const pred=predicateLines(pruned);
+  const tbl=TABLES[state.table].label;
+  const lines=[
+    {indent:0,tokens:[kw("SELECT"),SP,pu("*")]},
+    {indent:0,tokens:[kw("FROM"),SP,idt(tbl)]},
+  ];
+  if(pred){
+    lines.push({indent:0,tokens:[kw("WHERE")]});
+    pred.forEach(l=>lines.push({indent:l.indent+1,tokens:l.tokens}));
+  }
+  // append semicolon to last line
+  lines[lines.length-1].tokens.push(pu(";"));
+  return {lines,pruned};
+}
+const escHtml = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function linesToPlain(lines){
+  return lines.map(l=>"  ".repeat(l.indent)+l.tokens.map(t=>t.v).join("")).join("\n");
+}
+function linesToHtml(lines){
+  return lines.map(l=>{
+    const ind="  ".repeat(l.indent);
+    const inner=l.tokens.map(t=> t.t==="ws"?t.v : `<span class="tok-${t.t}">${escHtml(t.v)}</span>`).join("");
+    return ind+inner;
+  }).join("\n");
+}
+
+/* ===================================================================
+   5. EVALUATOR  (run pruned tree against rows)
+   =================================================================== */
+function evalNode(node,row){
+  if(node.kind==="rule"){
+    const op=OPS[node.op], col=colOf(state.table,node.field);
+    return !!op.ev(row[node.field], node.value, node.value2, col);
+  }
+  let res = node.conj==="AND"
+    ? node.children.every(c=>evalNode(c,row))
+    : node.children.some(c=>evalNode(c,row));
+  return node.not ? !res : res;
+}
+function runQuery(){
+  const pruned=prune(state.root);
+  const rows=TABLES[state.table].rows;
+  if(!pruned) return {matched:rows.slice(), total:rows.length};
+  return {matched:rows.filter(r=>evalNode(pruned,r)), total:rows.length};
+}
+
+/* ===================================================================
+   6. RENDER — TREE
+   =================================================================== */
+const $ = s => document.querySelector(s);
+const treeEl=$("#tree");
+
+function fieldOptions(table,selected){
+  return TABLES[table].columns.map(c=>`<option value="${c.name}"${c.name===selected?" selected":""}>${c.label}</option>`).join("");
+}
+function opOptions(type,selected){
+  return operatorsFor(type).map(id=>`<option value="${id}"${id===selected?" selected":""}>${OPS[id].label}</option>`).join("");
+}
+function valueWidget(rule){
+  const op=OPS[rule.op], col=colOf(state.table,rule.field), ty=col.type;
+  if(op.arity===0) return `<span class="no-val">${ICON.dash} no value needed</span>`;
+  const inputType = ty==="number"?"number":ty==="date"?"date":"text";
+  if(op.arity===2){
+    const v=escHtml(String(rule.value??"")), v2=escHtml(String(rule.value2??""));
+    return `<input class="ctl" type="${inputType}" data-role="v1" value="${v}" aria-label="From" placeholder="from" />`
+         + `<span class="between-and">and</span>`
+         + `<input class="ctl" type="${inputType}" data-role="v2" value="${v2}" aria-label="To" placeholder="to" />`;
+  }
+  if(op.arity==="multi"){
+    const arr=Array.isArray(rule.value)?rule.value:[];
+    if(ty==="enum"){
+      return `<div class="chipset" role="group" aria-label="Choose values">`+
+        col.values.map(val=>`<button type="button" class="chip-tog" data-role="chip" data-val="${escHtml(val)}" aria-pressed="${arr.includes(val)}">${escHtml(val)}</button>`).join("")+
+        `</div>`;
+    }
+    // tag input for string/number multi
+    const chips=arr.map((v,i)=>`<span class="tag">${escHtml(String(v))}<button type="button" data-role="tagdel" data-idx="${i}" aria-label="Remove ${escHtml(String(v))}">${ICON.xsm}</button></span>`).join("");
+    return `<div class="taginput" data-role="taginput">${chips}<input type="${ty==="number"?"number":"text"}" data-role="tagadd" placeholder="${arr.length?"add…":"type, press Enter"}" aria-label="Add value" /></div>`;
+  }
+  // arity 1
+  if(ty==="enum"){
+    return `<select class="ctl" data-role="v1" aria-label="Value"><option value=""${rule.value===""?" selected":""} disabled>Choose…</option>`+
+      col.values.map(val=>`<option value="${escHtml(val)}"${String(rule.value)===val?" selected":""}>${escHtml(val)}</option>`).join("")+`</select>`;
+  }
+  const v=escHtml(String(rule.value??""));
+  const ph = ty==="number"?"number":ty==="date"?"":"value";
+  return `<input class="ctl" type="${inputType}" data-role="v1" value="${v}" placeholder="${ph}" aria-label="Value" />`;
+}
+
+function ruleHtml(rule){
+  const col=colOf(state.table,rule.field);
+  const st=ruleStatus(rule);
+  const cls = st.ok?"":(st.level==="invalid"?"invalid":"incomplete");
+  return `<div class="rule node ${cls}" data-id="${rule.id}" role="group" aria-label="Condition">
+    <button class="drag" data-act="drag" draggable="true" aria-label="Drag to reorder" title="Drag to reorder">${ICON.grip}</button>
+    <div class="rule-main">
+      <div class="rule-controls">
+        <select class="ctl f-field" data-role="field" aria-label="Field">${fieldOptions(state.table,rule.field)}</select>
+        <select class="ctl f-op" data-role="op" aria-label="Operator">${opOptions(col.type,rule.op)}</select>
+        <span class="value-cell" data-role="value">${valueWidget(rule)}</span>
+      </div>
+      <div class="rule-msg">${ICON.warn}<span>${st.ok?"":escHtml(st.msg||"")}</span></div>
+    </div>
+    <button class="icon-btn danger" data-act="delrule" aria-label="Delete condition" title="Delete condition">${ICON.x}</button>
+  </div>`;
+}
+function groupHtml(group,isRoot){
+  const jWord = group.conj==="AND"?"all":"any";
+  const jClass = group.conj==="AND"?"j-and":"j-or";
+  const childHtml = group.children.length
+    ? `<div class="children">`+group.children.map(c=> c.kind==="rule"?ruleHtml(c):groupHtml(c,false)).join("")+`</div>`
+    : (isRoot?`<div class="tree-empty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
+        <p>No conditions yet — every row will match.</p>
+      </div>`:"");
+  return `<div class="group ${isRoot?"root":"nested"} conj-${group.conj}" data-id="${group.id}" role="group" aria-label="${group.conj} group">
+    <div class="group-bar">
+      <div class="conj-toggle" role="group" aria-label="Combine conditions with">
+        <button type="button" data-act="conj" data-val="AND" aria-pressed="${group.conj==="AND"}">AND</button>
+        <button type="button" data-act="conj" data-val="OR" aria-pressed="${group.conj==="OR"}">OR</button>
+      </div>
+      <span class="conj-desc">match <b class="${jClass}">${jWord}</b> of these</span>
+      <button type="button" class="not-toggle" data-act="not" aria-pressed="${group.not}" title="Negate this group">NOT</button>
+      <span style="flex:1 1 auto"></span>
+      ${isRoot?"":`<button type="button" class="icon-btn danger" data-act="delgroup" aria-label="Delete group" title="Delete group">${ICON.x}</button>`}
+    </div>
+    <div class="group-body">
+      ${childHtml}
+      <div class="group-add">
+        <button type="button" class="add-btn" data-act="addrule">${ICON.plus} Condition</button>
+        <button type="button" class="add-btn group-add-g" data-act="addgroup">${ICON.plus} Group</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderTree(){
+  treeEl.innerHTML=groupHtml(state.root,true);
+  const c=countRules();
+  $("#ruleCount").textContent = c+" condition"+(c===1?"":"s");
+}
+
+/* ===================================================================
+   7. SQL render + persistence + stale
+   =================================================================== */
+function renderSQL(){
+  const {lines}=buildStatement();
+  $("#sql").innerHTML=linesToHtml(lines);
+}
+function currentSQLText(){ return linesToPlain(buildStatement().lines); }
+
+let saveTimer=null;
+function persist(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    try{ localStorage.setItem(LS_KEY, JSON.stringify({table:state.table,root:stripIds(state.root)})); }catch(e){}
+  },200);
+}
+function stripIds(node){
+  if(node.kind==="rule"){const {id,...r}=node; return r;}
+  const {id,...g}=node; return {...g,children:node.children.map(stripIds)};
+}
+function reid(node){
+  node.id=nid();
+  if(node.kind==="group") node.children.forEach(reid);
+  return node;
+}
+
+function markStale(){
+  if(lastRun){ resultsStale=true; $("#resultsPane").classList.add("is-stale"); }
+}
+function refresh({structural=true, run=false}={}){
+  if(structural) renderTree();
+  renderSQL();
+  persist();
+  if(run){ doRun(); } else { markStale(); }
+}
+
+/* ===================================================================
+   8. RESULTS render
+   =================================================================== */
+const resBody=$("#resBody");
+function fmtCell(col,val){
+  if(val==null||val==="") return `<span class="cell-null">null</span>`;
+  if(col.type==="boolean") return val
+    ? `<span class="bool-y">${ICON.check} yes</span>`
+    : `<span class="bool-n">${ICON.dash} no</span>`;
+  if(col.type==="number") return `<span class="cell-num">${col.name==="mrr"||col.name==="amount"?"$"+Number(val).toLocaleString():Number(val).toLocaleString()}</span>`;
+  if(col.name==="plan") return `<span class="pill p-${val}">${escHtml(val)}</span>`;
+  if(col.type==="enum") return `<span class="pill">${escHtml(String(val).replace(/_/g," "))}</span>`;
+  if(col.type==="date") return `<span class="cell-mono">${escHtml(val)}</span>`;
+  if(col.name==="email") return `<span class="cell-mono">${escHtml(val)}</span>`;
+  return escHtml(String(val));
+}
+function renderResults(matched,total){
+  const cols=TABLES[state.table].columns;
+  if(matched.length===0){
+    resBody.innerHTML=`<div class="res-state"><div class="ico">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      </div><h3>No rows match</h3><p>None of the ${total} sample rows satisfy this filter. Loosen a condition or switch <code style="font-family:var(--mono)">AND</code> to <code style="font-family:var(--mono)">OR</code>.</p></div>`;
+  }else{
+    const head=cols.map(c=>`<th scope="col">${escHtml(c.label)}<span class="th-t">${c.type}</span></th>`).join("");
+    const body=matched.map(r=>`<tr>`+cols.map(c=>`<td>${fmtCell(c,r[c.name])}</td>`).join("")+`</tr>`).join("");
+    resBody.innerHTML=`<div class="grid-scroll"><table class="grid"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+  }
+  const rc=$("#resCount"); rc.style.display="inline-flex";
+  rc.textContent=`${matched.length} of ${total} rows`;
+}
+function showResState(kind){
+  const rc=$("#resCount");
+  if(kind==="empty"){
+    rc.style.display="none";
+    resBody.innerHTML=`<div class="res-state"><div class="ico">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+      </div><h3>Run to preview rows</h3><p>Press <b>Run query</b> to evaluate the filter against the synthetic <code style="font-family:var(--mono)">${TABLES[state.table].label}</code> sample (${TABLES[state.table].rows.length} rows).</p></div>`;
+  }else if(kind==="loading"){
+    const w=["34%","22%","28%","16%"];
+    resBody.innerHTML=`<div>${Array.from({length:6}).map(()=>`<div class="skel-row">${w.map(x=>`<div class="skel" style="width:${x}"></div>`).join("")}</div>`).join("")}</div>`;
+  }
+}
+let runTimer=null;
+function doRun(){
+  resultsStale=false; $("#resultsPane").classList.remove("is-stale");
+  showResState("loading");
+  clearTimeout(runTimer);
+  const reduced=window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+  runTimer=setTimeout(()=>{
+    try{
+      const {matched,total}=runQuery();
+      lastRun={total,matched:matched.length};
+      renderResults(matched,total);
+    }catch(err){
+      resBody.innerHTML=`<div class="res-state is-error"><div class="ico">${ICON.warn}</div><h3>Could not run query</h3><p>${escHtml(err.message||"Unexpected error")}</p></div>`;
+    }
+  }, reduced?0:240);
+}
+
+/* ===================================================================
+   9. TREE EVENT DELEGATION
+   =================================================================== */
+treeEl.addEventListener("click",e=>{
+  const actEl=e.target.closest("[data-act]");
+  if(!actEl||!treeEl.contains(actEl)) return;
+  const act=actEl.dataset.act;
+  const host=actEl.closest("[data-id]");
+  const id=host.dataset.id;
+  const found=findNode(id); if(!found&&act!=="conj"&&act!=="not") return;
+  const node=found?found.node:null;
+
+  if(act==="conj"){ node.conj=actEl.dataset.val; refresh(); }
+  else if(act==="not"){ node.not=!node.not; refresh(); }
+  else if(act==="addrule"){ node.children.push(newRule(state.table)); refresh(); }
+  else if(act==="addgroup"){ const g=newGroup([newRule(state.table)]); node.children.push(g); refresh(); }
+  else if(act==="delrule"||act==="delgroup"){
+    const {parent}=found;
+    if(parent){ parent.children=parent.children.filter(c=>c.id!==id); refresh(); }
+  }
+  else if(act==="chip"){
+    const rule=node; const val=actEl.dataset.val;
+    if(!Array.isArray(rule.value)) rule.value=[];
+    const i=rule.value.indexOf(val);
+    if(i>=0) rule.value.splice(i,1); else rule.value.push(val);
+    // targeted: update chip + status, no full re-render
+    actEl.setAttribute("aria-pressed", rule.value.includes(val));
+    updateRuleStatusDom(host,rule); renderSQL(); persist(); markStale();
+  }
+  else if(act==="tagdel"){
+    const rule=node; const idx=+actEl.dataset.idx;
+    rule.value.splice(idx,1);
+    rerenderValueCell(host,rule);
+  }
+});
+
+treeEl.addEventListener("change",e=>{
+  const role=e.target.dataset.role; if(!role) return;
+  const host=e.target.closest(".rule"); if(!host) return;
+  const found=findNode(host.dataset.id); if(!found) return;
+  const rule=found.node;
+  if(role==="field"){
+    rule.field=e.target.value;
+    const col=colOf(state.table,rule.field);
+    rule.op=operatorsFor(col.type)[0];
+    rule.value = OPS[rule.op].arity==="multi"?[]:""; rule.value2="";
+    refresh();             // full re-render: operator list + widget change
+  }else if(role==="op"){
+    rule.op=e.target.value;
+    const ar=OPS[rule.op].arity;
+    rule.value = ar==="multi"?[]:""; rule.value2="";
+    refresh();
+  }else if(role==="v1"||role==="v2"){
+    if(role==="v1") rule.value=e.target.value; else rule.value2=e.target.value;
+    updateRuleStatusDom(host,rule); renderSQL(); persist(); markStale();
+  }
+});
+treeEl.addEventListener("input",e=>{
+  const role=e.target.dataset.role; if(role!=="v1"&&role!=="v2") return;
+  const host=e.target.closest(".rule"); if(!host) return;
+  const found=findNode(host.dataset.id); if(!found) return;
+  const rule=found.node;
+  if(role==="v1") rule.value=e.target.value; else rule.value2=e.target.value;
+  updateRuleStatusDom(host,rule); renderSQL(); persist(); markStale();
+});
+// tag input add on Enter / comma
+treeEl.addEventListener("keydown",e=>{
+  if(e.target.dataset.role!=="tagadd") return;
+  if(e.key==="Enter"||e.key===","){
+    e.preventDefault();
+    const host=e.target.closest(".rule"); const found=findNode(host.dataset.id); if(!found) return;
+    const rule=found.node; const raw=e.target.value.trim().replace(/,$/,"");
+    if(raw!==""){ if(!Array.isArray(rule.value)) rule.value=[]; rule.value.push(raw); rerenderValueCell(host,rule); }
+  }else if(e.key==="Backspace"&&e.target.value===""&&Array.isArray(findNode(e.target.closest(".rule").dataset.id).node.value)){
+    const host=e.target.closest(".rule"); const rule=findNode(host.dataset.id).node;
+    if(rule.value.length){ rule.value.pop(); rerenderValueCell(host,rule); }
+  }
+});
+
+function updateRuleStatusDom(host,rule){
+  const st=ruleStatus(rule);
+  host.classList.remove("invalid","incomplete");
+  if(!st.ok) host.classList.add(st.level==="invalid"?"invalid":"incomplete");
+  const msg=host.querySelector(".rule-msg span"); if(msg) msg.textContent=st.ok?"":(st.msg||"");
+}
+function rerenderValueCell(host,rule){
+  const cell=host.querySelector('[data-role="value"]');
+  cell.innerHTML=valueWidget(rule);
+  updateRuleStatusDom(host,rule); renderSQL(); persist(); markStale();
+  const inp=cell.querySelector('[data-role="tagadd"]'); if(inp) inp.focus();
+}
+
+/* ---------- drag reorder within same parent ---------- */
+let dragId=null;
+treeEl.addEventListener("dragstart",e=>{
+  const h=e.target.closest('[data-act="drag"]'); if(!h) return;
+  const rule=h.closest(".rule"); dragId=rule.dataset.id; rule.classList.add("dragging");
+  e.dataTransfer.effectAllowed="move"; e.dataTransfer.setData("text/plain",dragId);
+});
+treeEl.addEventListener("dragend",()=>{
+  dragId=null; treeEl.querySelectorAll(".dragging,.drop-before").forEach(el=>el.classList.remove("dragging","drop-before"));
+});
+treeEl.addEventListener("dragover",e=>{
+  if(!dragId) return;
+  const over=e.target.closest(".rule, .group.nested"); if(!over||over.dataset.id===dragId) return;
+  const dragParent=findNode(dragId).parent, overParent=findNode(over.dataset.id).parent;
+  if(!overParent||overParent.id!==dragParent.id) return;       // only reorder within same parent
+  e.preventDefault();
+  treeEl.querySelectorAll(".drop-before").forEach(el=>el.classList.remove("drop-before"));
+  over.classList.add("drop-before");
+});
+treeEl.addEventListener("drop",e=>{
+  if(!dragId) return;
+  const over=e.target.closest(".rule, .group.nested"); if(!over) return;
+  const dragInfo=findNode(dragId), overInfo=findNode(over.dataset.id);
+  if(!overInfo.parent||overInfo.parent.id!==dragInfo.parent.id) return;
+  e.preventDefault();
+  const arr=dragInfo.parent.children;
+  const from=arr.findIndex(c=>c.id===dragId), to=arr.findIndex(c=>c.id===over.dataset.id);
+  if(from<0||to<0||from===to) return;
+  const [moved]=arr.splice(from,1); arr.splice(to,0,moved);
+  refresh();
+});
+
+/* ===================================================================
+   10. HEADER ACTIONS — table, clear, presets, export, copy, run
+   =================================================================== */
+function buildTableSelect(){
+  $("#tableSel").innerHTML=Object.keys(TABLES).map(t=>`<option value="${t}"${t===state.table?" selected":""}>${TABLES[t].label}</option>`).join("");
+}
+$("#tableSel").addEventListener("change",e=>{
+  state.table=e.target.value;
+  state.root=newGroup([newRule(state.table)]);
+  lastRun=null; resultsStale=false; $("#resultsPane").classList.remove("is-stale");
+  renderSchema(); refresh(); showResState("empty");
+  toast(`Switched to ${TABLES[state.table].label}`);
+});
+$("#clearBtn").addEventListener("click",()=>{
+  state.root=newGroup([newRule(state.table)]);
+  refresh(); markStale(); toast("Conditions cleared");
+});
+$("#runBtn").addEventListener("click",doRun);
+$("#copySqlBtn").addEventListener("click",()=>copy(currentSQLText(),"SQL copied"));
+
+document.addEventListener("keydown",e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){ e.preventDefault(); doRun(); }
+});
+
+/* ---------- schema reference ---------- */
+function renderSchema(){
+  $("#schemaTitle").textContent=`${TABLES[state.table].label} · ${TABLES[state.table].columns.length} columns`;
+  $("#schemaGrid").innerHTML=TABLES[state.table].columns.map(c=>
+    `<div class="sch-col"><code>${c.name}</code><span class="t-badge t-${c.type}">${c.type}</span></div>`).join("");
+}
+
+/* ---------- popover menus ---------- */
+function setupMenu(btnId,menuId){
+  const btn=$("#"+btnId), menu=$("#"+menuId);
+  btn.addEventListener("click",e=>{
+    e.stopPropagation();
+    const open=menu.classList.contains("open");
+    closeAllMenus();
+    if(!open){ menu.classList.add("open"); btn.setAttribute("aria-expanded","true"); }
+  });
+}
+function closeAllMenus(){
+  document.querySelectorAll(".menu.open").forEach(m=>m.classList.remove("open"));
+  document.querySelectorAll("[aria-haspopup]").forEach(b=>b.setAttribute("aria-expanded","false"));
+}
+document.addEventListener("click",closeAllMenus);
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeAllMenus(); });
+setupMenu("presetBtn","presetMenu");
+setupMenu("exportBtn","exportMenu");
+
+/* ---------- presets ---------- */
+const PRESETS={
+  customers:[
+    {name:"High-value enterprise accounts", desc:"Enterprise plan with MRR over $2,000",
+     build:()=>({...newGroup(),conj:"AND",children:[
+       R("plan","eq","enterprise"), R("mrr","gt","2000")
+     ]})},
+    {name:"Active Pro or Business in EU", desc:"Active, paying, EU country",
+     build:()=>({...newGroup(),conj:"AND",children:[
+       R("is_active","istrue"),
+       {...newGroup(),conj:"OR",children:[R("plan","eq","pro"),R("plan","eq","business")]},
+       R("country","in",["DE","FR","NL","GB"])
+     ]})},
+    {name:"At-risk trials", desc:"On trial, not logged in since 2025, or churn-risk NPS",
+     build:()=>({...newGroup(),conj:"AND",children:[
+       R("trial","istrue"),
+       {...newGroup(),conj:"OR",children:[R("last_login","before","2025-01-01"),R("nps","lte","6")]}
+     ]})},
+    {name:"2024 signups, name like O'…", desc:"Apostrophe-escaping demo",
+     build:()=>({...newGroup(),conj:"AND",children:[
+       R("signup_date","between","2024-01-01","2024-12-31"),
+       R("name","contains","O'")
+     ]})},
+  ],
+  events:[
+    {name:"Successful payments over $500", desc:"Payment events that succeeded, big amount",
+     build:()=>({...newGroup(),conj:"AND",children:[
+       R("event_type","eq","payment"), R("success","istrue"), R("amount","gt","500")
+     ]})},
+    {name:"Upgrades or churn in 2025", desc:"Lifecycle-changing events this year",
+     build:()=>({...newGroup(),conj:"AND",children:[
+       R("event_type","in",["upgrade","churn"]),
+       R("created_at","onafter","2025-01-01")
+     ]})},
+  ]
+};
+function R(field,op,value,value2){
+  const col=colOf(state.table,field)||TABLES.customers.columns.concat(TABLES.events.columns).find(c=>c.name===field);
+  return {id:nid(),kind:"rule",field,op,value:value===undefined?"":value,value2:value2===undefined?"":value2};
+}
+function renderPresetMenu(){
+  const list=PRESETS[state.table]||[];
+  $("#presetMenu").innerHTML=`<div class="menu-label">Load an example</div>`+list.map((p,i)=>
+    `<button class="menu-item" data-preset="${i}" role="menuitem">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m8 11 2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="2"/></svg>
+      <span class="mi-tx">${escHtml(p.name)}<span class="mi-sub">${escHtml(p.desc)}</span></span>
+    </button>`).join("");
+}
+$("#presetMenu").addEventListener("click",e=>{
+  const b=e.target.closest("[data-preset]"); if(!b) return;
+  const p=PRESETS[state.table][+b.dataset.preset];
+  state.root=reid(p.build());
+  closeAllMenus(); refresh({structural:true,run:true});
+  toast(`Loaded “${p.name}”`);
+});
+
+/* ---------- export ---------- */
+$("#exportMenu").addEventListener("click",e=>{
+  const b=e.target.closest("[data-export]"); if(!b) return;
+  const kind=b.dataset.export; closeAllMenus();
+  const sql=currentSQLText();
+  const json=JSON.stringify({table:state.table,query:stripIds(state.root)},null,2);
+  if(kind==="copysql") copy(sql,"SQL copied");
+  else if(kind==="copyjson") copy(json,"JSON copied");
+  else if(kind==="dlsql") download(sql,`query-${state.table}.sql`,"SQL downloaded");
+  else if(kind==="dljson") download(json,`query-${state.table}.json`,"JSON downloaded");
+});
+function download(text,fname,msg){
+  const blob=new Blob([text],{type:"text/plain"}); const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download=fname; a.click();
+  URL.revokeObjectURL(url); toast(msg);
+}
+
+/* ---------- copy + toast ---------- */
+async function copy(text,msg){
+  try{ await navigator.clipboard.writeText(text); toast(msg); }
+  catch(e){
+    const ta=document.createElement("textarea"); ta.value=text; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); toast(msg); }catch(_){ toast("Copy failed","err"); }
+    ta.remove();
+  }
+}
+function toast(msg,kind){
+  const t=document.createElement("div"); t.className="toast"+(kind==="err"?" err":"");
+  t.innerHTML=(kind==="err"?ICON.warn:ICON.check)+`<span>${escHtml(msg)}</span>`;
+  $("#toasts").appendChild(t);
+  setTimeout(()=>{ t.style.transition="opacity .25s, transform .25s"; t.style.opacity="0"; t.style.transform="translateY(8px)"; setTimeout(()=>t.remove(),250); },1900);
+}
+
+/* ===================================================================
+   11. INIT
+   =================================================================== */
+function loadState(){
+  try{
+    const raw=localStorage.getItem(LS_KEY); if(!raw) return false;
+    const data=JSON.parse(raw);
+    if(!data||!TABLES[data.table]||!data.root) return false;
+    state.table=data.table; state.root=reid(data.root);
+    return true;
+  }catch(e){ return false; }
+}
+function init(){
+  if(!loadState()){ state.table="customers"; state.root=newGroup([newRule("customers")]); }
+  buildTableSelect();
+  renderSchema();
+  renderPresetMenu();
+  renderTree();
+  renderSQL();
+  showResState("empty");
+  // expose for self-test / scripted states
+  window.__qc={state,currentSQLText,runQuery,prune,doRun,buildStatement,colOf,evalNode,
+    refresh:()=>{renderTree();renderSQL();},
+    setRoot:(r)=>{state.root=reid(r);renderTree();renderSQL();}};
+}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+{
+  "pack_id": "luxury_maison_editorial_serif_v1",
+  "role": "anchor",
+  "family": "website.luxury_editorial",
+  "source_paths": [
+    "source_snapshot/index.html",
+    "source_snapshot/styles.css",
+    "source_snapshot/extracted_patterns.md"
+  ],
+  "origin_example_ids": [
+    "luxury-maison-editorial"
+  ],
+  "stack": [
+    "html_css",
+    "vanilla",
+    "website"
+  ],
+  "tones": [
+    "dark",
+    "luxury",
+    "editorial",
+    "serif",
+    "restrained",
+    "warm",
+    "quiet"
+  ],
+  "surfaces": [
+    "homepage",
+    "hero",
+    "landing",
+    "section",
+    "full_site"
+  ],
+  "motif_tags": [
+    "editorial_serif",
+    "luxury_maison",
+    "ritual_pacing",
+    "numbered_principles",
+    "cream_contrast_band",
+    "newsletter_form",
+    "footer_full",
+    "headline_hierarchy"
+  ],
+  "supports_tasks": [
+    "luxury_brand_page",
+    "fragrance_maison_site",
+    "boutique_hospitality_landing",
+    "atelier_editorial_homepage",
+    "premium_retail_story_page",
+    "quiet_luxury_website"
+  ],
+  "anti_patterns": [
+    "fake heritage dates",
+    "invented atelier locations",
+    "flashy sale/discount language",
+    "copying exact poetic phrases",
+    "generic beige template cards"
+  ],
+  "screenshot_paths": [
+    "screenshots/desktop-1512x812.png",
+    "screenshots/mobile-390x844.png"
+  ],
+  "token_budget_hint": 6200,
+  "confidence_score": 5
+}

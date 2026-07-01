@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Radial Partition · Zoomable Sunburst</title>
+<style>
+  /* ============================================================
+     DESIGN TOKENS
+     ============================================================ */
+  :root {
+    /* Neutral ramp (deep slate, 6 steps) */
+    --n-900: #0a0e17;
+    --n-800: #0f141f;
+    --n-700: #161d2b;
+    --n-600: #1f283a;
+    --n-500: #2c3850;
+    --n-400: #455271;
+    --n-300: #6b7896;
+    --n-200: #9aa6c4;
+    --n-100: #c8d1e6;
+    --n-050: #eef1f8;
+
+    /* Semantic roles */
+    --bg: var(--n-900);
+    --surface: var(--n-800);
+    --surface-2: var(--n-700);
+    --line: #222c40;
+    --line-strong: #34415e;
+    --text: var(--n-050);
+    --text-soft: var(--n-200);
+    --text-mute: var(--n-300);
+    --accent: #7aa2ff;
+    --accent-soft: #5a7ad8;
+    --danger: #ff7a8a;
+    --focus: #ffe082;
+
+    /* Type scale (ratio-locked, fluid) */
+    --fs-300: clamp(0.72rem, 0.68rem + 0.18vw, 0.8rem);
+    --fs-400: clamp(0.86rem, 0.82rem + 0.2vw, 0.95rem);
+    --fs-500: clamp(1rem, 0.94rem + 0.3vw, 1.1rem);   /* body >=16px */
+    --fs-600: clamp(1.18rem, 1.05rem + 0.6vw, 1.5rem);
+    --fs-700: clamp(1.55rem, 1.3rem + 1.4vw, 2.35rem);
+
+    /* Spacing (4px scale) */
+    --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+    --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px;
+
+    /* Radii */
+    --r-sm: 7px;  --r-md: 11px; --r-lg: 18px; --r-pill: 999px;
+
+    /* Elevation (3 tiers) */
+    --e-1: 0 1px 2px rgba(0,0,0,.35);
+    --e-2: 0 8px 24px -8px rgba(0,0,0,.55);
+    --e-3: 0 24px 60px -20px rgba(0,0,0,.7);
+
+    /* Motion */
+    --dur-fast: 160ms;
+    --dur-mid: 240ms;
+    --ease: cubic-bezier(.4, 0, .2, 1);
+    --ease-out: cubic-bezier(.16, 1, .3, 1);
+
+    --maxw: 1180px;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background:
+      radial-gradient(1200px 700px at 78% -10%, rgba(122,162,255,.10), transparent 60%),
+      radial-gradient(900px 600px at 0% 110%, rgba(192,139,240,.08), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: var(--fs-500);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    min-height: 100vh;
+  }
+  h1, h2, h3 { margin: 0; line-height: 1.15; letter-spacing: -0.01em; }
+
+  .skip {
+    position: absolute; left: var(--s-3); top: -100px;
+    background: var(--accent); color: #06080f; padding: var(--s-2) var(--s-4);
+    border-radius: var(--r-sm); font-weight: 600; z-index: 50;
+    transition: top var(--dur-fast) var(--ease);
+  }
+  .skip:focus { top: var(--s-3); }
+
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: clamp(var(--s-5), 3vw, var(--s-12)) clamp(var(--s-4), 3vw, var(--s-10)); }
+
+  /* ---------- Header ---------- */
+  header.top { display: flex; flex-wrap: wrap; gap: var(--s-6); align-items: flex-end; justify-content: space-between; }
+  .brand { max-width: 56ch; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: var(--s-2);
+    font-size: var(--fs-300); letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--text-mute); font-weight: 600; margin-bottom: var(--s-3);
+  }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(122,162,255,.18); }
+  h1 { font-size: var(--fs-700); font-weight: 700; }
+  h1 .grad { background: linear-gradient(100deg, #cdd9ff 0%, #9bb4ff 40%, #c79bff 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lede { color: var(--text-soft); margin-top: var(--s-3); font-size: var(--fs-400); }
+
+  /* ---------- Dataset toggle (segmented) ---------- */
+  .seg {
+    display: inline-flex; background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r-pill); padding: 4px; gap: 2px; box-shadow: var(--e-1);
+  }
+  .seg button {
+    appearance: none; border: 0; background: transparent; color: var(--text-soft);
+    font: inherit; font-size: var(--fs-400); font-weight: 600; cursor: pointer;
+    padding: var(--s-2) var(--s-4); border-radius: var(--r-pill); min-height: 40px;
+    display: inline-flex; align-items: center; gap: var(--s-2);
+    transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+  }
+  .seg button .ico { width: 16px; height: 16px; }
+  .seg button:hover { color: var(--text); }
+  .seg button[aria-pressed="true"] { background: linear-gradient(180deg, var(--n-500), var(--n-600)); color: var(--text); box-shadow: var(--e-1); }
+  .seg button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  /* ---------- Layout ---------- */
+  .layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: clamp(var(--s-5), 2.6vw, var(--s-10)); margin-top: clamp(var(--s-6), 3vw, var(--s-10)); align-items: start; }
+  @media (max-width: 880px) { .layout { grid-template-columns: 1fr; } }
+
+  /* ---------- Breadcrumb ---------- */
+  .crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1); margin-bottom: var(--s-4); min-height: 32px; }
+  .crumbs .crumb {
+    appearance: none; border: 1px solid transparent; background: transparent; color: var(--text-soft);
+    font: inherit; font-size: var(--fs-400); cursor: pointer; padding: 6px var(--s-3); border-radius: var(--r-pill);
+    display: inline-flex; align-items: center; gap: var(--s-2); max-width: 16ch; min-height: 34px;
+    transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+  }
+  .crumbs .crumb .swatch { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+  .crumbs .crumb .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .crumbs .crumb:hover { background: var(--surface-2); color: var(--text); }
+  .crumbs .crumb:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .crumbs .crumb[aria-current="true"] { color: var(--text); font-weight: 600; cursor: default; background: var(--surface); border-color: var(--line); }
+  .crumbs .sep { color: var(--text-mute); user-select: none; opacity: .6; }
+  .crumbs .sep svg { width: 13px; height: 13px; display: block; }
+
+  /* ---------- Chart panel ---------- */
+  .chart-card {
+    position: relative; background: linear-gradient(180deg, rgba(31,40,58,.35), rgba(15,20,31,.2));
+    border: 1px solid var(--line); border-radius: var(--r-lg); padding: clamp(var(--s-3), 1.6vw, var(--s-6));
+    box-shadow: var(--e-2);
+  }
+  .chart-stage { position: relative; width: 100%; max-width: 620px; margin: 0 auto; aspect-ratio: 1 / 1; }
+  svg.sun { width: 100%; height: 100%; display: block; overflow: visible; touch-action: manipulation; border-radius: var(--r-md); }
+  svg.sun:focus { outline: none; }
+  svg.sun:focus-visible { outline: 2px solid var(--focus); outline-offset: 6px; }
+  svg.sun text { pointer-events: none; -webkit-user-select: none; user-select: none; }
+  .arc { cursor: pointer; }
+  .center-hit { cursor: pointer; }
+  .center-hit.at-root { cursor: default; }
+
+  /* ---------- Tooltip ---------- */
+  .tip {
+    position: fixed; z-index: 40; pointer-events: none; opacity: 0;
+    transform: translateY(4px);
+    background: rgba(13,18,28,.96); border: 1px solid var(--line-strong);
+    border-radius: var(--r-md); padding: var(--s-3) var(--s-4); box-shadow: var(--e-3);
+    max-width: min(78vw, 340px); transition: opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+    backdrop-filter: blur(8px);
+  }
+  .tip.show { opacity: 1; transform: translateY(0); }
+  .tip .tip-path { font-size: var(--fs-300); color: var(--text-mute); display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-bottom: var(--s-2); }
+  .tip .tip-path .pcrumb { color: var(--text-soft); }
+  .tip .tip-path .pcrumb:last-child { color: var(--text); font-weight: 600; }
+  .tip .tip-path .arr { opacity: .45; }
+  .tip .tip-name { display: flex; align-items: center; gap: var(--s-2); font-weight: 600; font-size: var(--fs-500); margin-bottom: 2px; }
+  .tip .tip-name .swatch { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+  .tip .tip-val { color: var(--text-soft); font-size: var(--fs-400); }
+  .tip .tip-val b { color: var(--text); font-variant-numeric: tabular-nums; }
+
+  /* ---------- Side / inspector ---------- */
+  .aside { display: flex; flex-direction: column; gap: var(--s-5); }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: clamp(var(--s-4), 1.6vw, var(--s-6)); box-shadow: var(--e-1); }
+  .panel h2 { font-size: var(--fs-300); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-mute); font-weight: 600; margin-bottom: var(--s-3); }
+
+  .read-head { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-4); }
+  .read-head .swatch { width: 16px; height: 16px; border-radius: 5px; flex: none; box-shadow: var(--e-1); }
+  .read-head .nm { font-size: var(--fs-600); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
+  .stat { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-md); padding: var(--s-3) var(--s-4); }
+  .stat .k { font-size: var(--fs-300); color: var(--text-mute); margin-bottom: 2px; }
+  .stat .v { font-size: var(--fs-500); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .stat.span2 { grid-column: 1 / -1; }
+  .bar { height: 6px; border-radius: var(--r-pill); background: var(--n-600); overflow: hidden; margin-top: var(--s-2); }
+  .bar > i { display: block; height: 100%; border-radius: var(--r-pill); transition: width var(--dur-mid) var(--ease-out); }
+
+  /* ---------- Legend ---------- */
+  .legend { display: flex; flex-direction: column; gap: 2px; }
+  .legend button {
+    appearance: none; border: 1px solid transparent; background: transparent; color: var(--text-soft);
+    font: inherit; font-size: var(--fs-400); cursor: pointer; text-align: left;
+    display: flex; align-items: center; gap: var(--s-3); padding: var(--s-2) var(--s-3); border-radius: var(--r-sm);
+    min-height: 40px; transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+  }
+  .legend button .sw { width: 12px; height: 12px; border-radius: 4px; flex: none; }
+  .legend button .lname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .legend button .lval { font-size: var(--fs-300); color: var(--text-mute); font-variant-numeric: tabular-nums; }
+  .legend button:hover { background: var(--surface-2); color: var(--text); }
+  .legend button:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+  .legend button.active { background: var(--surface-2); color: var(--text); }
+  .legend button.active .lname { font-weight: 600; }
+
+  .hint { font-size: var(--fs-300); color: var(--text-mute); line-height: 1.6; }
+  .hint kbd {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.85em;
+    background: var(--surface-2); border: 1px solid var(--line-strong); border-bottom-width: 2px;
+    border-radius: 5px; padding: 1px 6px; color: var(--text-soft); white-space: nowrap;
+  }
+  .sample-note {
+    display: inline-flex; align-items: center; gap: var(--s-2); margin-top: var(--s-2);
+    font-size: var(--fs-300); color: var(--text-mute);
+  }
+  .sample-note .tag { background: rgba(122,162,255,.14); color: #aebfff; border: 1px solid rgba(122,162,255,.3); border-radius: var(--r-pill); padding: 2px 9px; font-weight: 600; letter-spacing: .02em; }
+
+  /* ---------- Error state ---------- */
+  .errbox { display: none; }
+  .errbox.show { display: block; }
+  .errbox { background: rgba(255,122,138,.08); border: 1px solid rgba(255,122,138,.35); border-radius: var(--r-lg); padding: var(--s-6); color: var(--text); }
+  .errbox h2 { color: var(--danger); text-transform: none; letter-spacing: 0; font-size: var(--fs-500); margin-bottom: var(--s-2); }
+
+  footer.foot { margin-top: clamp(var(--s-8), 4vw, var(--s-12)); color: var(--text-mute); font-size: var(--fs-300); border-top: 1px solid var(--line); padding-top: var(--s-5); display: flex; flex-wrap: wrap; gap: var(--s-3); justify-content: space-between; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: 1ms !important; }
+  }
+</style>
+</head>
+<body>
+  <a class="skip" href="#chart">Skip to the sunburst</a>
+  <div class="wrap">
+    <header class="top">
+      <div class="brand">
+        <span class="eyebrow"><span class="dot"></span> Radial hierarchy · D3 partition</span>
+        <h1><span class="grad">Zoomable Sunburst</span></h1>
+        <p class="lede">Every arc is sized by value. Click a segment and the whole figure unrolls &mdash; that arc sweeps to fill the circle while its contents flow into the next ring. Click the center to surface one level.</p>
+      </div>
+      <div role="group" aria-label="Choose dataset" class="seg" id="seg"></div>
+    </header>
+
+    <main class="layout" id="chart">
+      <section class="chart-card" aria-label="Sunburst chart">
+        <nav class="crumbs" id="crumbs" aria-label="Breadcrumb — current path in the hierarchy"></nav>
+        <div class="chart-stage">
+          <svg class="sun" id="svg" role="application"
+               aria-label="Zoomable sunburst. Use arrow keys to move between segments, Enter to zoom in, Backspace to zoom out."
+               tabindex="0"></svg>
+        </div>
+        <div class="errbox" id="err" role="alert">
+          <h2>The visualization library failed to load</h2>
+          <p>This page renders with D3 from a CDN. Check your network connection and reload. No data was lost.</p>
+        </div>
+      </section>
+
+      <aside class="aside">
+        <div class="panel" id="readout-panel">
+          <h2>Selected node</h2>
+          <div class="read-head">
+            <span class="swatch" id="ro-swatch"></span>
+            <span class="nm" id="ro-name">&mdash;</span>
+          </div>
+          <div class="stats">
+            <div class="stat">
+              <div class="k">Value</div>
+              <div class="v" id="ro-value">&mdash;</div>
+            </div>
+            <div class="stat">
+              <div class="k">Children</div>
+              <div class="v" id="ro-children">&mdash;</div>
+            </div>
+            <div class="stat span2">
+              <div class="k">Share of parent</div>
+              <div class="v" id="ro-parent">&mdash;</div>
+              <div class="bar"><i id="ro-parent-bar" style="width:0%"></i></div>
+            </div>
+            <div class="stat span2">
+              <div class="k">Share of whole</div>
+              <div class="v" id="ro-root">&mdash;</div>
+              <div class="bar"><i id="ro-root-bar" style="width:0%"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2 id="legend-title">Top-level color key</h2>
+          <div class="legend" id="legend" role="list" aria-labelledby="legend-title"></div>
+        </div>
+
+        <div class="panel">
+          <h2>Navigate</h2>
+          <p class="hint">
+            <kbd>&larr;</kbd> <kbd>&rarr;</kbd> move between siblings &middot;
+            <kbd>&darr;</kbd> / <kbd>Enter</kbd> drill in &middot;
+            <kbd>&uarr;</kbd> to parent &middot;
+            <kbd>Backspace</kbd> / <kbd>Esc</kbd> zoom out.
+            Click any arc to zoom; click the center to step up.
+          </p>
+          <span class="sample-note"><span class="tag">Sample data</span> illustrative figures for demonstration &mdash; not authoritative.</span>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="foot">
+      <span>D3 radial partition &middot; <code>partition().size([2&pi;, depth])</code> &middot; sqrt-free linear rings</span>
+      <span id="ds-meta">&mdash;</span>
+    </footer>
+  </div>
+
+  <div class="tip" id="tip" role="tooltip" aria-hidden="true">
+    <div class="tip-path" id="tip-path"></div>
+    <div class="tip-name"><span class="swatch" id="tip-swatch"></span><span id="tip-name"></span></div>
+    <div class="tip-val" id="tip-val"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script>
+  "use strict";
+  (function () {
+    if (typeof d3 === "undefined") {
+      document.getElementById("err").classList.add("show");
+      document.getElementById("svg").style.display = "none";
+      return;
+    }
+
+    /* =========================================================
+       SAMPLE DATASETS — clearly illustrative, structurally real.
+       No figure here is an authoritative real-world statistic.
+       ========================================================= */
+    const DATASETS = {
+      bundle: {
+        label: "App bundle",
+        unit: "bytes",
+        icon: '<path d="M3 4.5h10M3 8h10M3 11.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+        format: formatBytes,
+        data: {
+          name: "app", children: [
+            { name: "node_modules", children: [
+              { name: "typescript", children: [
+                { name: "lib/typescript.js", value: 980000 },
+                { name: "lib/tsc.js", value: 520000 } ] },
+              { name: "react-dom", children: [
+                { name: "cjs/react-dom.development.js", value: 360000 },
+                { name: "cjs/react-dom.production.js", value: 132000 },
+                { name: "client.js", value: 24000 } ] },
+              { name: "d3", children: [
+                { name: "dist/d3.js", value: 540000 },
+                { name: "dist/d3.min.js", value: 277000 } ] },
+              { name: "lodash", children: [
+                { name: "lodash.js", value: 320000 },
+                { name: "fp.js", value: 210000 } ] },
+              { name: "rxjs", value: 240000 },
+              { name: "react", value: 88000 } ] },
+            { name: "build", children: [
+              { name: "vendor.[hash].js", value: 820000 },
+              { name: "main.[hash].js", value: 412000 },
+              { name: "main.[hash].css", value: 92000 },
+              { name: "runtime.[hash].js", value: 36000 } ] },
+            { name: "public", children: [
+              { name: "assets", children: [
+                { name: "hero.webp", value: 184000 },
+                { name: "og-card.png", value: 142000 },
+                { name: "screenshot.png", value: 96000 },
+                { name: "sprite.svg", value: 23000 },
+                { name: "logo.svg", value: 7400 } ] },
+              { name: "fonts", children: [
+                { name: "Inter-var.woff2", value: 96000 },
+                { name: "Mono.woff2", value: 41000 } ] },
+              { name: "favicon.ico", value: 15000 } ] },
+            { name: "src", children: [
+              { name: "components", children: [
+                { name: "Sunburst.tsx", value: 62000 },
+                { name: "Chart.tsx", value: 41000 },
+                { name: "DataTable.tsx", value: 33000 },
+                { name: "Sidebar.tsx", value: 18500 },
+                { name: "Modal.tsx", value: 12000 },
+                { name: "Button.tsx", value: 6400 } ] },
+              { name: "lib", children: [
+                { name: "sunburst.ts", value: 26000 },
+                { name: "store.ts", value: 21000 },
+                { name: "api.ts", value: 14500 },
+                { name: "format.ts", value: 5200 } ] },
+              { name: "routes", children: [
+                { name: "Dashboard.tsx", value: 28000 },
+                { name: "Settings.tsx", value: 16000 },
+                { name: "Login.tsx", value: 11000 } ] },
+              { name: "styles", children: [
+                { name: "global.css", value: 12800 },
+                { name: "tokens.css", value: 9000 } ] } ] } ]
+        }
+      },
+      media: {
+        label: "Media library",
+        unit: "files",
+        icon: '<path d="M2.5 4.2h11v7.6h-11z" stroke="currentColor" stroke-width="1.4"/><path d="M2.5 9.4l3-2.6 2.4 2 2.6-2.4 2.5 2.2" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" fill="none"/>',
+        format: formatCount,
+        data: {
+          name: "library", children: [
+            { name: "Photos", children: [
+              { name: "2025", children: [
+                { name: "Travel", value: 1240 },
+                { name: "Family", value: 980 },
+                { name: "Screenshots", value: 640 } ] },
+              { name: "2024", children: [
+                { name: "Travel", value: 1480 },
+                { name: "Events", value: 1080 },
+                { name: "Screenshots", value: 760 } ] },
+              { name: "2023", children: [
+                { name: "Archive", value: 1820 },
+                { name: "Events", value: 540 } ] } ] },
+            { name: "Audio", children: [
+              { name: "Music", children: [
+                { name: "Electronic", value: 1120 },
+                { name: "Hip-hop", value: 880 },
+                { name: "Classical", value: 720 },
+                { name: "Jazz", value: 640 } ] },
+              { name: "Podcasts", value: 760 },
+              { name: "Voice memos", value: 318 } ] },
+            { name: "Documents", children: [
+              { name: "Archive", value: 1340 },
+              { name: "Personal", children: [
+                { name: "Notes", value: 690 },
+                { name: "Receipts", value: 520 } ] },
+              { name: "Work", children: [
+                { name: "Invoices", value: 410 },
+                { name: "Reports", value: 240 },
+                { name: "Slides", value: 168 } ] } ] },
+            { name: "Videos", children: [
+              { name: "Clips", value: 980 },
+              { name: "Screen recordings", value: 610 },
+              { name: "Tutorials", value: 380 },
+              { name: "Films", children: [
+                { name: "Raw", value: 240 },
+                { name: "Edited", value: 120 } ] } ] } ]
+        }
+      }
+    };
+
+    const PALETTE = ["#6ea8fe", "#f6a96b", "#65d6a3", "#c08bf0", "#ffd166", "#54c7d6", "#ef7c9c", "#93b4ff"];
+
+    /* ---------- formatting ---------- */
+    function formatBytes(n) {
+      if (n < 1024) return n + " B";
+      const u = ["KB", "MB", "GB", "TB"]; let i = -1; let v = n;
+      do { v /= 1024; i++; } while (v >= 1024 && i < u.length - 1);
+      return (v >= 100 ? Math.round(v) : v >= 10 ? v.toFixed(1) : v.toFixed(2)) + " " + u[i];
+    }
+    const commaFmt = d3.format(",");
+    function formatCount(n) { return commaFmt(Math.round(n)) + " files"; }
+    const pctFmt = function (x) { return (x >= 0.1 ? (x * 100).toFixed(1) : (x * 100).toFixed(2)) + "%"; };
+
+    /* ---------- geometry ---------- */
+    const SIZE = 600;                 // internal user-unit size (viewBox)
+    const VISIBLE_RINGS = 3;          // data rings shown beyond the center hole
+    const radius = SIZE / (2 * (VISIBLE_RINGS + 1)); // ring width => fits exactly
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const DUR = prefersReduced ? 0 : 720;
+
+    const svg = d3.select("#svg")
+      .attr("viewBox", [-SIZE / 2, -SIZE / 2, SIZE, SIZE])
+      .style("font", "10px Inter, sans-serif");
+
+    const arc = d3.arc()
+      .startAngle(function (d) { return d.x0; })
+      .endAngle(function (d) { return d.x1; })
+      .padAngle(function (d) { return Math.min((d.x1 - d.x0) / 2, 0.0042); })
+      .padRadius(radius * 1.5)
+      .innerRadius(function (d) { return d.y0 * radius; })
+      .outerRadius(function (d) { return Math.max(d.y0 * radius, d.y1 * radius - 1.4); });
+
+    function arcVisible(d) { return d.y0 >= 1 && d.y1 <= VISIBLE_RINGS + 1 && d.x1 > d.x0; }
+    function labelVisible(d) {
+      return d.y0 >= 1 && d.y1 <= VISIBLE_RINGS + 1 &&
+        (d.x1 - d.x0) > 0.085 &&                      // angular floor: never label a thin sliver
+        (d.y1 - d.y0) * (d.x1 - d.x0) > 0.03;
+    }
+    function labelTransform(d) {
+      const x = (d.x0 + d.x1) / 2 * 180 / Math.PI;
+      const y = (d.y0 + d.y1) / 2 * radius;
+      return "rotate(" + (x - 90) + ") translate(" + y + ",0) rotate(" + (x < 180 ? 0 : 180) + ")";
+    }
+    function baseOpacity(d) {
+      if (!arcVisible(d)) return 0;
+      const o = 0.96 - (d.y0 - 1) * 0.13;        // elevation cue: outer rings recede
+      return d.children ? Math.max(0.5, o) : Math.max(0.42, o - 0.12);
+    }
+
+    /* ---------- runtime state ---------- */
+    let DS, root, color, path, label, focusG, parentHit, parentChevron, focusRing;
+    let focus, kbNode = null, kbActive = false, hovered = null;
+
+    const tip = document.getElementById("tip");
+    const tipPath = document.getElementById("tip-path");
+    const tipName = document.getElementById("tip-name");
+    const tipSwatch = document.getElementById("tip-swatch");
+    const tipVal = document.getElementById("tip-val");
+
+    /* color = top-level ancestor's hue (consistent across every zoom level) */
+    function topAncestor(d) { let a = d; while (a.depth > 1) a = a.parent; return a; }
+    function fillFor(d) {
+      if (d.depth === 0) return "#2a3550";
+      return color(topAncestor(d).data.name);
+    }
+
+    function build(key) {
+      DS = DATASETS[key];
+      svg.selectAll("*").remove();
+      hideTip();
+
+      root = d3.hierarchy(DS.data)
+        .sum(function (d) { return d.value || 0; })
+        .sort(function (a, b) { return b.value - a.value; });
+
+      d3.partition().size([2 * Math.PI, root.height + 1])(root);
+      root.each(function (d) { d.current = d; d.target = d; });
+
+      const tops = root.children ? root.children.map(function (d) { return d.data.name; }) : [];
+      color = d3.scaleOrdinal().domain(tops).range(PALETTE);
+
+      focus = root;
+      kbNode = root.children ? root.children[0] : root;
+
+      /* arcs */
+      path = svg.append("g")
+        .attr("fill-rule", "evenodd")
+        .selectAll("path")
+        .data(root.descendants().slice(1))
+        .join("path")
+        .attr("class", "arc")
+        .attr("fill", fillFor)
+        .attr("fill-opacity", function (d) { return baseOpacity(d.current); })
+        .attr("stroke", "#0b0f18")
+        .attr("stroke-width", 0.9)
+        .attr("pointer-events", function (d) { return arcVisible(d.current) ? "auto" : "none"; })
+        .attr("d", function (d) { return arc(d.current); });
+
+      path.append("title").text(titleText);
+
+      path.on("click", function (event, d) { onArcClick(d); })
+        .on("pointerenter", function (event, d) { onHover(d); moveTip(event); })
+        .on("pointermove", moveTip)
+        .on("pointerleave", function () { onHover(null); hideTip(); });
+
+      /* labels */
+      label = svg.append("g")
+        .attr("pointer-events", "none")
+        .attr("text-anchor", "middle")
+        .style("user-select", "none")
+        .selectAll("text")
+        .data(root.descendants().slice(1))
+        .join("text")
+        .attr("dy", "0.32em")
+        .attr("fill", "#fff")
+        .attr("fill-opacity", function (d) { return +labelVisible(d.current); })
+        .attr("transform", function (d) { return labelTransform(d.current); })
+        .attr("font-size", 9.5)
+        .attr("font-weight", 500)
+        .style("paint-order", "stroke")
+        .style("stroke", "rgba(8,11,18,.55)")
+        .style("stroke-width", "2.4px")
+        .text(function (d) { return d.data.name; });
+
+      /* focus ring for keyboard nav (drawn above arcs, below center) */
+      focusRing = svg.append("path")
+        .attr("class", "focus-ring")
+        .attr("fill", "none")
+        .attr("stroke", "var(--focus)")
+        .attr("stroke", "#ffe082")
+        .attr("stroke-width", 3)
+        .attr("stroke-linejoin", "round")
+        .attr("pointer-events", "none")
+        .attr("opacity", 0);
+
+      /* center: up-affordance + invisible hit area */
+      focusG = svg.append("g");
+      parentHit = focusG.append("circle")
+        .attr("class", "center-hit at-root")
+        .attr("r", radius)
+        .attr("fill", "transparent")
+        .on("click", function () { onCenterClick(); })
+        .on("pointerenter", function (event) { onHover(focus); moveTip(event); })
+        .on("pointermove", moveTip)
+        .on("pointerleave", function () { onHover(null); hideTip(); });
+
+      parentChevron = focusG.append("path")
+        .attr("d", "M -7 4 L 0 -4 L 7 4")
+        .attr("fill", "none")
+        .attr("stroke", "#cdd9ff")
+        .attr("stroke-width", 2.4)
+        .attr("stroke-linecap", "round")
+        .attr("stroke-linejoin", "round")
+        .attr("transform", "translate(0," + (-radius * 0.52) + ")")
+        .attr("opacity", 0)
+        .attr("pointer-events", "none");
+
+      buildSeg(key);
+      buildLegend();
+      renderCenter();
+      renderCrumbs();
+      renderReadout(root);
+      updateFocusRing();
+      document.getElementById("ds-meta").textContent =
+        DS.label + " · " + root.descendants().length + " nodes · depth " + root.height + " · values in " + DS.unit;
+    }
+
+    function titleText(d) {
+      return d.ancestors().map(function (n) { return n.data.name; }).reverse().join(" / ") +
+        "\n" + DS.format(d.value);
+    }
+
+    /* ---------- ZOOM ---------- */
+    function onArcClick(p) {
+      // Clicking a leaf zooms to its parent (so there is always something to reveal).
+      const target = (p.children && p.children.length) ? p : (p.parent || root);
+      zoomTo(target);
+    }
+    function onCenterClick() {
+      if (focus === root || !focus.parent) return;
+      zoomTo(focus.parent);
+    }
+
+    function zoomTo(p) {
+      focus = p;
+
+      root.each(function (d) {
+        d.target = {
+          x0: Math.max(0, Math.min(1, (d.x0 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
+          x1: Math.max(0, Math.min(1, (d.x1 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
+          y0: Math.max(0, d.y0 - p.depth),
+          y1: Math.max(0, d.y1 - p.depth)
+        };
+      });
+
+      const t = svg.transition().duration(DUR).ease(d3.easeCubicInOut);
+
+      path.transition(t)
+        .tween("data", function (d) {
+          const i = d3.interpolate(d.current, d.target);
+          return function (tt) { d.current = i(tt); };
+        })
+        .filter(function (d) {
+          return +this.getAttribute("fill-opacity") > 0 || arcVisible(d.target);
+        })
+        .attr("fill-opacity", function (d) { return baseOpacity(d.target); })
+        .attr("pointer-events", function (d) { return arcVisible(d.target) ? "auto" : "none"; })
+        .attrTween("d", function (d) { return function () { return arc(d.current); }; });
+
+      label.filter(function (d) {
+          return +this.getAttribute("fill-opacity") || labelVisible(d.target);
+        })
+        .transition(t)
+        .attr("fill-opacity", function (d) { return +labelVisible(d.target); })
+        .attrTween("transform", function (d) { return function () { return labelTransform(d.current); }; });
+
+      // keep keyboard cursor inside the new focus
+      if (!isInSubtree(kbNode, focus)) {
+        kbNode = focus.children ? focus.children[0] : focus;
+      }
+
+      // ride the same clock for chrome that should move in lockstep
+      t.tween("chrome", function () {
+        return function () { updateFocusRing(); };
+      });
+      t.on("end", function () { updateFocusRing(); });
+
+      renderCenter();
+      renderCrumbs();
+      renderReadout(focus);
+      setActiveLegend();
+    }
+
+    function isInSubtree(node, ancestor) {
+      let a = node;
+      while (a) { if (a === ancestor) return true; a = a.parent; }
+      return false;
+    }
+
+    /* ---------- center readout (in-SVG, scales with chart) ---------- */
+    function renderCenter() {
+      focusG.selectAll("text.ctr").remove();
+      const atRoot = (focus === root);
+      parentHit.classed("at-root", atRoot)
+        .attr("aria-hidden", atRoot ? "true" : "false");
+      parentChevron.transition().duration(prefersReduced ? 0 : 200).attr("opacity", atRoot ? 0 : 0.9);
+
+      const valStr = DS.format(focus.value);
+      const ofRoot = focus.value / root.value;
+      const name = focus === root ? DS.data.name + " · all" : focus.data.name;
+
+      const g = focusG.append("text").attr("class", "ctr").attr("text-anchor", "middle");
+      g.append("tspan")
+        .attr("x", 0).attr("y", atRoot ? -8 : -2)
+        .attr("font-size", 17).attr("font-weight", 700).attr("fill", "#f3f6ff")
+        .text(truncate(name, 16));
+      g.append("tspan")
+        .attr("x", 0).attr("dy", "1.5em")
+        .attr("font-size", 13).attr("font-weight", 600).attr("fill", "#aeb9d6")
+        .style("font-variant-numeric", "tabular-nums")
+        .text(valStr);
+      g.append("tspan")
+        .attr("x", 0).attr("dy", "1.45em")
+        .attr("font-size", 10.5).attr("fill", "#6b7896")
+        .text(focus === root ? "whole hierarchy" : pctFmt(ofRoot) + " of whole");
+      if (!atRoot) {
+        g.append("tspan")
+          .attr("x", 0).attr("dy", "1.5em")
+          .attr("font-size", 9.5).attr("fill", "#8c97b6").attr("letter-spacing", "0.04em")
+          .text("▲ click to zoom out");
+      }
+    }
+
+    function truncate(s, n) { return s.length > n ? s.slice(0, n - 1) + "…" : s; }
+
+    /* ---------- breadcrumb ---------- */
+    function renderCrumbs() {
+      const el = document.getElementById("crumbs");
+      el.innerHTML = "";
+      const chain = focus.ancestors().reverse(); // root..focus
+      chain.forEach(function (n, idx) {
+        const btn = document.createElement("button");
+        btn.className = "crumb";
+        const isCur = (n === focus);
+        if (isCur) btn.setAttribute("aria-current", "true");
+        const col = n === root ? "#2a3550" : color(topAncestor(n).data.name);
+        const sw = document.createElement("span"); sw.className = "swatch"; sw.style.background = col;
+        const lbl = document.createElement("span"); lbl.className = "lbl";
+        lbl.textContent = n === root ? "All" : n.data.name;
+        btn.appendChild(sw); btn.appendChild(lbl);
+        btn.title = n === root ? "All" : n.data.name;
+        if (!isCur) btn.addEventListener("click", function () { zoomTo(n); });
+        else btn.disabled = false;
+        el.appendChild(btn);
+        if (idx < chain.length - 1) {
+          const sep = document.createElement("span"); sep.className = "sep";
+          sep.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+          el.appendChild(sep);
+        }
+      });
+    }
+
+    /* ---------- readout panel ---------- */
+    function renderReadout(d) {
+      document.getElementById("ro-swatch").style.background = d === root ? "#2a3550" : color(topAncestor(d).data.name);
+      document.getElementById("ro-name").textContent = d === root ? (DS.data.name + " · all") : d.data.name;
+      document.getElementById("ro-name").title = d === root ? "all" : d.data.name;
+      document.getElementById("ro-value").textContent = DS.format(d.value);
+      document.getElementById("ro-children").textContent = d.children ? d.children.length : "leaf";
+      const ofParent = d.parent ? d.value / d.parent.value : 1;
+      const ofRoot = d.value / root.value;
+      document.getElementById("ro-parent").textContent = d.parent ? pctFmt(ofParent) : "—";
+      document.getElementById("ro-root").textContent = pctFmt(ofRoot);
+      const pcol = d === root ? "#6ea8fe" : color(topAncestor(d).data.name);
+      const pbar = document.getElementById("ro-parent-bar");
+      pbar.style.width = (ofParent * 100) + "%"; pbar.style.background = pcol;
+      const rbar = document.getElementById("ro-root-bar");
+      rbar.style.width = (ofRoot * 100) + "%"; rbar.style.background = pcol;
+    }
+
+    /* ---------- hover: dim unrelated branches + highlight path ---------- */
+    function onHover(d) {
+      hovered = d;
+      if (!d || d === root) {
+        path.attr("fill-opacity", function (n) { return baseOpacity(n.current); });
+        if (d === root) showTipFor(root);
+        return;
+      }
+      const lit = new Set();
+      d.ancestors().forEach(function (n) { lit.add(n); });
+      d.descendants().forEach(function (n) { lit.add(n); });
+      path.attr("fill-opacity", function (n) {
+        const b = baseOpacity(n.current);
+        if (b === 0) return 0;
+        return lit.has(n) ? Math.min(1, b + 0.12) : b * 0.22;
+      });
+      showTipFor(d);
+    }
+
+    /* ---------- tooltip ---------- */
+    function showTipFor(d) {
+      tipPath.innerHTML = "";
+      const chain = d.ancestors().reverse();
+      chain.forEach(function (n, i) {
+        const c = document.createElement("span"); c.className = "pcrumb";
+        c.textContent = n === root ? "all" : n.data.name; tipPath.appendChild(c);
+        if (i < chain.length - 1) { const a = document.createElement("span"); a.className = "arr"; a.textContent = "›"; tipPath.appendChild(a); }
+      });
+      tipSwatch.style.background = d === root ? "#2a3550" : color(topAncestor(d).data.name);
+      tipName.textContent = d === root ? (DS.data.name + " · all") : d.data.name;
+      const ofRoot = d.value / root.value;
+      const ofParent = d.parent ? d.value / d.parent.value : 1;
+      tipVal.innerHTML = "<b>" + DS.format(d.value) + "</b> · " + pctFmt(ofRoot) + " of whole" +
+        (d.parent ? " · " + pctFmt(ofParent) + " of parent" : "");
+      tip.classList.add("show"); tip.setAttribute("aria-hidden", "false");
+    }
+    function moveTip(event) {
+      const pad = 16; const w = tip.offsetWidth || 280; const h = tip.offsetHeight || 90;
+      let x = event.clientX + pad, y = event.clientY + pad;
+      if (x + w > window.innerWidth - 8) x = event.clientX - w - pad;
+      if (y + h > window.innerHeight - 8) y = event.clientY - h - pad;
+      tip.style.left = Math.max(8, x) + "px";
+      tip.style.top = Math.max(8, y) + "px";
+    }
+    function hideTip() { tip.classList.remove("show"); tip.setAttribute("aria-hidden", "true"); }
+
+    /* ---------- legend (top-level key, click to zoom) ---------- */
+    function buildLegend() {
+      const el = document.getElementById("legend");
+      el.innerHTML = "";
+      (root.children || []).forEach(function (n) {
+        const b = document.createElement("button");
+        b.setAttribute("role", "listitem");
+        b.dataset.name = n.data.name;
+        const sw = document.createElement("span"); sw.className = "sw"; sw.style.background = color(n.data.name);
+        const nm = document.createElement("span"); nm.className = "lname"; nm.textContent = n.data.name;
+        const vl = document.createElement("span"); vl.className = "lval"; vl.textContent = pctFmt(n.value / root.value);
+        b.appendChild(sw); b.appendChild(nm); b.appendChild(vl);
+        b.addEventListener("click", function () { zoomTo(n); });
+        b.addEventListener("pointerenter", function () { onHover(n); });
+        b.addEventListener("pointerleave", function () { onHover(null); hideTip(); });
+        el.appendChild(b);
+      });
+      setActiveLegend();
+    }
+    function setActiveLegend() {
+      const top = focus === root ? null : topAncestor(focus).data.name;
+      document.querySelectorAll("#legend button").forEach(function (b) {
+        b.classList.toggle("active", b.dataset.name === top);
+      });
+    }
+
+    /* ---------- dataset segmented control ---------- */
+    function buildSeg(active) {
+      const el = document.getElementById("seg");
+      el.innerHTML = "";
+      Object.keys(DATASETS).forEach(function (k) {
+        const d = DATASETS[k];
+        const b = document.createElement("button");
+        b.type = "button";
+        b.setAttribute("aria-pressed", String(k === active));
+        b.innerHTML = '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true">' + d.icon + '</svg>' + d.label;
+        b.addEventListener("click", function () {
+          if (k === currentKey) return;
+          currentKey = k; build(k);
+        });
+        el.appendChild(b);
+      });
+    }
+
+    /* ---------- keyboard navigation ---------- */
+    function updateFocusRing() {
+      if (!focusRing) return;
+      if (!kbActive || !kbNode || kbNode === root || !arcVisible(kbNode.current)) {
+        focusRing.attr("opacity", 0);
+        return;
+      }
+      focusRing.attr("opacity", 1).attr("d", arc(kbNode.current));
+    }
+
+    const svgEl = document.getElementById("svg");
+    svgEl.addEventListener("focus", function () { kbActive = true; if (!kbNode || kbNode === root) kbNode = focus.children ? focus.children[0] : focus; updateFocusRing(); syncKbReadout(); });
+    svgEl.addEventListener("blur", function () { kbActive = false; updateFocusRing(); });
+
+    function syncKbReadout() {
+      if (kbActive && kbNode && kbNode !== root) { renderReadout(kbNode); onHover(kbNode); }
+    }
+
+    svgEl.addEventListener("keydown", function (e) {
+      if (!kbNode) kbNode = focus.children ? focus.children[0] : focus;
+      let handled = true;
+      switch (e.key) {
+        case "ArrowRight": case "ArrowLeft": {
+          const sibs = (kbNode.parent ? kbNode.parent.children : [kbNode]);
+          let i = sibs.indexOf(kbNode);
+          i = (i + (e.key === "ArrowRight" ? 1 : sibs.length - 1)) % sibs.length;
+          kbNode = sibs[i];
+          break;
+        }
+        case "ArrowDown":
+          if (kbNode.children && kbNode.children.length) kbNode = kbNode.children[0];
+          break;
+        case "ArrowUp":
+          if (kbNode.parent && kbNode.parent !== root) kbNode = kbNode.parent;
+          else if (kbNode.parent === root) kbNode = root.children[0];
+          break;
+        case "Enter": case " ":
+          if (kbNode.children && kbNode.children.length) zoomTo(kbNode);
+          else if (kbNode.parent) zoomTo(kbNode.parent);
+          break;
+        case "Backspace": case "Escape":
+          onCenterClick();
+          break;
+        default: handled = false;
+      }
+      if (handled) {
+        e.preventDefault();
+        updateFocusRing();
+        syncKbReadout();
+      }
+    });
+
+    /* hide tooltip on scroll/resize to avoid stale placement */
+    window.addEventListener("scroll", hideTip, { passive: true });
+    window.addEventListener("resize", function () { hideTip(); updateFocusRing(); });
+
+    /* ---------- boot ---------- */
+    let currentKey = "bundle";
+    build(currentKey);
+
+    // expose for verification harness
+    window.__SUN__ = {
+      get root() { return root; },
+      get focus() { return focus; },
+      get DS() { return DS; },
+      arcVisible: arcVisible, labelVisible: labelVisible,
+      fillFor: fillFor, topAncestor: topAncestor,
+      zoomTo: function (pred) {
+        // pred: function(node)->bool ; zoom to first matching descendant
+        let target = null;
+        root.each(function (d) { if (!target && pred(d)) target = d; });
+        if (target) zoomTo(target);
+        return target;
+      },
+      color: function (name) { return color(name); }
+    };
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!-- footer_full_v2 — premium full footer.
+     4 nav columns + contact block (tel/mailto) + newsletter with states +
+     legal/microcopy row + back-to-top. Richer than footer_full_v1.
+     Fonts: Bricolage Grotesque (display) + Inter (body). Pair w/ snippet.css + snippet.js. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Inter:wght@400;500;600&display=swap"
+  rel="stylesheet"
+/>
+
+<footer class="footer" id="site-footer">
+  <div class="footer__inner">
+    <!-- Top: brand + newsletter -->
+    <div class="footer__top">
+      <div class="footer__brand">
+        <a class="footer__logo" href="#top" aria-label="[BUSINESS_NAME] — home">
+          <svg viewBox="0 0 28 28" width="26" height="26" aria-hidden="true" focusable="false">
+            <circle cx="14" cy="14" r="12.5" fill="none" stroke="currentColor" stroke-width="2.4" />
+            <path d="M8 17 C8 11 20 11 20 17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+            <circle cx="14" cy="9.5" r="1.8" fill="currentColor" />
+          </svg>
+          <span>[BUSINESS_NAME]</span>
+        </a>
+        <p class="footer__tagline">[ONE_LINE_TAGLINE] — what the business does, in plain words.</p>
+      </div>
+
+      <form class="newsletter" novalidate aria-describedby="nl-status">
+        <h2 class="newsletter__title">Seasonal notes &amp; service reminders</h2>
+        <div class="newsletter__row">
+          <div class="newsletter__field">
+            <label class="newsletter__label" for="nl-email">Email address</label>
+            <input
+              class="newsletter__input"
+              id="nl-email"
+              name="email"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              placeholder="you@example.com"
+              required
+              aria-required="true"
+            />
+          </div>
+          <button class="newsletter__submit" type="submit">
+            <span class="newsletter__submit-label">Subscribe</span>
+            <span class="newsletter__spinner" aria-hidden="true"></span>
+          </button>
+        </div>
+        <!-- Async states surface here; polite so it doesn't interrupt. -->
+        <p class="newsletter__status" id="nl-status" role="status" aria-live="polite" data-state="idle">
+          We send a few useful notes a year. No spam. Unsubscribe anytime.
+        </p>
+      </form>
+    </div>
+
+    <!-- Middle: nav columns + contact -->
+    <div class="footer__cols">
+      <nav class="footer__col" aria-labelledby="fcol-services">
+        <h2 class="footer__heading" id="fcol-services">Services</h2>
+        <ul>
+          <li><a href="#services">Service lane one</a></li>
+          <li><a href="#services">Service lane two</a></li>
+          <li><a href="#services">Service lane three</a></li>
+          <li><a href="#services">Service lane four</a></li>
+        </ul>
+      </nav>
+
+      <nav class="footer__col" aria-labelledby="fcol-company">
+        <h2 class="footer__heading" id="fcol-company">Company</h2>
+        <ul>
+          <li><a href="#about">About</a></li>
+          <li><a href="#work">Our Work</a></li>
+          <li><a href="#reviews">Reviews</a></li>
+          <li><a href="#careers">Careers</a></li>
+        </ul>
+      </nav>
+
+      <nav class="footer__col" aria-labelledby="fcol-resources">
+        <h2 class="footer__heading" id="fcol-resources">Resources</h2>
+        <ul>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#guides">Guides</a></li>
+          <li><a href="#service-area">Service area</a></li>
+          <li><a href="#financing">Financing</a></li>
+        </ul>
+      </nav>
+
+      <address class="footer__col footer__contact" aria-labelledby="fcol-contact">
+        <h2 class="footer__heading" id="fcol-contact">Get in touch</h2>
+        <ul>
+          <li>
+            <a class="footer__contact-link" href="tel:[PHONE_E164]">
+              <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false"><path d="M4 3h3l1.5 4-2 1.5a9 9 0 005 5l1.5-2 4 1.5v3a2 2 0 01-2 2A14 14 0 012 5a2 2 0 012-2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+              <span>[PHONE]</span>
+            </a>
+          </li>
+          <li>
+            <a class="footer__contact-link" href="mailto:[EMAIL]">
+              <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false"><rect x="2.5" y="4" width="15" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 5l7 5 7-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+              <span>[EMAIL]</span>
+            </a>
+          </li>
+          <li class="footer__contact-line">
+            <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false"><path d="M10 2a6 6 0 016 6c0 4-6 10-6 10S4 12 4 8a6 6 0 016-6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="10" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+            <span>[STREET_ADDRESS], [CITY_STATE_ZIP]</span>
+          </li>
+          <li class="footer__contact-line">
+            <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 6v4l3 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span>[HOURS_LINE]</span>
+          </li>
+        </ul>
+      </address>
+    </div>
+
+    <!-- Bottom: legal + microcopy + back-to-top -->
+    <div class="footer__bar">
+      <p class="footer__legal">
+        &copy; <span data-current-year>2026</span> [BUSINESS_NAME]. All rights reserved.
+        <a href="#privacy">Privacy</a>
+        <a href="#terms">Terms</a>
+        <span class="footer__license">[LICENSE_LINE]</span>
+      </p>
+      <button class="footer__totop" type="button" data-scroll-top>
+        <span>Back to top</span>
+        <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" focusable="false">
+          <path d="M10 16 V4 M5 9 L10 4 L15 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</footer>

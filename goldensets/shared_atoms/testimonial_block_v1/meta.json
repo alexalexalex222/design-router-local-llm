@@ -1,0 +1,13 @@
+{
+  "atom_id": "testimonial_block_v1",
+  "category": "proof",
+  "summary": "Three-card testimonial section using placeholders only ([TESTIMONIAL_QUOTE]/[CUSTOMER_NAME]/[ROLE]); SVG monogram portrait instead of a photo. Models data integrity.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": ["proof_rail"],
+  "tags": ["proof", "testimonial", "quotes", "data-integrity", "placeholders", "monogram", "inline-svg"],
+  "tone": ["editorial", "warm", "trustworthy"],
+  "files": ["snippet.html", "snippet.css"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

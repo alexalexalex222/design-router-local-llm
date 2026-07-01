@@ -1,0 +1,86 @@
+body {
+            background-color: #f4f1eb;
+            color: #1c1b1a;
+        }
+        .nav-link {
+            position: relative;
+            text-decoration: none;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 1px;
+            bottom: -2px;
+            left: 0;
+            background-color: #9c8465;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        .fade-in-up {
+            animation: fadeInUp 1s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Custom shapes for the abstract landscape folio */
+        .tree-top {
+            border: 1px dashed #4a5d23;
+            background-color: rgba(74, 93, 35, 0.05);
+            border-radius: 50%;
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tree-top::after {
+            content: '';
+            width: 4px;
+            height: 4px;
+            background-color: #4a5d23;
+            border-radius: 50%;
+        }
+        .tree-top-solid {
+            border: 1px solid #4a5d23;
+            background-color: rgba(74, 93, 35, 0.15);
+            border-radius: 50%;
+            position: absolute;
+        }
+        .deck-lines {
+            background: repeating-linear-gradient(
+                to right,
+                transparent,
+                transparent 4px,
+                rgba(156, 132, 101, 0.2) 4px,
+                rgba(156, 132, 101, 0.2) 5px
+            );
+        }
+
+/* Structural stability and premium aesthetics */
+    .bg-grid-charcoal {
+        background-image: 
+            linear-gradient(to right, rgba(232, 229, 223, 0.6) 1px, transparent 1px), 
+            linear-gradient(to bottom, rgba(232, 229, 223, 0.6) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+    .service-card {
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .service-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px -10px rgba(28, 27, 26, 0.08);
+        border-color: rgba(156, 132, 101, 0.4);
+    }

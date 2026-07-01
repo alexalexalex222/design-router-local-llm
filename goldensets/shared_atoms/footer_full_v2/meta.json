@@ -1,0 +1,13 @@
+{
+  "atom_id": "footer_full_v2",
+  "category": "footer",
+  "summary": "Premium full footer: brand + newsletter with idle/loading/error/success states, 4 columns (3 nav + tel:/mailto: contact), legal/microcopy row, and back-to-top.",
+  "surfaces": ["website.local_service", "website.*"],
+  "ux_roles": ["footer_full", "phone_priority_layout"],
+  "tags": ["footer", "newsletter", "contact", "tel", "mailto", "back-to-top", "columns", "states"],
+  "tone": ["premium", "warm", "established"],
+  "files": ["snippet.html", "snippet.css", "snippet.js"],
+  "loads_fonts": true,
+  "has_motion": true,
+  "a11y_complete": true
+}

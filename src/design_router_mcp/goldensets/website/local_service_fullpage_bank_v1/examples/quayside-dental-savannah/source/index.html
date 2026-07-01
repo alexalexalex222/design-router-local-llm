@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quayside Dental | Savannah, GA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['"Cormorant Garamond"', 'serif'],
+                        sans: ['"Outfit"', 'sans-serif'],
+                    },
+                    colors: {
+                        chalk: '#F4F3EF',
+                        marine: '#0C233C',
+                        seaglass: '#85AAA5',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .reveal {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Subtly delay children for cascade effect */
+        .reveal.active .delay-1 { transition-delay: 100ms; }
+        .reveal.active .delay-2 { transition-delay: 200ms; }
+        .reveal.active .delay-3 { transition-delay: 300ms; }
+        
+        .nav-scrolled {
+            background-color: rgba(244, 243, 239, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(12, 35, 60, 0.1);
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+        }
+    </style>
+</head>
+<body class="bg-chalk text-marine font-sans antialiased selection:bg-seaglass selection:text-marine overflow-x-hidden">
+    
+    <!-- Header -->
+    <header id="main-nav" class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 py-8 lg:px-16 lg:py-10 transition-all duration-500">
+        <div class="flex items-center gap-3">
+            <svg class="w-7 h-7 text-seaglass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" stroke-linejoin="round" stroke-linecap="round"/>
+            </svg>
+            <div class="flex flex-col">
+                <span class="font-sans font-medium tracking-[0.2em] text-sm uppercase text-marine leading-none">Quayside</span>
+                <span class="font-sans font-light tracking-[0.3em] text-[0.65rem] uppercase text-marine/70 mt-1 leading-none">Dental</span>
+            </div>
+        </div>
+        
+        <nav class="hidden md:flex items-center gap-10 text-xs tracking-[0.15em] font-medium uppercase text-marine/80">
+            <a href="#expertise" class="hover:text-seaglass transition-colors duration-300">Expertise</a>
+            <a href="#environment" class="hover:text-seaglass transition-colors duration-300">Environment</a>
+            <a href="#team" class="hover:text-seaglass transition-colors duration-300">Patient Care</a>
+        </nav>
+        
+        <div>
+            <a href="#contact" class="hidden md:inline-flex items-center justify-center px-6 py-3 border border-marine/20 text-marine text-[0.65rem] font-medium tracking-[0.2em] uppercase hover:bg-marine hover:text-chalk transition-all duration-500">
+                Patient Login
+            </a>
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-marine focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Hero -->
+    <section class="min-h-screen flex flex-col relative overflow-hidden pt-24 lg:pt-0">
+        <div class="flex-grow flex flex-col lg:flex-row items-stretch">
+            <!-- Left Content -->
+            <div class="w-full lg:w-[55%] px-6 lg:px-16 xl:px-24 flex flex-col justify-center z-10 py-16 lg:py-0 reveal active">
+                <div class="max-w-xl mx-auto lg:mx-0">
+                    
+                    <div class="flex items-center gap-4 mb-8 delay-1">
+                        <div class="w-12 h-[1px] bg-seaglass"></div>
+                        <span class="text-seaglass font-sans text-xs tracking-[0.25em] uppercase font-medium">Savannah, Georgia</span>
+                    </div>
+                    
+                    <h1 class="font-serif text-5xl md:text-6xl lg:text-7xl xl:text-[5.5rem] leading-[1.05] mb-8 text-marine delay-2">
+                        The new standard of <br class="hidden md:block">
+                        <span class="italic text-seaglass">dental excellence.</span>
+                    </h1>
+                    
+                    <p class="font-sans text-lg lg:text-xl font-light text-marine/70 leading-relaxed mb-12 max-w-md delay-3">
+                        Experience uncompromising clinical precision within a deeply calming, wellness-forward environment designed around your peace of mind.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-12 delay-3">
+                        <a href="#contact" class="group relative inline-flex items-center justify-center px-10 py-5 bg-marine text-chalk font-sans text-xs font-medium tracking-[0.2em] uppercase overflow-hidden transition-all duration-500 hover:bg-seaglass hover:text-marine w-full sm:w-auto">
+                            <span class="relative z-10">Schedule Visit</span>
+                        </a>
+                        <a href="#environment" class="group inline-flex items-center justify-center px-10 py-5 bg-transparent border border-marine/20 text-marine font-sans text-xs font-medium tracking-[0.2em] uppercase transition-all duration-500 hover:border-marine w-full sm:w-auto">
+                            <span class="relative z-10">Our Practice</span>
+                        </a>
+                    </div>
+                    
+                    <!-- Integrated Assurance -->
+                    <div class="flex items-center gap-4 pt-8 border-t border-marine/10 delay-3">
+                        <div class="flex -space-x-3">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&h=100&q=80" alt="Patient" class="w-10 h-10 rounded-full border-2 border-chalk object-cover grayscale opacity-80">
+                            <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&h=100&q=80" alt="Patient" class="w-10 h-10 rounded-full border-2 border-chalk object-cover grayscale opacity-80">
+                            <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=100&h=100&q=80" alt="Patient" class="w-10 h-10 rounded-full border-2 border-chalk object-cover grayscale opacity-80">
+                        </div>
+                        <div class="flex flex-col justify-center">
+                            <div class="flex items-center text-seaglass mb-1 gap-0.5">
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            </div>
+                            <span class="text-[0.65rem] font-sans tracking-[0.05em] text-marine/60 uppercase">Trusted by Savannah's Families</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+            <!-- Right Image Showcase -->
+            <div class="w-full lg:w-[45%] flex items-center justify-center p-4 lg:p-8 h-[50vh] sm:h-[60vh] lg:h-screen lg:min-h-[800px] reveal active delay-2">
+                <div class="relative w-full h-full lg:h-[85%] overflow-hidden rounded-[2rem] lg:rounded-tr-[10rem] lg:rounded-bl-[10rem] shadow-2xl shadow-marine/10 group">
+                    <img src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?q=80&w=2070&auto=format&fit=crop" 
+                         alt="Refined dental clinic interior" 
+                         class="absolute inset-0 w-full h-full object-cover object-center transform scale-105 group-hover:scale-100 transition-transform duration-[3s] ease-out">
+                    <div class="absolute inset-0 bg-gradient-to-t from-marine/40 via-transparent to-marine/10 mix-blend-multiply"></div>
+                    <div class="absolute inset-0 border-[1px] border-white/20 rounded-[2rem] lg:rounded-tr-[10rem] lg:rounded-bl-[10rem] m-4 pointer-events-none"></div>
+                </div>
+            </div>
+        </div>
+        <!-- Minimalist decorative elements -->
+        <div class="absolute top-1/4 left-0 w-px h-32 bg-gradient-to-b from-transparent via-seaglass/30 to-transparent"></div>
+        <div class="absolute bottom-1/4 right-0 w-px h-32 bg-gradient-to-b from-transparent via-seaglass/30 to-transparent"></div>
+    </section>
+
+    <!-- Ethos / Philosophy -->
+    <section class="py-24 lg:py-32 px-6 lg:px-16 xl:px-24 bg-chalk relative">
+        <div class="max-w-4xl mx-auto text-center reveal">
+            <span class="text-seaglass font-sans text-xs tracking-[0.25em] uppercase font-medium block mb-8">The Quayside Ethos</span>
+            <h2 class="font-serif text-4xl md:text-5xl lg:text-6xl text-marine leading-[1.1] mb-8">
+                We believe exceptional clinical outcomes should be paired with an atmosphere of absolute <span class="italic text-seaglass">tranquility.</span>
+            </h2>
+            <p class="font-sans text-lg font-light text-marine/70 max-w-2xl mx-auto leading-relaxed">
+                Dentistry is no longer just about procedures; it is about the patient experience. Every detail of our practice has been meticulously curated to alleviate anxiety, build enduring trust, and elevate your standard of care.
+            </p>
+        </div>
+    </section>
+
+    <!-- Expertise / Services -->
+    <section id="expertise" class="py-24 lg:py-32 px-6 lg:px-16 xl:px-24 bg-marine text-chalk relative">
+        <!-- decorative line -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-px h-24 bg-gradient-to-b from-seaglass/50 to-transparent"></div>
+        
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 lg:mb-24 reveal">
+            <div class="max-w-xl">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-8 h-[1px] bg-seaglass"></div>
+                    <span class="text-seaglass font-sans text-xs tracking-[0.25em] uppercase font-medium">Practice Areas</span>
+                </div>
+                <h2 class="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.1]">Clinical <span class="italic text-seaglass">Excellence</span></h2>
+            </div>
+            <a href="#contact" class="group hidden md:inline-flex items-center justify-center px-8 py-4 border border-chalk/20 text-chalk text-[0.65rem] font-medium tracking-[0.2em] uppercase hover:bg-chalk hover:text-marine transition-all duration-500 mt-8 md:mt-0">
+                View All Services
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+            <!-- Card 1 -->
+            <div class="group cursor-pointer reveal delay-1">
+                <div class="overflow-hidden aspect-[4/5] mb-8 rounded-tr-[4rem] rounded-bl-[4rem]">
+                    <img src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&q=80&w=800" alt="Preventative Care" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 opacity-90 group-hover:opacity-100">
+                </div>
+                <div class="flex items-center gap-4 mb-4">
+                    <span class="text-seaglass font-sans text-[0.65rem] tracking-[0.2em] uppercase">01</span>
+                    <div class="h-px bg-chalk/20 flex-grow group-hover:bg-seaglass transition-colors duration-500"></div>
+                </div>
+                <h3 class="font-serif text-3xl mb-4 text-chalk">Preventative & Wellness</h3>
+                <p class="font-sans font-light text-chalk/70 text-sm leading-relaxed mb-6">
+                    Foundation-first dentistry focused on long-term oral health, advanced diagnostics, and systemic wellness.
+                </p>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="group cursor-pointer reveal delay-2">
+                <div class="overflow-hidden aspect-[4/5] mb-8 rounded-tl-[4rem] rounded-br-[4rem]">
+                    <img src="https://images.unsplash.com/photo-1590664095641-7fa05f689813?auto=format&fit=crop&q=80&w=800" alt="Cosmetic Artistry" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 opacity-90 group-hover:opacity-100">
+                </div>
+                <div class="flex items-center gap-4 mb-4">
+                    <span class="text-seaglass font-sans text-[0.65rem] tracking-[0.2em] uppercase">02</span>
+                    <div class="h-px bg-chalk/20 flex-grow group-hover:bg-seaglass transition-colors duration-500"></div>
+                </div>
+                <h3 class="font-serif text-3xl mb-4 text-chalk">Cosmetic Artistry</h3>
+                <p class="font-sans font-light text-chalk/70 text-sm leading-relaxed mb-6">
+                    Bespoke smile design including porcelain veneers, subtle alignment, and professional brightening treatments.
+                </p>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="group cursor-pointer reveal delay-3">
+                <div class="overflow-hidden aspect-[4/5] mb-8 rounded-tr-[4rem] rounded-bl-[4rem]">
+                    <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&q=80&w=800" alt="Restorative Solutions" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 opacity-90 group-hover:opacity-100">
+                </div>
+                <div class="flex items-center gap-4 mb-4">
+                    <span class="text-seaglass font-sans text-[0.65rem] tracking-[0.2em] uppercase">03</span>
+                    <div class="h-px bg-chalk/20 flex-grow group-hover:bg-seaglass transition-colors duration-500"></div>
+                </div>
+                <h3 class="font-serif text-3xl mb-4 text-chalk">Restorative Solutions</h3>
+                <p class="font-sans font-light text-chalk/70 text-sm leading-relaxed mb-6">
+                    Precision engineering to restore function and aesthetics seamlessly through implants, crowns, and full-mouth rehabilitation.
+                </p>
+            </div>
+        </div>
+        <div class="mt-12 text-center md:hidden">
+            <a href="#contact" class="group inline-flex items-center justify-center px-8 py-4 border border-chalk/20 text-chalk text-[0.65rem] font-medium tracking-[0.2em] uppercase hover:bg-chalk hover:text-marine transition-all duration-500 w-full">
+                View All Services
+            </a>
+        </div>
+    </section>
+
+    <!-- The Environment -->
+    <section id="environment" class="py-24 lg:py-32 px-6 lg:px-16 xl:px-24 bg-chalk relative overflow-hidden">
+        <div class="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+            <div class="w-full lg:w-1/2 reveal">
+                <div class="relative aspect-square lg:aspect-[4/5] overflow-hidden rounded-[2rem] lg:rounded-tl-[10rem] lg:rounded-br-[10rem] shadow-xl shadow-marine/5 group">
+                    <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1200" alt="Calming Clinic Environment" class="absolute inset-0 w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-[2s]">
+                    <div class="absolute inset-0 bg-marine/10 mix-blend-multiply"></div>
+                    <div class="absolute inset-0 border border-chalk/30 rounded-[2rem] lg:rounded-tl-[10rem] lg:rounded-br-[10rem] m-4 pointer-events-none"></div>
+                </div>
+            </div>
+            
+            <div class="w-full lg:w-1/2 reveal delay-2">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-8 h-[1px] bg-seaglass"></div>
+                    <span class="text-seaglass font-sans text-xs tracking-[0.25em] uppercase font-medium">The Experience</span>
+                </div>
+                <h2 class="font-serif text-4xl md:text-5xl lg:text-6xl text-marine leading-[1.1] mb-8">Designed for your <span class="italic text-seaglass">peace of mind.</span></h2>
+                
+                <div class="space-y-6 font-sans text-lg font-light text-marine/80 leading-relaxed mb-10">
+                    <p>From the moment you step into our Savannah clinic, the clinical feel of traditional dentistry fades away. You are welcomed into a space that feels more like a boutique wellness retreat.</p>
+                    <p>We utilize ultra-quiet handpieces, guided breathing techniques, and state-of-the-art pain management to ensure your visit is deeply restorative rather than stressful.</p>
+                </div>
+                
+                <ul class="space-y-5">
+                    <li class="flex items-center gap-4 text-marine font-sans text-sm tracking-wide font-medium">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-full border border-seaglass/30 bg-seaglass/10 text-seaglass">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        Aromatherapy & Warm Towel Service
+                    </li>
+                    <li class="flex items-center gap-4 text-marine font-sans text-sm tracking-wide font-medium">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-full border border-seaglass/30 bg-seaglass/10 text-seaglass">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        Noise-Canceling Audio Menus
+                    </li>
+                    <li class="flex items-center gap-4 text-marine font-sans text-sm tracking-wide font-medium">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-full border border-seaglass/30 bg-seaglass/10 text-seaglass">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        Private Consultation Suites
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Doctor / Team -->
+    <section id="team" class="py-24 lg:py-32 px-6 lg:px-16 xl:px-24 bg-[#EBE9E2] relative">
+        <div class="flex flex-col lg:flex-row-reverse items-center gap-16 lg:gap-24">
+            <div class="w-full lg:w-5/12 reveal">
+                <div class="relative aspect-[3/4] overflow-hidden rounded-[1rem] shadow-2xl shadow-marine/10">
+                    <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=800" alt="Lead Dentist" class="absolute inset-0 w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-marine/60 via-transparent to-transparent"></div>
+                    <div class="absolute bottom-6 left-6 text-chalk">
+                        <h3 class="font-serif text-2xl mb-1">Dr. Eleanor Hayes, DMD</h3>
+                        <p class="font-sans text-xs tracking-[0.15em] uppercase text-chalk/80">Clinical Director</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="w-full lg:w-7/12 reveal delay-2">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-8 h-[1px] bg-seaglass"></div>
+                    <span class="text-seaglass font-sans text-xs tracking-[0.25em] uppercase font-medium">Clinical Leadership</span>
+                </div>
+                <h2 class="font-serif text-4xl md:text-5xl lg:text-6xl text-marine leading-[1.1] mb-8">Guided by <span class="italic text-seaglass">expertise.</span></h2>
+                
+                <p class="font-sans text-lg font-light text-marine/80 leading-relaxed mb-8">
+                    "My philosophy is rooted in the belief that the finest dental work goes entirely unnoticed. We do not just fix teeth; we engineer smiles that harmonize perfectly with your natural facial aesthetics, all while preserving the maximum amount of healthy structure."
+                </p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-8 border-t border-marine/10">
+                    <div>
+                        <h4 class="font-sans text-xs font-medium tracking-[0.2em] uppercase text-marine mb-3">Credentials</h4>
+                        <ul class="space-y-2 font-sans text-sm font-light text-marine/70">
+                            <li>Doctor of Dental Medicine, MCG</li>
+                            <li>American Academy of Cosmetic Dentistry</li>
+                            <li>Kois Center Graduate</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-sans text-xs font-medium tracking-[0.2em] uppercase text-marine mb-3">Focus Areas</h4>
+                        <ul class="space-y-2 font-sans text-sm font-light text-marine/70">
+                            <li>Complex Restorative Rehabilitation</li>
+                            <li>Porcelain Veneers & Aesthetics</li>
+                            <li>Implant Restoration</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer / CTA -->
+    <footer id="contact" class="bg-marine text-chalk pt-24 pb-12 px-6 lg:px-16 xl:px-24 border-t border-chalk/10 relative overflow-hidden">
+        <!-- Subtle background texture -->
+        <div class="absolute inset-0 opacity-5 pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+        
+        <div class="max-w-4xl mx-auto text-center mb-24 reveal">
+            <h2 class="font-serif text-4xl md:text-5xl lg:text-6xl leading-[1.1] mb-8">Ready to elevate your <br><span class="italic text-seaglass">dental care?</span></h2>
+            <p class="font-sans text-lg font-light text-chalk/70 mb-10 max-w-xl mx-auto">
+                We are currently accepting new patients in Savannah. Contact our concierge team to reserve your initial consultation.
+            </p>
+            <a href="tel:+19125550151" class="group relative inline-flex items-center justify-center px-12 py-5 bg-seaglass text-marine font-sans text-xs font-medium tracking-[0.2em] uppercase overflow-hidden transition-all duration-500 hover:bg-chalk">
+                <span class="relative z-10">Call (912) 555-0151</span>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16 pt-16 border-t border-chalk/10 reveal delay-2">
+            <div class="lg:col-span-2">
+                <div class="flex items-center gap-3 mb-6">
+                    <svg class="w-7 h-7 text-seaglass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" stroke-linejoin="round" stroke-linecap="round"/>
+                    </svg>
+                    <div class="flex flex-col">
+                        <span class="font-sans font-medium tracking-[0.2em] text-sm uppercase text-chalk leading-none">Quayside</span>
+                        <span class="font-sans font-light tracking-[0.3em] text-[0.65rem] uppercase text-chalk/70 mt-1 leading-none">Dental</span>
+                    </div>
+                </div>
+                <p class="font-sans text-sm font-light text-chalk/60 max-w-sm">
+                    Elevating the standard of oral healthcare in Savannah, Georgia. Experience dentistry grounded in precision, artistry, and absolute comfort.
+                </p>
+            </div>
+            
+            <div>
+                <h4 class="font-sans text-xs font-medium tracking-[0.2em] uppercase text-seaglass mb-6">Location & Contact</h4>
+                <ul class="space-y-4 font-sans text-sm font-light text-chalk/70">
+                    <li>123 Historic District Blvd<br>Savannah, GA 31401</li>
+                    <li><a href="tel:+19125550151" class="hover:text-chalk transition-colors inline-block">(912) 555-0151</a></li>
+                    <li><a href="mailto:concierge@quaysidedental.example" class="hover:text-chalk transition-colors inline-block">concierge@quaysidedental.example</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="font-sans text-xs font-medium tracking-[0.2em] uppercase text-seaglass mb-6">Clinic Hours</h4>
+                <ul class="space-y-4 font-sans text-sm font-light text-chalk/70">
+                    <li class="flex justify-between max-w-[200px]"><span>Monday - Thursday</span><span>8:00am - 5:00pm</span></li>
+                    <li class="flex justify-between max-w-[200px]"><span>Friday</span><span>8:00am - 1:00pm</span></li>
+                    <li class="flex justify-between max-w-[200px]"><span>Saturday - Sunday</span><span>Closed</span></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-chalk/10 font-sans text-[0.65rem] font-light tracking-[0.1em] uppercase text-chalk/40 reveal delay-3">
+            <p>&copy; 2026 Quayside Dental Savannah. All rights reserved.</p>
+            <div class="flex gap-8 mt-4 md:mt-0">
+                <a href="#" class="hover:text-chalk transition-colors">Privacy Policy</a>
+                <a href="#" class="hover:text-chalk transition-colors">Accessibility</a>
+                <a href="#" class="hover:text-chalk transition-colors">Patient Portal</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Scroll Reveal Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, { 
+                threshold: 0.1,
+                rootMargin: "0px 0px -50px 0px"
+            });
+
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+            // Sticky Header Logic
+            const header = document.getElementById('main-nav');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    header.classList.add('nav-scrolled');
+                } else {
+                    header.classList.remove('nav-scrolled');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
